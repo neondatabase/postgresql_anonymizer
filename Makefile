@@ -18,9 +18,8 @@ SED2=sed 's/SELECT.*search_path.*//'
 sql/tables/%.sql:
 	$(PG_DUMP) --table $* | $(SED1) | $(SED2) > $@
 
-PGPASSWORD=CHANGEME 
 
-PSQL=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
+PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
 
 docker_image: Dockerfile
 	docker build -t registry.gitlab.com/daamien/postgresql_anonymizer .

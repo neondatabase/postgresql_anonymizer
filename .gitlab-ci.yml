@@ -1,17 +1,17 @@
-
-
-
+## PRO TIP : Test your modifications locally with:
+## $ gitlab-ci-multi-runner exec docker {name_of_the_job}
 
 make:
   stage: build    
   image: dalibo/postgres-sdk
   script:
     - make install 
-    - make installcheck
+    #- make installcheck
     
 test:
   stage: test
   image: registry.gitlab.com/daamien/postgresql_anonymizer
   script:
+    - export PSQL=psql -U postgres
     - make test
     - make drop
