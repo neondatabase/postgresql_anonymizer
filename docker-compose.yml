@@ -1,0 +1,8 @@
+PostgreSQL:
+  image: daamien/anon
+  ports:
+    - "54322:5432"
+  environment:
+    - POSTGRES_PASSWORD=CHANGEME
+  volumes: 
+    - $PWD/anon:/usr/share/postgresql/10/extension/anon
