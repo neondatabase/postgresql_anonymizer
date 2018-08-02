@@ -1,6 +1,7 @@
-ION = anon       
-DATA = anon--0.0.1.sql  
-REGRESS = anon_test     
+EXTENSION = anon       
+DATA = anon/anon--0.0.1.sql  
+REGRESS = tests/anon_test.sql     
+MODULEDIR=extension/anon
 
 extension: anon/$(DATA)
 
@@ -20,6 +21,12 @@ sql/tables/%.sql:
 PGPASSWORD=CHANGEME 
 
 PSQL=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
+
+docker_image: Dockerfile
+	docker build -t registry.gitlab.com/daamien/postgresql_anonymizer .
+
+docker_push:
+	docker push registry.gitlab.com/daamien/postgresql_anonymizer
 
 docker_init:
 	docker-compose down
