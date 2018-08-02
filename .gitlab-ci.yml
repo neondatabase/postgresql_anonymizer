@@ -1,0 +1,17 @@
+
+
+
+
+make:
+  stage: build    
+  image: dalibo/postgres-sdk
+  script:
+    - make install 
+    - make installcheck
+    
+test:
+  stage: test
+  image: registry.gitlab.com/daamien/postgresql_anonymizer
+  script:
+    - make test
+    - make drop
