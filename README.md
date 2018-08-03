@@ -6,13 +6,15 @@ Example
 ------------------------------------------------------------------------------
 
 ```sql
+=# CREATE EXTENSION IF NOT EXISTS anon;
+
 =# SELECT * FROM customer;
     full_name     |   birth    |    company    | zipcode                                                                                               
 ------------------+------------+---------------+---------                                                                                              
  Chuck Norris     | 1940-03-10 | Texas Rangers | 75001                                                                                                 
  David Hasselhoff | 1952-07-17 | Baywatch      | 90001                                                                                                 
                                                                                                                                                        
-=# UPDATE pg_temp.customer
+=# UPDATE customer
 -# SET
 -#   full_name=anon.random_first_name() || ' ' || anon.random_last_name(),
 -#   birth=anon.random_date_between('01/01/1920'::DATE,now()),
