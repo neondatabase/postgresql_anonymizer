@@ -47,6 +47,11 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL;
 
+CREATE OR REPLACE FUNCTION random_last_name()                                                                                                         
+RETURNS TEXT AS $$                                                                                                                                     
+    SELECT name FROM @extschema@.last_name ORDER BY random() LIMIT 1;                                                                          
+$$                                                                                                                                                     
+LANGUAGE SQL;    
 
 --
 -- Company data : Name, SIRET, IBAN, etc.
