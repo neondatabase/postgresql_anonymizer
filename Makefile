@@ -3,9 +3,9 @@ DATA = anon/anon--0.0.1.sql
 REGRESS = tests/anon_test.sql     
 MODULEDIR=extension/anon
 
-extension: anon/$(DATA)
+extension: $(DATA)
 
-anon/$(DATA): 
+$(DATA): 
 	cat sql/header.sql > $@ 
 	cat sql/tables/*.sql >> $@
 	cat sql/functions/first_names.sql >> $@
