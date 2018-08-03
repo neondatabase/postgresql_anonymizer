@@ -1,6 +1,6 @@
 EXTENSION = anon       
 DATA = anon/anon--0.0.1.sql  
-REGRESS = tests/unit.sql     
+REGRESS = unit     
 MODULEDIR=extension/anon
 
 extension: $(DATA)

@@ -1,26 +1,38 @@
 # PRO TIP : Test your modifications locally with:
 ## $ gitlab-ci-multi-runner exec docker {name_of_the_job}
 
+
+variables:
+    PGDATA: /var/lib/postgresql/data
+    PGUSER: postgres    
+    EXTDIR: /usr/share/postgresql/10/extension/
+
+before_script:
+    - mkdir -p $PGDATA
+    - mkdir -p $EXTDIR                                                                                                                                 
+    - chown postgres $PGDATA                                                                                                                           
+    - gosu postgres initdb                                                                                                                             
+    - gosu postgres pg_ctl start  
+
 make:
   stage: build    
-  image: dalibo/postgres-sdk
+#  image: dalibo/postgres-sdk
+  image: postgres:10
   script:
+    - apt-get update && apt-get install -y make postgresql-server-dev-10
+    - make extension
     - make install 
-    #- make installcheck
+    - make installcheck
+  artifacts:
+    paths:
+        - anon*
+    expire_in: 1 day
     
 test:
   stage: test
   #image: registry.gitlab.com/daamien/postgresql_anonymizer
   image: postgres:10
   script:
-    #- apt-get update && apt-get install -y make  
-    - export PGDATA=/var/lib/postgresql/data
-    - export EXTDIR=/usr/share/postgresql/10/extension/
-    - mkdir -p $PGDATA
-    - mkdir -p $EXTDIR
-    - chown postgres $PGDATA
-    - gosu postgres initdb
-    - gosu postgres pg_ctl start 
     - cp -r anon* $EXTDIR
-    - gosu postgres psql -v ON_ERROR_STOP=1 -f tests/unit.sql
-    - gosu postgres psql -v ON_ERROR_STOP=1 -f tests/drop.sql
+    - psql -v ON_ERROR_STOP=1 -f tests/unit.sql
+    - psql -v ON_ERROR_STOP=0 -f tests/drop.sql
