@@ -6,6 +6,7 @@ MODULEDIR=extension/anon
 extension: $(DATA)
 
 $(DATA): 
+	mkdir -p `dirname $(DATA)`
 	cat sql/header.sql > $@ 
 	cat sql/tables/*.sql >> $@
 	cat sql/functions/first_names.sql >> $@
