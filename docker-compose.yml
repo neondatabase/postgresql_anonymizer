@@ -4,5 +4,6 @@ PostgreSQL:
     - "54322:5432"
   environment:
     - POSTGRES_PASSWORD=CHANGEME
-  volumes: 
+  volumes:
+    #- $PWD:/tmp/debug 
     - $PWD/anon:/usr/share/postgresql/10/extension/anon
