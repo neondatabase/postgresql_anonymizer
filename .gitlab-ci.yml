@@ -1,4 +1,4 @@
-## PRO TIP : Test your modifications locally with:
+# PRO TIP : Test your modifications locally with:
 ## $ gitlab-ci-multi-runner exec docker {name_of_the_job}
 
 make:
@@ -10,8 +10,17 @@ make:
     
 test:
   stage: test
-  image: registry.gitlab.com/daamien/postgresql_anonymizer
+  #image: registry.gitlab.com/daamien/postgresql_anonymizer
+  image: postgres:10
   script:
-    - export PSQL=psql -U postgres
-    - make test
-    - make drop
+    #- apt-get update && apt-get install -y make  
+    - export PGDATA=/var/lib/postgresql/data
+    - export EXTDIR=/usr/share/postgresql/10/extension/
+    - mkdir -p $PGDATA
+    - mkdir -p $EXTDIR
+    - chown postgres $PGDATA
+    - gosu postgres initdb
+    - gosu postgres pg_ctl start 
+    - cp -r anon* $EXTDIR
+    - gosu postgres psql -v ON_ERROR_STOP=1 -f tests/anon_test.sql
+    - gosu postgres psql -v ON_ERROR_STOP=1 -f tests/drop.sql

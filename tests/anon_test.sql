@@ -24,5 +24,5 @@ SELECT pg_typeof(anon.random_company());
 --
 -- Date
 --
-SELECT pg_typeof(anon.random_date_between('01/01/1900'::DATE,now()));
+SELECT pg_typeof(anon.random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now()));
 SELECT pg_typeof(anon.random_date());
