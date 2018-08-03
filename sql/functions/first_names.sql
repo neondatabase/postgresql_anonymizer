@@ -33,7 +33,7 @@ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION random_date()
 RETURNS timestamp with time zone AS $$
-	SELECT random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now());
+	SELECT @extschema@.random_date_between('01/01/1900'::DATE,now());
 $$
 LANGUAGE SQL;
 

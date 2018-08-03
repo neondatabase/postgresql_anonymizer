@@ -1,6 +1,6 @@
 EXTENSION = anon       
 DATA = anon/anon--0.0.1.sql  
-REGRESS = tests/anon_test.sql     
+REGRESS = tests/unit.sql     
 MODULEDIR=extension/anon
 
 extension: $(DATA)
@@ -34,7 +34,7 @@ docker_init:
 SQL_SCRIPTS= load test test_drop
 
 load: data/load.sql
-test: tests/anon_test.sql
+test: tests/unit.sql
 test_drop: tests/drop.sql
 
 $(SQL_SCRIPTS):
