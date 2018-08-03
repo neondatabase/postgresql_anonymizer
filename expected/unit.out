@@ -1,0 +1,57 @@
+CREATE EXTENSION IF NOT EXISTS anon;
+-- zip
+SELECT pg_typeof(anon.random_zip());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+--
+-- string
+--
+SELECT pg_typeof(anon.random_string(1));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+--SELECT anon_string(123456789);
+--
+-- First Name
+--
+SELECT pg_typeof(anon.random_first_name());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+--
+-- Company
+--
+SELECT pg_typeof(anon.random_company());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+--
+-- Date
+--
+SELECT pg_typeof(anon.random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now()));
+        pg_typeof         
+--------------------------
+ timestamp with time zone
+(1 row)
+
+SELECT pg_typeof(anon.random_date_between('01/01/0001'::DATE,'01/01/4001'::DATE));
+        pg_typeof         
+--------------------------
+ timestamp with time zone
+(1 row)
+
+SELECT pg_typeof(anon.random_date());
+        pg_typeof         
+--------------------------
+ timestamp with time zone
+(1 row)
+
