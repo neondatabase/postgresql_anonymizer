@@ -7,6 +7,8 @@ variables:
     PGUSER: postgres    
     EXTDIR: /usr/share/postgresql/10/extension/
 
+image: postgres:10
+
 before_script:
     - mkdir -p $PGDATA
     - mkdir -p $EXTDIR                                                                                                                                 
@@ -16,8 +18,6 @@ before_script:
 
 make:
   stage: build    
-#  image: dalibo/postgres-sdk
-  image: postgres:10
   script:
     - apt-get update && apt-get install -y make postgresql-server-dev-10
     - make extension
@@ -28,11 +28,28 @@ make:
         - anon*
     expire_in: 1 day
     
-test:
+test_with_pg10:
   stage: test
-  #image: registry.gitlab.com/daamien/postgresql_anonymizer
-  image: postgres:10
   script:
     - cp -r anon* $EXTDIR
     - psql -v ON_ERROR_STOP=1 -f tests/unit.sql
     - psql -v ON_ERROR_STOP=0 -f tests/drop.sql
+
+
+test_with_pg11:
+  stage: test
+  when: manual
+  image: postgres:11
+  script:
+    - cp -r anon* $EXTDIR                                                                                                                              
+    - psql -v ON_ERROR_STOP=1 -f tests/unit.sql                                                                                                        
+    - psql -v ON_ERROR_STOP=0 -f tests/drop.sql
+ 
+test_with_pg9.6:
+  stage: test                                                                                                                                          
+  when: manual                                                                                                                                         
+  image: postgres:9.6                                                                                                                                  
+  script:                                                                                                                                              
+    - cp -r anon* $EXTDIR                                                                                                                              
+    - psql -v ON_ERROR_STOP=1 -f tests/unit.sql                                                                                                        
+    - psql -v ON_ERROR_STOP=0 -f tests/drop.sql  
