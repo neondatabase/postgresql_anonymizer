@@ -1,7 +1,11 @@
 EXTENSION = anon       
 DATA = anon/anon--0.0.1.sql  
-REGRESS = tests/unit     
+#REGRESS = tests/unit     
+REGRESS=unit
 MODULEDIR=extension/anon
+#TESTS        = $(wildcard test/sql/*.sql)
+#REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
+REGRESS_OPTS = --inputdir=tests
 
 extension: $(DATA)
 

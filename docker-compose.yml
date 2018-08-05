@@ -5,5 +5,5 @@ PostgreSQL:
   environment:
     - POSTGRES_PASSWORD=CHANGEME
   volumes:
-    #- $PWD:/tmp/debug 
+    - $PWD:/tmp/source 
     - $PWD/anon:/usr/share/postgresql/10/extension/anon
