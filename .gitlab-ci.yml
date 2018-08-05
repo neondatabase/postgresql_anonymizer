@@ -26,30 +26,6 @@ make:
   artifacts:
     paths:
         - anon*
+        - results/
     expire_in: 1 day
     
-test_with_pg10:
-  stage: test
-  script:
-    - cp -r anon* $EXTDIR
-    - psql -v ON_ERROR_STOP=1 -f tests/unit.sql
-    - psql -v ON_ERROR_STOP=0 -f tests/drop.sql
-
-
-test_with_pg11:
-  stage: test
-  when: manual
-  image: postgres:11
-  script:
-    - cp -r anon* $EXTDIR                                                                                                                              
-    - psql -v ON_ERROR_STOP=1 -f tests/unit.sql                                                                                                        
-    - psql -v ON_ERROR_STOP=0 -f tests/drop.sql
- 
-test_with_pg9.6:
-  stage: test                                                                                                                                          
-  when: manual                                                                                                                                         
-  image: postgres:9.6                                                                                                                                  
-  script:                                                                                                                                              
-    - cp -r anon* $EXTDIR                                                                                                                              
-    - psql -v ON_ERROR_STOP=1 -f tests/unit.sql                                                                                                        
-    - psql -v ON_ERROR_STOP=0 -f tests/drop.sql  
