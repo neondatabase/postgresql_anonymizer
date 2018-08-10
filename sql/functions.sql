@@ -37,6 +37,15 @@ RETURNS timestamp with time zone AS $$
 $$
 LANGUAGE SQL;
 
+
+-- integer
+
+CREATE OR REPLACE FUNCTION random_int_between(int_start INTEGER, int_stop INTEGER)
+RETURNS INTEGER AS $$
+	SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
+$$
+LANGUAGE SQL;                                                                                                                                          
+
 --
 -- Personal data : First Name, Last Name, etc.
 --
@@ -53,6 +62,7 @@ RETURNS TEXT AS $$
 $$                                                                                                                                                     
 LANGUAGE SQL;    
 
+<<<<<<< HEAD
 CREATE OR REPLACE FUNCTION random_city_in_country(country_name TEXT)
 RETURNS TEXT AS $$
 	SELECT name FROM @extschema@.city WHERE country=country_name ORDER BY random() LIMIT 1;
@@ -84,6 +94,11 @@ $$
 LANGUAGE SQL;   
 
 
+CREATE OR REPLACE FUNCTION random_phone( phone_prefix TEXT DEFAULT '0' )
+RETURNS TEXT AS $$
+	SELECT phone_prefix || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT) AS "phone";
+$$
+LANGUAGE SQL;
 
 
 --

@@ -37,11 +37,24 @@ docker_init:
 	docker-compose up -d
 
 
+
+expected: tests/expected/unit.out
+
+tests/expected/unit.out: tests/sql/unit.sql
+	$(PSQL) -f $^ > $@		
+
+
+##
+## Load data from CSV files into SQL tables
+##
 load: data/load.sql
 
 data/load.sql:
 	$(PSQL) -f $@
 
+##
+## Tests
+##
 test_unit: tests/sql/unit.sql
 test_demo: tests/sql/demo.sql
 test_drop: tests/sql/drop.sql
@@ -49,6 +62,9 @@ test_drop: tests/sql/drop.sql
 tests/sql/%.sql:
 	$(PSQL)	-f $@	
 
+##
+## Mandatory PGXS stuff
+##
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
