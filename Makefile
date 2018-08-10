@@ -36,15 +36,18 @@ docker_init:
 	docker-compose down
 	docker-compose up -d
 
-SQL_SCRIPTS= load test demo test_drop
 
 load: data/load.sql
-test: sql/tests/unit.sql
-demo: sql/tests/demo.sql
-test_drop: sql/tests/drop.sql
 
-$(SQL_SCRIPTS):
-	$(PSQL) -f $^
+data/load.sql:
+	$(PSQL) -f $@
+
+test_unit: tests/sql/unit.sql
+test_demo: tests/sql/demo.sql
+test_drop: tests/sql/drop.sql
+
+tests/sql/%.sql:
+	$(PSQL)	-f $@	
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
