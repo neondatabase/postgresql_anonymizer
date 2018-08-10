@@ -38,6 +38,19 @@ CREATE TABLE last_name (
 \copy last_name from 'data/last_names.csv';
 
 --
+-- Cities, Regions & Countries
+--
+DROP TABLE IF EXISTS city;
+CREATE TABLE city ( 
+	name TEXT,
+	country TEXT,
+	subcountry TEXT,
+	geonameid TEXT
+);
+
+\copy city FROM 'data/world-cities_csv.csv' WITH ( FORMAT CSV, HEADER true, DELIMITER ',');
+
+--
 -- Companies
 -- No cleaning required
 --
