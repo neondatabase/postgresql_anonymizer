@@ -36,12 +36,19 @@ docker_init:
 	docker-compose down
 	docker-compose up -d
 
-SQL_SCRIPTS= load test demo test_drop
+SQL_SCRIPTS= load test demo drop perf
 
 load: data/load.sql
-test: sql/tests/unit.sql
-demo: sql/tests/demo.sql
-test_drop: sql/tests/drop.sql
+test: tests/sql/unit.sql
+demo: tests/sql/demo.sql
+drop: tests/sql/drop.sql
+perf: tests/sql/perf.sql
+
+
+expected: tests/expected/unit.out
+
+tests/expected/unit.out: tests/sql/unit.sql
+	$(PSQL) -f $^ > $@		
 
 $(SQL_SCRIPTS):
 	$(PSQL) -f $^
