@@ -62,7 +62,6 @@ RETURNS TEXT AS $$
 $$                                                                                                                                                     
 LANGUAGE SQL;    
 
-<<<<<<< HEAD
 CREATE OR REPLACE FUNCTION random_city_in_country(country_name TEXT)
 RETURNS TEXT AS $$
 	SELECT name FROM @extschema@.city WHERE country=country_name ORDER BY random() LIMIT 1;
