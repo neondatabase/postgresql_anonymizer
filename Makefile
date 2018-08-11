@@ -16,7 +16,7 @@ $(DATA):
 	cat sql/functions.sql >> $@
 
 
-PG_DUMP=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
+PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
 SED1=sed 's/public.//' 
 SED2=sed 's/SELECT.*search_path.*//' 
 
@@ -26,23 +26,23 @@ sql/tables/%.sql:
 
 PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
 
+##
+## Docker
+##
+
 docker_image: Dockerfile
 	docker build -t registry.gitlab.com/daamien/postgresql_anonymizer .
 
 docker_push:
 	docker push registry.gitlab.com/daamien/postgresql_anonymizer
 
+COMPOSE=docker-compose
+
 docker_init:
-	docker-compose down
-	docker-compose up -d
+	$(COMPOSE) down
+	$(COMPOSE) up -d
+	@echo "The Postgres server may take a few seconds to start. Please wait."
 
-SQL_SCRIPTS= load test demo drop perf
-
-load: data/load.sql
-test: tests/sql/unit.sql
-demo: tests/sql/demo.sql
-drop: tests/sql/drop.sql
-perf: tests/sql/perf.sql
 
 
 expected: tests/expected/unit.out
@@ -50,9 +50,28 @@ expected: tests/expected/unit.out
 tests/expected/unit.out: tests/sql/unit.sql
 	$(PSQL) -f $^ > $@		
 
-$(SQL_SCRIPTS):
-	$(PSQL) -f $^
 
+##
+## Load data from CSV files into SQL tables
+##
+load: data/load.sql
+
+data/load.sql:
+	$(PSQL) -f $@
+
+##
+## Tests
+##
+test_unit: tests/sql/unit.sql
+test_demo: tests/sql/demo.sql
+test_drop: tests/sql/drop.sql
+
+tests/sql/%.sql:
+	$(PSQL)	-f $@	
+
+##
+## Mandatory PGXS stuff
+##
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)

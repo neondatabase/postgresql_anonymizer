@@ -62,6 +62,37 @@ RETURNS TEXT AS $$
 $$                                                                                                                                                     
 LANGUAGE SQL;    
 
+CREATE OR REPLACE FUNCTION random_city_in_country(country_name TEXT)
+RETURNS TEXT AS $$
+	SELECT name FROM @extschema@.city WHERE country=country_name ORDER BY random() LIMIT 1;
+$$
+LANGUAGE SQL; 
+
+CREATE OR REPLACE FUNCTION random_city()                                                                                   
+RETURNS TEXT AS $$                                                                                                                                     
+    SELECT name FROM @extschema@.city ORDER BY random() LIMIT 1;
+$$                                                                                                                                                     
+LANGUAGE SQL;                                                                                                                                          
+               
+CREATE OR REPLACE FUNCTION random_region_in_country(country_name TEXT) 
+RETURNS TEXT AS $$                                                                                                                                     
+    SELECT subcountry FROM @extschema@.city WHERE country=country_name ORDER BY random() LIMIT 1;
+$$                                                                                                                                                     
+LANGUAGE SQL;                                                                                                                                          
+                                                                                                                                                       
+CREATE OR REPLACE FUNCTION random_region()
+RETURNS TEXT AS $$                                                                                                                                     
+    SELECT subcountry FROM @extschema@.city ORDER BY random() LIMIT 1;
+$$                                                                                                                                                     
+LANGUAGE SQL;   
+
+CREATE OR REPLACE FUNCTION random_country()                                                                                                               
+RETURNS TEXT AS $$                                                                                                                                     
+    SELECT country FROM @extschema@.city ORDER BY random() LIMIT 1;
+$$                                                                                                                                                     
+LANGUAGE SQL;   
+
+
 CREATE OR REPLACE FUNCTION random_phone( phone_prefix TEXT DEFAULT '0' )
 RETURNS TEXT AS $$
 	SELECT phone_prefix || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT) AS "phone";
