@@ -62,6 +62,12 @@ RETURNS TEXT AS $$
 $$                                                                                                                                                     
 LANGUAGE SQL;    
 
+CREATE OR REPLACE FUNCTION random_email()
+RETURNS TEXT AS $$
+	SELECT address FROM @extschema@.email ORDER BY random() LIMIT 1;
+$$
+LANGUAGE SQL;
+
 CREATE OR REPLACE FUNCTION random_city_in_country(country_name TEXT)
 RETURNS TEXT AS $$
 	SELECT name FROM @extschema@.city WHERE country=country_name ORDER BY random() LIMIT 1;
