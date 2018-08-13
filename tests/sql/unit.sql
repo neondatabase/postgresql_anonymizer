@@ -32,6 +32,10 @@ SELECT pg_typeof(anon.random_first_name());
 -- Last Name                                                                                                                                          
 SELECT pg_typeof(anon.random_last_name());
 
+
+-- Email
+SELECT pg_typeof(anon.random_email());
+
 -- Phone
 SELECT pg_typeof(anon.random_phone('0033'));
 SELECT pg_typeof(anon.random_phone(NULL));
