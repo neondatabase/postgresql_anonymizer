@@ -61,4 +61,11 @@ CREATE OR REPLACE FUNCTION random_company()
 RETURNS TEXT AS $$                                                                                                                                     
     SELECT name FROM @extschema@.companies ORDER BY random() LIMIT 1;                                                                          
 $$                                                                                                                                                     
-LANGUAGE SQL; 
+LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION random_iban()                                                                                                            
+RETURNS TEXT AS $$                                                                                                                                     
+    SELECT name FROM @extschema@.iban ORDER BY random() LIMIT 1;                                                                                  
+$$                                                                                                                                                     
+LANGUAGE SQL;       
+ 
