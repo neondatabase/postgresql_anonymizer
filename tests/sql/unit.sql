@@ -22,6 +22,11 @@ SELECT pg_typeof(anon.random_first_name());
 SELECT pg_typeof(anon.random_company());
 
 --
+-- IBAN
+--
+SELECT pg_typeof(anon.random_iban());
+
+--
 -- Date
 --
 SELECT pg_typeof(anon.random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now()));
