@@ -1,10 +1,7 @@
 EXTENSION = anon       
 DATA = anon/anon--0.0.1.sql  
-#REGRESS = tests/unit     
 REGRESS=unit
 MODULEDIR=extension/anon
-#TESTS        = $(wildcard test/sql/*.sql)
-#REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
 REGRESS_OPTS = --inputdir=tests
 
 extension: $(DATA)
@@ -16,7 +13,7 @@ $(DATA):
 	cat sql/functions.sql >> $@
 
 
-PG_DUMP=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
+PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
 SED1=sed 's/public.//' 
 SED2=sed 's/SELECT.*search_path.*//' 
 
@@ -25,6 +22,11 @@ sql/tables/%.sql:
 
 
 PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
+PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib/pgxs/src/test/regress/pg_regress --outputdir=tests/ --inputdir=./ --bindir='/usr/lib/postgresql/10/bin'  --inputdir=tests --dbname=contrib_regression --user=postgres unit
+
+##
+## Docker
+##
 
 docker_image: Dockerfile
 	docker build -t registry.gitlab.com/daamien/postgresql_anonymizer .
@@ -32,20 +34,44 @@ docker_image: Dockerfile
 docker_push:
 	docker push registry.gitlab.com/daamien/postgresql_anonymizer
 
+COMPOSE=docker-compose
+
 docker_init:
-	docker-compose down
-	docker-compose up -d
+	$(COMPOSE) down
+	$(COMPOSE) up -d
+	@echo "The Postgres server may take a few seconds to start. Please wait."
 
-SQL_SCRIPTS= load test demo test_drop
 
+.PHONY: expected
+expected: tests/expected/unit.out
+
+tests/expected/unit.out:
+	$(PGRGRSS) 
+	cp tests/results/unit.out tests/expected/unit.out
+
+##
+## Load data from CSV files into SQL tables
+##
 load: data/load.sql
-test: sql/tests/unit.sql
-demo: sql/tests/demo.sql
-test_drop: sql/tests/drop.sql
 
-$(SQL_SCRIPTS):
-	$(PSQL) -f $^
+data/load.sql:
+	$(PSQL) -f $@
 
+##
+## Tests
+##
+test_unit: tests/sql/unit.sql
+test_demo: tests/sql/demo.sql
+test_drop: tests/sql/drop.sql
+
+tests/sql/%.sql:
+	$(PSQL)	-f $@	
+
+##
+## Mandatory PGXS stuff
+##
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
+
+.PHONY: expected

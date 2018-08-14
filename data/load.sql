@@ -35,7 +35,30 @@ CREATE TABLE last_name (
     name TEXT                                                                                                                                          
 );                                                                                                                                                     
                                                                                                                                                        
-\copy last_name from 'data/last_names.csv';
+\copy last_name from 'data/last_names.csv' WITH (FORMAT CSV, HEADER true);
+
+--
+-- Email
+--
+DROP TABLE IF EXISTS email;
+CREATE TABLE email (
+	address TEXT
+);
+
+\copy email FROM 'data/email.csv' WITH ( FORMAT CSV, HEADER true );
+
+--
+-- Cities, Regions & Countries
+--
+DROP TABLE IF EXISTS city;
+CREATE TABLE city ( 
+	name TEXT,
+	country TEXT,
+	subcountry TEXT,
+	geonameid TEXT
+);
+
+\copy city FROM 'data/world-cities_csv.csv' WITH ( FORMAT CSV, HEADER true, DELIMITER ',');
 
 --
 -- Companies

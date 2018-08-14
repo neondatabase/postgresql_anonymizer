@@ -4,6 +4,8 @@ PostgreSQL:
     - "54322:5432"
   environment:
     - POSTGRES_PASSWORD=CHANGEME
+    - PGUSER=postgres # required for `make installcheck`
+  working_dir: /tmp/source
   volumes:
     - $PWD:/tmp/source 
     - $PWD/anon:/usr/share/postgresql/10/extension/anon
