@@ -1,4 +1,5 @@
 results/*
+tests/results/*
 *.swp
 *.out
 *.diffs

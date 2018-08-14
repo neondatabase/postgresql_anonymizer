@@ -1,10 +1,7 @@
 EXTENSION = anon       
 DATA = anon/anon--0.0.1.sql  
-#REGRESS = tests/unit     
 REGRESS=unit
 MODULEDIR=extension/anon
-#TESTS        = $(wildcard test/sql/*.sql)
-#REGRESS      = $(patsubst test/sql/%.sql,%,$(TESTS))
 REGRESS_OPTS = --inputdir=tests
 
 extension: $(DATA)
@@ -25,6 +22,7 @@ sql/tables/%.sql:
 
 
 PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
+PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib/pgxs/src/test/regress/pg_regress --outputdir=tests/ --inputdir=./ --bindir='/usr/lib/postgresql/10/bin'  --inputdir=tests --dbname=contrib_regression --user=postgres unit
 
 ##
 ## Docker
@@ -44,12 +42,12 @@ docker_init:
 	@echo "The Postgres server may take a few seconds to start. Please wait."
 
 
-
+.PHONY: expected
 expected: tests/expected/unit.out
 
-tests/expected/unit.out: tests/sql/unit.sql
-	$(PSQL) -f $^ > $@		
-
+tests/expected/unit.out:
+	$(PGRGRSS) 
+	cp tests/results/unit.out tests/expected/unit.out
 
 ##
 ## Load data from CSV files into SQL tables
@@ -75,3 +73,5 @@ tests/sql/%.sql:
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
+
+.PHONY: expected

@@ -1,3 +1,4 @@
+
 CREATE EXTENSION IF NOT EXISTS anon;
 
 --                                                                                                                                                     
@@ -59,3 +60,7 @@ SELECT pg_typeof(anon.random_country());
 
 SELECT pg_typeof(anon.random_company());
 
+--
+-- End
+--
+DROP EXTENSION anon;
