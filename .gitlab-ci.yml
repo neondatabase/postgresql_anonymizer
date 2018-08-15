@@ -30,7 +30,11 @@ make9.4:
         - regression.*                                                                                                                                 
         - results/                                                                                                                                     
     expire_in: 1 day                                                                                                                                   
-  when: manual 
+#  when: manual 
+  only:
+    - tags
+    - triggers
+    - schedules
 
 make9.5: 
   stage: build                                                                                                                                         
