@@ -16,9 +16,10 @@ $(DATA):
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
 SED1=sed 's/public.//' 
 SED2=sed 's/SELECT.*search_path.*//' 
+SED3=sed 's/^SET idle_in_transaction_session_timeout.*//'
 
 sql/tables/%.sql:
-	$(PG_DUMP) --table $* | $(SED1) | $(SED2) > $@
+	$(PG_DUMP) --table $* | $(SED1) | $(SED2) | $(SED3) > $@
 
 
 PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
