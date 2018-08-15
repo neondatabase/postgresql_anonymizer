@@ -73,3 +73,12 @@ CREATE TABLE companies (
 
 \copy companies from 'data/companies.csv';
 
+
+DROP TABLE IF EXISTS iban;
+CREATE TABLE iban (
+	id TEXT
+);
+
+\copy iban FROM 'data/iban.csv' ( FORMAT CSV, HEADER false );
+
+
