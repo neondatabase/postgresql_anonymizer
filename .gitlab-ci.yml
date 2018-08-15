@@ -11,10 +11,58 @@ image: postgres:10
 
 before_script:
     - mkdir -p $PGDATA
-    - mkdir -p $EXTDIR                                                                                                                                 
-    - chown postgres $PGDATA                                                                                                                           
-    - gosu postgres initdb                                                                                                                             
+    - mkdir -p $EXTDIR  
+    - chown postgres $PGDATA
+    - gosu postgres initdb
     - gosu postgres pg_ctl start  
+
+make9.4:
+  stage: build                                                                                                                                         
+  image: postgres:9.4                                                                                                                                  
+  script:                                                                                                                                              
+    - apt-get update && apt-get install -y make postgresql-server-dev-9.4                                                                             
+    - make extension                                                                                                                                   
+    - make install                                                                                                                                     
+    - make installcheck                                                                                                                                
+  artifacts:                                                                                                                                           
+    paths:                                                                                                                                             
+        - anon*                                                                                                                                        
+        - regression.*                                                                                                                                 
+        - results/                                                                                                                                     
+    expire_in: 1 day                                                                                                                                   
+  when: manual 
+
+make9.5: 
+  stage: build                                                                                                                                         
+  image: postgres:9.5
+  script:                                                                                                                                              
+    - apt-get update && apt-get install -y make postgresql-server-dev-9.5                                                                              
+    - make extension                                                                                                                                   
+    - make install                                                                                                                                     
+    - make installcheck                                                                                                                                
+  artifacts:                                                                                                                                           
+    paths:                                                                                                                                             
+        - anon*                                                                                                                                        
+        - regression.*                                                                                                                                 
+        - results/                                                                                                                                     
+    expire_in: 1 day                                                                                                                                   
+  when: manual 
+
+make9.6:
+  stage: build                                                                                                                                         
+  image: postgres:9.6
+  script:                                                                                                                                              
+    - apt-get update && apt-get install -y make postgresql-server-dev-9.6                                                                               
+    - make extension                                                                                                                                   
+    - make install                                                                                                                                     
+    - make installcheck                                                                                                                                
+  artifacts:                                                                                                                                           
+    paths:                                                                                                                                             
+        - anon*                                                                                                                                        
+        - regression.*                                                                                                                                 
+        - results/                                                                                                                                     
+    expire_in: 1 day                                                                                                                                   
+  when: manual 
 
 make:
   stage: build    
@@ -29,4 +77,22 @@ make:
         - regression.*
         - results/
     expire_in: 1 day
-    
+
+make11:
+  stage: build                                                           
+  image: postgres:11                                                                              
+  script:                                                                                                                                              
+    - apt-get update && apt-get install -y make postgresql-server-dev-11                                                                              
+    - make extension                                                                                                                                   
+    - make install                                                                                                                                     
+    - make installcheck                                                                                                                                
+  artifacts:                                                                                                                                           
+    paths:                                                                                                                                             
+        - anon*                                                                                                                                        
+        - regression.*                                                                                                                                 
+        - results/                                                                                                                                     
+    expire_in: 1 day
+  when: manual   
+
+
+ 
