@@ -13,7 +13,7 @@ before_script:
     - mkdir -p $PGDATA
     - mkdir -p $EXTDIR  
     - chown postgres $PGDATA
-    - gosu postgres initdbi
+    - gosu postgres initdb
     - gosu postgres pg_ctl start  
 
 make9.4:
