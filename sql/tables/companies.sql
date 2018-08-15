@@ -12,7 +12,6 @@ SET standard_conforming_strings = on;
 
 SET check_function_bodies = false;
 SET client_min_messages = warning;
-SET row_security = off;
 
 SET default_tablespace = '';
 
