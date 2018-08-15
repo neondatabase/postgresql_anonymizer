@@ -29,4 +29,19 @@ make:
         - regression.*
         - results/
     expire_in: 1 day
-    
+
+make11:
+  stage: build                                                           
+  image: postgres:11                                                                              
+  script:                                                                                                                                              
+    - apt-get update && apt-get install -y postgresql-server-dev-all                                                                              
+    - make extension                                                                                                                                   
+    - make install                                                                                                                                     
+    - make installcheck                                                                                                                                
+  artifacts:                                                                                                                                           
+    paths:                                                                                                                                             
+        - anon*                                                                                                                                        
+        - regression.*                                                                                                                                 
+        - results/                                                                                                                                     
+    expire_in: 1 day
+  when: manual    
