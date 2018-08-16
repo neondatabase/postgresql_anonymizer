@@ -54,6 +54,8 @@ tests/expected/unit.out:
 ##
 ## Load data from CSV files into SQL tables
 ##
+
+.PHONY: load
 load: data/load.sql
 
 data/load.sql:
@@ -64,6 +66,7 @@ data/load.sql:
 ##
 test_unit: tests/sql/unit.sql
 test_demo: tests/sql/demo.sql
+test_create: tests/sql/create.sql
 test_drop: tests/sql/drop.sql
 
 tests/sql/%.sql:

@@ -57,13 +57,18 @@ SELECT pg_typeof(anon.random_country()) = 'TEXT'::REGTYPE;
 --
 -- Company
 --
-
 SELECT pg_typeof(anon.random_company()) = 'TEXT'::REGTYPE;
 
 --
 -- IBAN
 --
 SELECT pg_typeof(anon.random_iban()) = 'TEXT'::REGTYPE;
+
+--
+-- SIRET
+--
+SELECT pg_typeof(anon.random_siret()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.random_siren()) = 'TEXT'::REGTYPE;
 
 --
 -- End
