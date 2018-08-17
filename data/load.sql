@@ -87,4 +87,5 @@ CREATE TABLE siret (
 	nic TEXT
 );
 
-\copy siret FROM 'data/siret.csv' ( FORMAT CSV, HEADER true, DELIMITER ',') ;
+\copy siret FROM 'data/siret.csv' ( FORMAT CSV, HEADER true, DELIMITER ',' , ENCODING 'latin-9' ) ;
+
