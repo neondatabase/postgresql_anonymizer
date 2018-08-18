@@ -72,7 +72,7 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_last_name3()
 RETURNS TEXT AS $$                                                                                                                                     
-	SELECT name FROM @extschema@.last_name ORDER BY TABLESAMPLE SYSTEM(1) ORDER BY random() LIMIT 1;
+	SELECT name FROM @extschema@.last_name TABLESAMPLE SYSTEM(1) ORDER BY random() LIMIT 1;
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;   
 
