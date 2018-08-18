@@ -32,6 +32,13 @@ SET
 	full_name=anon.random_first_name() || ' ' || anon.random_last_name()
 ;
 
+\echo 'test4b UNLOGGED'
 
+CREATE UNLOGGED TABLE fake_customer AS 
+SELECT 
+	id,
+	full_name=anon.random_first_name() || ' ' || anon.random_last_name() 
+FROM customer
+;
 
 
