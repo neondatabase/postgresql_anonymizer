@@ -45,6 +45,7 @@ docker_init:
 
 
 .PHONY: expected
+
 expected: tests/expected/unit.out
 
 tests/expected/unit.out:
@@ -72,6 +73,14 @@ test_drop: tests/sql/drop.sql
 tests/sql/%.sql:
 	$(PSQL)	-f $@	
 
+
+##
+## CI
+##
+
+ci_local:
+	gitlab-ci-multi-runner exec docker make
+
 ##
 ## Mandatory PGXS stuff
 ##
@@ -79,4 +88,3 @@ PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
-.PHONY: expected

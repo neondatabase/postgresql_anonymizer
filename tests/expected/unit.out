@@ -160,6 +160,21 @@ SELECT pg_typeof(anon.random_iban()) = 'TEXT'::REGTYPE;
 (1 row)
 
 --
+-- SIRET
+--
+SELECT pg_typeof(anon.random_siret()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pg_typeof(anon.random_siren()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
+--
 -- End
 --
 DROP EXTENSION anon;
