@@ -121,4 +121,16 @@ RETURNS TEXT AS $$
     SELECT id FROM @extschema@.iban ORDER BY random() LIMIT 1;                                                                                  
 $$                                                                                                                                                     
 LANGUAGE SQL;       
+
+CREATE OR REPLACE FUNCTION random_siren() 
+RETURNS TEXT AS $$                                                                                                                                     
+    SELECT siren FROM @extschema@.siret ORDER BY random() LIMIT 1;
+$$                                                                                                                                                     
+LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION random_siret() 
+RETURNS TEXT AS $$
+	SELECT siren||nic FROM @extschema@.siret ORDER BY random() LIMIT 1; 	
+$$
+LANGUAGE SQL;
  

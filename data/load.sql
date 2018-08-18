@@ -81,4 +81,11 @@ CREATE TABLE iban (
 
 \copy iban FROM 'data/iban.csv' ( FORMAT CSV, HEADER false );
 
+DROP TABLE IF EXISTS siret;
+CREATE TABLE siret (
+	siren TEXT,
+	nic TEXT
+);
+
+\copy siret FROM 'data/siret.csv' ( FORMAT CSV, HEADER true, DELIMITER ',' , ENCODING 'latin-9' ) ;
 
