@@ -6,6 +6,7 @@ variables:
     PGDATA: /var/lib/postgresql/data
     PGUSER: postgres    
     EXTDIR: /usr/share/postgresql/10/extension/
+    PSQL: psql -v ON_ERROR_STOP=1
 
 image: postgres:10
 
@@ -52,7 +53,7 @@ make9.6:
   stage: build                                                                                                                                         
   image: postgres:9.6
   script:                                                                                                                                              
-    - apt-get update && apt-get install -y make postgresql-server-dev-9.6                                                                               
+    - apt-get update && apt-get install -y make postgresql-server-dev-9.6
     - make extension                                                                                                                                   
     - make install                                                                                                                                     
     - make installcheck                                                                                                                                
@@ -95,4 +96,22 @@ make11:
   when: manual   
 
 
- 
+perf:
+  stage: test
+  script:
+    - apt-get update && apt-get install -y make postgresql-server-dev-10
+    - make extension
+    - make install
+    - make --always-make tests/sql/perf.sql 
+  when: manual
+
+demo:
+  stage: test
+  script:
+    - apt-get update && apt-get install -y make postgresql-server-dev-10
+    - make extension
+    - make install
+    - make --always-make tests/sql/demo.sql
+  when: manual
+
+
