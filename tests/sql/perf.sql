@@ -29,7 +29,7 @@ SET
 
 UPDATE customer
 SET 
-	full_name=anon.random_first_name() || ' ' || anon.random_last_name(),
+	full_name=anon.random_first_name() || ' ' || anon.random_last_name()
 ;
 
 
