@@ -53,32 +53,19 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_first_name()
 RETURNS TEXT AS $$
-	SELECT first_name FROM @extschema@.first_names ORDER BY random() LIMIT 1; 
+	SELECT first_name FROM @extschema@.first_names TABLESAMPLE SYSTEM_ROWS(1); 
 $$
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_last_name()                                                                                                         
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT name FROM @extschema@.last_name ORDER BY random() LIMIT 1;                                                                          
+    SELECT name FROM @extschema@.last_name TABLESAMPLE SYSTEM_ROWS(1);                                                                          
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;    
 
-
-CREATE OR REPLACE FUNCTION random_last_name2()
-RETURNS TEXT AS $$
-	SELECT name FROM @extschema@.last_name OFFSET floor(random()*(SELECT count(*) FROM anon.last_name)) LIMIT 1;
-$$
-LANGUAGE SQL VOLATILE;   
-
-CREATE OR REPLACE FUNCTION random_last_name3()
-RETURNS TEXT AS $$                                                                                                                                     
-	SELECT name FROM @extschema@.last_name TABLESAMPLE SYSTEM(1) ORDER BY random() LIMIT 1;
-$$                                                                                                                                                     
-LANGUAGE SQL VOLATILE;   
-
 CREATE OR REPLACE FUNCTION random_email()
 RETURNS TEXT AS $$
-	SELECT address FROM @extschema@.email ORDER BY random() LIMIT 1;
+	SELECT address FROM @extschema@.email TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
@@ -90,7 +77,7 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_city()                                                                                   
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT name FROM @extschema@.city ORDER BY random() LIMIT 1;
+    SELECT name FROM @extschema@.city TABLESAMPLE SYSTEM_ROWS(1);
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;                                                                                                                                          
                
@@ -102,13 +89,13 @@ LANGUAGE SQL VOLATILE;
                                                                                                                                                        
 CREATE OR REPLACE FUNCTION random_region()
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT subcountry FROM @extschema@.city ORDER BY random() LIMIT 1;
+    SELECT subcountry FROM @extschema@.city TABLESAMPLE SYSTEM_ROWS(1);
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;   
 
 CREATE OR REPLACE FUNCTION random_country()                                                                                                               
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT country FROM @extschema@.city ORDER BY random() LIMIT 1;
+    SELECT country FROM @extschema@.city TABLESAMPLE SYSTEM_ROWS(1);
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;   
 
@@ -126,25 +113,25 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_company()                                                                                                         
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT name FROM @extschema@.companies ORDER BY random() LIMIT 1;                                                                          
+    SELECT name FROM @extschema@.companies TABLESAMPLE SYSTEM_ROWS(1);                                                                          
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_iban()                                                                                                            
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT id FROM @extschema@.iban ORDER BY random() LIMIT 1;                                                                                  
+    SELECT id FROM @extschema@.iban TABLESAMPLE SYSTEM_ROWS(1);                                                                                  
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;       
 
 CREATE OR REPLACE FUNCTION random_siren() 
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT siren FROM @extschema@.siret ORDER BY random() LIMIT 1;
+    SELECT siren FROM @extschema@.siret TABLESAMPLE SYSTEM_ROWS(1);
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_siret() 
 RETURNS TEXT AS $$
-	SELECT siren||nic FROM @extschema@.siret ORDER BY random() LIMIT 1; 	
+	SELECT siren||nic FROM @extschema@.siret TABLESAMPLE SYSTEM_ROWS(1); 	
 $$
 LANGUAGE SQL VOLATILE;
  
