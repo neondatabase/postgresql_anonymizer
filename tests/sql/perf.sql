@@ -29,19 +29,6 @@ SET
     full_name=anon.random_last_name()                                                                              
 ;      
 
-\echo 'test 2b : random_last_name avec floor()'
-UPDATE customer
-SET
-	full_name=anon.random_last_name2()
-;
-
-\echo 'test 2c : random_last_name avec TABLESAMPLE'
-UPDATE customer
-SET
-	full_name=anon.random_last_name3()	
-;
-
-
 \echo 'test 3 : random_first_name() + random_last_name() '
 UPDATE customer
 SET 
