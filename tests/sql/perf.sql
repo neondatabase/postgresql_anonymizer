@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 CREATE EXTENSION IF NOT EXISTS anon;
 
 -- running the test on pg_temp does not improve perf 
