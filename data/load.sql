@@ -66,12 +66,12 @@ CREATE TABLE city (
 --
 
 
-DROP TABLE IF EXISTS companies;
-CREATE TABLE companies (
+DROP TABLE IF EXISTS company;
+CREATE TABLE company (
 	name TEXT
 );
 
-\copy companies from 'data/companies.csv';
+\copy company from 'data/companies.csv';
 
 
 DROP TABLE IF EXISTS iban;
