@@ -45,8 +45,7 @@ docker_init:
 
 
 .PHONY: expected
-
-expected: tests/expected/unit.out
+expected : tests/expected/unit.out
 
 tests/expected/unit.out:
 	$(PGRGRSS) 
@@ -57,10 +56,8 @@ tests/expected/unit.out:
 ##
 
 .PHONY: load
-load: data/load.sql
-
-data/load.sql:
-	$(PSQL) -f $@
+load: 
+	$(PSQL) -f data/load.sql
 
 ##
 ## Tests
