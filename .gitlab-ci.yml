@@ -17,6 +17,7 @@ before_script:
     - gosu postgres initdb
     - gosu postgres pg_ctl start  
 
+# PostgreSQL 9.4 is not supported
 make9.4:
   stage: build                                                                                                                                         
   image: postgres:9.4                                                                                                                                  

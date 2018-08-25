@@ -6,6 +6,7 @@ Example
 ------------------------------------------------------------------------------
 
 ```sql
+=# CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 =# CREATE EXTENSION IF NOT EXISTS anon;
 
 =# SELECT * FROM customer;
