@@ -14,10 +14,6 @@ $(DATA):
 	cat sql/tables/*.sql >> $@
 	cat sql/functions.sql >> $@
 
-.PHONY: clean
-clean:
-	rm -fr `dirname $(DATA)`
-
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
 SED1=sed 's/public.//' 
 SED2=sed 's/SELECT.*search_path.*//' 
