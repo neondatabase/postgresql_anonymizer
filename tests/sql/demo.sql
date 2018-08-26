@@ -1,8 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 CREATE EXTENSION IF NOT EXISTS anon;
 
--- For some reason, `tsm_system_rows` and `pg_temp` do not work together
---SET search_path TO pg_temp; 
+--let's use `TEMPORARY` instead of `pg_temp` for clarity
+--SET search_path TO pg_temp, public; 
 
 CREATE TEMPORARY TABLE customer(
 	id SERIAL,
@@ -16,7 +16,7 @@ CREATE TEMPORARY TABLE customer(
 INSERT INTO customer
 VALUES 
 (911,'Chuck Norris','1940/03/10','Texas Rangers', '75001',12),
-(312,'David Hasselhoff','1952/07/17','Baywatch', '90001',23)
+(312,'David Hasselhoff','1952/07/17','Baywatch', '90001',423)
 ;
 
 SELECT * FROM customer;
