@@ -1,9 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 CREATE EXTENSION IF NOT EXISTS anon;
 
-SET search_path TO pg_temp; 
+-- For some reason, `tsm_system_rows` and `pg_temp` do not work together
+--SET search_path TO pg_temp; 
 
-CREATE TABLE customer(
+CREATE TEMPORARY TABLE customer(
 	id SERIAL,
 	full_name TEXT,
 	birth DATE,
