@@ -12,7 +12,7 @@
    "prereqs": {
       "runtime": {
          "requires": {
-            "PostgreSQL": "9.3.0"
+            "PostgreSQL": "9.5.0"
          },
          "recommends": {
             "PostgreSQL": "10.0"
@@ -44,6 +44,6 @@
       "url": "http://pgxn.org/meta/spec.txt"
    },
    "tags": [
-      "Data Anonymization"
+      "Data Anonymization, Masking"
    ]
 }
