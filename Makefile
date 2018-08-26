@@ -1,21 +1,22 @@
-EXTENSION = anon       
-DATA = anon/anon--0.0.1.sql  
+EXTENSION = anon
+VERSION=0.0.1
+DATA = anon/anon--0.0.1.sql
 REGRESS=unit
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 
 extension: $(DATA)
 
-$(DATA): 
+$(DATA):
 	mkdir -p `dirname $(DATA)`
-	cat sql/header.sql > $@ 
+	cat sql/header.sql > $@
 	cat sql/tables/*.sql >> $@
 	cat sql/functions.sql >> $@
 
 
-PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
-SED1=sed 's/public.//' 
-SED2=sed 's/SELECT.*search_path.*//' 
+PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner
+SED1=sed 's/public.//'
+SED2=sed 's/SELECT.*search_path.*//'
 SED3=sed 's/^SET idle_in_transaction_session_timeout.*//'
 SED4=sed 's/^SET row_security.*//'
 
@@ -48,7 +49,7 @@ docker_init:
 expected : tests/expected/unit.out
 
 tests/expected/unit.out:
-	$(PGRGRSS) 
+	$(PGRGRSS)
 	cp tests/results/unit.out tests/expected/unit.out
 
 ##
@@ -56,7 +57,7 @@ tests/expected/unit.out:
 ##
 
 .PHONY: load
-load: 
+load:
 	$(PSQL) -f data/load.sql
 
 ##
@@ -68,7 +69,7 @@ test_create: tests/sql/create.sql
 test_drop: tests/sql/drop.sql
 
 tests/sql/%.sql:
-	$(PSQL)	-f $@	
+	$(PSQL)	-f $@
 
 
 ##
@@ -77,6 +78,20 @@ tests/sql/%.sql:
 
 ci_local:
 	gitlab-ci-multi-runner exec docker make
+
+##
+## PGXN
+##
+
+ZIPBALL:=$(EXTENSION)-$(VERSION).zip
+
+.PHONY: pgxn
+
+$(ZIPBALL): pgxn
+
+pgxn:
+	mkdir -p _pgxn
+	git archive --format zip --prefix=$(EXTENSION)_$(VERSION)/ --output _pgxn/$(ZIPBALL) master
 
 ##
 ## Mandatory PGXS stuff
