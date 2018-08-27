@@ -5,18 +5,19 @@ REGRESS=unit
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 
+.PHONY: extension
 extension: $(DATA)
 
-$(DATA):
-	mkdir -p `dirname $(DATA)`
-	cat sql/header.sql > $@
+
+$(DATA): 
+	mkdir -p `dirname $@`
+	cat sql/header.sql > $@ 
 	cat sql/tables/*.sql >> $@
 	cat sql/functions.sql >> $@
 
-
-PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner
-SED1=sed 's/public.//'
-SED2=sed 's/SELECT.*search_path.*//'
+PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
+SED1=sed 's/public.//' 
+SED2=sed 's/SELECT.*search_path.*//' 
 SED3=sed 's/^SET idle_in_transaction_session_timeout.*//'
 SED4=sed 's/^SET row_security.*//'
 
@@ -76,6 +77,7 @@ tests/sql/%.sql:
 ## CI
 ##
 
+.PHONY: ci_local
 ci_local:
 	gitlab-ci-multi-runner exec docker make
 

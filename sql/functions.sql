@@ -53,7 +53,7 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_first_name()
 RETURNS TEXT AS $$
-	SELECT first_name FROM @extschema@.first_names TABLESAMPLE SYSTEM_ROWS(1); 
+	SELECT first_name FROM @extschema@.first_name TABLESAMPLE SYSTEM_ROWS(1); 
 $$
 LANGUAGE SQL VOLATILE;
 
@@ -113,7 +113,7 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION random_company()                                                                                                         
 RETURNS TEXT AS $$                                                                                                                                     
-    SELECT name FROM @extschema@.companies TABLESAMPLE SYSTEM_ROWS(1);                                                                          
+    SELECT name FROM @extschema@.company TABLESAMPLE SYSTEM_ROWS(1);                                                                          
 $$                                                                                                                                                     
 LANGUAGE SQL VOLATILE;
 

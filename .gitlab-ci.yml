@@ -100,7 +100,7 @@ make11:
 perf:
   stage: test
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10
+    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
     - make --always-make tests/sql/perf.sql 
@@ -109,7 +109,7 @@ perf:
 demo:
   stage: test
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10
+    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
     - make --always-make tests/sql/demo.sql

@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 CREATE EXTENSION IF NOT EXISTS anon;
 
 -- running the test on pg_temp does not improve perf 
---SET search_path TO pg_temp; 
+--SET search_path TO pg_temp, public; 
 
 CREATE TABLE customer(
 	id SERIAL,
