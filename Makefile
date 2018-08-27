@@ -1,6 +1,6 @@
 EXTENSION = anon
-VERSION=0.0.1
-DATA = anon/anon--0.0.1.sql
+VERSION=0.0.2
+DATA = anon/anon--0.0.2.sql
 REGRESS=unit
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
