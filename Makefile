@@ -1,6 +1,6 @@
 EXTENSION = anon
-VERSION=0.0.1
-DATA = anon/anon--0.0.1.sql
+VERSION=0.0.2
+DATA = anon/anon--0.0.2.sql
 REGRESS=unit
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
@@ -94,6 +94,15 @@ $(ZIPBALL): pgxn
 pgxn:
 	mkdir -p _pgxn
 	git archive --format zip --prefix=$(EXTENSION)_$(VERSION)/ --output _pgxn/$(ZIPBALL) master
+	# open the package
+	unzip $(ZIPBALL) $(EXTENSION)_$(VERSION)/
+	# copy artefact into the package
+	cp -pr anon ./$(EXTENSION)-$(VERSION)/
+	# rebuild the package
+	zip -r $(ZIPBALL) ./$(EXTENSION)-$(VERSION)/
+	# clean up
+	rm -fr ./$(EXTENSION)-$(VERSION)
+
 
 ##
 ## Mandatory PGXS stuff
