@@ -1,0 +1,49 @@
+{
+   "name": "PostgreSQL Anonymizer",
+   "abstract": "Data Anonymization for Postgres",
+   "description": "This extension is a suite of database functions that replace sensitive data with plausible values.",
+   "version": "0.0.1",
+   "maintainer": [
+      "Damien Clochard <daamien@gmail.com>"
+   ],
+   "license": {
+      "PostgreSQL": "https://gitlab.com/daamien/postgresql_anonymizer/blob/master/LICENSE.md"
+   },
+   "prereqs": {
+      "runtime": {
+         "requires": {
+            "PostgreSQL": "9.5.0"
+         },
+         "recommends": {
+            "PostgreSQL": "10.0"
+         }
+      }
+   },
+   "provides": {
+     "anon": {
+       "file": "anon.sql",
+       "docfile": "README.md",
+       "version": "0.0.1",
+       "abstract": "Data Anonymization for Postgres"
+     }
+   },
+   "resources": {
+      "homepage": "https://gitlab.com/daamien/postgresql_anonymizer",
+      "bugtracker": {
+         "web": "https://gitlab.com/daamien/postgresql_anonymizer/issues"
+      },
+      "repository": {
+        "url":  "https://gitlab.com/daamien/postgresql_anonymizer.git",
+        "web":  "https://gitlab.com/daamien/postgresql_anonymizer",
+        "type": "git"
+      }
+   },
+   "generated_by": "Damien Clochard",
+   "meta-spec": {
+      "version": "1.0.0",
+      "url": "http://pgxn.org/meta/spec.txt"
+   },
+   "tags": [
+      "Data Anonymization, Masking"
+   ]
+}
