@@ -1,4 +1,4 @@
-# PRO TIP : Test your modifications locally with:
+## PRO TIP : Test your modifications locally with:
 ## $ gitlab-ci-multi-runner exec docker {name_of_the_job}
 
 
@@ -132,3 +132,10 @@ pgxn:
     expire_in: 1 day
   only:
     - master
+
+test_pgxn:
+  stage: deploy
+  script:
+    - apt-get update && apt-get install pgxnclient
+    - pgxn install postgresql_anonymizer
+  when: manual
