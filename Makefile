@@ -1,5 +1,6 @@
-EXTENSION = anon       
-DATA = anon/anon--0.0.1.sql  
+EXTENSION = anon
+VERSION=0.0.1
+DATA = anon/anon--0.0.1.sql
 REGRESS=unit
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
@@ -49,7 +50,7 @@ docker_init:
 expected : tests/expected/unit.out
 
 tests/expected/unit.out:
-	$(PGRGRSS) 
+	$(PGRGRSS)
 	cp tests/results/unit.out tests/expected/unit.out
 
 ##
@@ -57,7 +58,7 @@ tests/expected/unit.out:
 ##
 
 .PHONY: load
-load: 
+load:
 	$(PSQL) -f data/load.sql
 
 ##
@@ -69,7 +70,7 @@ test_create: tests/sql/create.sql
 test_drop: tests/sql/drop.sql
 
 tests/sql/%.sql:
-	$(PSQL)	-f $@	
+	$(PSQL)	-f $@
 
 
 ##
@@ -79,6 +80,20 @@ tests/sql/%.sql:
 .PHONY: ci_local
 ci_local:
 	gitlab-ci-multi-runner exec docker make
+
+##
+## PGXN
+##
+
+ZIPBALL:=$(EXTENSION)-$(VERSION).zip
+
+.PHONY: pgxn
+
+$(ZIPBALL): pgxn
+
+pgxn:
+	mkdir -p _pgxn
+	git archive --format zip --prefix=$(EXTENSION)_$(VERSION)/ --output _pgxn/$(ZIPBALL) master
 
 ##
 ## Mandatory PGXS stuff
