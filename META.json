@@ -2,7 +2,7 @@
    "name": "PostgreSQL_Anonymizer",
    "abstract": "Data Anonymization for Postgres",
    "description": "This extension is a suite of database functions that replace sensitive data with plausible values.",
-   "version": "0.0.1",
+   "version": "0.0.2",
    "maintainer": [
       "Damien Clochard <daamien@gmail.com>"
    ],
