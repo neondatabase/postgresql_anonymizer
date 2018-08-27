@@ -127,7 +127,7 @@ pgxn:
     - git -C postgresql_anonymizer.git archive --format zip --prefix=anon_0.0.1/ --output=../_pgxn/anon-0.0.1.zip master 
   artifacts:
     paths:
-      - _pxgn 
+      - _pgxn/
     expire_in: 1 day
-  only: 
+  only:
     - master
