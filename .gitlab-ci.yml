@@ -129,4 +129,5 @@ pgxn:
     paths:
       - _pxgn 
     expire_in: 1 day
-  only: master
+  only: 
+    - master
