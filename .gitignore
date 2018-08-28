@@ -1,7 +1,15 @@
+# pgxn
 _pgxn
+# unit tests
 results/*
 tests/results/*
+# vim
 *.swp
 *.swo
+# tests
 *.out
 *.diffs
+# artefacts
+anon/*
+anon_*/
+anon*.zip

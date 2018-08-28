@@ -93,15 +93,17 @@ $(ZIPBALL): pgxn
 
 pgxn:
 	mkdir -p _pgxn
-	git archive --format zip --prefix=$(EXTENSION)_$(VERSION)/ --output _pgxn/$(ZIPBALL) master
+	# required by CI : https://gitlab.com/gitlab-com/support-forum/issues/1351
+	git clone --bare https://gitlab.com/daamien/postgresql_anonymizer.git
+	git -C postgresql_anonymizer.git archive --format zip --prefix=$(EXTENSION)_$(VERSION)/ --output ../$(ZIPBALL) master
 	# open the package
 	unzip $(ZIPBALL) $(EXTENSION)_$(VERSION)/
 	# copy artefact into the package
-	cp -pr anon ./$(EXTENSION)-$(VERSION)/
+	cp -pr anon ./$(EXTENSION)_$(VERSION)/
 	# rebuild the package
-	zip -r $(ZIPBALL) ./$(EXTENSION)-$(VERSION)/
+	zip -r $(ZIPBALL) ./$(EXTENSION)_$(VERSION)/
 	# clean up
-	rm -fr ./$(EXTENSION)-$(VERSION)
+	rm -fr ./$(EXTENSION)_$(VERSION) ./postgresql_anonymizer.git/
 
 
 ##

@@ -121,10 +121,8 @@ pgxn:
   before_script:
     - echo 'Disable before_script.'
   script:
-    - apk update && apk add git
-    - mkdir _pgxn
-    - git clone --bare https://gitlab.com/daamien/postgresql_anonymizer.git
-    - git -C postgresql_anonymizer.git archive --format zip --prefix=anon_0.0.1/ --output=../_pgxn/anon-0.0.1.zip master 
+    - apk update && apk add make git unzip
+    - make pgxn
   artifacts:
     paths:
       - anon*
