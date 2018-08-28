@@ -53,9 +53,11 @@ Install
 ### With [PGXN](https://pgxn.org/) :
 
 ```console
-pip install pgxnclient
+apt install pgxnclient (or pip install pgxn)
 pgxn install postgresql_anonymizer
 ```
+
+
 
 ### From source :
 
