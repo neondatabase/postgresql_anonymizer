@@ -84,7 +84,7 @@ ci_local:
 ## PGXN
 ##
 
-ZIPBALL:=$(EXTENSION)-$(VERSION).zip
+ZIPBALL:=$(EXTENSION)-$(EXTESION_VERSION).zip
 
 .PHONY: pgxn
 
@@ -94,15 +94,15 @@ pgxn:
 	mkdir -p _pgxn
 	# required by CI : https://gitlab.com/gitlab-com/support-forum/issues/1351
 	git clone --bare https://gitlab.com/daamien/postgresql_anonymizer.git
-	git -C postgresql_anonymizer.git archive --format zip --prefix=$(EXTENSION)_$(VERSION)/ --output ../$(ZIPBALL) master
+	git -C postgresql_anonymizer.git archive --format zip --prefix=$(EXTENSION)_$(EXTENSION_VERSION)/ --output ../$(ZIPBALL) master
 	# open the package
-	unzip $(ZIPBALL) $(EXTENSION)_$(VERSION)/
+	unzip $(ZIPBALL) $(EXTENSION)_$(EXTENSION_VERSION)/
 	# copy artefact into the package
-	cp -pr anon ./$(EXTENSION)_$(VERSION)/
+	cp -pr anon ./$(EXTENSION)_$(EXTENSION_VERSION)/
 	# rebuild the package
-	zip -r $(ZIPBALL) ./$(EXTENSION)_$(VERSION)/
+	zip -r $(ZIPBALL) ./$(EXTENSION)_$(EXTENSION_VERSION)/
 	# clean up
-	rm -fr ./$(EXTENSION)_$(VERSION) ./postgresql_anonymizer.git/
+	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION) ./postgresql_anonymizer.git/
 
 
 ##
