@@ -114,6 +114,15 @@ You now have access to the following functions :
 * anon.random_siren() : returns a valid SIREN
 
 
+Upgrade
+------------------------------------------------------------------------------
+
+Currently there's no way to upgrade easily from a version to another. 
+The operation `ALTER EXTENSION ... UPDATE ...` is not supported.
+
+You need to drop and recreate the extension after every upgrade.
+
+
 Performance
 ------------------------------------------------------------------------------
 

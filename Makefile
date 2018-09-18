@@ -8,10 +8,8 @@ REGRESS_OPTS = --inputdir=tests
 
 .PHONY: extension
 extension: 
-	mkdir -p `dirname $@`
-	#cat sql/header.sql > $@
-	#cat sql/tables/*.sql >> $@
-	cat sql/functions.sql > anon/anon--0.0.3.sql
+	mkdir -p anon 
+	cat anon.sql > anon/anon--$(VERSION).sql
 	cp data/default/* anon/
 
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
@@ -114,10 +112,3 @@ pgxn:
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
-
-#SHAREDIR=$(shell pg_config --sharedir)
-#EXTDIR=$(SHAREDIR)/extension/
-
-#install:
-#	install -c -m 644 ./anon.control $(EXTDIR)
-# 	install -d -m 644 anon $(EXTDIR)
