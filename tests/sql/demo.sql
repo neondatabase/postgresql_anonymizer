@@ -1,5 +1,4 @@
-CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
-CREATE EXTENSION IF NOT EXISTS anon;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 --let's use `TEMPORARY` instead of `pg_temp` for clarity
 --SET search_path TO pg_temp, public; 

@@ -14,8 +14,7 @@ Example
 ------------------------------------------------------------------------------
 
 ```sql
-=# CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
-=# CREATE EXTENSION IF NOT EXISTS anon;
+=# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 =# SELECT * FROM customer;
  id  |   full_name      |   birth    |    employer   | zipcode | fk_shop
@@ -73,8 +72,7 @@ How To Use
 Load the extension in your database like this:
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
-CREATE EXTENSION IF NOT EXISTS anon;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 ```
 
 You now have access to the following functions :
@@ -148,8 +146,10 @@ SELECT
 FROM customer;
 ```
 
-In certain use cases, [Materialized View](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html) can be usefull here.
+In certain use cases, [Materialized Views] can be usefull here.
 
+
+[Materialized Views](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html)
 
 
 Feedback
