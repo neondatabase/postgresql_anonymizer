@@ -1,5 +1,5 @@
 EXTENSION = anon
-VERSION=0.0.3
+EXTENSION_VERSION=0.0.3
 #DATA = anon/anon--0.0.3.sql
 DATA = anon/*
 REGRESS=unit
@@ -9,7 +9,7 @@ REGRESS_OPTS = --inputdir=tests
 .PHONY: extension
 extension: 
 	mkdir -p anon 
-	cat anon.sql > anon/anon--$(VERSION).sql
+	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/default/* anon/
 
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
