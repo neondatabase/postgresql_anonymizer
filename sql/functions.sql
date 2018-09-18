@@ -1,8 +1,74 @@
 
+-- complain if script is sourced in psql, rather than via CREATE EXTENSION
+--\echo Use "CREATE EXTENSION anon" to load this file. \quit
+
+-- the tms_system_rows extension should be available with all distributions of postgres
+--CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
+
 
 --
---
---
+-- Fake Data
+-- 
+
+-- Cities, Regions & Countries
+DROP TABLE IF EXISTS @extschema@.city;
+CREATE UNLOGGED TABLE @extschema@.city ( 
+	name TEXT,
+	country TEXT,
+	subcountry TEXT,
+	geonameid TEXT
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.city','');
+
+
+-- Companies
+DROP TABLE IF EXISTS @extschema@.company;
+CREATE UNLOGGED TABLE @extschema@.company (
+	name TEXT
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.company','');
+
+-- Email
+DROP TABLE IF EXISTS @extschema@.email;
+CREATE UNLOGGED TABLE @extschema@.email (
+	address TEXT
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.email','');
+
+-- First names
+DROP TABLE IF EXISTS @extschema@.first_name;
+CREATE UNLOGGED TABLE @extschema@.first_name (
+	first_name TEXT,
+	gender TEXT,
+	language TEXT,
+	frequency FLOAT
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
+
+-- IBAN
+DROP TABLE IF EXISTS iban;
+CREATE UNLOGGED TABLE iban (
+	id TEXT
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
+
+-- Last names
+DROP TABLE IF EXISTS @extschema@.last_name;
+CREATE UNLOGGED TABLE @extschema@.last_name ( 
+    name TEXT                            
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.last_name','');
+
+-- SIRET 
+DROP TABLE IF EXISTS @extschema@.siret;
+CREATE UNLOGGED TABLE @extschema@.siret (
+	siren TEXT,
+	nic TEXT
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
+
+-- ADD NEW TABLE HERE
+
 
 --
 -- LOAD / UNLOAD
@@ -37,9 +103,6 @@ RETURNS void AS $$
 	FROM conf;
 $$
 LANGUAGE SQL VOLATILE;
-
--- FIXME
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.city','');
 
 -- remove all fake data
 CREATE OR REPLACE FUNCTION unload()

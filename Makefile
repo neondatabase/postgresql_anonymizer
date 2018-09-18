@@ -11,8 +11,8 @@ extension: $(DATA)
 
 $(DATA): 
 	mkdir -p `dirname $@`
-	cat sql/header.sql > $@ 
-	cat sql/tables/*.sql >> $@
+	#cat sql/header.sql > $@ 
+	#cat sql/tables/*.sql >> $@
 	cat sql/functions.sql >> $@
 
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
