@@ -8,4 +8,4 @@ PostgreSQL:
   working_dir: /tmp/source
   volumes:
     - $PWD:/tmp/source 
-    - $PWD/anon:/usr/share/postgresql/10/extension/anon
+    #- $PWD/anon:/usr/share/postgresql/10/extension/anon

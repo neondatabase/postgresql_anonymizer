@@ -1,19 +1,16 @@
 EXTENSION = anon
-VERSION=0.0.3
-DATA = anon/anon--0.0.3.sql
+EXTENSION_VERSION=0.0.3
+#DATA = anon/anon--0.0.3.sql
+DATA = anon/*
 REGRESS=unit
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 
 .PHONY: extension
-extension: $(DATA)
-
-
-$(DATA): 
-	mkdir -p `dirname $@`
-	cat sql/header.sql > $@ 
-	cat sql/tables/*.sql >> $@
-	cat sql/functions.sql >> $@
+extension: 
+	mkdir -p anon 
+	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
+	cp data/default/* anon/
 
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
 SED1=sed 's/public.//' 
@@ -37,6 +34,9 @@ docker_image: Dockerfile
 
 docker_push:
 	docker push registry.gitlab.com/daamien/postgresql_anonymizer
+
+docker_bash:
+	docker exec -it postgresqlanonymizer_PostgreSQL_1 bash
 
 COMPOSE=docker-compose
 
@@ -112,4 +112,3 @@ pgxn:
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
-

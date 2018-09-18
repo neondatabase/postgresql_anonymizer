@@ -14,8 +14,7 @@ Example
 ------------------------------------------------------------------------------
 
 ```sql
-=# CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
-=# CREATE EXTENSION IF NOT EXISTS anon;
+=# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 =# SELECT * FROM customer;
  id  |   full_name      |   birth    |    employer   | zipcode | fk_shop
@@ -42,7 +41,8 @@ Example
 Requirements
 ------------------------------------------------------------------------------
 
-This extension will work with PostgreSQL 9.5 and later versions. 
+This extension is officially supported on PostgreSQL 9.6 and later versions. 
+It should also work on PostgreSQL 9.5 with a bit of hacking.
 
 It requires an extension named `tsm_system_rows`, which is delivered by the 
 `postgresql-contrib` package of the main linux distributions.
@@ -73,8 +73,16 @@ How To Use
 Load the extension in your database like this:
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
-CREATE EXTENSION IF NOT EXISTS anon;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+SELECT anon.load();
+```
+
+The `load()` function will charge a default dataset of random data ( lists 
+names, cities, etc. ). If you want to user your own dataset, you can load 
+custom CSV files like this :
+
+```sql
+SELECT anon.load('/path/to/custom_cvs_files/');
 ```
 
 You now have access to the following functions :
@@ -105,7 +113,15 @@ You now have access to the following functions :
 * anon.random_iban() : returns a valid IBAN
 * anon.random_siret() : returns a valid SIRET
 * anon.random_siren() : returns a valid SIREN
-         
+
+
+Upgrade
+------------------------------------------------------------------------------
+
+Currently there's no way to upgrade easily from a version to another. 
+The operation `ALTER EXTENSION ... UPDATE ...` is not supported.
+
+You need to drop and recreate the extension after every upgrade.
 
 
 Performance
@@ -148,8 +164,10 @@ SELECT
 FROM customer;
 ```
 
-In certain use cases, [Materialized View](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html) can be usefull here.
+In certain use cases, [Materialized Views] can be usefull here.
 
+
+[Materialized Views](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html)
 
 
 Feedback
