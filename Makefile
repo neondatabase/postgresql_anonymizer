@@ -1,6 +1,5 @@
 EXTENSION = anon
-EXTENSION_VERSION=0.0.3
-#DATA = anon/anon--0.0.3.sql
+EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 DATA = anon/*
 REGRESS=unit
 MODULEDIR=extension/anon
