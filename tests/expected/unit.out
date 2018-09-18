@@ -1,8 +1,14 @@
-CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
-CREATE EXTENSION IF NOT EXISTS anon;
---                                                                                                                                                     
--- Generic Types                                                                                                                                       
---     
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "tsm_system_rows"
+SELECT anon.load();
+ load 
+------
+ 
+(1 row)
+
+--
+-- Generic Types
+--
 -- zip
 SELECT pg_typeof(anon.random_zip()) = 'TEXT'::REGTYPE;
  ?column? 
@@ -18,20 +24,20 @@ SELECT pg_typeof(anon.random_string(1)) = 'TEXT'::REGTYPE;
 (1 row)
 
 --SELECT anon_string(123456789);
--- Date                                                                                                                                                
-SELECT pg_typeof(anon.random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now())) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;                                                              
+-- Date
+SELECT pg_typeof(anon.random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now())) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT pg_typeof(anon.random_date_between('01/01/0001'::DATE,'01/01/4001'::DATE)) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;                                                                     
+SELECT pg_typeof(anon.random_date_between('01/01/0001'::DATE,'01/01/4001'::DATE)) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT pg_typeof(anon.random_date()) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;  
+SELECT pg_typeof(anon.random_date()) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
  ?column? 
 ----------
  t
@@ -54,7 +60,7 @@ SELECT pg_typeof(anon.random_first_name()) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
--- Last Name                                                                                                                                          
+-- Last Name
 SELECT pg_typeof(anon.random_last_name()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
@@ -100,13 +106,13 @@ SELECT anon.random_city_in_country('dfndjndjnjdnvjdnjvndjnvjdnvjdnjnvdnvjdnvj') 
  t
 (1 row)
 
-SELECT anon.random_city_in_country(NULL) IS NULL;                                                                                   
+SELECT anon.random_city_in_country(NULL) IS NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT pg_typeof(anon.random_city()) = 'TEXT'::REGTYPE;                                                                                                               
+SELECT pg_typeof(anon.random_city()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
@@ -130,13 +136,13 @@ SELECT anon.random_region_in_country(NULL) IS NULL;
  t
 (1 row)
 
-SELECT pg_typeof(anon.random_region()) = 'TEXT'::REGTYPE;                                                                                 
+SELECT pg_typeof(anon.random_region()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT pg_typeof(anon.random_country()) = 'TEXT'::REGTYPE; 
+SELECT pg_typeof(anon.random_country()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
@@ -178,4 +184,10 @@ SELECT pg_typeof(anon.random_siren()) = 'TEXT'::REGTYPE;
 --
 -- End
 --
+SELECT anon.unload();
+ unload 
+--------
+ 
+(1 row)
+
 DROP EXTENSION anon;

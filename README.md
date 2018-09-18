@@ -73,6 +73,15 @@ Load the extension in your database like this:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+SELECT anon.load();
+```
+
+The `load()` function will charge a default dataset of random data ( lists 
+names, cities, etc. ). If you want to user your own dataset, you can load 
+custom CSV files like this :
+
+```sql
+SELECT anon.load('/path/to/custom_cvs_files/');
 ```
 
 You now have access to the following functions :
@@ -103,7 +112,6 @@ You now have access to the following functions :
 * anon.random_iban() : returns a valid IBAN
 * anon.random_siret() : returns a valid SIRET
 * anon.random_siren() : returns a valid SIREN
-         
 
 
 Performance

@@ -1,5 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
+SELECT anon.load();
+
 --
 -- Generic Types
 --
@@ -72,4 +74,7 @@ SELECT pg_typeof(anon.random_siren()) = 'TEXT'::REGTYPE;
 --
 -- End
 --
+
+SELECT anon.unload();
+
 DROP EXTENSION anon;

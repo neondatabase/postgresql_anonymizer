@@ -39,9 +39,9 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.email','');
 DROP TABLE IF EXISTS @extschema@.first_name;
 CREATE UNLOGGED TABLE @extschema@.first_name (
 	first_name TEXT,
-	gender TEXT,
-	language TEXT,
-	frequency FLOAT
+	male BOOLEAN,
+	female BOOLEAN,
+	language TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
 
