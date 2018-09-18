@@ -55,7 +55,7 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
 -- Last names
 DROP TABLE IF EXISTS @extschema@.last_name;
 CREATE UNLOGGED TABLE @extschema@.last_name ( 
-    name TEXT                            
+    name TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.last_name','');
 
@@ -99,7 +99,7 @@ RETURNS void AS $$
 		FROM pg_config
 		WHERE name = 'SHAREDIR'
 	)
-	SELECT @extschema@.load(conf.sharedir || '/extension/anon/data/default/')
+	SELECT @extschema@.load(conf.sharedir || '/extension/anon/')
 	FROM conf;
 $$
 LANGUAGE SQL VOLATILE;
