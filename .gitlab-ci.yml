@@ -33,6 +33,7 @@ make9.4:
         - results/
     expire_in: 1 day
   when: manual
+  allow_failure: yes
 
 make9.5:
   stage: build
@@ -49,6 +50,7 @@ make9.5:
         - results/
     expire_in: 1 day
   when: manual
+  allow_failure: yes
 
 make9.6:
   stage: build

@@ -41,7 +41,8 @@ Example
 Requirements
 ------------------------------------------------------------------------------
 
-This extension will work with PostgreSQL 9.5 and later versions. 
+This extension is officially supported on PostgreSQL 9.6 and later versions. 
+It should also work on PostgreSQL 9.5 with a bit of hacking.
 
 It requires an extension named `tsm_system_rows`, which is delivered by the 
 `postgresql-contrib` package of the main linux distributions.
