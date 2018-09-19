@@ -16,6 +16,8 @@ Example
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
+=# SELECT anon.load();
+
 =# SELECT * FROM customer;
  id  |   full_name      |   birth    |    employer   | zipcode | fk_shop
 -----+------------------+------------+---------------+---------+---------
@@ -78,14 +80,14 @@ SELECT anon.load();
 ```
 
 The `load()` function will charge a default dataset of random data ( lists 
-names, cities, etc. ). If you want to user your own dataset, you can load 
+names, cities, etc. ). If you want to use your own dataset, you can load 
 custom CSV files like this :
 
 ```sql
 SELECT anon.load('/path/to/custom_cvs_files/');
 ```
 
-You now have access to the following functions :
+**You now have access to the following functions :**
 
 ### Generic data 
 
@@ -110,9 +112,9 @@ You now have access to the following functions :
 ### Company data
 
 * anon.random_company() returns a generic company name
-* anon.random_iban() : returns a valid IBAN
-* anon.random_siret() : returns a valid SIRET
-* anon.random_siren() : returns a valid SIREN
+* anon.random_iban() returns a valid IBAN
+* anon.random_siret() returns a valid SIRET
+* anon.random_siren() returns a valid SIREN
 
 
 Upgrade

@@ -1,5 +1,6 @@
-CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
-CREATE EXTENSION IF NOT EXISTS anon;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+
+SELECT anon.load();
 
 -- running the test on pg_temp does not improve perf 
 --SET search_path TO pg_temp, public; 
