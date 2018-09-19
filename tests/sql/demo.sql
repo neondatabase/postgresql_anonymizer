@@ -1,5 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
+SELECT anon.load();
+
 --let's use `TEMPORARY` instead of `pg_temp` for clarity
 --SET search_path TO pg_temp, public; 
 
