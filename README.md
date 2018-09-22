@@ -1,13 +1,61 @@
-Data Anonymizer Extension for PostgreSQL
+Anonymizng and Masking Data for PostgreSQL
 ===============================================================================
 
-`postgresql_anonymizer` is a set of SQL functions that remove personally
-identifiable values from a PostgreSQL table and replace them with
-**random-but-plausible** values. The goal is to avoid any identification
-from the data record while remaining suitable for testing, data analysis and
-data processing.
+`postgresql_anonymizer` is a set of SQL functions that hide or replace 
+[personally indentifiable information] (PII) or commercially sensitive data 
+from a PostgreSQL table. 
 
-*This is projet is at an early stage of development and should used carefully.*
+Two main strategies are used:
+
+* **Dynamic Masking** offers an altered view of the real data without 
+  modifying it. Some users may only read the masked data, others may access
+  the authentic version.
+ 
+* **Permanent Destruction** is the definitive action of substituting the 
+  sensitive information with uncorrelated data. Once processed, the authentic 
+  data cannot be retrieved.
+
+The data can be altered with several techniques: 
+
+1. **Deletion** or **Nullification** simply removes data. 
+
+2. **Static Subtitution** consistently replaces the data with a generic 
+   values. For instance: replacing all values of TEXT column with the value 
+   "CONFIDENTIAL".
+
+3. **Variance** is the action of "shifting" dates and numeric values. For 
+   example, by applying a +/- 10% variance to a salary column, the dataset will
+   remain meaningful.
+
+4. **Encryption** uses an encryption algorithm and requires a private key. If 
+   the key is stolen, authentic data can be revealed.
+
+5. **Shuffling** mixes values within the same columns. This method is open to 
+   being reversed if the shuffling algorithm can be deciphered. 
+
+6. **Randomization** replace sensitive data with **random-but-plausible** 
+   values. The goal is to avoid any identification from the data record while 
+   remaining suitable for testing, data analysis and data processing.
+
+7. **Partial scrambling** is similar to static substitution but leaves out some 
+   part of the data. For instance : a credit card number can be replaced by 
+   '4024 XXXX XXXX XX96'
+
+8. **Custom rules** are designed to alter data following specific needs. For
+   instance, randomizing simultanously a zipcode and a city name while keeping
+   them coherent. 
+
+For now, this extension is especially focusing on  **randomizarion** and 
+**Partial Scrambling** and **Custom Rules** but it should be easy to implement 
+other methods as well.
+
+
+[personally indentifiable information](https://en.wikipedia.org/wiki/Personally_identifiable_information)
+
+Warning 
+------------------------------------------------------------------------------
+
+*This is projet is at an early stage of development and should used carefully.* I
 
 
 Example
@@ -43,7 +91,7 @@ Example
 Requirements
 ------------------------------------------------------------------------------
 
-This extension is officially supported on PostgreSQL 9.6 and later versions. 
+This extension is officially supported on PostgreSQL 9.6 and later. 
 It should also work on PostgreSQL 9.5 with a bit of hacking.
 
 It requires an extension named `tsm_system_rows`, which is delivered by the 
