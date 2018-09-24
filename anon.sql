@@ -95,6 +95,7 @@ LANGUAGE PLPGSQL VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.load()
 RETURNS void AS $$
 	WITH conf AS (
+		-- find the local extension directory
 		SELECT setting AS sharedir
 		FROM pg_config
 		WHERE name = 'SHAREDIR'
@@ -279,7 +280,7 @@ AND pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +
 -- True if the role is masked, else False
 CREATE OR REPLACE VIEW @extschema@.pg_masked_roles AS
 SELECT r.*,
-	COALESCE(shobj_description(r.oid,'pg_authid') SIMILAR TO '% *MASK %',false) AS hasmask
+	COALESCE(shobj_description(r.oid,'pg_authid') SIMILAR TO '% *MASKED %',false) AS hasmask
 FROM pg_roles r
 ;
 
@@ -324,7 +325,7 @@ SELECT
 	c.column_name,
 	m.func
 FROM information_schema.columns c
-LEFT JOIN anon.mask m ON m.attname = c.column_name
+LEFT JOIN @extschema@.pg_masks m ON m.attname = c.column_name
 WHERE table_name=sourcetable
 and table_schema=quote_ident(sourceschema)
 -- FIXME : FILTER schema_name on anon.pg_mask too
@@ -340,7 +341,16 @@ $$
 DECLARE
 	t RECORD;
 BEGIN
-	FOR  t IN SELECT * FROM pg_tables WHERE schemaname = 'public'
+	-- Be sure that the target schema is here
+	IF NOT EXISTS ( 
+			SELECT  FROM information_schema.schemata 
+			WHERE schema_name = quote_literal(maskschema)
+		)
+    THEN
+		EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I',maskschema);
+	END IF;
+	-- Walk through all tables in the source schema
+	FOR  t IN SELECT * FROM pg_tables WHERE schemaname = quote_ident(sourceschema)
 	LOOP
 		EXECUTE format('SELECT @extschema@.mask_create_view(%L,%L);',t.tablename,maskschema);
 	END LOOP;
@@ -419,7 +429,7 @@ LANGUAGE SQL;
 CREATE OR REPLACE FUNCTION @extschema@.mask_disable()
 RETURNS SETOF VOID AS
 $$
-DROP EVENT TRIGGER @extschema@_mask_update;
+DROP EVENT TRIGGER IF EXISTS @extschema@_mask_update;
 $$
 LANGUAGE SQL;
 
@@ -453,5 +463,5 @@ SELECT
   s.suggested_mask,
   pg_catalog.col_description(a.attrelid, a.attnum)
 FROM pg_catalog.pg_attribute a
-JOIN anon.suggest s ON  lower(a.attname) = s.attname
+JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
 ;
