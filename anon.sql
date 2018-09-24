@@ -257,7 +257,8 @@ LANGUAGE SQL VOLATILE;
 -- Masking
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE VIEW @extschema@.mask AS
+-- List of all the masked columns
+CREATE OR REPLACE VIEW @extschema@.pg_masks AS
 SELECT
   a.attrelid,
   a.attname,
@@ -274,22 +275,154 @@ AND NOT a.attisdropped
 AND pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +#( *FUNCTION *= *#"%#(%#)#" *#)%' ESCAPE '#'
 ;
 
-CREATE OR REPLACE FUNCTION @extschema@.anonymize_all_the_things()
+-- Add a `hasmask` column to the pg_roles catalog
+-- True if the role is masked, else False
+CREATE OR REPLACE VIEW @extschema@.pg_masked_roles AS
+SELECT r.*,
+	COALESCE(shobj_description(r.oid,'pg_authid') SIMILAR TO '% *MASK %',false) AS hasmask
+FROM pg_roles r
+;
+
+-- Walk through all masked columns and permanently apply the mask
+-- This is not makeing function, but it relies on the masking infra
+CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS setof void
 AS $$
 DECLARE
     col RECORD;
 BEGIN
-  RAISE NOTICE 'ANONYMIZE ALL THE THINGS \o/';
+  RAISE DEBUG 'ANONYMIZE ALL THE THINGS \o/';
   FOR col IN
-	SELECT * FROM @extschema@.mask
+	SELECT * FROM @extschema@.pg_masks
   LOOP
-    RAISE NOTICE 'Anon %.% with anon.%', col.relname,col.attname, col.func;
-    EXECUTE format('UPDATE "%s" SET "%s" = anon.%s', col.relname,col.attname, col.func);
+    RAISE DEBUG 'Anon %.% with %', col.relname,col.attname, col.func;
+    EXECUTE format('UPDATE "%s" SET "%s" = %s', col.relname,col.attname, col.func);
   END LOOP;
 END;
 $$
 LANGUAGE plpgsql;
+
+-- True if the role is masked
+CREATE OR REPLACE FUNCTION @extschema@.hasmask(role TEXT)
+RETURNS BOOLEAN AS
+$$
+-- FIXME : CHECK quote_ident
+SELECT hasmask
+FROM @extschema@.pg_masked_roles
+WHERE rolname = quote_ident(role);
+$$
+LANGUAGE SQL;
+
+-- Extend the columns catalof with a 'func' field
+CREATE OR REPLACE FUNCTION @extschema@.mask_columns(sourcetable TEXT,sourceschema TEXT DEFAULT 'public')
+RETURNS TABLE (
+	attname TEXT,
+	func TEXT
+) AS
+$$
+SELECT
+	c.column_name,
+	m.func
+FROM information_schema.columns c
+LEFT JOIN anon.mask m ON m.attname = c.column_name
+WHERE table_name=sourcetable
+and table_schema=quote_ident(sourceschema)
+-- FIXME : FILTER schema_name on anon.pg_mask too
+;
+$$
+LANGUAGE SQL;
+
+-- build a masked view for each table
+-- /!\ Disable the Event Trigger before calling this :-)
+CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema TEXT DEFAULT 'public', maskschema TEXT DEFAULT 'mask')
+RETURNS SETOF VOID AS
+$$
+DECLARE
+	t RECORD;
+BEGIN
+	FOR  t IN SELECT * FROM pg_tables WHERE schemaname = 'public'
+	LOOP
+		EXECUTE format('SELECT @extschema@.mask_create_view(%L,%L);',t.tablename,maskschema);
+	END LOOP;
+END
+$$
+LANGUAGE plpgsql;
+
+-- Build a masked view for a table
+CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(sourcetable TEXT, sourceschema TEXT DEFAULT 'public', maskschema TEXT DEFAULT 'mask')
+RETURNS SETOF VOID AS
+$$
+DECLARE
+	m RECORD;
+	expression TEXT;
+	comma TEXT;
+BEGIN
+	expression := '';
+	comma := '';
+	FOR m IN SELECT * FROM @extschema@.mask_columns(sourcetable)
+	LOOP
+		expression := expression || comma;
+		IF m.func IS NULL THEN
+			-- No mask found
+			expression := expression || quote_ident(m.attname);
+		ELSE
+			-- Call mask instead of column
+			expression := expression || m.func || ' AS ' || quote_ident(m.attname);
+		END IF;
+		comma := ',';
+    END LOOP;
+	EXECUTE format('CREATE OR REPLACE VIEW %I.%I AS SELECT %s FROM %I', maskschema, sourcetable, expression, sourcetable);
+END
+$$
+LANGUAGE plpgsql;
+
+-- Activate the masking engine
+CREATE OR REPLACE FUNCTION @extschema@.mask_init()
+RETURNS SETOF VOID AS
+$$
+-- For now, init = update
+BEGIN
+	PERFORM @extschema@.mask_disable();
+	PERFORM @extschema@.mask_create();
+	PERFORM @extschema@.mask_enable();
+END
+$$
+LANGUAGE plpgsql;
+
+-- FIXME
+-- CREATE OR REPLACE FUNCTION mask_destroy()
+
+-- This is run after all DDL query
+CREATE OR REPLACE FUNCTION mask_update()
+RETURNS EVENT_TRIGGER AS
+$$
+-- SQL Functions cannot return EVENT_TRIGGER, we're forced to write a plpgsql function
+-- For now, create = update
+BEGIN
+	PERFORM @extschema@.mask_disable();
+	PERFORM @extschema@.mask_create();
+	PERFORM @extschema@.mask_enable();
+END
+$$
+LANGUAGE plpgsql;
+
+-- load the event trigger
+CREATE OR REPLACE FUNCTION @extschema@.mask_enable()
+RETURNS SETOF VOID AS
+$$
+CREATE EVENT TRIGGER @extschema@_mask_update ON ddl_command_end
+EXECUTE PROCEDURE @extschema@.mask_update();
+$$
+LANGUAGE SQL;
+
+-- unload the event trigger
+CREATE OR REPLACE FUNCTION @extschema@.mask_disable()
+RETURNS SETOF VOID AS
+$$
+DROP EVENT TRIGGER @extschema@_mask_update;
+$$
+LANGUAGE SQL;
+
 
 -------------------------------------------------------------------------------
 -- Scanning
