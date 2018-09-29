@@ -1,0 +1,33 @@
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "tsm_system_rows"
+SELECT anon.isloaded() IS FALSE; 
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.load();
+ load 
+------
+ t
+(1 row)
+
+SELECT anon.isloaded() IS TRUE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.unload();
+ unload 
+--------
+ t
+(1 row)
+
+SELECT anon.isloaded() IS FALSE;
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP EXTENSION anon CASCADE;

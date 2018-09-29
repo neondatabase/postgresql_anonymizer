@@ -10,10 +10,10 @@ COMMENT ON COLUMN people.name IS 'MASKED WITH anon.random_last_name()';
 COMMENT ON COLUMN people.creditcard IS 'MASKED WITH $$XXXX-XXXX-XXXX-XXXX$$ ';
 
 -- STEP 3 : Declare a masked user
+DROP OWNED BY skynet;
 DROP ROLE IF EXISTS skynet;
-CREATE ROLE skynet;
+CREATE ROLE skynet LOGIN;
 COMMENT ON ROLE skynet IS 'MASKED';
 
 -- STEP 4 : Enjoy !
-SET ROLE skynet;
-SELECT * FROM people;
+\! psql test -U skynet -c 'SELECT * FROM people;'

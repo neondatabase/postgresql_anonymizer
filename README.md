@@ -74,9 +74,13 @@ COMMENT COLUMN people.creditcard IS 'MASKED WITH $$XXXX-XXXX-XXXX-XXXX$$ ';
 CREATE ROLE skynet;
 COMMENT ON ROLE skynet IS 'MASKED';
 
--- STEP 4 : Enjoy !
+-- That's it !
 SET ROLE skynet;
 SELECT * FROM people;
+
+  id  |    name     |     creditcard
+------+-------------+---------------------
+ T800 | Robasciotti | XXXX-XXXX-XXXX-XXXX
 
 ```
 
@@ -269,4 +273,6 @@ Links
 
 * Citus : Using search_path and views to hide columns for reporting with Postgres
   <https://www.citusdata.com/blog/2018/07/03/masking-columns-in-postgresql/>
-  
+ 
+* MariaDB : Masking with maxscale
+  <https://mariadb.com/kb/en/mariadb-enterprise/mariadb-maxscale-21-masking/> 
