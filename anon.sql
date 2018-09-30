@@ -5,6 +5,27 @@
 -- the tms_system_rows extension should be available with all distributions of postgres
 --CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 
+-------------------------------------------------------------------------------
+-- Config
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS @extschema@.config;
+CREATE UNLOGGED TABLE @extschema@.config (
+    param TEXT UNIQUE NOT NULL,
+    value TEXT
+);
+
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.config','');
+
+COMMENT ON TABLE @extschema@.config IS 'Anonymization and Masking settings';
+
+INSERT INTO @extschema@.config 
+VALUES 
+    ('sourceschema','public'),
+    ('maskschema', 'mask')
+;
+
+
 
 -------------------------------------------------------------------------------
 -- Fake Data
@@ -20,6 +41,7 @@ CREATE UNLOGGED TABLE @extschema@.city (
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.city','');
 
+COMMENT ON TABLE @extschema@.city IS 'Cities, Regions & Countries';
 
 -- Companies
 DROP TABLE IF EXISTS @extschema@.company;
@@ -198,12 +220,7 @@ LANGUAGE SQL VOLATILE;
 -- Random Personal data : First Name, Last Name, etc.
 -------------------------------------------------------------------------------
 
--- For Random functions : the original value ("ov" parameter) is will be 
--- automatically provided by the masking views. For obvious reasons, the original
--- value is useless when you what to replace it by a random value.
--- In other words: the "ov" parameter is required but ignored in the random functions
-
-CREATE OR REPLACE FUNCTION @extschema@.random_first_name(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_first_name()
 RETURNS TEXT AS $$
     SELECT first_name
     FROM @extschema@.first_name
@@ -211,7 +228,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_last_name(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_last_name()
 RETURNS TEXT AS $$
     SELECT name
     FROM @extschema@.last_name
@@ -219,7 +236,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_email(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_email()
 RETURNS TEXT AS $$
     SELECT address
     FROM @extschema@.email
@@ -227,7 +244,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_city_in_country(ov TEXT DEFAULT NULL,country_name TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_city_in_country(country_name TEXT)
 RETURNS TEXT AS $$
     SELECT name
     FROM @extschema@.city
@@ -236,7 +253,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_city(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_city()
 RETURNS TEXT AS $$
     SELECT name
     FROM @extschema@.city
@@ -244,7 +261,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_region_in_country(ov TEXT DEFAULT NULL,country_name TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_region_in_country(country_name TEXT)
 RETURNS TEXT AS $$
     SELECT subcountry
     FROM @extschema@.city
@@ -253,20 +270,20 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_region(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_region()
 RETURNS TEXT AS $$
     SELECT subcountry FROM @extschema@.city TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_country(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_country()
 RETURNS TEXT AS $$
     SELECT country FROM @extschema@.city TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION @extschema@.random_phone(ov TEXT DEFAULT NULL, phone_prefix TEXT DEFAULT '0' )
+CREATE OR REPLACE FUNCTION @extschema@.random_phone(phone_prefix TEXT DEFAULT '0' )
 RETURNS TEXT AS $$
     SELECT phone_prefix || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT) AS "phone";
 $$
@@ -277,25 +294,25 @@ LANGUAGE SQL VOLATILE;
 -- Random Commercial Data : Company Names, SIRET, IBAN, etc.
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.random_company(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_company()
 RETURNS TEXT AS $$
     SELECT name FROM @extschema@.company TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_iban(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_iban()
 RETURNS TEXT AS $$
     SELECT id FROM @extschema@.iban TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_siren(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_siren()
 RETURNS TEXT AS $$
     SELECT siren FROM @extschema@.siret TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_siret(ov TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION @extschema@.random_siret()
 RETURNS TEXT AS $$
     SELECT siren||nic FROM @extschema@.siret TABLESAMPLE SYSTEM_ROWS(1);
 $$
@@ -305,8 +322,6 @@ LANGUAGE SQL VOLATILE;
 -------------------------------------------------------------------------------
 -- Partial Scrambling
 -------------------------------------------------------------------------------
-
---RAISE DEBUG "Loading Partial Scrambling Functions";
 
 CREATE OR REPLACE FUNCTION @extschema@.partial(ov TEXT, prefix INT, padding TEXT, suffix INT)
 RETURNS TEXT AS $$
@@ -344,20 +359,30 @@ LANGUAGE SQL;
 
 -- List of all the masked columns
 CREATE OR REPLACE VIEW @extschema@.pg_masks AS
+WITH const AS (
+    SELECT
+        '%MASKED +WITH +FUNCTION +#"%#(%#)#"%' AS pattern_mask_column_function,
+        '%MASKED +WITH +CONSTANT +#"%#(%#)#"%' AS pattern_mask_column_constant
+)
 SELECT
   a.attrelid,
   a.attname,
   c.relname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   pg_catalog.col_description(a.attrelid, a.attnum),
-  substring(pg_catalog.col_description(a.attrelid, a.attnum) from '%MASKED +WITH +#"%#" *%' for '#')  AS func
-FROM pg_catalog.pg_attribute a
+  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_function for '#')  AS func,
+  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_function for '#')  AS masking_constant
+FROM const k,
+     pg_catalog.pg_attribute a
 JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
 WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
 --AND pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +\( *FUNCTION *= *(%) *\)%'
-AND pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +#"%#" *%' ESCAPE '#'
+AND ( 
+    pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +FUNCTION +#"%#(%#)#"%' ESCAPE '#'
+--OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +CONSTANT +#"%#(%#)#"%' ESCAPE '#' 
+)
 ;
 
 -- Adds a `hasmask` column to the pg_roles catalog
@@ -380,7 +405,7 @@ BEGIN
   FOR col IN
     SELECT * FROM @extschema@.pg_masks
   LOOP
-    RAISE DEBUG 'Anon %.% with %', col.relname,col.attname, col.func;
+    RAISE DEBUG 'Anonymize %.% with %', col.relname,col.attname, col.func;
     EXECUTE format('UPDATE "%s" SET "%s" = %s', col.relname,col.attname, col.func);
   END LOOP;
 END;
@@ -490,8 +515,6 @@ BEGIN
   END IF;
 
   PERFORM @extschema@.mask_update();
---  PERFORM @extschema@.mask_create('public','mask');
---  PERFORM @extschema@.mask_enable();
 END
 $$
 LANGUAGE plpgsql;
@@ -504,7 +527,6 @@ CREATE OR REPLACE FUNCTION @extschema@.mask_trigger()
 RETURNS EVENT_TRIGGER AS
 $$
 -- SQL Functions cannot return EVENT_TRIGGER, we're forced to write a plpgsql function
--- For now, create = update
 BEGIN
   PERFORM @extschema@.mask_update();
 END
@@ -514,10 +536,15 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION @extschema@.mask_update()
 RETURNS SETOF VOID AS
 $$
+DECLARE
+    sourceschema TEXT;
+    maskschema TEXT;
 BEGIN
+    SELECT value INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
+    SELECT value INTO maskschema FROM @extschema@.config WHERE param='maskschema';
     PERFORM @extschema@.mask_disable();
-    PERFORM @extschema@.mask_create('public','mask');
-    PERFORM @extschema@.mask_roles('public','mask');
+    PERFORM @extschema@.mask_create(sourceschema,maskschema);
+    PERFORM @extschema@.mask_roles(sourceschema,maskschema);
     PERFORM @extschema@.mask_enable();
 END
 $$
