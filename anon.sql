@@ -370,18 +370,17 @@ SELECT
   c.relname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   pg_catalog.col_description(a.attrelid, a.attnum),
-  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_function for '#')  AS func,
-  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_function for '#')  AS masking_constant
+  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_function for '#')  AS masking_function,
+  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_constant for '#')  AS masking_constant
 FROM const k,
      pg_catalog.pg_attribute a
 JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
 WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
---AND pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +\( *FUNCTION *= *(%) *\)%'
 AND ( 
-    pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +FUNCTION +#"%#(%#)#"%' ESCAPE '#'
---OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO '%MASKED +WITH +CONSTANT +#"%#(%#)#"%' ESCAPE '#' 
+    pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
+OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_constant ESCAPE '#' 
 )
 ;
 
@@ -396,8 +395,8 @@ FROM pg_roles r
 -- Walk through all masked columns and permanently apply the mask
 -- This is not makeing function, but it relies on the masking infra
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
-RETURNS setof void
-AS $$
+RETURNS BOOLEAN 
+AS $func$
 DECLARE
     col RECORD;
 BEGIN
@@ -405,11 +404,12 @@ BEGIN
   FOR col IN
     SELECT * FROM @extschema@.pg_masks
   LOOP
-    RAISE DEBUG 'Anonymize %.% with %', col.relname,col.attname, col.func;
-    EXECUTE format('UPDATE "%s" SET "%s" = %s', col.relname,col.attname, col.func);
+    RAISE DEBUG 'Anonymize %.% with %', col.relname,col.attname, col.masking_function;
+    EXECUTE format('UPDATE %I SET %I = %s', col.relname,col.attname, col.masking_function);
   END LOOP;
+  RETURN TRUE;
 END;
-$$
+$func$
 LANGUAGE plpgsql;
 
 -- True if the role is masked
@@ -427,12 +427,12 @@ LANGUAGE SQL;
 CREATE OR REPLACE FUNCTION @extschema@.mask_columns(sourcetable TEXT,sourceschema TEXT DEFAULT 'public')
 RETURNS TABLE (
     attname TEXT,
-    func TEXT
+    masking_function TEXT
 ) AS
 $$
 SELECT
     c.column_name,
-    m.func
+    m.masking_function
 FROM information_schema.columns c
 LEFT JOIN @extschema@.pg_masks m ON m.attname = c.column_name
 WHERE table_name=sourcetable
@@ -484,14 +484,12 @@ BEGIN
     FOR m IN SELECT * FROM @extschema@.mask_columns(sourcetable)
     LOOP
         expression := expression || comma;
-        IF m.func IS NULL THEN
+        IF m.masking_function IS NULL THEN
             -- No mask found
             expression := expression || quote_ident(m.attname);
         ELSE
-            -- TODO : Insert original value in the masking function
-            --func := replace(m.func, '(' , '(' || quote_ident(m.attname) || ',');
             -- Call mask instead of column
-            expression := expression || m.func || ' AS ' || quote_ident(m.attname);
+            expression := expression || m.masking_function || ' AS ' || quote_ident(m.attname);
         END IF;
         comma := ',';
     END LOOP;
@@ -502,7 +500,7 @@ LANGUAGE plpgsql;
 
 -- Activate the masking engine
 CREATE OR REPLACE FUNCTION @extschema@.mask_init()
-RETURNS SETOF VOID AS
+RETURNS BOOLEAN AS
 $$
 DECLARE
     r RECORD;
@@ -515,6 +513,7 @@ BEGIN
   END IF;
 
   PERFORM @extschema@.mask_update();
+  RETURN TRUE;
 END
 $$
 LANGUAGE plpgsql;

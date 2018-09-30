@@ -1,10 +1,12 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+-- INIT
 SELECT anon.mask_init();
  mask_init 
 -----------
-(0 rows)
+ t
+(1 row)
 
-CREATE TEMPORARY TABLE t1 (
+CREATE TABLE t1 (
 	id SERIAL,
 	name TEXT,
 	"CreditCard" TEXT,
@@ -14,13 +16,13 @@ INSERT INTO t1
 VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
 COMMENT ON COLUMN t1."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
-CREATE TEMPORARY TABLE "T2" (
+CREATE TABLE "T2" (
 	id_company SERIAL,
 	"IBAN" TEXT,
 	COMPANY TEXT
 );
 INSERT INTO "T2"
-VALUES (1991,'12345677890','Skynet');
+VALUES (1991,'12345677890','Cyberdyne Systems');
 COMMENT ON COLUMN "T2"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
 COMMENT ON COLUMN "T2".COMPANY IS 'jvnosdfnvsjdnvfskngvknfvg MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
 SELECT count(*) = 4  FROM anon.pg_masks;
@@ -29,19 +31,54 @@ SELECT count(*) = 4  FROM anon.pg_masks;
  t
 (1 row)
 
-SELECT func = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
+SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
  ?column? 
 ----------
  t
 (1 row)
 
--- FIXME
+-- 
+SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE id_company=1991;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT name != 'Schwarzenegger' FROM mask.t1 WHERE id = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- ROLE
+CREATE ROLE skynet;
+COMMENT ON ROLE skynet IS 'MASKED';
+SELECT anon.hasmask('skynet');
+ hasmask 
+---------
+ t
+(1 row)
+
+SELECT anon.hasmask('postgres') IS FALSE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.hasmask(NULL) IS NULL; 
+ ?column? 
+----------
+ t
+(1 row)
+
+-- STATIC SUBST
 SELECT anon.static_substitution();
  static_substitution 
 ---------------------
-(0 rows)
+ t
+(1 row)
 
-SELECT company != 'Skynet' FROM "T2" WHERE id_company=1991;
+SELECT company != 'Cyberdyne Systems' FROM "T2" WHERE id_company=1991;
  ?column? 
 ----------
  t
@@ -53,5 +90,12 @@ SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;
  t
 (1 row)
 
+--  CLEAN
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to event trigger anon_mask_update
+NOTICE:  drop cascades to 3 other objects
+DETAIL:  drop cascades to view mask.t1
+drop cascades to view mask."T2"
+drop cascades to event trigger anon_mask_update
+REASSIGN OWNED BY skynet TO postgres;
+DROP OWNED BY skynet CASCADE;
+DROP ROLE skynet;
