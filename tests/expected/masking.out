@@ -51,8 +51,14 @@ SELECT name != 'Schwarzenegger' FROM mask.t1 WHERE id = 1;
 (1 row)
 
 -- ROLE
-CREATE ROLE skynet;
+CREATE ROLE skynet LOGIN;
 COMMENT ON ROLE skynet IS 'MASKED';
+-- FORCE update because COMMENT doesn't trigger the Event Trigger
+SELECT anon.mask_update();
+ mask_update 
+-------------
+(0 rows)
+
 SELECT anon.hasmask('skynet');
  hasmask 
 ---------
@@ -66,6 +72,26 @@ SELECT anon.hasmask('postgres') IS FALSE;
 (1 row)
 
 SELECT anon.hasmask(NULL) IS NULL; 
+ ?column? 
+----------
+ t
+(1 row)
+
+\! psql contrib_regression -U skynet -c 'SHOW search_path;'
+ search_path  
+--------------
+ mask, public
+(1 row)
+
+\! psql contrib_regression -U skynet -c "SELECT * FROM public.t1;"
+ERROR:  permission denied for relation t1
+\! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;"
+ ?column? 
+----------
+ t
+(1 row)
+
+\! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE id_company=1991;"
  ?column? 
 ----------
  t

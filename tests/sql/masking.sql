@@ -43,14 +43,25 @@ SELECT name != 'Schwarzenegger' FROM mask.t1 WHERE id = 1;
 
 -- ROLE
 
-CREATE ROLE skynet;
+CREATE ROLE skynet LOGIN;
 COMMENT ON ROLE skynet IS 'MASKED';
+
+-- FORCE update because COMMENT doesn't trigger the Event Trigger
+SELECT anon.mask_update();
 
 SELECT anon.hasmask('skynet');
 
 SELECT anon.hasmask('postgres') IS FALSE;
 
 SELECT anon.hasmask(NULL) IS NULL; 
+
+\! psql contrib_regression -U skynet -c 'SHOW search_path;'
+
+\! psql contrib_regression -U skynet -c "SELECT * FROM public.t1;"
+
+\! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;"
+
+\! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE id_company=1991;"
 
 -- STATIC SUBST
 

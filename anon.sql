@@ -558,7 +558,7 @@ DECLARE
 BEGIN
     FOR r IN SELECT * FROM @extschema@.pg_masked_roles WHERE hasmask
     LOOP
-        PERFORM @extschema@.mask_role(r.rolname,sourceschema,maskschema);
+		PERFORM @extschema@.mask_role(r.rolname,sourceschema,maskschema);
     END LOOP;
 END
 $$
@@ -566,8 +566,8 @@ LANGUAGE plpgsql;
 
 -- Mask a specific role
 CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole TEXT, sourceschema TEXT, maskschema TEXT)
-RETURNS SETOF VOID AS
-$$
+RETURNS BOOLEAN AS
+$func$
 BEGIN
     RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
     EXECUTE format('REVOKE ALL ON SCHEMA %I FROM %I', sourceschema, maskedrole);
@@ -575,9 +575,10 @@ BEGIN
     EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', 'anon', maskedrole);
     EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', maskschema, maskedrole);
     EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', maskschema, maskedrole);
-    EXECUTE format('ALTER ROLE %I SET search_path TO %I,%I;', maskedrole, maskschema,sourceschema);
+	EXECUTE format('ALTER ROLE %I SET search_path TO %I,%I;', maskedrole, maskschema,sourceschema);
+	RETURN TRUE;
 END
-$$
+$func$
 LANGUAGE plpgsql;
 
 -- load the event trigger
