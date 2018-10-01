@@ -423,8 +423,8 @@ WHERE rolname = quote_ident(role);
 $$
 LANGUAGE SQL;
 
--- Extend the columns catalof with a 'func' field
-CREATE OR REPLACE FUNCTION @extschema@.mask_columns(sourcetable TEXT,sourceschema TEXT DEFAULT 'public')
+-- Extend the `columns` catalog with a 'masking_function' field
+CREATE OR REPLACE FUNCTION @extschema@.mask_columns(sourcetable TEXT,sourceschema TEXT)
 RETURNS TABLE (
     attname TEXT,
     masking_function TEXT
@@ -470,7 +470,7 @@ $$
 LANGUAGE plpgsql;
 
 -- Build a masked view for a table
-CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(sourcetable TEXT, sourceschema TEXT DEFAULT 'public', maskschema TEXT DEFAULT 'mask')
+CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(sourcetable TEXT, sourceschema TEXT, maskschema TEXT)
 RETURNS SETOF VOID AS
 $$
 DECLARE
@@ -481,7 +481,7 @@ DECLARE
 BEGIN
     expression := '';
     comma := '';
-    FOR m IN SELECT * FROM @extschema@.mask_columns(sourcetable)
+    FOR m IN SELECT * FROM @extschema@.mask_columns(sourcetable,sourceschema)
     LOOP
         expression := expression || comma;
         IF m.masking_function IS NULL THEN
@@ -499,7 +499,7 @@ $$
 LANGUAGE plpgsql;
 
 -- Activate the masking engine
-CREATE OR REPLACE FUNCTION @extschema@.mask_init()
+CREATE OR REPLACE FUNCTION @extschema@.mask_init(sourceschema TEXT DEFAULT 'public', maskschema TEXT DEFAULT 'mask')
 RETURNS BOOLEAN AS
 $$
 DECLARE
@@ -511,6 +511,9 @@ BEGIN
   ELSE
     PERFORM @extschema@.load();
   END IF;
+
+  UPDATE @extschema@.config SET value=sourceschema WHERE param='sourceschema';
+  UPDATE @extschema@.config SET value=maskschema WHERE param='maskschema';
 
   PERFORM @extschema@.mask_update();
   RETURN TRUE;
