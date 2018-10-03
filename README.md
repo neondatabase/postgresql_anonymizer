@@ -275,8 +275,6 @@ In certain use cases, [Materialized Views] can be usefull here.
 [Materialized Views](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html)
 
 
-Feedback
-------------------------------------------------------------------------------
 
 
 Links
@@ -290,3 +288,6 @@ Links
 
 * MariaDB : Masking with maxscale
   <https://mariadb.com/kb/en/mariadb-enterprise/mariadb-maxscale-21-masking/>
+
+* pgsync
+  <https://github.com/ankane/pgsync>
