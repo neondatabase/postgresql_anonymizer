@@ -1,8 +1,10 @@
 Development Notes
 ===============================================================================
 
-Volatility
+Building a C extension
 -------------------------------------------------------------------------------
+
+* https://www.postgresql.org/message-id/flat/CAJGNTeP%3D-6Gyqq5TN9OvYEydi7Fv1oGyYj650LGTnW44oAzYCg%40mail.gmail.com
 
 Performances 
 -------------------------------------------------------------------------------
