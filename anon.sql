@@ -68,8 +68,8 @@ CREATE UNLOGGED TABLE @extschema@.first_name (
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
 
 -- IBAN
-DROP TABLE IF EXISTS iban;
-CREATE UNLOGGED TABLE iban (
+DROP TABLE IF EXISTS @extschema@.iban;
+CREATE UNLOGGED TABLE @extschema@.iban (
     id TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
@@ -361,8 +361,8 @@ LANGUAGE SQL IMMUTABLE;
 CREATE OR REPLACE VIEW @extschema@.pg_masks AS
 WITH const AS (
     SELECT
-        '%MASKED +WITH +FUNCTION +#"%#(%#)#"%' AS pattern_mask_column_function,
-        '%MASKED +WITH +CONSTANT +#"%#(%#)#"%' AS pattern_mask_column_constant
+        '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT AS pattern_mask_column_function,
+        '%MASKED +WITH +CONSTANT +#"%#(%#)#"%'::TEXT AS pattern_mask_column_constant
 )
 SELECT
   a.attrelid,
