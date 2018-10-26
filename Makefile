@@ -66,6 +66,8 @@ load:
 ##
 
 demo/%.sql:
+	$(PSQL) -f $@
+
 tests/sql/%.sql:
 	$(PSQL)	-f $@
 
