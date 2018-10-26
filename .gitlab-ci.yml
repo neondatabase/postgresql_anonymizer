@@ -66,7 +66,6 @@ make9.6:
         - regression.*
         - results/
     expire_in: 1 day
-  when: manual
 
 make10:
   stage: build
