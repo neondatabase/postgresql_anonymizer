@@ -117,14 +117,26 @@ random:
     - make --always-make demo/random.sql
   when: manual
 
-declarative_masking:
+masking:
   stage: test
   script:
     - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
-    - make --always-make demo/declarative_masking.sql
+    - make --always-make demo/masking.sql
   when: manual
+
+
+partial:
+  stage: test
+  script:
+    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
+    - make extension
+    - make install
+    - make --always-make demo/partial.sql
+  when: manual
+
+
 
 pgxn:
   stage: deploy

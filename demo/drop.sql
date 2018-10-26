@@ -1,3 +1,0 @@
-DROP EXTENSION IF EXISTS anon;
-
-
