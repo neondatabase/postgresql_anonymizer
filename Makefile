@@ -1,7 +1,6 @@
 EXTENSION = anon
 EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 DATA = anon/*
-#REGRESS = unit
 REGRESS = load random partial masking
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
