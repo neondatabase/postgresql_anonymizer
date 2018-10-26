@@ -62,13 +62,10 @@ load:
 	$(PSQL) -f data/load.sql
 
 ##
-## Tests
+## Tests & Demo
 ##
-test_unit: tests/sql/unit.sql
-test_demo: tests/sql/demo.sql
-test_create: tests/sql/create.sql
-test_drop: tests/sql/drop.sql
 
+demo/%.sql:
 tests/sql/%.sql:
 	$(PSQL)	-f $@
 
