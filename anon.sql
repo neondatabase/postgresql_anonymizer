@@ -323,24 +323,24 @@ LANGUAGE SQL VOLATILE;
 -- Partial Scrambling
 -------------------------------------------------------------------------------
 
+--
+-- partial('abcdefgh',1,'xxxx',3) will return 'axxxxfgh';
+-- 
 CREATE OR REPLACE FUNCTION @extschema@.partial(ov TEXT, prefix INT, padding TEXT, suffix INT)
 RETURNS TEXT AS $$
   SELECT substring(ov FROM 1 FOR prefix)
       || padding
       || substring(ov FROM (length(ov)-suffix+1) FOR suffix);
 $$
-LANGUAGE SQL;
+LANGUAGE SQL IMMUTABLE;
 
-
+--
+-- email('daamien@gmail.com') will becomme 'da******@gm******.com'
+--
 CREATE OR REPLACE FUNCTION @extschema@.partial_email(ov TEXT)
 RETURNS TEXT AS $$
 -- This is an oversimplistic way to scramble an email address
---
--- The main goal is to avoid any complex regexp by splitting
--- the job into simpler tasks
---
--- Example :  'daamien@gmail.com' will becomme 'da******@gm******.com'
---
+-- The main goal is to avoid any complex regexp by splitting the job into simpler tasks
   SELECT substring(regexp_replace(ov, '@.*', '') FROM 1 FOR 2) -- da
       || '******'
       || '@'
@@ -350,7 +350,7 @@ RETURNS TEXT AS $$
       || regexp_replace(ov, '.*\.', '') -- com
   ;
 $$
-LANGUAGE SQL;
+LANGUAGE SQL IMMUTABLE;
 
 -------------------------------------------------------------------------------
 -- Masking
@@ -410,7 +410,7 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 -- True if the role is masked
 CREATE OR REPLACE FUNCTION @extschema@.hasmask(role TEXT)
@@ -421,7 +421,7 @@ SELECT hasmask
 FROM @extschema@.pg_masked_roles
 WHERE rolname = quote_ident(role);
 $$
-LANGUAGE SQL;
+LANGUAGE SQL VOLATILE;
 
 -- Extend the `columns` catalog with a 'masking_function' field
 CREATE OR REPLACE FUNCTION @extschema@.mask_columns(sourcetable TEXT,sourceschema TEXT)
@@ -440,7 +440,7 @@ and table_schema=quote_ident(sourceschema)
 -- FIXME : FILTER schema_name on anon.pg_mask too
 ;
 $$
-LANGUAGE SQL;
+LANGUAGE SQL VOLATILE;
 
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
@@ -467,7 +467,7 @@ BEGIN
   END LOOP;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 -- Build a masked view for a table
 CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(sourcetable TEXT, sourceschema TEXT, maskschema TEXT)
@@ -496,7 +496,7 @@ BEGIN
     EXECUTE format('CREATE OR REPLACE VIEW %I.%I AS SELECT %s FROM %I', maskschema, sourcetable, expression, sourcetable);
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 -- Activate the masking engine
 CREATE OR REPLACE FUNCTION @extschema@.mask_init(sourceschema TEXT DEFAULT 'public', maskschema TEXT DEFAULT 'mask')
@@ -519,7 +519,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 -- FIXME
 -- CREATE OR REPLACE FUNCTION mask_destroy()
@@ -550,7 +550,7 @@ BEGIN
     PERFORM @extschema@.mask_enable();
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 -- Mask all roles
 CREATE OR REPLACE FUNCTION @extschema@.mask_roles(sourceschema TEXT, maskschema TEXT)
@@ -565,7 +565,7 @@ BEGIN
     END LOOP;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 -- Mask a specific role
 CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole TEXT, sourceschema TEXT, maskschema TEXT)
@@ -600,7 +600,7 @@ BEGIN
   END IF;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 -- unload the event trigger
 CREATE OR REPLACE FUNCTION @extschema@.mask_disable()
@@ -617,7 +617,7 @@ BEGIN
   END IF;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql VOLATILE;
 
 
 -------------------------------------------------------------------------------

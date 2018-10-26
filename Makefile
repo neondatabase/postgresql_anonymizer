@@ -75,6 +75,7 @@ demo/%.sql:
 	$(PSQL) demo -f $@
 	$(PSQL) -c 'DROP DATABASE demo;'
 
+demo/%.sql:
 tests/sql/%.sql:
 	$(PSQL)	-f $@
 
