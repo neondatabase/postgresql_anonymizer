@@ -68,8 +68,8 @@ CREATE UNLOGGED TABLE @extschema@.first_name (
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
 
 -- IBAN
-DROP TABLE IF EXISTS iban;
-CREATE UNLOGGED TABLE iban (
+DROP TABLE IF EXISTS @extschema@.iban;
+CREATE UNLOGGED TABLE @extschema@.iban (
     id TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
