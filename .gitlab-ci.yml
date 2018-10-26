@@ -8,7 +8,7 @@ variables:
     EXTDIR: /usr/share/postgresql/10/extension/
     PSQL: psql -v ON_ERROR_STOP=1
 
-image: postgres:10
+image: postgres:11
 
 before_script:
     - mkdir -p $PGDATA
@@ -68,8 +68,9 @@ make9.6:
     expire_in: 1 day
   when: manual
 
-make:
+make10:
   stage: build
+  image: postgres:10
   script:
     - apt-get update && apt-get install -y make postgresql-server-dev-10
     - make extension
@@ -96,7 +97,6 @@ make11:
         - regression.*
         - results/
     expire_in: 1 day
-  when: manual
 
 
 perf:
