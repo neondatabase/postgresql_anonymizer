@@ -361,8 +361,8 @@ LANGUAGE SQL IMMUTABLE;
 CREATE OR REPLACE VIEW @extschema@.pg_masks AS
 WITH const AS (
     SELECT
-        '%MASKED +WITH +FUNCTION +#"%#(%#)#"%' AS pattern_mask_column_function,
-        '%MASKED +WITH +CONSTANT +#"%#(%#)#"%' AS pattern_mask_column_constant
+        '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT AS pattern_mask_column_function,
+        '%MASKED +WITH +CONSTANT +#"%#(%#)#"%'::TEXT AS pattern_mask_column_constant
 )
 SELECT
   a.attrelid,
