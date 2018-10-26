@@ -16,7 +16,7 @@ COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
 COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 
 -- STEP 4 : Connect with the masked user
-\! psql test -U skynet -c 'SELECT * FROM people;'
+\! psql demo -U skynet -c 'SELECT * FROM people;'
 
 -- STEP 5 : Clean up
 DROP EXTENSION anon CASCADE;
