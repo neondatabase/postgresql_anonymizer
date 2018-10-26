@@ -1,16 +1,17 @@
+
+
 Anonymizing and Masking Data with PostgreSQL
 ===============================================================================
 
-`postgresql_anonymizer` is a set of SQL functions that hide or replace
-[personally identifiable information] (PII) or commercially sensitive data
-from a PostgreSQL database.
+`postgresql_anonymizer` is a set of SQL functions that hide or replace 
+[personally identifiable information] (PII) or commercially sensitive data from a PostgreSQL database.
 
 The projet is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 Read the [Concepts] section for more details.
 
-[personally indentifiable information](https://en.wikipedia.org/wiki/Personally_identifiable_information)
+[personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
 
 Warning
