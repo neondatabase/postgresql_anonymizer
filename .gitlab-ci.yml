@@ -105,16 +105,25 @@ perf:
     - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
-    - make --always-make tests/sql/perf.sql
+    - make --always-make demo/perf.sql
   when: manual
 
-demo:
+random:
   stage: test
   script:
     - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
-    - make --always-make tests/sql/demo.sql
+    - make --always-make demo/random.sql
+  when: manual
+
+declarative_masking:
+  stage: test
+  script:
+    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
+    - make extension
+    - make install
+    - make --always-make demo/declarative_masking.sql
   when: manual
 
 pgxn:
