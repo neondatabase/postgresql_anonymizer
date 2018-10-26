@@ -5,4 +5,4 @@ RUN apt-get update && apt-get install -y \
 		postgresql-server-dev-all  \
  && rm -rf /var/lib/apt/lists/*
 
-COPY anon*  /usr/share/postgresql/10/extension/
+COPY anon*  /usr/share/postgresql/11/extension/
