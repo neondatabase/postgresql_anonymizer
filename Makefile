@@ -65,8 +65,15 @@ load:
 ## Demo & Tests
 ##
 
+.PHONY: demo_declarative_masking demo_perf demo_random
+demo_declarative_masking: demo/declarative_masking.sql
+demo_perf: demo/perf.sql
+demo_random: demo/random.sql
+
 demo/%.sql:
-	$(PSQL) -f $@
+	$(PSQL) -c 'CREATE DATABASE demo;'
+	$(PSQL) demo -f $@
+	$(PSQL) -c 'DROP DATABASE demo;'
 
 tests/sql/%.sql:
 	$(PSQL)	-f $@
