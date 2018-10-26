@@ -1,6 +1,28 @@
 CHANGELOG
 ===============================================================================
 
+
+20181026 : 0.2.1 - Dynamic masking and partial functions
+-------------------------------------------------------------------------------
+
+* Declare a masked column with :
+  ```sql
+  COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
+  ```
+
+* Declare a masked role with :
+  ```sql
+  COMMENT ON ROLE skynet IS 'MASKED';
+  ```
+
+* `email()` will partially hide an email
+
+* `partial()` will partially hide any TEXT value
+
+
+Checkout `demo/partial.sql` and `demo/masking.sql` for more details
+
+
 20180918 : 0.1.1 - Load a custom dataset
 -------------------------------------------------------------------------------
 
