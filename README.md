@@ -104,7 +104,8 @@ Requirements
 --------------------------------------------------------------------------------
 
 This extension is officially supported on PostgreSQL 9.6 and later.
-It should also work on PostgreSQL 9.5 with a bit of hacking.
+It should also work on PostgreSQL 9.5 with a bit of hacking. 
+See [NOTES.md](NOTES.md) for more details.
 
 It requires an extension named `tsm_system_rows`, which is delivered by the
 `postgresql-contrib` package of the main linux distributions.
