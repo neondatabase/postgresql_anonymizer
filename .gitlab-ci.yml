@@ -101,7 +101,7 @@ make11:
 perf:
   stage: test
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
+    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
     - make extension
     - make install
     - make --always-make demo_perf
@@ -110,7 +110,7 @@ perf:
 random:
   stage: test
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
+    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
     - make extension
     - make install
     - make --always-make demo_random
@@ -119,7 +119,7 @@ random:
 masking:
   stage: test
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
+    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
     - make extension
     - make install
     - make --always-make demo_masking
@@ -129,7 +129,7 @@ masking:
 partial:
   stage: test
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
+    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
     - make extension
     - make install
     - make --always-make demo_partial
