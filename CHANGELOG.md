@@ -2,8 +2,10 @@ CHANGELOG
 ===============================================================================
 
 
-20181026 : 0.2.1 - Dynamic masking and partial functions
+20181029 : 0.2.1 - Dynamic masking and partial functions
 -------------------------------------------------------------------------------
+
+## Declare masking rules within the DDL :
 
 * Declare a masked column with :
   ```sql
@@ -12,12 +14,13 @@ CHANGELOG
 
 * Declare a masked role with :
   ```sql
-  COMMENT ON ROLE skynet IS 'MASKED';
+  COMMENT ON ROLE untrusted_user IS 'MASKED';
   ```
 
-* `email()` will partially hide an email
+## New functions for partial scrambling
 
 * `partial()` will partially hide any TEXT value
+* `partial_email()` will partially hide an email address
 
 
 Checkout `demo/partial.sql` and `demo/masking.sql` for more details
