@@ -1,30 +1,36 @@
 
-
 Anonymizing and Masking Data with PostgreSQL
 ===============================================================================
 
-`postgresql_anonymizer` is a set of SQL functions that hide or replace 
-[personally identifiable information] (PII) or commercially sensitive data from a PostgreSQL database.
+`postgresql_anonymizer` is an extension to mask or replace 
+[personally identifiable information] (PII) or commercially sensitive data from 
+a PostgreSQL database.
 
 The projet is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
+
+The extension can be used to put dynamic masks on certain users or permanently 
+modify sensitive data. Various masking techniques are available : randomization, 
+partial scrambling or custom rules.
+
 Read the [Concepts] section for more details.
 
+[Concepts]: #Concepts
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
 
 Warning
 ------------------------------------------------------------------------------
 
-*This is projet is at an early stage of development and should used carefully.* I
+*This is projet is at an early stage of development and should used carefully.* 
 
 I need your feedback and ideas ! Let me know what you think of this tool,how it
 fits your needs and what features are missing.
 
 You can either [open an issue] or send a message at <daamien@gmail.com>.
 
-[open an issue](https://gitlab.com/daamien/postgresql_anonymizer/issues)
+[open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
 
 Example
 ------------------------------------------------------------------------------
@@ -58,7 +64,6 @@ Example
 Declarative Data Masking
 --------------------------------------------------------------------------------
 
-STEP 0 : Imagine a `people` table
 
 ```sql
 =# SELECT * FROM people;

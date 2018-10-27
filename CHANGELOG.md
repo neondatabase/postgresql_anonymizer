@@ -1,6 +1,31 @@
 CHANGELOG
 ===============================================================================
 
+
+20181029 : 0.2.1 - Dynamic masking and partial functions
+-------------------------------------------------------------------------------
+
+## Declare masking rules within the DDL :
+
+* Declare a masked column with :
+  ```sql
+  COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
+  ```
+
+* Declare a masked role with :
+  ```sql
+  COMMENT ON ROLE untrusted_user IS 'MASKED';
+  ```
+
+## New functions for partial scrambling
+
+* `partial()` will partially hide any TEXT value
+* `partial_email()` will partially hide an email address
+
+
+Checkout `demo/partial.sql` and `demo/masking.sql` for more details
+
+
 20180918 : 0.1.1 - Load a custom dataset
 -------------------------------------------------------------------------------
 
