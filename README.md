@@ -1,4 +1,6 @@
 
+![PostgreSQL Anonymizer](postgresql_anonymizer.banner.gif)
+
 Anonymizing and Masking Data with PostgreSQL
 ===============================================================================
 
