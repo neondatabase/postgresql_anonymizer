@@ -104,7 +104,7 @@ perf:
     - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
-    - make --always-make demo/perf.sql
+    - make --always-make demo_perf
   when: manual
 
 random:
@@ -113,7 +113,7 @@ random:
     - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
-    - make --always-make demo/random.sql
+    - make --always-make demo_random
   when: manual
 
 masking:
@@ -122,7 +122,7 @@ masking:
     - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
-    - make --always-make demo/masking.sql
+    - make --always-make demo_masking
   when: manual
 
 
@@ -132,7 +132,7 @@ partial:
     - apt-get update && apt-get install -y make postgresql-server-dev-10 postgresql-contrib-10
     - make extension
     - make install
-    - make --always-make demo/partial.sql
+    - make --always-make demo_partial
   when: manual
 
 
