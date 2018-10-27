@@ -259,16 +259,15 @@ extract a sample of database :
 
 
 
-### Dynamic Masking
+### Materialized Views
 
-If you need to limit sensitive data exposure to non-privileged users, you can
-build _Dynamic Masking Views_ that will automatically replace personal data
-with anonymized values.
+Dynamic masking is not always required ! In some cases, it is more efficient 
+to build [Materialized Views] instead.
 
 For instance:
 
 ```SQL
-CREATE VIEW masked_customer AS
+CREATE MATERIALIZED VIEW masked_customer AS
 SELECT
     id,
     anon.random_last_name() AS name,
@@ -278,10 +277,7 @@ SELECT
 FROM customer;
 ```
 
-In certain use cases, [Materialized Views] can be usefull here.
-
-
-[Materialized Views](https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html)
+[Materialized Views]: https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html
 
 
 
