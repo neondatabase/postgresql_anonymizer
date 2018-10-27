@@ -72,7 +72,7 @@ demo_partial: demo/partial.sql
 
 demo/%.sql:
 	$(PSQL) -c 'CREATE DATABASE demo;'
-	$(PSQL) demo -f $@
+	$(PSQL) --echo-all demo -f $@
 	$(PSQL) -c 'DROP DATABASE demo;'
 
 tests/sql/%.sql:
