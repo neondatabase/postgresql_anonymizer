@@ -156,6 +156,6 @@ pgxn:
 test_pgxn:
   stage: deploy
   script:
-    - apt-get update && apt-get install -y postgresql-server-dev-10 pgxnclient
+    - apt-get update && apt-get install -y postgresql-server-dev-11 pgxnclient
     - pgxn install postgresql_anonymizer
   when: manual
