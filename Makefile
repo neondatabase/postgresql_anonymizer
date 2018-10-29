@@ -91,7 +91,7 @@ ci_local:
 ## PGXN
 ##
 
-ZIPBALL:=$(EXTENSION)-$(EXTESION_VERSION).zip
+ZIPBALL:=$(EXTENSION)-$(EXTENSION_VERSION).zip
 
 .PHONY: pgxn
 
