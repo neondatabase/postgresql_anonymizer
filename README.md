@@ -16,8 +16,11 @@ The extension can be used to put dynamic masks on certain users or permanently
 modify sensitive data. Various masking techniques are available : randomization, 
 partial scrambling or custom rules.
 
-Read the [Concepts] section for more details.
+Read the [Concepts] section for more details and [NEWS.md] for information 
+about the latest version.
 
+[NEWS.md]: NEWS.md
+[INSTALL.md]: INSTALL.md
 [Concepts]: #Concepts
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
@@ -120,25 +123,9 @@ It requires an extension named `tsm_system_rows`, which is delivered by the
 Install
 -------------------------------------------------------------------------------
 
-### With [PGXN](https://pgxn.org/) :
+Simply run `sudo pgxn install postgresql_anonymizer`
 
-```console
-sudo apt install pgxnclient (or pip install pgxn)
-sudo pgxn install postgresql_anonymizer
-```
-
-### From source :
-
-First you need to install the postgresql development libraries. On most
-distribution, this is available through a package called `postgresql-devel`
-or `postgresql-server-dev`.
-
-Then build the project like any other PostgreSQL extension:
-
-```console
-make
-sudo make install
-```
+or see [INSTALL.md] for more detailed instructions 
 
 
 How To Use
