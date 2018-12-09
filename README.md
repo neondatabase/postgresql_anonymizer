@@ -136,7 +136,7 @@ or `postgresql-server-dev`.
 Then build the project like any other PostgreSQL extension:
 
 ```console
-make
+make extension
 sudo make install
 ```
 
