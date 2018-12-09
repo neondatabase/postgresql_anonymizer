@@ -434,7 +434,7 @@ SELECT
     c.column_name,
     m.masking_function
 FROM information_schema.columns c
-LEFT JOIN @extschema@.pg_masks m ON m.attname = c.column_name
+LEFT JOIN @extschema@.pg_masks m ON m.attname = c.column_name AND m.relname = c.table_name
 WHERE table_name=sourcetable
 and table_schema=quote_ident(sourceschema)
 -- FIXME : FILTER schema_name on anon.pg_mask too
