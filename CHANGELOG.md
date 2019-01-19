@@ -7,8 +7,23 @@ CHANGELOG
 
 * shuffle an entire column with the new function : 
 	```sql
-	SELECT anon.shuffle('employees','salary');
+	SELECT anon.shuffle_column('employees','salary');
 	```
+
+* Add +/-33% of noise to a column with:
+	```sql
+  SELECT anon.numeric_noise_on_column('employees','salary',0.33);
+	```
+
+* Add +/-10 years of noise to a date with :
+  ```sql
+  SELECT anon.datetime_noise_on_column('employees','birth_day','10 years');
+  ```
+
+
+* FIX #43 : Using unlogged tables was a bad idea
+
+
 
 20181029 : 0.2.1 - Dynamic masking and partial functions
 -------------------------------------------------------------------------------

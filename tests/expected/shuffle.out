@@ -21,9 +21,9 @@ VALUES
 ;
 CREATE TABLE test_shuffle_backup 
 AS SELECT * FROM test_shuffle;
-SELECT anon.shuffle('test_shuffle','value');
- shuffle 
----------
+SELECT anon.shuffle_column('test_shuffle','value');
+ shuffle_column 
+----------------
  t
 (1 row)
 
