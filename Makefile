@@ -106,6 +106,8 @@ pgxn:
 	unzip $(ZIPBALL) $(EXTENSION)_$(EXTENSION_VERSION)/
 	# copy artefact into the package
 	cp -pr anon ./$(EXTENSION)_$(EXTENSION_VERSION)/
+	# clean up 
+	rm -r ./$(EXTENSION)_$(EXTENSION_VERSION)/*.gif
 	# rebuild the package
 	zip -r $(ZIPBALL) ./$(EXTENSION)_$(EXTENSION_VERSION)/
 	# clean up
