@@ -10,7 +10,7 @@
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS @extschema@.config;
-CREATE UNLOGGED TABLE @extschema@.config (
+CREATE TABLE @extschema@.config (
     param TEXT UNIQUE NOT NULL,
     value TEXT
 );
@@ -61,7 +61,7 @@ LANGUAGE plpgsql VOLATILE;
 
 -- Cities, Regions & Countries
 DROP TABLE IF EXISTS @extschema@.city;
-CREATE UNLOGGED TABLE @extschema@.city (
+CREATE TABLE @extschema@.city (
     name TEXT,
     country TEXT,
     subcountry TEXT,
@@ -73,21 +73,21 @@ COMMENT ON TABLE @extschema@.city IS 'Cities, Regions & Countries';
 
 -- Companies
 DROP TABLE IF EXISTS @extschema@.company;
-CREATE UNLOGGED TABLE @extschema@.company (
+CREATE TABLE @extschema@.company (
     name TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.company','');
 
 -- Email
 DROP TABLE IF EXISTS @extschema@.email;
-CREATE UNLOGGED TABLE @extschema@.email (
+CREATE TABLE @extschema@.email (
     address TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.email','');
 
 -- First names
 DROP TABLE IF EXISTS @extschema@.first_name;
-CREATE UNLOGGED TABLE @extschema@.first_name (
+CREATE TABLE @extschema@.first_name (
     first_name TEXT,
     male BOOLEAN,
     female BOOLEAN,
@@ -97,21 +97,21 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
 
 -- IBAN
 DROP TABLE IF EXISTS @extschema@.iban;
-CREATE UNLOGGED TABLE @extschema@.iban (
+CREATE TABLE @extschema@.iban (
     id TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
 
 -- Last names
 DROP TABLE IF EXISTS @extschema@.last_name;
-CREATE UNLOGGED TABLE @extschema@.last_name (
+CREATE TABLE @extschema@.last_name (
     name TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.last_name','');
 
 -- SIRET
 DROP TABLE IF EXISTS @extschema@.siret;
-CREATE UNLOGGED TABLE @extschema@.siret (
+CREATE TABLE @extschema@.siret (
     siren TEXT,
     nic TEXT
 );
