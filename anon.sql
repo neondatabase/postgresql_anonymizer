@@ -33,7 +33,7 @@ VALUES
 -- Noise
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.numeric_noise(noise_table TEXT, noise_column TEXT, ratio FLOAT)
+CREATE OR REPLACE FUNCTION @extschema@.numeric_noise_column(noise_table TEXT, noise_column TEXT, ratio FLOAT)
 RETURNS BOOLEAN
 AS $func$
 BEGIN
@@ -48,7 +48,7 @@ $func$
 LANGUAGE plpgsql VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION @extschema@.datetime_noise(noise_table TEXT, noise_column TEXT, variation TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.datetime_noise_column(noise_table TEXT, noise_column TEXT, variation TEXT)
 RETURNS BOOLEAN
 AS $func$
 BEGIN
@@ -66,7 +66,7 @@ LANGUAGE plpgsql VOLATILE;
 -- Shuffle
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.shuffle(shuffle_table TEXT, shuffle_column TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(shuffle_table TEXT, shuffle_column TEXT)
 RETURNS BOOLEAN
 AS $func$
 BEGIN

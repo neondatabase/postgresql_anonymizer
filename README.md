@@ -146,9 +146,17 @@ custom CSV files with `load('/path/to/custom_cvs_files/')`
 **You now have access to the following functions :**
 
 
+### Noise
+
+* anon.numeric_noise_column(table, column,ratio) if ratio = 0.33, all values
+  of the column will be randomly shifted with a ratio of +/- 33%
+
+* anon.datetime_noise_column(table, column,interval) if interval = '2 days', 
+  all values of the column will be randomly shifted by +/- 2 days
+
 ### Shuffling 
 
-* anon.shuffle(table, column) will rearrange all values in a given column
+* anon.shuffle_column(table, column) will rearrange all values in a given column
 
 ### Fake data
 
