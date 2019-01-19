@@ -145,15 +145,17 @@ custom CSV files with `load('/path/to/custom_cvs_files/')`
 
 **You now have access to the following functions :**
 
-### Generic data
+
+### Shuffling 
+
+* anon.shuffle(table, column) will rearrange all values in a given column
+
+### Fake data
 
 * anon.random_date() returns a date
 * anon.random_date_between(d1,d2) returns a date between `d1` and `d2`
 * anon.random_int_between(i1,i2) returns an integer between `i1` and `i2`
 * anon.random_string(n) returns a TEXT value containing `n` letters
-
-### Personal data
-
 * anon.random_first_name() returns a generic first name
 * anon.random_last_name() returns a generic last name
 * anon.random_email() returns a valid email address
@@ -164,9 +166,6 @@ custom CSV files with `load('/path/to/custom_cvs_files/')`
 * anon.random_region_in_country(c) returns a region in country `c`
 * anon.random_country() returns a country
 * anon.random_phone(p) return a 8-digit phone with `p` as a prefix
-
-### Company data
-
 * anon.random_company() returns a generic company name
 * anon.random_iban() returns a valid IBAN
 * anon.random_siret() returns a valid SIRET
