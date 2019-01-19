@@ -1,22 +1,23 @@
 
+
 ![PostgreSQL Anonymizer](postgresql_anonymizer.banner.gif)
 
 Anonymizing and Masking Data with PostgreSQL
 ===============================================================================
 
-`postgresql_anonymizer` is an extension to mask or replace 
-[personally identifiable information] (PII) or commercially sensitive data from 
+`postgresql_anonymizer` is an extension to mask or replace
+[personally identifiable information] (PII) or commercially sensitive data from
 a PostgreSQL database.
 
 The projet is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 
-The extension can be used to put dynamic masks on certain users or permanently 
-modify sensitive data. Various masking techniques are available : randomization, 
+The extension can be used to put dynamic masks on certain users or permanently
+modify sensitive data. Various masking techniques are available : randomization,
 partial scrambling or custom rules.
 
-Read the [Concepts] section for more details and [NEWS.md] for information 
+Read the [Concepts] section for more details and [NEWS.md] for information
 about the latest version.
 
 [NEWS.md]: NEWS.md
@@ -28,7 +29,7 @@ about the latest version.
 Warning
 ------------------------------------------------------------------------------
 
-*This is projet is at an early stage of development and should used carefully.* 
+*This is projet is at an early stage of development and should used carefully.*
 
 I need your feedback and ideas ! Let me know what you think of this tool,how it
 fits your needs and what features are missing.
@@ -114,7 +115,7 @@ Requirements
 --------------------------------------------------------------------------------
 
 This extension is officially supported on PostgreSQL 9.6 and later.
-It should also work on PostgreSQL 9.5 with a bit of hacking. 
+It should also work on PostgreSQL 9.5 with a bit of hacking.
 See [NOTES.md](NOTES.md) for more details.
 
 It requires an extension named `tsm_system_rows`, which is delivered by the
@@ -125,7 +126,7 @@ Install
 
 Simply run `sudo pgxn install postgresql_anonymizer`
 
-or see [INSTALL.md] for more detailed instructions 
+or see [INSTALL.md] for more detailed instructions
 
 
 How To Use
@@ -254,7 +255,7 @@ extract a sample of database :
 
 ### Materialized Views
 
-Dynamic masking is not always required ! In some cases, it is more efficient 
+Dynamic masking is not always required ! In some cases, it is more efficient
 to build [Materialized Views] instead.
 
 For instance:
@@ -289,3 +290,16 @@ Links
 
 * pgsync
   <https://github.com/ankane/pgsync>
+
+* Ultimate Guide to Data Anonymization
+ <https://piwik.pro/blog/the-ultimate-guide-to-data-anonymization-in-analytics/>
+
+* https://ico.org.uk/media/1061/anonymisation-code.pdf
+
+* https://dataprivacylab.org/projects/identifiability/paper1.pdf
+
+* https://policies.google.com/technologies/anonymization?hl=en
+
+* https://iapp.org/media/pdf/resource_center/Guide_to_Anonymisation.pdf
+
+* https://en.wikipedia.org/wiki/Differential_Privacy
