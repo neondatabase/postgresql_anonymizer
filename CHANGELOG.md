@@ -2,9 +2,13 @@ CHANGELOG
 ===============================================================================
 
 
-WIP : 0.3.1
+2019FIXME : 0.3.1 - Shuffle and Variance
 -------------------------------------------------------------------------------
 
+* shuffle an entire column with the new function : 
+	```sql
+	SELECT anon.shuffle('employees','salary');
+	```
 
 * FIX #43 : Using unlogged tables was a bad idea
 

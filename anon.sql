@@ -10,7 +10,7 @@
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS @extschema@.config;
-CREATE UNLOGGED TABLE @extschema@.config (
+CREATE TABLE @extschema@.config (
     param TEXT UNIQUE NOT NULL,
     value TEXT
 );
@@ -63,12 +63,40 @@ $func$
 LANGUAGE plpgsql VOLATILE;
 
 -------------------------------------------------------------------------------
+-- Shuffle
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION @extschema@.shuffle(shuffle_table TEXT, shuffle_column TEXT)
+RETURNS BOOLEAN
+AS $func$
+BEGIN
+
+EXECUTE format('WITH p1 AS (
+    SELECT row_number() over (order by random()) n,
+           %I AS salary1
+    FROM %I
+),
+p2 AS (
+    SELECT row_number() over (order by random()) n,
+           id AS id2
+    FROM %I
+)
+UPDATE %I
+SET %I = p1.salary1
+FROM p1 join p2 on p1.n = p2.n
+WHERE id = p2.id2;', shuffle_column, shuffle_table, shuffle_table, shuffle_table, shuffle_column);
+RETURN TRUE;
+END;
+$func$
+LANGUAGE plpgsql VOLATILE;
+
+-------------------------------------------------------------------------------
 -- Fake Data
 -------------------------------------------------------------------------------
 
 -- Cities, Regions & Countries
 DROP TABLE IF EXISTS @extschema@.city;
-CREATE UNLOGGED TABLE @extschema@.city (
+CREATE TABLE @extschema@.city (
     name TEXT,
     country TEXT,
     subcountry TEXT,
@@ -80,21 +108,21 @@ COMMENT ON TABLE @extschema@.city IS 'Cities, Regions & Countries';
 
 -- Companies
 DROP TABLE IF EXISTS @extschema@.company;
-CREATE UNLOGGED TABLE @extschema@.company (
+CREATE TABLE @extschema@.company (
     name TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.company','');
 
 -- Email
 DROP TABLE IF EXISTS @extschema@.email;
-CREATE UNLOGGED TABLE @extschema@.email (
+CREATE TABLE @extschema@.email (
     address TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.email','');
 
 -- First names
 DROP TABLE IF EXISTS @extschema@.first_name;
-CREATE UNLOGGED TABLE @extschema@.first_name (
+CREATE TABLE @extschema@.first_name (
     first_name TEXT,
     male BOOLEAN,
     female BOOLEAN,
@@ -104,21 +132,21 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
 
 -- IBAN
 DROP TABLE IF EXISTS @extschema@.iban;
-CREATE UNLOGGED TABLE @extschema@.iban (
+CREATE TABLE @extschema@.iban (
     id TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
 
 -- Last names
 DROP TABLE IF EXISTS @extschema@.last_name;
-CREATE UNLOGGED TABLE @extschema@.last_name (
+CREATE TABLE @extschema@.last_name (
     name TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.last_name','');
 
 -- SIRET
 DROP TABLE IF EXISTS @extschema@.siret;
-CREATE UNLOGGED TABLE @extschema@.siret (
+CREATE TABLE @extschema@.siret (
     siren TEXT,
     nic TEXT
 );
@@ -469,7 +497,7 @@ SELECT
     c.column_name,
     m.masking_function
 FROM information_schema.columns c
-LEFT JOIN @extschema@.pg_masks m ON m.attname = c.column_name
+LEFT JOIN @extschema@.pg_masks m ON m.attname = c.column_name AND m.relname = c.table_name
 WHERE table_name=sourcetable
 and table_schema=quote_ident(sourceschema)
 -- FIXME : FILTER schema_name on anon.pg_mask too
