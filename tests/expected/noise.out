@@ -1,5 +1,4 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-
 -- test data
  
 CREATE TABLE test_noise (
@@ -9,7 +8,6 @@ CREATE TABLE test_noise (
 	float_value FLOAT,
 	date_value DATE
 );
-
 INSERT INTO test_noise
 VALUES 
 	( 1, 'a', 40 , 33.3, '01/01/2019'),
@@ -23,34 +21,51 @@ VALUES
     ( 9, 'i', 40 , 33.3, '01/01/2019'),
     ( 10, 'j', 40 , 33.3, '01/01/2019')
 ;
-
 --CREATE TABLE test_noise_backup 
 --AS SELECT * FROM test_noise;
-
 SELECT anon.numeric_noise('test_noise','int_value', 0.25);
+ numeric_noise 
+---------------
+ t
+(1 row)
 
 SELECT anon.numeric_noise('test_noise','float_value', 3);
+ numeric_noise 
+---------------
+ t
+(1 row)
 
 SELECT anon.datetime_noise('test_noise','date_value', '365 days');
-
-
+ datetime_noise 
+----------------
+ t
+(1 row)
 
 -- TEST 1 :  int_value is between 30 and 50
-
 SELECT min(int_value) >= 30  
 AND    max(int_value) <= 50
 FROM test_noise;
-
+ ?column? 
+----------
+ t
+(1 row)
 
 -- TEST 2 :  float_value is between 
 SELECT min(float_value) >=  -66.6  
 AND    max(float_value) <= 133.2
 FROM test_noise;
+ ?column? 
+----------
+ t
+(1 row)
 
 -- TEST 3 :  date_value is between 2018 and 2020
 SELECT min(date_value) >= '01/01/2018'  
 AND    max(date_value) <= '01/01/2020'
 FROM test_noise;
-
+ ?column? 
+----------
+ t
+(1 row)
 
 DROP EXTENSION anon;
