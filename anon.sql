@@ -28,6 +28,34 @@ VALUES
 
 
 -------------------------------------------------------------------------------
+-- Shuffle
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION shuffle(shuffle_table TEXT, shuffle_column TEXT)
+RETURNS BOOLEAN
+AS $func$
+BEGIN
+
+EXECUTE format('WITH p1 AS (
+    SELECT row_number() over (order by random()) n,
+           %I AS salary1
+    FROM %I
+),
+p2 AS (
+    SELECT row_number() over (order by random()) n,
+           id AS id2
+    FROM %I
+)
+UPDATE %I
+SET %I = p1.salary1
+FROM p1 join p2 on p1.n = p2.n
+WHERE id = p2.id2;', shuffle_column, shuffle_table, shuffle_table, shuffle_table, shuffle_column);
+RETURN TRUE;
+END;
+$func$
+LANGUAGE plpgsql VOLATILE;
+
+-------------------------------------------------------------------------------
 -- Fake Data
 -------------------------------------------------------------------------------
 
