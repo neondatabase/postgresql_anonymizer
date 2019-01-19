@@ -31,7 +31,7 @@ VALUES
 -- Shuffle
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION shuffle(shuffle_table TEXT, shuffle_column TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.shuffle(shuffle_table TEXT, shuffle_column TEXT)
 RETURNS BOOLEAN
 AS $func$
 BEGIN
