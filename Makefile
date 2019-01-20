@@ -1,7 +1,9 @@
 EXTENSION = anon
 EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 DATA = anon/*
-REGRESS = load noise shuffle random partial masking
+# Use this var to add more tests
+PG_TEST_EXTRA ?= ""
+REGRESS = load noise shuffle random partial masking $(PG_TEST_EXTRA)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 

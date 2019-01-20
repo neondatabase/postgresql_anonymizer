@@ -89,6 +89,7 @@ make11:
     - apt-get update && apt-get install -y make postgresql-server-dev-11
     - make extension
     - make install
+    - export PG_TEST_EXTRA= masking_PG11 
     - make installcheck
   artifacts:
     paths:

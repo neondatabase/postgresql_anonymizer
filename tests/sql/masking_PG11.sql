@@ -1,10 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+
 -- INIT
+
 SELECT anon.mask_init();
- mask_init 
------------
- t
-(1 row)
 
 -- Table `people` 
 CREATE TABLE people (
@@ -13,20 +11,27 @@ CREATE TABLE people (
 	"CreditCard" TEXT,
 	fk_company INTEGER
 );
+
 INSERT INTO people
 VALUES (1,'Schwarzenegger','1234567812345678', 1991);
+
+
 COMMENT ON COLUMN people.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
 COMMENT ON COLUMN people."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
+
 -- Table `CoMPaNy` 
 CREATE TABLE "CoMPaNy" (
 	id_company SERIAL UNIQUE,
 	"IBAN" TEXT,
 	NAME TEXT
 );
+
 INSERT INTO "CoMPaNy"
 VALUES (1991,'12345677890','Cyberdyne Systems');
+
 COMMENT ON COLUMN "CoMPaNy"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
 COMMENT ON COLUMN "CoMPaNy".NAME IS 'jvnosdfnvsjdnvfskngvknfvg MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
+
 -- Table `work` 
 CREATE TABLE work (
 	id_work SERIAL,
@@ -37,123 +42,65 @@ CREATE TABLE work (
 	FOREIGN KEY	(fk_employee) references people(id),
 	FOREIGN KEY (fk_company) references "CoMPaNy"(id_company)
 );
+
 INSERT INTO work
 VALUES ( 1, 1 , 1991, DATE '1985/05/25',NULL);
+
 SELECT count(*) = 4  FROM anon.pg_masks;
- ?column? 
-----------
- t
-(1 row)
 
 SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
- ?column? 
-----------
- t
-(1 row)
 
 --
+
 SELECT name != 'Cyberdyne Systems' FROM mask."CoMPaNy" WHERE id_company=1991;
- ?column? 
-----------
- t
-(1 row)
 
 SELECT name != 'Schwarzenegger' FROM mask.people WHERE id = 1;
- ?column? 
-----------
- t
-(1 row)
 
 -- ROLE
+
 CREATE ROLE skynet LOGIN;
 COMMENT ON ROLE skynet IS 'MASKED';
+
 -- FORCE update because COMMENT doesn't trigger the Event Trigger
 SELECT anon.mask_update();
- mask_update 
--------------
-(0 rows)
 
 SELECT anon.hasmask('skynet');
- hasmask 
----------
- t
-(1 row)
 
 SELECT anon.hasmask('postgres') IS FALSE;
- ?column? 
-----------
- t
-(1 row)
 
 SELECT anon.hasmask(NULL) IS NULL;
- ?column? 
-----------
- t
-(1 row)
 
 -- We're using an external connection instead of `SET ROLE`
 -- Because we need the tricky search_path
 \! psql contrib_regression -U skynet -c 'SHOW search_path;'
- search_path  
---------------
- mask, public
-(1 row)
 
--- Disabling this test, because the error message has changed between PG10 and PG11
 -- This test should fail anyway, the skynet role is not allowed to access the people table
---\! psql contrib_regression -U skynet -c "SELECT * FROM public.people;"
+\! psql contrib_regression -U skynet -c "SELECT * FROM public.people;"
+
 \! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM people WHERE id = 1;"
- ?column? 
-----------
- t
-(1 row)
 
 \! psql contrib_regression -U skynet -c "SELECT name != 'Cyberdyne Systems' FROM \"CoMPaNy\" WHERE id_company=1991;"
- ?column? 
-----------
- t
-(1 row)
 
--- STATIC SUBST
-SELECT anon.static_substitution();
- static_substitution 
----------------------
- t
-(1 row)
-
-SELECT name != 'Cyberdyne Systems' FROM "CoMPaNy" WHERE id_company=1991;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT name != 'Schwarzenegger' FROM people WHERE id = 1;
- ?column? 
-----------
- t
-(1 row)
 
 -- A maked role cannot modify a table containing a mask column
--- Disabling this test, because the error message has changed between PG10 and PG11
---\! psql contrib_regression -U skynet -c "DELETE FROM people;"
---\! psql contrib_regression -U skynet -c "UPDATE people SET name = 'check' WHERE name ='Schwarzenegger';"
---\! psql contrib_regression -U skynet -c "INSERT INTO people VALUES (1,'Schwarzenegger','1234567812345678', 1991);" ;
---\! psql contrib_regression -U skynet -c "DELETE FROM work;";
+
+\! psql contrib_regression -U skynet -c "DELETE FROM people;"
+
+\! psql contrib_regression -U skynet -c "UPDATE people SET name = 'check' WHERE name ='Schwarzenegger';"
+
+\! psql contrib_regression -U skynet -c "INSERT INTO people VALUES (1,'Schwarzenegger','1234567812345678', 1991);" ;
+
+\! psql contrib_regression -U skynet -c "DELETE FROM work;";
+
 --  CLEAN
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to 3 other objects
-DETAIL:  drop cascades to view mask.people
-drop cascades to view mask."CoMPaNy"
-drop cascades to event trigger anon_mask_update
+
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
+
 DROP SCHEMA mask CASCADE;
-NOTICE:  drop cascades to 4 other objects
-DETAIL:  drop cascades to view mask.test_shuffle
-drop cascades to view mask.test_shuffle_backup
-drop cascades to view mask.test_noise
-drop cascades to view mask.work
+
 DROP TABLE work;
 DROP TABLE "CoMPaNy";
 DROP TABLE people;
