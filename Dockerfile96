@@ -1,0 +1,8 @@
+FROM postgres:9.6
+
+RUN apt-get update && apt-get install -y \
+  		make \
+		postgresql-server-dev-9.6  \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY anon*  /usr/share/postgresql/9.6/extension/
