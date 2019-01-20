@@ -40,3 +40,24 @@ make install
 make installcheck
 psql
 ```
+
+Publishing a new Release
+-------------------------------------------------------------------------------
+
+☑️ Check that the CI jobs runs without errors on the `master` branch
+
+☑️ Close all remaining issues on the current milestone
+
+☑️ Update the [Changelog](CHANGELOG.md)
+
+☑️ Write the [announcement](NEWS.md)
+
+☑️ Upload the zipball to PGXN
+
+☑️ Check the PGXN install process
+
+☑️ Publish the announcement
+
+☑️ Close the current milsetone and open the next one
+
+☑️ Bump to the new version number in [anon.control]() and [META.json]()
