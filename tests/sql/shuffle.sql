@@ -46,4 +46,7 @@ FROM
 ;
 
 
-DROP EXTENSION anon;
+DROP EXTENSION anon CASCADE;
+
+DROP TABLE test_shuffle;
+DROP TABLE test_shuffle_backup;

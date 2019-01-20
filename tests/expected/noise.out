@@ -68,4 +68,5 @@ FROM test_noise;
  t
 (1 row)
 
-DROP EXTENSION anon;
+DROP EXTENSION anon CASCADE;
+DROP TABLE test_noise;

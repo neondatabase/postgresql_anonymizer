@@ -135,11 +135,7 @@ REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
 DROP SCHEMA mask CASCADE;
-NOTICE:  drop cascades to 4 other objects
-DETAIL:  drop cascades to view mask.test_shuffle
-drop cascades to view mask.test_shuffle_backup
-drop cascades to view mask.test_noise
-drop cascades to view mask.work
+NOTICE:  drop cascades to view mask.work
 DROP TABLE work;
 DROP TABLE "CoMPaNy";
 DROP TABLE people;

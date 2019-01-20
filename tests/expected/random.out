@@ -180,4 +180,4 @@ SELECT pg_typeof(anon.random_siren()) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
-DROP EXTENSION anon;
+DROP EXTENSION anon CASCADE;
