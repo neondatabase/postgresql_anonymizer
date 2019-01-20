@@ -1,9 +1,40 @@
+###############################################################################
+#
+# Makefile 
+#
+###############################################################################
+
+##
+## V A R I A B L E S
+##
+
+# This Makefile has many input variables, 
+# see link below for the standard vars offered by PGXS
+# https://www.postgresql.org/docs/current/extend-pgxs.html
+
+# The input variable below are optional
+
+# PSQL : psql client ( default = local psql )
+# PGDUMP : pg_dump tool  ( default = docker )
+# PG_TEST_EXTRA : extra tests to be run by `installcheck` ( default = none )
+
+##
+## C O N F I G
+##
+
 EXTENSION = anon
 EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 DATA = anon/*
+# Use this var to add more tests
+#PG_TEST_EXTRA ?= ""
 REGRESS = load noise shuffle random partial masking
+REGRESS+=$(PG_TEST_EXTRA)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
+
+##
+## B U I L D
+##
 
 .PHONY: extension
 extension: 
@@ -25,7 +56,7 @@ PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
 PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib/pgxs/src/test/regress/pg_regress --outputdir=tests/ --inputdir=./ --bindir='/usr/lib/postgresql/10/bin'  --inputdir=tests --dbname=contrib_regression --user=postgres unit
 
 ##
-## Docker
+## D O C K E R
 ##
 
 docker_image: Dockerfile
@@ -53,15 +84,17 @@ tests/expected/unit.out:
 	cp tests/results/unit.out tests/expected/unit.out
 
 ##
-## Load data from CSV files into SQL tables
+## L O A D
 ##
 
 .PHONY: load
+
+# Load data from CSV files into SQL tables
 load:
 	$(PSQL) -f data/load.sql
 
 ##
-## Demo & Tests
+## D E M O   &   T E S T S
 ##
 
 .PHONY: demo_masking demo_perf demo_random demo_partial
@@ -80,7 +113,7 @@ tests/sql/%.sql:
 
 
 ##
-## CI
+## C I
 ##
 
 .PHONY: ci_local
@@ -88,7 +121,7 @@ ci_local:
 	gitlab-ci-multi-runner exec docker make
 
 ##
-## PGXN
+## P G X N
 ##
 
 ZIPBALL:=$(EXTENSION)-$(EXTENSION_VERSION).zip

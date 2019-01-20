@@ -43,4 +43,4 @@ SELECT anon.partial_email(NULL) IS NULL;
  t
 (1 row)
 
-DROP EXTENSION anon;
+DROP EXTENSION anon CASCADE;

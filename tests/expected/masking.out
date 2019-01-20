@@ -126,3 +126,6 @@ drop cascades to event trigger anon_mask_update
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
+DROP SCHEMA mask CASCADE;
+DROP TABLE "T2";
+DROP TABLE t1;

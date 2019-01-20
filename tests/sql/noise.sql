@@ -53,4 +53,8 @@ AND    max(date_value) <= '01/01/2020'
 FROM test_noise;
 
 
-DROP EXTENSION anon;
+DROP EXTENSION anon CASCADE;
+
+DROP TABLE test_noise;
+
+

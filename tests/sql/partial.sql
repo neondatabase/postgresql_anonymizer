@@ -18,4 +18,4 @@ SELECT anon.partial_email('big@ben.co.uk') = 'bi******@be******.uk';
 SELECT anon.partial_email(NULL) IS NULL;
 
 
-DROP EXTENSION anon;
+DROP EXTENSION anon CASCADE;
