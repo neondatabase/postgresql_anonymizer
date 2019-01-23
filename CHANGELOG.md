@@ -20,6 +20,7 @@ CHANGELOG
   SELECT anon.datetime_noise_on_column('employees','birth_day','10 years');
   ```
 
+* Renamed faking functions for clarity
 
 * FIX #43 : Using unlogged tables was a bad idea
 
