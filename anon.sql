@@ -33,7 +33,7 @@ VALUES
 -- Noise
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.numeric_noise_column(noise_table TEXT, noise_column TEXT, ratio FLOAT)
+CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_numeric_column(noise_table TEXT, noise_column TEXT, ratio FLOAT)
 RETURNS BOOLEAN
 AS $func$
 BEGIN
@@ -48,7 +48,7 @@ $func$
 LANGUAGE plpgsql VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION @extschema@.datetime_noise_column(noise_table TEXT, noise_column TEXT, variation TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(noise_table TEXT, noise_column TEXT, variation TEXT)
 RETURNS BOOLEAN
 AS $func$
 BEGIN
@@ -279,11 +279,17 @@ RETURNS INTEGER AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
+CREATE OR REPLACE FUNCTION @extschema@.random_phone(phone_prefix TEXT DEFAULT '0' )
+RETURNS TEXT AS $$
+    SELECT phone_prefix || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT) AS "phone";
+$$
+LANGUAGE SQL VOLATILE;
+
 -------------------------------------------------------------------------------
--- Random Personal data : First Name, Last Name, etc.
+-- FAKE data 
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.random_first_name()
+CREATE OR REPLACE FUNCTION @extschema@.fake_first_name()
 RETURNS TEXT AS $$
     SELECT first_name
     FROM @extschema@.first_name
@@ -291,7 +297,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_last_name()
+CREATE OR REPLACE FUNCTION @extschema@.fake_last_name()
 RETURNS TEXT AS $$
     SELECT name
     FROM @extschema@.last_name
@@ -299,7 +305,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_email()
+CREATE OR REPLACE FUNCTION @extschema@.fake_email()
 RETURNS TEXT AS $$
     SELECT address
     FROM @extschema@.email
@@ -307,7 +313,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_city_in_country(country_name TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.fake_city_in_country(country_name TEXT)
 RETURNS TEXT AS $$
     SELECT name
     FROM @extschema@.city
@@ -316,7 +322,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_city()
+CREATE OR REPLACE FUNCTION @extschema@.fake_city()
 RETURNS TEXT AS $$
     SELECT name
     FROM @extschema@.city
@@ -324,7 +330,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_region_in_country(country_name TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.fake_region_in_country(country_name TEXT)
 RETURNS TEXT AS $$
     SELECT subcountry
     FROM @extschema@.city
@@ -333,53 +339,95 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_region()
+CREATE OR REPLACE FUNCTION @extschema@.fake_region()
 RETURNS TEXT AS $$
     SELECT subcountry FROM @extschema@.city TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_country()
+CREATE OR REPLACE FUNCTION @extschema@.fake_country()
 RETURNS TEXT AS $$
     SELECT country FROM @extschema@.city TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-
-CREATE OR REPLACE FUNCTION @extschema@.random_phone(phone_prefix TEXT DEFAULT '0' )
-RETURNS TEXT AS $$
-    SELECT phone_prefix || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT) AS "phone";
-$$
-LANGUAGE SQL VOLATILE;
-
-
--------------------------------------------------------------------------------
--- Random Commercial Data : Company Names, SIRET, IBAN, etc.
--------------------------------------------------------------------------------
-
-CREATE OR REPLACE FUNCTION @extschema@.random_company()
+CREATE OR REPLACE FUNCTION @extschema@.fake_company()
 RETURNS TEXT AS $$
     SELECT name FROM @extschema@.company TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_iban()
+CREATE OR REPLACE FUNCTION @extschema@.fake_iban()
 RETURNS TEXT AS $$
     SELECT id FROM @extschema@.iban TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_siren()
+CREATE OR REPLACE FUNCTION @extschema@.fake_siren()
 RETURNS TEXT AS $$
     SELECT siren FROM @extschema@.siret TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_siret()
+CREATE OR REPLACE FUNCTION @extschema@.fake_siret()
 RETURNS TEXT AS $$
     SELECT siren||nic FROM @extschema@.siret TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
+
+--
+-- Backward compatibility with version 0.2.1 and earlier
+--
+
+CREATE OR REPLACE FUNCTION @extschema@.random_first_name()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_first_name() $$
+LANGUAGE SQL VOLATILE;
+
+
+CREATE OR REPLACE FUNCTION @extschema@.random_last_name()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_last_name() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_email()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_email() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_city_in_country(country_name TEXT)
+RETURNS TEXT AS $$ SELECT @extschema@.fake_city_in_country(country_name) $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_city()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_city() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_region_in_country(country_name TEXT)
+RETURNS TEXT AS $$ SELECT @extschema@.fake_region_in_country(country_name) $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_region()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_region() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_country()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_country() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_company()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_company() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_iban()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_iban() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_siren()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_siren() $$
+LANGUAGE SQL VOLATILE;
+
+CREATE OR REPLACE FUNCTION @extschema@.random_siret()
+RETURNS TEXT AS $$ SELECT @extschema@.fake_siret() $$
+LANGUAGE SQL VOLATILE;
+
 
 
 -------------------------------------------------------------------------------

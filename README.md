@@ -54,9 +54,9 @@ Example
 
 =# UPDATE customer
 -# SET
--#   full_name=anon.random_first_name() || ' ' || anon.random_last_name(),
+-#   full_name=anon.fake_first_name() || ' ' || anon.fake_last_name(),
 -#   birth=anon.random_date_between('01/01/1920'::DATE,now()),
--#   employer=anon.random_company(),
+-#   employer=anon.fake_company(),
 -#   zipcode=anon.random_zip()
 -# ;
 
@@ -96,7 +96,7 @@ STEP 2 : Declare a masked user
 STEP 3 : Declare the masking rules
 
 ```sql
-=# COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
+=# COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 =# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
@@ -148,36 +148,40 @@ custom CSV files with `load('/path/to/custom_cvs_files/')`
 
 ### Noise
 
-* anon.numeric_noise_column(table, column,ratio) if ratio = 0.33, all values
+* anon.add_noise_on_numeric_column(table, column,ratio) if ratio = 0.33, all values
   of the column will be randomly shifted with a ratio of +/- 33%
 
-* anon.datetime_noise_column(table, column,interval) if interval = '2 days', 
+* anon.add_noise_on_datetime_column(table, column,interval) if interval = '2 days', 
   all values of the column will be randomly shifted by +/- 2 days
 
 ### Shuffling 
 
 * anon.shuffle_column(table, column) will rearrange all values in a given column
 
-### Fake data
+
+### Random values
 
 * anon.random_date() returns a date
 * anon.random_date_between(d1,d2) returns a date between `d1` and `d2`
 * anon.random_int_between(i1,i2) returns an integer between `i1` and `i2`
 * anon.random_string(n) returns a TEXT value containing `n` letters
-* anon.random_first_name() returns a generic first name
-* anon.random_last_name() returns a generic last name
-* anon.random_email() returns a valid email address
 * anon.random_zip() returns a 5-digit code
-* anon.random_city() returns an existing city
-* anon.random_city_in_country(c) returns a city in country `c`
-* anon.random_region() returns an existing region
-* anon.random_region_in_country(c) returns a region in country `c`
-* anon.random_country() returns a country
 * anon.random_phone(p) return a 8-digit phone with `p` as a prefix
-* anon.random_company() returns a generic company name
-* anon.random_iban() returns a valid IBAN
-* anon.random_siret() returns a valid SIRET
-* anon.random_siren() returns a valid SIREN
+
+### Fake data
+
+* anon.fake_first_name() returns a generic first name
+* anon.fake_last_name() returns a generic last name
+* anon.fake_email() returns a valid email address
+* anon.fake_city() returns an existing city
+* anon.fake_city_in_country(c) returns a city in country `c`
+* anon.fake_region() returns an existing region
+* anon.fake_region_in_country(c) returns a region in country `c`
+* anon.fake_country() returns a country
+* anon.fake_company() returns a generic company name
+* anon.fake_iban() returns a valid IBAN
+* anon.fake_siret() returns a valid SIRET
+* anon.fake_siren() returns a valid SIREN
 
 
 Upgrade

@@ -27,11 +27,11 @@ VALUES
 --CREATE TABLE test_noise_backup 
 --AS SELECT * FROM test_noise;
 
-SELECT anon.numeric_noise_column('test_noise','int_value', 0.25);
+SELECT anon.add_noise_on_numeric_column('test_noise','int_value', 0.25);
 
-SELECT anon.numeric_noise_column('test_noise','float_value', 3);
+SELECT anon.add_noise_on_numeric_column('test_noise','float_value', 3);
 
-SELECT anon.datetime_noise_column('test_noise','date_value', '365 days');
+SELECT anon.add_noise_on_datetime_column('test_noise','date_value', '365 days');
 
 
 
