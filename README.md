@@ -290,7 +290,7 @@ FROM customer;
 Links
 --------------------------------------------------------------------------------
 
-* [Dynamic Data Masking With MS SQL Server](https://docs.microsoft.com/fr-fr/sql/relational-databases/security/dynamic-data-masking)
+* [Dynamic Data Masking With MS SQL Server](https://docs.microsoft.com/en-us/sql/relational-databases/security/dynamic-data-masking)
 
 * [Citus : Using search_path and views to hide columns for reporting with Postgres](https://www.citusdata.com/blog/2018/07/03/masking-columns-in-postgresql/)
 
