@@ -42,10 +42,10 @@ SELECT anon.random_region_in_country(NULL) IS NULL;
 SELECT anon.fake_region_in_country(NULL) IS NULL;
 
 SELECT pg_typeof(anon.random_region()) = 'TEXT'::REGTYPE;
-SELECT pg_typeof(fake.random_region()) = 'TEXT'::REGTYPE;
+--SELECT pg_typeof(fake.random_region()) = 'TEXT'::REGTYPE;
 
 SELECT pg_typeof(anon.random_country()) = 'TEXT'::REGTYPE;
-SELECT pg_typeof(fake.random_country()) = 'TEXT'::REGTYPE;
+--SELECT pg_typeof(fake.random_country()) = 'TEXT'::REGTYPE;
 
 
 --
