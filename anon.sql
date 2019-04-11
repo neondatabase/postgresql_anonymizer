@@ -604,7 +604,7 @@ BEGIN
         END IF;
         comma := ',';
     END LOOP;
-    EXECUTE format('CREATE OR REPLACE VIEW %I.%I AS SELECT %s FROM %I', maskschema, sourcetable, expression, sourcetable);
+    EXECUTE format('CREATE OR REPLACE VIEW %I.%I AS SELECT %s FROM %I.%I', maskschema, sourcetable, expression, sourceschema, sourcetable);
 END
 $$
 LANGUAGE plpgsql VOLATILE;
