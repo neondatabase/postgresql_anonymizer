@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.mask_init();
 
--- Table `people` 
+-- Table `people`
 CREATE TABLE people (
 	id SERIAL UNIQUE,
 	name TEXT,
@@ -19,7 +19,7 @@ VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 COMMENT ON COLUMN people.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
 COMMENT ON COLUMN people."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
 
--- Table `CoMPaNy` 
+-- Table `CoMPaNy`
 CREATE TABLE "CoMPaNy" (
 	id_company SERIAL UNIQUE,
 	"IBAN" TEXT,
@@ -32,7 +32,15 @@ VALUES (1991,'12345677890','Cyberdyne Systems');
 COMMENT ON COLUMN "CoMPaNy"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
 COMMENT ON COLUMN "CoMPaNy".NAME IS 'jvnosdfnvsjdnvfskngvknfvg MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
 
--- Table `work` 
+-- BUG #51 :
+CREATE TABLE test_type_casts(
+	last_name VARCHAR(30)
+);
+
+COMMENT ON column test_type_casts.last_name
+IS 'MASKED WITH FUNCTION anon.random_last_name()::VARCHAR(30)';
+
+-- Table `work`
 CREATE TABLE work (
 	id_work SERIAL,
 	fk_employee INTEGER NOT NULL,
@@ -101,6 +109,7 @@ DROP ROLE skynet;
 
 DROP SCHEMA mask CASCADE;
 
+DROP TABLE test_type_casts;
 DROP TABLE work;
 DROP TABLE "CoMPaNy";
 DROP TABLE people;

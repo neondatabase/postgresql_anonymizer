@@ -183,6 +183,19 @@ custom CSV files with `load('/path/to/custom_cvs_files/')`
 * anon.fake_siret() returns a valid SIRET
 * anon.fake_siren() returns a valid SIREN
 
+### Data types 
+
+The faking functions will return values in `TEXT` data types. The random 
+functions will return `TEXT`, `INTEGER` or `TIMESTAMP WITH TIMEZONE`. If the 
+column you want to mask is in another data type (for instance `VARVHAR(30)`, 
+then you need to add an explicit cast directly in the `COMMENT` declaration,
+like this:
+
+```sql
+=# COMMENT ON COLUMN clients.family_name 
+-# IS 'MASKED WITH FUNCTION anon.fake_last_name()::VARVHAR(30)';
+```
+
 
 Upgrade
 ------------------------------------------------------------------------------

@@ -19,8 +19,8 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.config','');
 
 COMMENT ON TABLE @extschema@.config IS 'Anonymization and Masking settings';
 
-INSERT INTO @extschema@.config 
-VALUES 
+INSERT INTO @extschema@.config
+VALUES
     ('sourceschema','public'),
     ('maskschema', 'mask')
 ;
@@ -286,7 +286,7 @@ $$
 LANGUAGE SQL VOLATILE;
 
 -------------------------------------------------------------------------------
--- FAKE data 
+-- FAKE data
 -------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_first_name()
@@ -436,7 +436,7 @@ LANGUAGE SQL VOLATILE;
 
 --
 -- partial('abcdefgh',1,'xxxx',3) will return 'axxxxfgh';
--- 
+--
 CREATE OR REPLACE FUNCTION @extschema@.partial(ov TEXT, prefix INT, padding TEXT, suffix INT)
 RETURNS TEXT AS $$
   SELECT substring(ov FROM 1 FOR prefix)
@@ -489,9 +489,9 @@ JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
 WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
-AND ( 
+AND (
     pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
-OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_constant ESCAPE '#' 
+OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_constant ESCAPE '#'
 )
 ;
 
@@ -506,7 +506,7 @@ FROM pg_roles r
 -- Walk through all masked columns and permanently apply the mask
 -- This is not makeing function, but it relies on the masking infra
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
-RETURNS BOOLEAN 
+RETURNS BOOLEAN
 AS $func$
 DECLARE
     col RECORD;

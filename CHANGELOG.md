@@ -24,6 +24,8 @@ CHANGELOG
 
 * FIX #43 : Using unlogged tables was a bad idea
 
+* FIX #51 : tests & doc about explicit casting
+ 
 
 
 20181029 : 0.2.1 - Dynamic masking and partial functions
