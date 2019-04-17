@@ -11,7 +11,7 @@ CREATE TABLE t1 (
 	fk_company INTEGER
 );
 
-INSERT INTO t1 
+INSERT INTO t1
 VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 
 
@@ -24,6 +24,8 @@ CREATE TABLE "T2" (
 	COMPANY TEXT
 );
 
+\q
+
 INSERT INTO "T2"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 
@@ -35,7 +37,7 @@ SELECT count(*) = 4  FROM anon.pg_masks;
 
 SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
 
--- 
+--
 
 SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE id_company=1991;
 
@@ -53,11 +55,11 @@ SELECT anon.hasmask('skynet');
 
 SELECT anon.hasmask('postgres') IS FALSE;
 
-SELECT anon.hasmask(NULL) IS NULL; 
+SELECT anon.hasmask(NULL) IS NULL;
 
 \! psql contrib_regression -U skynet -c 'SHOW search_path;'
 
--- Disabling this test, because the error message has changed between PG10 and PG11 
+-- Disabling this test, because the error message has changed between PG10 and PG11
 -- This test should fail anyway, the skynet role is not allowed to access the t1 table
 --\! psql contrib_regression -U skynet -c "SELECT * FROM public.t1;"
 
