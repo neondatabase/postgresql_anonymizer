@@ -138,20 +138,24 @@ SELECT pg_typeof(anon.random_region()) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
-SELECT pg_typeof(fake.random_region()) = 'TEXT'::REGTYPE;
-ERROR:  schema "fake" does not exist
-LINE 1: SELECT pg_typeof(fake.random_region()) = 'TEXT'::REGTYPE;
-                         ^
+SELECT pg_typeof(anon.fake_region()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT pg_typeof(anon.random_country()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT pg_typeof(fake.random_country()) = 'TEXT'::REGTYPE;
-ERROR:  schema "fake" does not exist
-LINE 1: SELECT pg_typeof(fake.random_country()) = 'TEXT'::REGTYPE;
-                         ^
+SELECT pg_typeof(anon.fake_country()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 --
 -- Company
 --

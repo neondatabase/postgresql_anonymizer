@@ -12,7 +12,7 @@ CREATE TABLE t1 (
 	"CreditCard" TEXT,
 	fk_company INTEGER
 );
-INSERT INTO t1 
+INSERT INTO t1
 VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
 COMMENT ON COLUMN t1."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
@@ -37,7 +37,7 @@ SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname 
  t
 (1 row)
 
--- 
+--
 SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE id_company=1991;
  ?column? 
 ----------
@@ -71,7 +71,7 @@ SELECT anon.hasmask('postgres') IS FALSE;
  t
 (1 row)
 
-SELECT anon.hasmask(NULL) IS NULL; 
+SELECT anon.hasmask(NULL) IS NULL;
  ?column? 
 ----------
  t
@@ -83,7 +83,7 @@ SELECT anon.hasmask(NULL) IS NULL;
  mask, public
 (1 row)
 
--- Disabling this test, because the error message has changed between PG10 and PG11 
+-- Disabling this test, because the error message has changed between PG10 and PG11
 -- This test should fail anyway, the skynet role is not allowed to access the t1 table
 --\! psql contrib_regression -U skynet -c "SELECT * FROM public.t1;"
 \! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;"
