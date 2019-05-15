@@ -24,7 +24,6 @@ CREATE TABLE "T2" (
 	COMPANY TEXT
 );
 
-\q
 
 INSERT INTO "T2"
 VALUES (1991,'12345677890','Cyberdyne Systems');
