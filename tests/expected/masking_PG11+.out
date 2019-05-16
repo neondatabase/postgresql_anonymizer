@@ -132,18 +132,17 @@ DETAIL:  View columns that are not columns of their base relation are not updata
 \! psql contrib_regression -U skynet -c "DELETE FROM work;";
 ERROR:  permission denied for view work
 --  CLEAN
+--DROP SCHEMA mask CASCADE;
+DROP TABLE test_type_casts CASCADE;
+NOTICE:  drop cascades to view mask.test_type_casts
+DROP TABLE work CASCADE;
+NOTICE:  drop cascades to view mask.work
+DROP TABLE "CoMPaNy" CASCADE;
+NOTICE:  drop cascades to view mask."CoMPaNy"
+DROP TABLE people CASCADE;
+NOTICE:  drop cascades to view mask.people
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to 4 other objects
-DETAIL:  drop cascades to view mask.people
-drop cascades to view mask.test_type_casts
-drop cascades to view mask."CoMPaNy"
-drop cascades to event trigger anon_mask_update
+NOTICE:  drop cascades to event trigger anon_mask_update
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
-DROP SCHEMA mask CASCADE;
-NOTICE:  drop cascades to view mask.work
-DROP TABLE test_type_casts;
-DROP TABLE work;
-DROP TABLE "CoMPaNy";
-DROP TABLE people;

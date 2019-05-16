@@ -101,15 +101,16 @@ SELECT anon.hasmask(NULL) IS NULL;
 \! psql contrib_regression -U skynet -c "DELETE FROM work;";
 
 --  CLEAN
+
+--DROP SCHEMA mask CASCADE;
+
+DROP TABLE test_type_casts CASCADE;
+DROP TABLE work CASCADE;
+DROP TABLE "CoMPaNy" CASCADE;
+DROP TABLE people CASCADE;
+
 DROP EXTENSION anon CASCADE;
 
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
-
-DROP SCHEMA mask CASCADE;
-
-DROP TABLE test_type_casts;
-DROP TABLE work;
-DROP TABLE "CoMPaNy";
-DROP TABLE people;

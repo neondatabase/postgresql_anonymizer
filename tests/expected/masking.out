@@ -17,7 +17,7 @@ VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
 COMMENT ON COLUMN t1."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
 CREATE TABLE "T2" (
-	id_company SERIAL,
+	rn SERIAL,
 	"IBAN" TEXT,
 	COMPANY TEXT
 );
@@ -38,7 +38,7 @@ SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname 
 (1 row)
 
 --
-SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE id_company=1991;
+SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE rn=1991;
  ?column? 
 ----------
  t
@@ -92,7 +92,7 @@ SELECT anon.hasmask(NULL) IS NULL;
  t
 (1 row)
 
-\! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE id_company=1991;"
+\! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE rn=1991;"
  ?column? 
 ----------
  t
@@ -105,7 +105,7 @@ SELECT anon.static_substitution();
  t
 (1 row)
 
-SELECT company != 'Cyberdyne Systems' FROM "T2" WHERE id_company=1991;
+SELECT company != 'Cyberdyne Systems' FROM "T2" WHERE rn=1991;
  ?column? 
 ----------
  t
@@ -118,14 +118,12 @@ SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;
 (1 row)
 
 --  CLEAN
+DROP TABLE "T2" CASCADE;
+NOTICE:  drop cascades to view mask."T2"
+DROP TABLE t1 CASCADE;
+NOTICE:  drop cascades to view mask.t1
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to 3 other objects
-DETAIL:  drop cascades to view mask.t1
-drop cascades to view mask."T2"
-drop cascades to event trigger anon_mask_update
+NOTICE:  drop cascades to event trigger anon_mask_update
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
-DROP SCHEMA mask CASCADE;
-DROP TABLE "T2";
-DROP TABLE t1;
