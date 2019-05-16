@@ -19,11 +19,10 @@ COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
 COMMENT ON COLUMN t1."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
 
 CREATE TABLE "T2" (
-	id_company SERIAL,
+	rn SERIAL,
 	"IBAN" TEXT,
 	COMPANY TEXT
 );
-
 
 INSERT INTO "T2"
 VALUES (1991,'12345677890','Cyberdyne Systems');
@@ -38,7 +37,7 @@ SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname 
 
 --
 
-SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE id_company=1991;
+SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE rn=1991;
 
 SELECT name != 'Schwarzenegger' FROM mask.t1 WHERE id = 1;
 
@@ -64,25 +63,23 @@ SELECT anon.hasmask(NULL) IS NULL;
 
 \! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;"
 
-\! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE id_company=1991;"
+\! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE rn=1991;"
 
 -- STATIC SUBST
 
 SELECT anon.static_substitution();
 
-SELECT company != 'Cyberdyne Systems' FROM "T2" WHERE id_company=1991;
+SELECT company != 'Cyberdyne Systems' FROM "T2" WHERE rn=1991;
 
 SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;
 
 --  CLEAN
+
+DROP TABLE "T2" CASCADE;
+DROP TABLE t1 CASCADE;
 
 DROP EXTENSION anon CASCADE;
 
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
-
-DROP SCHEMA mask CASCADE;
-
-DROP TABLE "T2";
-DROP TABLE t1;
