@@ -3,7 +3,7 @@
 --\echo Use "CREATE EXTENSION anon" to load this file. \quit
 
 -- the tms_system_rows extension should be available with all distributions of postgres
---CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
+--^ CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 
 -------------------------------------------------------------------------------
 -- Config
