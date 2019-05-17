@@ -126,7 +126,8 @@ Install
 
 Simply run `sudo pgxn install postgresql_anonymizer`
 
-or see [INSTALL.md] for more detailed instructions
+or see [INSTALL.md] for more detailed instructions or if you want to deploy it
+on Amazon RDS or some other DBAAS service. 
 
 
 How To Use
