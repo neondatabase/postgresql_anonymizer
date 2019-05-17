@@ -10,4 +10,8 @@ SELECT anon.unload();
 
 SELECT anon.isloaded() IS FALSE;
 
+SELECT anon.mask_init( autoload := FALSE);
+
+SELECT anon.isloaded() IS FALSE;
+
 DROP EXTENSION anon CASCADE;

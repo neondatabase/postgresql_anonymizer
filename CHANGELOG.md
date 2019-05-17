@@ -24,6 +24,8 @@ CHANGELOG
 
 * FIX #43 : Using unlogged tables was a bad idea
 
+* Add `autoload` parameter to `mask_init` function. 
+  Default to TRUE for backward compatibility
 
 
 20181029 : 0.2.1 - Dynamic masking and partial functions
