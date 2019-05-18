@@ -24,6 +24,8 @@ CHANGELOG
 
 * FIX #43 : Using unlogged tables was a bad idea
 
+* FIX #51 : tests & doc about explicit casting
+ 
 * Add `autoload` parameter to `mask_init` function. 
   Default to TRUE for backward compatibility
 

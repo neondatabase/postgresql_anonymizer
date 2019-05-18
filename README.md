@@ -1,5 +1,4 @@
 
-
 ![PostgreSQL Anonymizer](postgresql_anonymizer.banner.gif)
 
 Anonymizing and Masking Data with PostgreSQL
@@ -183,6 +182,19 @@ custom CSV files with `load('/path/to/custom_cvs_files/')`
 * anon.fake_iban() returns a valid IBAN
 * anon.fake_siret() returns a valid SIRET
 * anon.fake_siren() returns a valid SIREN
+
+### Data types 
+
+The faking functions will return values in `TEXT` data types. The random 
+functions will return `TEXT`, `INTEGER` or `TIMESTAMP WITH TIMEZONE`. If the 
+column you want to mask is in another data type (for instance `VARCHAR(30)`, 
+then you need to add an explicit cast directly in the `COMMENT` declaration,
+like this:
+
+```sql
+=# COMMENT ON COLUMN clients.family_name 
+-# IS 'MASKED WITH FUNCTION anon.fake_last_name()::VARCHAR(30)';
+```
 
 
 Upgrade
