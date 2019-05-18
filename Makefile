@@ -37,19 +37,30 @@ REGRESS_OPTS = --inputdir=tests
 ##
 
 .PHONY: extension
-extension: 
+extension: anon/ anon/anon--$(EXTENSION_VERSION).sql anon/anon.no_extension.sql
+
+anon/:
 	mkdir -p anon 
-	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/default/* anon/
 
+anon/anon--$(EXTENSION_VERSION).sql: anon.sql
+	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
+
+SED1=sed 's/@extschema@/anon/'
+SED2=sed 's/.*SELECT pg_catalog.pg_extension_config_dump.*//'
+SED3=sed 's/--\$.*//'
+SED4=sed 's/--\^ //'
+anon/anon.no_extension.sql: anon.sql
+	cat $^ | $(SED1) | $(SED2) | $(SED3) | $(SED4) > $@
+
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
-SED1=sed 's/public.//' 
-SED2=sed 's/SELECT.*search_path.*//' 
-SED3=sed 's/^SET idle_in_transaction_session_timeout.*//'
-SED4=sed 's/^SET row_security.*//'
+SED11=sed 's/public.//' 
+SED12=sed 's/SELECT.*search_path.*//' 
+SED13=sed 's/^SET idle_in_transaction_session_timeout.*//'
+SED14=sed 's/^SET row_security.*//'
 
 sql/tables/%.sql:
-	$(PG_DUMP) --table $* | $(SED1) | $(SED2) | $(SED3) | $(SED4) > $@
+	$(PG_DUMP) --table $* | $(SED11) | $(SED12) | $(SED13) | $(SED14) > $@
 
 
 PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322

@@ -26,6 +26,11 @@ CHANGELOG
 
 * FIX #51 : tests & doc about explicit casting
  
+* Add `autoload` parameter to `mask_init` function. 
+  Default to TRUE for backward compatibility
+
+* Add `anon.no_extension.sql` for people in the cloud
+
 
 
 20181029 : 0.2.1 - Dynamic masking and partial functions

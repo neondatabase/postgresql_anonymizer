@@ -3,7 +3,7 @@
 --\echo Use "CREATE EXTENSION anon" to load this file. \quit
 
 -- the tms_system_rows extension should be available with all distributions of postgres
---CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
+--^ CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 
 -------------------------------------------------------------------------------
 -- Config
@@ -610,14 +610,20 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Activate the masking engine
-CREATE OR REPLACE FUNCTION @extschema@.mask_init(sourceschema TEXT DEFAULT 'public', maskschema TEXT DEFAULT 'mask')
+CREATE OR REPLACE FUNCTION @extschema@.mask_init(
+                                    sourceschema TEXT DEFAULT 'public',
+                                    maskschema TEXT DEFAULT 'mask',
+                                    autoload BOOLEAN DEFAULT TRUE
+)
 RETURNS BOOLEAN AS
 $$
 DECLARE
     r RECORD;
 BEGIN
   SELECT @extschema@.isloaded() AS loaded INTO r;
-  IF r.loaded THEN
+  IF NOT autoload THEN
+    RAISE DEBUG 'Autoload is disabled.';
+  ELSEIF r.loaded THEN
     RAISE DEBUG 'Anon data is already loaded.';
   ELSE
     PERFORM @extschema@.load();

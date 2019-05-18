@@ -7,12 +7,12 @@ SELECT anon.mask_init();
 CREATE TABLE t1 (
 	id SERIAL,
 	name TEXT,
-	"CreditCard" TEXT,
-	fk_company INTEGER
+	"CreditCard" TEXT
+	--fk_company INTEGER
 );
 
-INSERT INTO t1
-VALUES (1,'Schwarzenegger','1234567812345678', 1991);
+INSERT INTO t1 
+VALUES (1,'Schwarzenegger','1234567812345678');
 
 
 COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
