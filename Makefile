@@ -27,7 +27,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS = load noise shuffle random faking partial masking vacuumlo
+REGRESS = load noise shuffle random faking partial masking
 REGRESS+=$(PG_TEST_EXTRA)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
@@ -37,30 +37,19 @@ REGRESS_OPTS = --inputdir=tests
 ##
 
 .PHONY: extension
-extension: anon/ anon/anon--$(EXTENSION_VERSION).sql anon/anon.no_extension.sql
-
-anon/:
+extension: 
 	mkdir -p anon 
+	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/default/* anon/
 
-anon/anon--$(EXTENSION_VERSION).sql: anon.sql
-	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
-
-SED1=sed 's/@extschema@/anon/'
-SED2=sed 's/.*SELECT pg_catalog.pg_extension_config_dump.*//'
-SED3=sed 's/--\$.*//'
-SED4=sed 's/--\^ //'
-anon/anon.no_extension.sql: anon.sql
-	cat $^ | $(SED1) | $(SED2) | $(SED3) | $(SED4) > $@
-
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
-SED11=sed 's/public.//' 
-SED12=sed 's/SELECT.*search_path.*//' 
-SED13=sed 's/^SET idle_in_transaction_session_timeout.*//'
-SED14=sed 's/^SET row_security.*//'
+SED1=sed 's/public.//' 
+SED2=sed 's/SELECT.*search_path.*//' 
+SED3=sed 's/^SET idle_in_transaction_session_timeout.*//'
+SED4=sed 's/^SET row_security.*//'
 
 sql/tables/%.sql:
-	$(PG_DUMP) --table $* | $(SED11) | $(SED12) | $(SED13) | $(SED14) > $@
+	$(PG_DUMP) --table $* | $(SED1) | $(SED2) | $(SED3) | $(SED4) > $@
 
 
 PSQL?=PGPASSWORD=CHANGEME psql -U postgres -h 0.0.0.0 -p54322
@@ -71,10 +60,10 @@ PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib
 ##
 
 docker_image: Dockerfile
-	docker build -t registry.gitlab.com/daamien/postgresql_anonymizer .
+	docker build -t registry.gitlab.com/dalibo/postgresql_anonymizer .
 
 docker_push:
-	docker push registry.gitlab.com/daamien/postgresql_anonymizer
+	docker push registry.gitlab.com/dalibo/postgresql_anonymizer
 
 docker_bash:
 	docker exec -it postgresqlanonymizer_PostgreSQL_1 bash
