@@ -1,5 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 NOTICE:  installing required extension "tsm_system_rows"
+NOTICE:  installing required extension "ddlx"
 SELECT anon.isloaded() IS FALSE; 
  ?column? 
 ----------
@@ -43,4 +44,3 @@ SELECT anon.isloaded() IS FALSE;
 (1 row)
 
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to event trigger anon_mask_update

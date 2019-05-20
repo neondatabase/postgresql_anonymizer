@@ -4,5 +4,5 @@ default_version = '0.3.1'
 directory='extension/anon'
 schema = 'anon'
 relocatable = false
-requires = 'tsm_system_rows'
+requires = 'tsm_system_rows,ddlx'
 superuser = false

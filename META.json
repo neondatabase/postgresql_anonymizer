@@ -7,7 +7,7 @@
       "Damien Clochard <daamien@gmail.com>"
    ],
    "license": {
-      "PostgreSQL": "https://gitlab.com/daamien/postgresql_anonymizer/blob/master/LICENSE.md"
+      "PostgreSQL": "https://gitlab.com/dalibo/postgresql_anonymizer/blob/master/LICENSE.md"
    },
    "prereqs": {
       "runtime": {
@@ -25,13 +25,13 @@
      }
    },
    "resources": {
-      "homepage": "https://gitlab.com/daamien/postgresql_anonymizer",
+      "homepage": "https://gitlab.com/dalibo/postgresql_anonymizer",
       "bugtracker": {
-         "web": "https://gitlab.com/daamien/postgresql_anonymizer/issues"
+         "web": "https://gitlab.com/dalibo/postgresql_anonymizer/issues"
       },
       "repository": {
-        "url":  "https://gitlab.com/daamien/postgresql_anonymizer.git",
-        "web":  "https://gitlab.com/daamien/postgresql_anonymizer",
+        "url":  "https://gitlab.com/dalibo/postgresql_anonymizer.git",
+        "web":  "https://gitlab.com/dalibo/postgresql_anonymizer",
         "type": "git"
       }
    },

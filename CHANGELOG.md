@@ -5,6 +5,10 @@ CHANGELOG
 2019FIXME : 0.3.1 - Shuffle and Variance
 -------------------------------------------------------------------------------
 
+__Dependencies:__ 
+  - tms_system_rows
+  - pgddl 0.10
+
 * shuffle an entire column with the new function : 
 	```sql
 	SELECT anon.shuffle_column('employees','salary');
