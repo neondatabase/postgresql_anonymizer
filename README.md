@@ -88,7 +88,7 @@ STEP 1 : Activate the masking engine
 STEP 2 : Declare a masked user
 
 ```sql
-=# CREATE ROLE skynet;
+=# CREATE ROLE skynet LOGIN;
 =# COMMENT ON ROLE skynet IS 'MASKED';
 ```
 
