@@ -1,7 +1,7 @@
 
-![PostgreSQL Anonymizer](postgresql_anonymizer.banner.gif)
+![PostgreSQL Anonymizer](images/png_RVB/PostgreSQL-Anonymizer_H_couleur.png)
 
-Anonymizing and Masking Data with PostgreSQL
+Anonymization & Data Masking for PostgreSQL
 ===============================================================================
 
 `postgresql_anonymizer` is an extension to mask or replace
