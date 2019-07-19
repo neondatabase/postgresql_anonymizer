@@ -140,8 +140,8 @@ pgxn:
 	rm -fr $(ZIPBALL)
 	# copy artefact into the package
 	cp -pr anon ./$(EXTENSION)_$(EXTENSION_VERSION)/
-	# remove files that are useless in the PGXN package 
-	rm ./$(EXTENSION)_$(EXTENSION_VERSION)/*.gif ./$(EXTENSION)_$(EXTENSION_VERSION)/Dockerfile*
+	# remove folders and files that are useless in the PGXN package 
+	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/images ./$(EXTENSION)_$(EXTENSION_VERSION)/Dockerfile*
 	# rebuild the package
 	zip -r $(ZIPBALL) ./$(EXTENSION)_$(EXTENSION_VERSION)/
 	# clean up
