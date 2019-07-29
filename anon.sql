@@ -525,7 +525,7 @@ FROM pg_roles r
 -- This is not makeing function, but it relies on the masking infra
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS BOOLEAN
-AS $func$
+AS $$
 DECLARE
     col RECORD;
 BEGIN
@@ -538,7 +538,7 @@ BEGIN
   END LOOP;
   RETURN TRUE;
 END;
-$func$
+$$
 LANGUAGE plpgsql VOLATILE;
 
 -- True if the role is masked
@@ -552,32 +552,34 @@ WHERE rolname = quote_ident(role);
 $$
 LANGUAGE SQL VOLATILE;
 
--- Extend the `columns` catalog with a 'masking_function' field
-CREATE OR REPLACE FUNCTION @extschema@.mask_columns(sourcetable TEXT,sourceschema TEXT)
+-- Display all columns of the relation with the masking function (if any)
+CREATE OR REPLACE FUNCTION @extschema@.mask_columns(source_relid OID)
 RETURNS TABLE (
-    attname TEXT,
+    attname NAME,
     masking_function TEXT
 ) AS
 $$
 SELECT
-    c.column_name,
-    m.masking_function
-FROM information_schema.columns c
-LEFT JOIN @extschema@.pg_masks m ON m.attname = c.column_name AND m.relid::regclass::TEXT = c.table_name
-WHERE table_name=sourcetable
-and table_schema=quote_ident(sourceschema)
--- FIXME : FILTER schema_name on anon.pg_mask too
+	a.attname,
+	m.masking_function
+FROM pg_attribute a
+LEFT JOIN anon.pg_masks m ON m.relid = a.attrelid AND m.attname = a.attname
+WHERE  a.attrelid = source_relid 
+AND    a.attnum > 0 -- exclude ctid, cmin, cmax
+AND    NOT a.attisdropped
+ORDER BY a.attnum
 ;
 $$
 LANGUAGE SQL VOLATILE;
 
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
--- FIXME sanitize maskschema
-CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema TEXT, maskschema TEXT)
+-- We can't use the namespace oids because the mask schema may not be present
+CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema NAME, maskschema NAME)
 RETURNS SETOF VOID AS
 $$
 DECLARE
+	maskschemaid OID;
     t RECORD;
 BEGIN
   -- Be sure that the target schema is here
@@ -590,10 +592,17 @@ BEGIN
     EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I',maskschema);
   END IF;
 
+  -- get schema OID. Now that we're sure it is present
+  SELECT oid INTO maskschemaid FROM pg_namespace WHERE nspname = maskschema;
+
   -- Walk through all tables in the source schema
-  FOR  t IN SELECT * FROM pg_tables WHERE schemaname = quote_ident(sourceschema)
+  FOR  t IN
+	SELECT oid
+	FROM pg_class
+	WHERE relnamespace=sourceschema::regnamespace
+	AND relkind = 'r' -- relations only
   LOOP
-    PERFORM @extschema@.mask_create_view(t.tablename,sourceschema,maskschema);
+    PERFORM @extschema@.mask_create_view(t.oid,maskschemaid);
   END LOOP;
 END
 $$
@@ -601,18 +610,17 @@ LANGUAGE plpgsql VOLATILE;
 
 -- Build a masked view for a table
 -- FIXME sanitize maskschema
-CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(sourcetable TEXT, sourceschema TEXT, maskschema TEXT)
-RETURNS SETOF VOID AS
+CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID, maskschemaid OID)
+RETURNS BOOLEAN AS
 $$
 DECLARE
     m RECORD;
     expression TEXT;
     comma TEXT;
-    --func TEXT;
 BEGIN
     expression := '';
     comma := '';
-    FOR m IN SELECT * FROM @extschema@.mask_columns(sourcetable,sourceschema)
+    FOR m IN SELECT * FROM @extschema@.mask_columns(relid)
     LOOP
         expression := expression || comma;
         IF m.masking_function IS NULL THEN
@@ -624,7 +632,8 @@ BEGIN
         END IF;
         comma := ',';
     END LOOP;
-    EXECUTE format('CREATE OR REPLACE VIEW %I.%I AS SELECT %s FROM %I', maskschema, sourcetable, expression, sourcetable);
+    EXECUTE format('CREATE OR REPLACE VIEW %s.%s AS SELECT %s FROM %s', maskschemaid::regnamespace, relid::regclass, expression, relid::regclass);
+	RETURN TRUE; 
 END
 $$
 LANGUAGE plpgsql VOLATILE;
