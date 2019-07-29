@@ -12,7 +12,8 @@
    "prereqs": {
       "runtime": {
          "requires": {
-            "PostgreSQL": "9.6.0"
+            "PostgreSQL": "9.6.0",
+			"ddlx": "0.12.0"
          }
       }
    },
