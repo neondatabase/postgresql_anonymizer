@@ -32,30 +32,37 @@ VALUES
 -------------------------------------------------------------------------------
 -- Noise
 -------------------------------------------------------------------------------
--- FIXME sanitize noise_table
-CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_numeric_column(noise_table TEXT, noise_column TEXT, ratio FLOAT)
+
+CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_numeric_column(
+                                                        noise_table regclass,
+                                                        noise_column TEXT,
+                                                        ratio FLOAT
+                                                        )
 RETURNS BOOLEAN
 AS $func$
 BEGIN
-EXECUTE format('
-UPDATE %I
-SET %I = %I *  (1+ (2 * random() - 1 ) * %L) ;
-', noise_table, noise_column, noise_column, ratio
+  EXECUTE format('
+     UPDATE %I
+     SET %I = %I *  (1+ (2 * random() - 1 ) * %L) ;
+     ', noise_table, noise_column, noise_column, ratio
 );
 RETURN TRUE;
 END;
 $func$
 LANGUAGE plpgsql VOLATILE;
 
--- FIXME sanitize noise_table
-CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(noise_table TEXT, noise_column TEXT, variation TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(
+                                                        noise_table regclass,
+                                                        noise_column TEXT,
+                                                        variation TEXT
+                                                        )
 RETURNS BOOLEAN
 AS $func$
 BEGIN
-EXECUTE format('
-UPDATE %I
-SET %I = %I + (2 * random() - 1 ) * %L ::INTERVAL
-', noise_table, noise_column, noise_column, variation
+  EXECUTE format('
+    UPDATE %I
+    SET %I = %I + (2 * random() - 1 ) * %L ::INTERVAL
+    ', noise_table, noise_column, noise_column, variation
 );
 RETURN TRUE;
 END;
@@ -66,28 +73,35 @@ LANGUAGE plpgsql VOLATILE;
 -- Shuffle
 -------------------------------------------------------------------------------
 
---FIXME use regclass instead of TEXT
 
-CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(shuffle_table TEXT, shuffle_column TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(
+                                                shuffle_table regclass,
+                                                shuffle_column TEXT,
+                                                primary_key TEXT
+                                                )
 RETURNS BOOLEAN
 AS $func$
 BEGIN
 
-EXECUTE format('WITH p1 AS (
+  EXECUTE format('
+  WITH s1 AS (
+    -- shuffle the primary key
     SELECT row_number() over (order by random()) n,
-           %I AS id1
-    FROM %I
-),
-p2 AS (
+           %3$I AS pkey
+    FROM %1$I
+  ),
+  s2 AS (
+    -- shuffle the column
     SELECT row_number() over (order by random()) n,
-           id AS id2
-    FROM %I
-)
-UPDATE %I
-SET %I = p1.id1
-FROM p1 join p2 on p1.n = p2.n
-WHERE id = p2.id2;', shuffle_column, shuffle_table, shuffle_table, shuffle_table, shuffle_column);
-RETURN TRUE;
+           %2$I AS val
+    FROM %1$I
+  )
+  UPDATE %1$I
+  SET %2$I = s2.val
+  FROM s1 JOIN s2 ON s1.n = s2.n
+  WHERE %3$I = s1.pkey;
+  ', shuffle_table, shuffle_column, primary_key);
+  RETURN TRUE;
 END;
 $func$
 LANGUAGE plpgsql VOLATILE;

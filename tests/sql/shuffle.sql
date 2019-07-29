@@ -25,7 +25,7 @@ VALUES
 CREATE TABLE test_shuffle_backup 
 AS SELECT * FROM test_shuffle;
 
-SELECT anon.shuffle_column('test_shuffle','value');
+SELECT anon.shuffle_column('test_shuffle','value','key');
 
 
 -- TEST 1 : `shuffle()` does not modify the sum

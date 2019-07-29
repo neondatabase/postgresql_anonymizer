@@ -11,7 +11,7 @@ __Dependencies:__
 
 * shuffle an entire column with the new function : 
 	```sql
-	SELECT anon.shuffle_column('employees','salary');
+	SELECT anon.shuffle_column('employees','salary', 'id');
 	```
 
 * Add +/-33% of noise to a column with:
