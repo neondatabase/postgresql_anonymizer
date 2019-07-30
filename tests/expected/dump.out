@@ -124,13 +124,12 @@ SELECT anon.dump();
  COPY customer FROM STDIN;                                                        +
  1       cfcd208495d565ef66e7dff9f98764da        cfcd208495d565ef66e7dff9f98764da +
  \.                                                                               +
-                                                                                  +
-                                                                                  +
+ 
  COPY "COMPANY" FROM STDIN;                                                       +
  1991    cfcd208495d565ef66e7dff9f98764da        cfcd208495d565ef66e7dff9f98764da +
  \.                                                                               +
  
-(7 rows)
+(8 rows)
 
 -- 1. Dump into a file
 \! psql -q -t -A -c 'SELECT anon.dump()' contrib_regression > dump1.sql
@@ -199,15 +198,3 @@ COPY "COMPANY" FROM STDIN;
 \! psql -t -A -c 'SELECT anon.dump()' contrib_regression > dump2.sql
 -- 4. Check that both dump files are identical
 \! diff dump1.sql dump2.sql
-79,80c79,80
-< COPY customer FROM STDIN; 
-< 1	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da
----
-> COPY "COMPANY" FROM STDIN; 
-> 1991	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da
-84,85c84,85
-< COPY "COMPANY" FROM STDIN; 
-< 1991	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da
----
-> COPY customer FROM STDIN; 
-> 1	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da

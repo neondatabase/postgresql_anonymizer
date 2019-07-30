@@ -821,39 +821,35 @@ LANGUAGE plpgsql VOLATILE;
 
 -- export content of the tables that don't have a mask
 CREATE OR REPLACE FUNCTION @extschema@.dump_clear_data()
-RETURNS TEXT AS
+RETURNS TABLE(
+	data TEXT
+) AS
 $$
-  SELECT string_agg(
-                @extschema@.get_insert_statement(relid,relid),
-                E'\n\n'
-        )
+  SELECT @extschema@.get_insert_statement(relid,relid)
   FROM pg_stat_user_tables
   WHERE schemaname NOT IN ( '@extschema@' , 'mask') --FIXME mask
   AND relid NOT IN (
       SELECT relid
       FROM @extschema@.pg_masks
     )
---  GROUP BY relid
---  ORDER BY relid::regclass -- sort by name to force the dump order
+  ORDER BY relid::regclass -- sort by name to force the dump order
 $$
 LANGUAGE SQL;
 
 -- export content of the masked tables
 CREATE OR REPLACE FUNCTION @extschema@.dump_anon_data()
-RETURNS TEXT AS
+RETURNS TABLE (
+	data TEXT
+) AS
 $$
-  SELECT string_agg(
-                @extschema@.get_insert_statement('mask'||'.'||relid::regclass,relid),
-                E'\n\n'
-        )
+  SELECT @extschema@.get_insert_statement('mask'||'.'||relid::regclass,relid)
   FROM pg_stat_user_tables
   WHERE schemaname NOT IN ( '@extschema@' , 'mask') --FIXME mask
   AND relid IN (
       SELECT relid
       FROM @extschema@.pg_masks
     )
---  GROUP BY relid
---  ORDER BY  relid::regclass -- sort by name to force the dump order 
+  ORDER BY  relid::regclass -- sort by name to force the dump order 
 $$
 LANGUAGE SQL;
 
