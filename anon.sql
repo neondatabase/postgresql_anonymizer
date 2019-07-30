@@ -560,7 +560,7 @@ RETURNS TABLE (
 ) AS
 $$
 SELECT
-	a.attname,
+	a.attname::NAME, -- explicit cast for PG 9.6
 	m.masking_function
 FROM pg_attribute a
 LEFT JOIN anon.pg_masks m ON m.relid = a.attrelid AND m.attname = a.attname
@@ -771,39 +771,14 @@ LANGUAGE plpgsql VOLATILE;
 -- Dumping
 -------------------------------------------------------------------------------
 
--- export the database schema + anonmyized data
-CREATE OR REPLACE FUNCTION @extschema@.dump()
-RETURNS TEXT AS
-$$
-DECLARE
-  ddl TEXT;
-BEGIN
-  IF NOT EXISTS (
-    SELECT FROM pg_extension WHERE extname='ddlx'
-  )
-  THEN
-    RAISE EXCEPTION 'The pgddl extension is missing.'
-       USING HINT = 'Use "CREATE EXTENSION ddlx;" or check the documentation for more details';
-    RETURN NULL;
-  END IF;
-  SELECT string_agg(tmp::TEXT,E'\n') INTO ddl
-  FROM (
-    SELECT @extschema@.dump_ddl()
-    UNION
-    SELECT @extschema@.dump_clear_data()
-  ) AS tmp;
---  SELECT @extschema@.dump_anon_data();
-  RETURN ddl ;
-END
-$$
-LANGUAGE plpgsql VOLATILE;
-
-
 CREATE OR REPLACE FUNCTION @extschema@.dump_ddl()
-RETURNS TEXT AS
+--RETURNS TEXT AS
+RETURNS TABLE (
+    ddl TEXT
+) AS
 $$
-  SELECT string_agg(tmp::TEXT,E'\n')
-  FROM (
+--  SELECT string_agg(tmp::TEXT,E'\n')
+--  FROM (
     SELECT ddlx_create(oid)
     FROM pg_class
     WHERE relkind != 't'
@@ -813,7 +788,8 @@ $$
       WHERE nspname NOT LIKE 'pg_%'
       AND nspname NOT IN ( 'information_schema' , '@extschema@' , 'mask') --FIXME mask
     )
-  ) AS tmp;
+--  ) AS tmp
+    ;
 $$
 LANGUAGE SQL;
 
@@ -832,7 +808,6 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql VOLATILE;
-
 
 CREATE OR REPLACE FUNCTION @extschema@.dump_clear_data()
 RETURNS TEXT AS
@@ -859,6 +834,40 @@ $$
 SELECT '';
 $$
 LANGUAGE SQL;
+
+-- export the database schema + anonmyized data
+CREATE OR REPLACE FUNCTION @extschema@.dump()
+--RETURNS TEXT AS
+RETURNS TABLE (
+	ddl TEXT
+) AS
+$$
+--DECLARE
+--  ddl TEXT;
+--BEGIN
+--  IF NOT EXISTS (
+--    SELECT FROM pg_extension WHERE extname='ddlx'
+--  )
+--  THEN
+--    RAISE EXCEPTION 'The pgddl extension is missing.'
+--       USING HINT = 'Use "CREATE EXTENSION ddlx;" or check the documentation for more details';
+--    RETURN NULL;
+--  END IF;
+--  SELECT string_agg(tmp::TEXT,E'\n') INTO ddl
+--  FROM (
+    SELECT @extschema@.dump_ddl()
+    UNION
+    SELECT @extschema@.dump_clear_data()
+--  ) AS tmp;
+--  SELECT @extschema@.dump_anon_data();
+--  RETURN ddl ;
+--END
+$$
+--LANGUAGE plpgsql VOLATILE;
+LANGUAGE SQL;
+
+
+
 
 -------------------------------------------------------------------------------
 -- Scanning
