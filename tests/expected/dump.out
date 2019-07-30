@@ -198,3 +198,12 @@ COPY "COMPANY" FROM STDIN;
 \! psql -t -A -c 'SELECT anon.dump()' contrib_regression > dump2.sql
 -- 4. Check that both dump files are identical
 \! diff dump1.sql dump2.sql
+--  CLEAN
+DROP TABLE "COMPANY" CASCADE;
+NOTICE:  drop cascades to view mask."COMPANY"
+DROP TABLE customer CASCADE;
+NOTICE:  drop cascades to view mask.customer
+DROP TABLE cards CASCADE;
+NOTICE:  drop cascades to view mask.cards
+DROP EXTENSION anon CASCADE;
+NOTICE:  drop cascades to event trigger anon_mask_update

@@ -68,3 +68,10 @@ DROP TABLE "COMPANY" CASCADE;
 -- 4. Check that both dump files are identical
 \! diff dump1.sql dump2.sql
 
+--  CLEAN
+
+DROP TABLE "COMPANY" CASCADE;
+DROP TABLE customer CASCADE;
+DROP TABLE cards CASCADE;
+
+DROP EXTENSION anon CASCADE;
