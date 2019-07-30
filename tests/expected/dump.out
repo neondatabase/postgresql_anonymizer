@@ -1,3 +1,4 @@
+-- this test must be runned on a databse named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- INIT
 SELECT anon.mask_init();
@@ -6,18 +7,26 @@ SELECT anon.mask_init();
  t
 (1 row)
 
+CREATE TABLE cards (
+  id integer NOT NULL,
+  board_id integer NOT NULL,
+  data TEXT 
+);
+--INSERT INTO cards VALUES (1, 1, 'Paint house');
+INSERT INTO cards VALUES (2, 1, 'Clean');
+INSERT INTO cards VALUES (3, 1, 'Cook');
+INSERT INTO cards VALUES (4, 1, 'Vacuum');
 CREATE TABLE customer (
 	id SERIAL,
 	name TEXT,
 	"CreditCard" TEXT
-	--fk_company INTEGER
 );
 INSERT INTO customer
 VALUES (1,'Schwarzenegger','1234567812345678');
 COMMENT ON COLUMN customer.name 
-IS 'MASKED WITH FUNCTION anon.random_last_name() ';
+IS E'MASKED WITH FUNCTION md5(''0'') ';
 COMMENT ON COLUMN customer."CreditCard" 
-IS 'MASKED WITH FUNCTION  anon.random_string(12)';
+IS E'MASKED WITH FUNCTION md5(''0'') ';
 CREATE TABLE "COMPANY" (
 	rn SERIAL,
 	"IBAN" TEXT,
@@ -25,78 +34,109 @@ CREATE TABLE "COMPANY" (
 );
 INSERT INTO "COMPANY"
 VALUES (1991,'12345677890','Cyberdyne Systems');
-COMMENT ON COLUMN "COMPANY"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
-COMMENT ON COLUMN "COMPANY".brand IS 'MASKED WITH FUNCTION anon.random_company()';
+COMMENT ON COLUMN "COMPANY"."IBAN" 
+IS E'MASKED WITH FUNCTION md5(''0'') ';
+COMMENT ON COLUMN "COMPANY".brand 
+IS E'MASKED WITH FUNCTION md5(''0'')';
 -- 0. basic test : call the dump function
+\set PAGER OFF
 SELECT anon.dump();
-                                            dump                                            
---------------------------------------------------------------------------------------------
+                                       dump                                        
+-----------------------------------------------------------------------------------
+ -- Type: SEQUENCE ; Name: customer_id_seq; Owner: postgres                       +
+                                                                                  +
+ CREATE SEQUENCE customer_id_seq;                                                 +
+ ALTER SEQUENCE customer_id_seq                                                   +
+  INCREMENT BY 1                                                                  +
+  MINVALUE 1                                                                      +
+  MAXVALUE 2147483647                                                             +
+  START WITH 1                                                                    +
+  NO CYCLE;                                                                       +
+                                                                                  +
+ COMMENT ON SEQUENCE customer_id_seq IS NULL;                                     +
+                                                                                  +
+ ALTER SEQUENCE customer_id_seq OWNER TO postgres;                                +
  
- -- Type: SEQUENCE ; Name: customer_id_seq; Owner: postgres                                +
-                                                                                           +
- CREATE SEQUENCE customer_id_seq;                                                          +
- ALTER SEQUENCE customer_id_seq                                                            +
-  INCREMENT BY 1                                                                           +
-  MINVALUE 1                                                                               +
-  MAXVALUE 2147483647                                                                      +
-  START WITH 1                                                                             +
-  NO CYCLE;                                                                                +
-                                                                                           +
- COMMENT ON SEQUENCE customer_id_seq IS NULL;                                              +
-                                                                                           +
- ALTER SEQUENCE customer_id_seq OWNER TO postgres;                                         +
+ -- Type: SEQUENCE ; Name: COMPANY_rn_seq; Owner: postgres                        +
+                                                                                  +
+ CREATE SEQUENCE "COMPANY_rn_seq";                                                +
+ ALTER SEQUENCE "COMPANY_rn_seq"                                                  +
+  INCREMENT BY 1                                                                  +
+  MINVALUE 1                                                                      +
+  MAXVALUE 2147483647                                                             +
+  START WITH 1                                                                    +
+  NO CYCLE;                                                                       +
+                                                                                  +
+ COMMENT ON SEQUENCE "COMPANY_rn_seq" IS NULL;                                    +
+                                                                                  +
+ ALTER SEQUENCE "COMPANY_rn_seq" OWNER TO postgres;                               +
  
- -- Type: TABLE ; Name: COMPANY; Owner: postgres                                           +
-                                                                                           +
- CREATE TABLE "COMPANY" (                                                                  +
-     rn integer NOT NULL,                                                                  +
-     "IBAN" text,                                                                          +
-     brand text                                                                            +
- );                                                                                        +
-                                                                                           +
- COMMENT ON TABLE "COMPANY" IS NULL;                                                       +
- COMMENT ON COLUMN "COMPANY"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';          +
- COMMENT ON COLUMN "COMPANY".brand IS 'MASKED WITH FUNCTION anon.random_company()';        +
-                                                                                           +
- ALTER TABLE "COMPANY" ALTER rn SET DEFAULT nextval('"COMPANY_rn_seq"'::regclass);         +
-                                                                                           +
- ALTER TABLE "COMPANY" OWNER TO postgres;                                                  +
+ -- Type: TABLE ; Name: cards; Owner: postgres                                    +
+                                                                                  +
+ CREATE TABLE cards (                                                             +
+     id integer NOT NULL,                                                         +
+     board_id integer NOT NULL,                                                   +
+     data text                                                                    +
+ );                                                                               +
+                                                                                  +
+ COMMENT ON TABLE cards IS NULL;                                                  +
+                                                                                  +
+ ALTER TABLE cards OWNER TO postgres;                                             +
  
- -- Type: SEQUENCE ; Name: COMPANY_rn_seq; Owner: postgres                                 +
-                                                                                           +
- CREATE SEQUENCE "COMPANY_rn_seq";                                                         +
- ALTER SEQUENCE "COMPANY_rn_seq"                                                           +
-  INCREMENT BY 1                                                                           +
-  MINVALUE 1                                                                               +
-  MAXVALUE 2147483647                                                                      +
-  START WITH 1                                                                             +
-  NO CYCLE;                                                                                +
-                                                                                           +
- COMMENT ON SEQUENCE "COMPANY_rn_seq" IS NULL;                                             +
-                                                                                           +
- ALTER SEQUENCE "COMPANY_rn_seq" OWNER TO postgres;                                        +
+ -- Type: TABLE ; Name: customer; Owner: postgres                                 +
+                                                                                  +
+ CREATE TABLE customer (                                                          +
+     id integer NOT NULL,                                                         +
+     name text,                                                                   +
+     "CreditCard" text                                                            +
+ );                                                                               +
+                                                                                  +
+ COMMENT ON TABLE customer IS NULL;                                               +
+ COMMENT ON COLUMN customer.name IS 'MASKED WITH FUNCTION md5(''0'') ';           +
+ COMMENT ON COLUMN customer."CreditCard" IS 'MASKED WITH FUNCTION md5(''0'') ';   +
+                                                                                  +
+ ALTER TABLE customer ALTER id SET DEFAULT nextval('customer_id_seq'::regclass);  +
+                                                                                  +
+ ALTER TABLE customer OWNER TO postgres;                                          +
  
- -- Type: TABLE ; Name: customer; Owner: postgres                                          +
-                                                                                           +
- CREATE TABLE customer (                                                                   +
-     id integer NOT NULL,                                                                  +
-     name text,                                                                            +
-     "CreditCard" text                                                                     +
- );                                                                                        +
-                                                                                           +
- COMMENT ON TABLE customer IS NULL;                                                        +
- COMMENT ON COLUMN customer.name IS 'MASKED WITH FUNCTION anon.random_last_name() ';       +
- COMMENT ON COLUMN customer."CreditCard" IS 'MASKED WITH FUNCTION  anon.random_string(12)';+
-                                                                                           +
- ALTER TABLE customer ALTER id SET DEFAULT nextval('customer_id_seq'::regclass);           +
-                                                                                           +
- ALTER TABLE customer OWNER TO postgres;                                                   +
+ -- Type: TABLE ; Name: COMPANY; Owner: postgres                                  +
+                                                                                  +
+ CREATE TABLE "COMPANY" (                                                         +
+     rn integer NOT NULL,                                                         +
+     "IBAN" text,                                                                 +
+     brand text                                                                   +
+ );                                                                               +
+                                                                                  +
+ COMMENT ON TABLE "COMPANY" IS NULL;                                              +
+ COMMENT ON COLUMN "COMPANY"."IBAN" IS 'MASKED WITH FUNCTION md5(''0'') ';        +
+ COMMENT ON COLUMN "COMPANY".brand IS 'MASKED WITH FUNCTION md5(''0'')';          +
+                                                                                  +
+ ALTER TABLE "COMPANY" ALTER rn SET DEFAULT nextval('"COMPANY_rn_seq"'::regclass);+
+                                                                                  +
+ ALTER TABLE "COMPANY" OWNER TO postgres;                                         +
  
-(5 rows)
+ COPY cards FROM STDIN;                                                           +
+ 2       1       Clean                                                            +
+ 3       1       Cook                                                             +
+ 4       1       Vacuum                                                           +
+ \.                                                                               +
+ 
+ COPY customer FROM STDIN;                                                        +
+ 1       cfcd208495d565ef66e7dff9f98764da        cfcd208495d565ef66e7dff9f98764da +
+ \.                                                                               +
+                                                                                  +
+                                                                                  +
+ COPY "COMPANY" FROM STDIN;                                                       +
+ 1991    cfcd208495d565ef66e7dff9f98764da        cfcd208495d565ef66e7dff9f98764da +
+ \.                                                                               +
+ 
+(7 rows)
 
 -- 1. Dump into a file
-\! psql -t -A -c 'SELECT anon.dump()' > dump1.sql
+\! psql -q -t -A -c 'SELECT anon.dump()' contrib_regression > dump1.sql
 -- 2. Clean the database and Restore with the dump file
+DROP TABLE cards CASCADE;
+NOTICE:  drop cascades to view mask.cards
 DROP TABLE customer CASCADE;
 NOTICE:  drop cascades to view mask.customer
 DROP TABLE "COMPANY" CASCADE;
@@ -112,40 +152,6 @@ ALTER SEQUENCE customer_id_seq
  NO CYCLE;
 COMMENT ON SEQUENCE customer_id_seq IS NULL;
 ALTER SEQUENCE customer_id_seq OWNER TO postgres;
--- Type: TABLE ; Name: T2; Owner: postgres
-CREATE TABLE "T2" (
-    rn integer NOT NULL,
-    "IBAN" text,
-    company text
-);
-COMMENT ON TABLE "T2" IS NULL;
-COMMENT ON COLUMN "T2"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
-COMMENT ON COLUMN "T2".company IS 'jvnosdfnvsjdnvfskngvknfvg MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
-ALTER TABLE "T2" ALTER rn SET DEFAULT nextval('"T2_rn_seq"'::regclass);
-psql:dump1.sql:28: ERROR:  relation "T2_rn_seq" does not exist
-ALTER TABLE "T2" OWNER TO postgres;
--- Type: SEQUENCE ; Name: T2_rn_seq; Owner: postgres
-CREATE SEQUENCE "T2_rn_seq";
-ALTER SEQUENCE "T2_rn_seq"
- INCREMENT BY 1
- MINVALUE 1
- MAXVALUE 2147483647
- START WITH 1
- NO CYCLE;
-COMMENT ON SEQUENCE "T2_rn_seq" IS NULL;
-ALTER SEQUENCE "T2_rn_seq" OWNER TO postgres;
--- Type: TABLE ; Name: COMPANY; Owner: postgres
-CREATE TABLE "COMPANY" (
-    rn integer NOT NULL,
-    "IBAN" text,
-    brand text
-);
-COMMENT ON TABLE "COMPANY" IS NULL;
-COMMENT ON COLUMN "COMPANY"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
-COMMENT ON COLUMN "COMPANY".brand IS 'MASKED WITH FUNCTION anon.random_company()';
-ALTER TABLE "COMPANY" ALTER rn SET DEFAULT nextval('"COMPANY_rn_seq"'::regclass);
-psql:dump1.sql:58: ERROR:  relation "COMPANY_rn_seq" does not exist
-ALTER TABLE "COMPANY" OWNER TO postgres;
 -- Type: SEQUENCE ; Name: COMPANY_rn_seq; Owner: postgres
 CREATE SEQUENCE "COMPANY_rn_seq";
 ALTER SEQUENCE "COMPANY_rn_seq"
@@ -156,6 +162,14 @@ ALTER SEQUENCE "COMPANY_rn_seq"
  NO CYCLE;
 COMMENT ON SEQUENCE "COMPANY_rn_seq" IS NULL;
 ALTER SEQUENCE "COMPANY_rn_seq" OWNER TO postgres;
+-- Type: TABLE ; Name: cards; Owner: postgres
+CREATE TABLE cards (
+    id integer NOT NULL,
+    board_id integer NOT NULL,
+    data text
+);
+COMMENT ON TABLE cards IS NULL;
+ALTER TABLE cards OWNER TO postgres;
 -- Type: TABLE ; Name: customer; Owner: postgres
 CREATE TABLE customer (
     id integer NOT NULL,
@@ -163,11 +177,37 @@ CREATE TABLE customer (
     "CreditCard" text
 );
 COMMENT ON TABLE customer IS NULL;
-COMMENT ON COLUMN customer.name IS 'MASKED WITH FUNCTION anon.random_last_name() ';
-COMMENT ON COLUMN customer."CreditCard" IS 'MASKED WITH FUNCTION  anon.random_string(12)';
+COMMENT ON COLUMN customer.name IS 'MASKED WITH FUNCTION md5(''0'') ';
+COMMENT ON COLUMN customer."CreditCard" IS 'MASKED WITH FUNCTION md5(''0'') ';
 ALTER TABLE customer ALTER id SET DEFAULT nextval('customer_id_seq'::regclass);
 ALTER TABLE customer OWNER TO postgres;
+-- Type: TABLE ; Name: COMPANY; Owner: postgres
+CREATE TABLE "COMPANY" (
+    rn integer NOT NULL,
+    "IBAN" text,
+    brand text
+);
+COMMENT ON TABLE "COMPANY" IS NULL;
+COMMENT ON COLUMN "COMPANY"."IBAN" IS 'MASKED WITH FUNCTION md5(''0'') ';
+COMMENT ON COLUMN "COMPANY".brand IS 'MASKED WITH FUNCTION md5(''0'')';
+ALTER TABLE "COMPANY" ALTER rn SET DEFAULT nextval('"COMPANY_rn_seq"'::regclass);
+ALTER TABLE "COMPANY" OWNER TO postgres;
+COPY cards FROM STDIN; 
+COPY customer FROM STDIN; 
+COPY "COMPANY" FROM STDIN; 
 -- 3. Dump again into a second file
-\! psql -t -A -c 'SELECT anon.dump()' > dump2.sql
+\! psql -t -A -c 'SELECT anon.dump()' contrib_regression > dump2.sql
 -- 4. Check that both dump files are identical
 \! diff dump1.sql dump2.sql
+79,80c79,80
+< COPY customer FROM STDIN; 
+< 1	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da
+---
+> COPY "COMPANY" FROM STDIN; 
+> 1991	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da
+84,85c84,85
+< COPY "COMPANY" FROM STDIN; 
+< 1991	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da
+---
+> COPY customer FROM STDIN; 
+> 1	cfcd208495d565ef66e7dff9f98764da	cfcd208495d565ef66e7dff9f98764da

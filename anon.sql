@@ -777,43 +777,54 @@ RETURNS TABLE (
     ddl TEXT
 ) AS
 $$
---  SELECT string_agg(tmp::TEXT,E'\n')
---  FROM (
     SELECT ddlx_create(oid)
     FROM pg_class
-    WHERE relkind != 't'
+    WHERE relkind != 't' -- exlcude the TOAST objects
     AND relnamespace IN (
       SELECT oid
       FROM pg_namespace
       WHERE nspname NOT LIKE 'pg_%'
       AND nspname NOT IN ( 'information_schema' , '@extschema@' , 'mask') --FIXME mask
     )
---  ) AS tmp
+	ORDER BY array_position(ARRAY['S','t'], relkind::TEXT), oid::regclass  -- drop [S]equences before [t]ables
     ;
 $$
 LANGUAGE SQL;
 
-CREATE OR REPLACE FUNCTION @extschema@.get_insert_statement(tablename regclass)
+
+CREATE OR REPLACE FUNCTION @extschema@.get_insert_statement(
+														source_tablename regclass,
+														dest_tablename regclass	
+)
 RETURNS TEXT AS
 $$
 DECLARE
-  statement TEXT;
-  values TEXT;
+  copy_statement TEXT;
+  val TEXT;	
+  rec RECORD;
 BEGIN
-  statement := format(E'INSERT INTO %s VALUES',tablename);
-  EXECUTE format(E'SELECT string_agg(tmp::TEXT,E\',\\n\') FROM %s AS tmp;',tablename)
-    INTO values;
-  statement := statement || values || E'\n\n';
-  RETURN statement;
+--  /!\ cannot use COPY to/from in PL/pgSQL
+  copy_statement := format(E'COPY %s FROM STDIN; \n', dest_tablename);
+  FOR val IN
+    EXECUTE format(E'SELECT tmp::TEXT AS r FROM %s AS tmp;',source_tablename) 
+  LOOP
+	val := ltrim(rec.r,'(');
+	val := rtrim(val,')');
+	val := replace(val,',',E'\t');
+	copy_statement := copy_statement || val || E'\n';
+  END LOOP;
+  copy_statement := copy_statement || E'\\.\n';
+  RETURN copy_statement;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
+-- export content of the tables that don't have a mask
 CREATE OR REPLACE FUNCTION @extschema@.dump_clear_data()
 RETURNS TEXT AS
 $$
   SELECT string_agg(
-                @extschema@.get_insert_statement(relid),
+                @extschema@.get_insert_statement(relid,relid),
                 E'\n\n'
         )
   FROM pg_stat_user_tables
@@ -822,48 +833,42 @@ $$
       SELECT relid
       FROM @extschema@.pg_masks
     )
+--  GROUP BY relid
+--  ORDER BY relid::regclass -- sort by name to force the dump order
 $$
 LANGUAGE SQL;
 
-
-
-
+-- export content of the masked tables
 CREATE OR REPLACE FUNCTION @extschema@.dump_anon_data()
 RETURNS TEXT AS
 $$
-SELECT '';
+  SELECT string_agg(
+                @extschema@.get_insert_statement('mask'||'.'||relid::regclass,relid),
+                E'\n\n'
+        )
+  FROM pg_stat_user_tables
+  WHERE schemaname NOT IN ( '@extschema@' , 'mask') --FIXME mask
+  AND relid IN (
+      SELECT relid
+      FROM @extschema@.pg_masks
+    )
+--  GROUP BY relid
+--  ORDER BY  relid::regclass -- sort by name to force the dump order 
 $$
 LANGUAGE SQL;
 
 -- export the database schema + anonmyized data
 CREATE OR REPLACE FUNCTION @extschema@.dump()
---RETURNS TEXT AS
 RETURNS TABLE (
-	ddl TEXT
+	dump TEXT
 ) AS
 $$
---DECLARE
---  ddl TEXT;
---BEGIN
---  IF NOT EXISTS (
---    SELECT FROM pg_extension WHERE extname='ddlx'
---  )
---  THEN
---    RAISE EXCEPTION 'The pgddl extension is missing.'
---       USING HINT = 'Use "CREATE EXTENSION ddlx;" or check the documentation for more details';
---    RETURN NULL;
---  END IF;
---  SELECT string_agg(tmp::TEXT,E'\n') INTO ddl
---  FROM (
     SELECT @extschema@.dump_ddl()
-    UNION
+    UNION ALL -- ALL is required to maintain the lines order as appended
     SELECT @extschema@.dump_clear_data()
---  ) AS tmp;
---  SELECT @extschema@.dump_anon_data();
---  RETURN ddl ;
---END
+	UNION ALL
+	SELECT @extschema@.dump_anon_data();
 $$
---LANGUAGE plpgsql VOLATILE;
 LANGUAGE SQL;
 
 
