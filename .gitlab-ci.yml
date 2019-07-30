@@ -26,7 +26,7 @@ make9.4:
     - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -44,7 +44,7 @@ make9.5:
     - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -62,7 +62,7 @@ make9.6:
     - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -78,7 +78,7 @@ make10:
     - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -95,7 +95,7 @@ make11:
     - make extension
     - make install
     - export PG_TEST_EXTRA='masking_PG11+'
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -112,7 +112,7 @@ make12:
     - make extension
     - make install
     - export PG_TEST_EXTRA='masking_PG11+'
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
