@@ -542,13 +542,12 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- True if the role is masked
-CREATE OR REPLACE FUNCTION @extschema@.hasmask(role TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.hasmask(role REGROLE)
 RETURNS BOOLEAN AS
 $$
--- FIXME : CHECK quote_ident
 SELECT hasmask
 FROM @extschema@.pg_masked_roles
-WHERE rolname = quote_ident(role);
+WHERE rolname = role::NAME;
 $$
 LANGUAGE SQL VOLATILE;
 
@@ -609,7 +608,6 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Build a masked view for a table
--- FIXME sanitize maskschema
 CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID, maskschemaid OID)
 RETURNS BOOLEAN AS
 $$
@@ -668,7 +666,7 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- FIXME
+-- TODO 
 -- CREATE OR REPLACE FUNCTION mask_destroy()
 
 -- This is run after all DDL query
@@ -693,14 +691,14 @@ BEGIN
     SELECT value INTO maskschema FROM @extschema@.config WHERE param='maskschema';
     PERFORM @extschema@.mask_disable();
     PERFORM @extschema@.mask_create(sourceschema,maskschema);
-    PERFORM @extschema@.mask_roles(sourceschema,maskschema);
+    PERFORM @extschema@.mask_roles(sourceschema::REGNAMESPACE,maskschema::REGNAMESPACE);
     PERFORM @extschema@.mask_enable();
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Mask all roles
-CREATE OR REPLACE FUNCTION @extschema@.mask_roles(sourceschema TEXT, maskschema TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.mask_roles(sourceschema REGNAMESPACE, maskschema REGNAMESPACE)
 RETURNS SETOF VOID AS
 $$
 DECLARE
@@ -708,28 +706,27 @@ DECLARE
 BEGIN
     FOR r IN SELECT * FROM @extschema@.pg_masked_roles WHERE hasmask
     LOOP
-		PERFORM @extschema@.mask_role(r.rolname,sourceschema,maskschema);
+		PERFORM @extschema@.mask_role(r.rolname::REGROLE,sourceschema,maskschema);
     END LOOP;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Mask a specific role
--- FIXME sanitize maskschema
-CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole TEXT, sourceschema TEXT, maskschema TEXT)
+CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole REGROLE, sourceschema REGNAMESPACE, maskschema REGNAMESPACE)
 RETURNS BOOLEAN AS
-$func$
+$$
 BEGIN
     RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
-    EXECUTE format('REVOKE ALL ON SCHEMA %I FROM %I', sourceschema, maskedrole);
-    EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', 'anon', maskedrole);
-    EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', 'anon', maskedrole);
-    EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', maskschema, maskedrole);
-    EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', maskschema, maskedrole);
-	EXECUTE format('ALTER ROLE %I SET search_path TO %I,%I;', maskedrole, maskschema,sourceschema);
+    EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
+    EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', '@extschema@', maskedrole);
+    EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', '@extschema@', maskedrole);
+    EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', maskschema, maskedrole);
+    EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', maskschema, maskedrole);
+	EXECUTE format('ALTER ROLE %s SET search_path TO %s,%s;', maskedrole, maskschema,sourceschema);
 	RETURN TRUE;
 END
-$func$
+$$
 LANGUAGE plpgsql;
 
 -- load the event trigger
@@ -772,7 +769,6 @@ LANGUAGE plpgsql VOLATILE;
 -------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION @extschema@.dump_ddl()
---RETURNS TEXT AS
 RETURNS TABLE (
     ddl TEXT
 ) AS
