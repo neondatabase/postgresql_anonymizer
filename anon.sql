@@ -805,8 +805,8 @@ DECLARE
 BEGIN
 --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
   copy_statement := format(E'COPY %s FROM STDIN; \n', dest_tablename);
-  FOR val IN
-    EXECUTE format(E'SELECT tmp::TEXT AS rec FROM %s AS tmp;',source_tablename) 
+  FOR rec IN
+    EXECUTE format(E'SELECT tmp::TEXT AS r FROM %s AS tmp;',source_tablename) 
   LOOP
 	val := ltrim(rec.r,'(');
 	val := rtrim(val,')');
