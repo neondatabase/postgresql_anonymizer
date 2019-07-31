@@ -30,10 +30,10 @@ Warning
 
 *This is projet is at an early stage of development and should used carefully.*
 
-I need your feedback and ideas ! Let me know what you think of this tool,how it
+We need your feedback and ideas ! Let us know what you think of this tool,how it
 fits your needs and what features are missing.
 
-You can either [open an issue] or send a message at <daamien@gmail.com>.
+You can either [open an issue] or send a message at <contact@dalibo.com>.
 
 [open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
 
@@ -109,6 +109,20 @@ STEP 4 : Connect with the masked user
  T800 | Nunziata | 06******11
 (1 row)
 ```
+
+
+Dumping the anonymous data
+--------------------------------------------------------------------------------
+
+Due to the core design of this extension, you cannot use `pg_dump` with a maked 
+user. If you want to export the entire database with the anonymized data, you 
+must use the `anon.dump()` function :
+
+```console
+$ psql -qtA -c 'SELECT anon.dump()' your_dabatase > dump.sql
+```
+
+The `-qtA` flags are required.
 
 Requirements
 --------------------------------------------------------------------------------
