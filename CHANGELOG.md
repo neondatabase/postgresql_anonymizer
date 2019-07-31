@@ -5,11 +5,17 @@ CHANGELOG
 2019FIXME : 0.3.1 - Shuffle and Variance
 -------------------------------------------------------------------------------
 
-__Dependencies:__ 
+__Dependencies:__
   - tms_system_rows
-  - pgddl 0.10
+  - pgddl 0.12
 
-* shuffle an entire column with the new function : 
+* dump the entire anonymized database with :
+
+  ```console
+  $ psql -q -t -A -c 'SELECT anon.dump()' the_database
+  ```
+
+* shuffle an entire column with the new function :
 	```sql
 	SELECT anon.shuffle_column('employees','salary', 'id');
 	```
@@ -29,8 +35,8 @@ __Dependencies:__
 * FIX #43 : Using unlogged tables was a bad idea
 
 * FIX #51 : tests & doc about explicit casting
- 
-* Add `autoload` parameter to `mask_init` function. 
+
+* Add `autoload` parameter to `mask_init` function.
   Default to TRUE for backward compatibility
 
 * Add `anon.no_extension.sql` for people in the cloud
