@@ -49,8 +49,7 @@ COMMENT ON COLUMN "COMPANY".brand
 IS E'MASKED WITH FUNCTION md5(''0'')';
 
 -- 0. basic test : call the dump function
-\set PAGER OFF
-SELECT anon.dump();
+SELECT count(d) FROM anon.dump() AS d;
 
 -- 1. Dump into a file
 \! psql -q -t -A -c 'SELECT anon.dump()' contrib_regression > dump1.sql
