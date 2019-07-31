@@ -119,7 +119,7 @@ make12:
         - regression.*
         - results/
     expire_in: 1 day
-
+  allow_failure: true # https://gitlab.com/dalibo/postgresql_anonymizer/issues/62
 
 make11-centos:
   stage: build
