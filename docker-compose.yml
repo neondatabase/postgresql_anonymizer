@@ -1,5 +1,5 @@
 PostgreSQL:
-  image: registry.gitlab.com/daamien/postgresql_anonymizer 
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer 
   ports:
     - "54322:5432"
   environment:

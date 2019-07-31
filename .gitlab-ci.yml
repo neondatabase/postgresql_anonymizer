@@ -22,10 +22,11 @@ make9.4:
   stage: build
   image: postgres:9.4
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-9.4
+    - apt-get update && apt-get install -y make pgxnclient postgresql-server-dev-9.4
+    - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -39,10 +40,11 @@ make9.5:
   stage: build
   image: postgres:9.5
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-9.5
+    - apt-get update && apt-get install -y make postgresql-server-dev-9.5 pgxnclient
+    - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -56,10 +58,11 @@ make9.6:
   stage: build
   image: postgres:9.6
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-9.6
+    - apt-get update && apt-get install -y make postgresql-server-dev-9.6 pgxnclient
+    - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -71,10 +74,11 @@ make10:
   stage: build
   image: postgres:10
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10
+    - apt-get update && apt-get install -y make postgresql-server-dev-10 pgxnclient
+    - pgxn install ddlx
     - make extension
     - make install
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
@@ -86,17 +90,36 @@ make11:
   stage: build
   image: postgres:11
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11
+    - apt-get update && apt-get install -y make postgresql-server-dev-11 pgxnclient
+    - pgxn install ddlx
     - make extension
     - make install
     - export PG_TEST_EXTRA='masking_PG11+'
-    - make installcheck
+    - make installcheck || diff results tests/expected
   artifacts:
     paths:
         - anon*
         - regression.*
         - results/
     expire_in: 1 day
+
+make12:
+  stage: build
+  image: postgres:12
+  script:
+    - apt-get update && apt-get install -y make postgresql-server-dev-12 pgxnclient
+    - pgxn install ddlx
+    - make extension
+    - make install
+    - export PG_TEST_EXTRA='masking_PG11+'
+    - make installcheck || diff results tests/expected
+  artifacts:
+    paths:
+        - anon*
+        - regression.*
+        - results/
+    expire_in: 1 day
+  allow_failure: true # https://gitlab.com/dalibo/postgresql_anonymizer/issues/62
 
 make11-centos:
   stage: build
@@ -105,7 +128,8 @@ make11-centos:
     - echo 'ignoring global before_script'
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-centos11-11-2.noarch.rpm
-    - yum -y install git make postgresql11 postgresql11-server postgresql11-devel
+    - yum -y install git make postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools 
+    - pgxn install ddlx
     - cd /tmp
     - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git anonymizer
     - cd anonymizer
