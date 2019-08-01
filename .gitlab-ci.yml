@@ -149,17 +149,18 @@ standalone12:
   stage: build
   services:
     - postgres:12
-  variables:
-    PGHOST: postgres
-    PGDATABASE: nice_marmot
-    PGUSER: runner
-    PGPASSWORD: plop
+#  variables:
+#    PGHOST: postgres
+#    PGDATABASE: nice_marmot
+#    PGUSER: runner
+#    PGPASSWORD: plop
   before_script:
     - echo "disable the before_script"
   script:
     - apt-get update && apt-get install -y make git
     - make anon.standalone_PG12.sql
-    - psql -f anon.standalone_PG12.sql
+    - export PGPASSWORD=$POSTGRES_PASSWORD
+    - psql -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon.standalone_PG12.sql
 
 
 
