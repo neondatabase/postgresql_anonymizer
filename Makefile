@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Makefile 
+# Makefile
 #
 ###############################################################################
 
@@ -8,7 +8,7 @@
 ## V A R I A B L E S
 ##
 
-# This Makefile has many input variables, 
+# This Makefile has many input variables,
 # see link below for the standard vars offered by PGXS
 # https://www.postgresql.org/docs/current/extend-pgxs.html
 
@@ -37,8 +37,8 @@ REGRESS_OPTS = --inputdir=tests
 ##
 
 .PHONY: extension
-extension: 
-	mkdir -p anon 
+extension:
+	mkdir -p anon
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/default/* anon/
 
@@ -90,14 +90,15 @@ tests/expected/unit.out:
 anon.standalone_PG11.sql: _pgddl anon.sql
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
 	VERSION=11.0 _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
-	echo 'CREATE SCHEMA anon;\n' > $@ 
+	echo 'CREATE SCHEMA anon;\n' >> $@ 
 	sed 's/@extschema@/anon/' anon.sql >> $@
 
 anon.standalone_PG12.sql: _pgddl anon.sql
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
 	VERSION=12.0 _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
-	echo 'CREATE SCHEMA anon;\n' > $@	
+	echo 'CREATE SCHEMA anon;\n' >> $@	
 	sed 's/@extschema@/anon/' anon.sql >> $@
+	sed -i 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
 
 _pgddl:
 	-git clone https://github.com/lacanoid/pgddl.git $@
