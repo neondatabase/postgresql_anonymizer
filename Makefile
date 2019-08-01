@@ -105,13 +105,13 @@ $(STD_ARTEFACTS): anon.sql | _pgddl
 	echo 'CREATE SCHEMA anon;\n' >> $@	
 	sed 's/@extschema@/anon/' anon.sql >> $@
 	sed -i 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
-	echo "COPY anon.city FROM 'data/city.csv';\n" >> $@
-	echo "COPY anon.company FROM 'data/company.csv';\n" >> $@
-	echo "COPY anon.email FROM 'data/email.csv';\n" >> $@
-	echo "COPY anon.first_name FROM 'data/first_name.csv';\n" >> $@
-	echo "COPY anon.iban FROM 'data/iban.csv';\n" >> $@
-	echo "COPY anon.last_name FROM 'data/last_name.csv';\n" >> $@
-	echo "COPY anon.siret FROM 'data/siret.csv';\n" >> $@
+	echo "COPY anon.city FROM 'data/default/city.csv';\n" >> $@
+	echo "COPY anon.company FROM 'data/default/company.csv';\n" >> $@
+	echo "COPY anon.email FROM 'data/default/email.csv';\n" >> $@
+	echo "COPY anon.first_name FROM 'data/default/first_name.csv';\n" >> $@
+	echo "COPY anon.iban FROM 'data/default/iban.csv';\n" >> $@
+	echo "COPY anon.last_name FROM 'data/default/last_name.csv';\n" >> $@
+	echo "COPY anon.siret FROM 'data/default/siret.csv';\n" >> $@
 
 _pgddl:
 	-git clone https://github.com/lacanoid/pgddl.git $@
