@@ -10,10 +10,6 @@ variables:
     POSTGRES_DB: nice_marmot
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
-    PGHOST: postgres
-    PGDATABASE: nice_marmot
-    PGUSER: runner
-    PGPASSWORD: plop
 
 image: postgres:11
 
@@ -154,6 +150,11 @@ standalone12:
   image: alpine/make
   services:
     - postgres:12
+  variables:
+    PGHOST: postgres
+    PGDATABASE: nice_marmot
+    PGUSER: runner
+    PGPASSWORD: plop
   before_script:
     - echo "disable the before_script"
   script:

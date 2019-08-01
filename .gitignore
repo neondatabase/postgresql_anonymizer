@@ -9,6 +9,8 @@ tests/results/*
 # tests
 *.out
 *.diffs
+dump1.sql
+dump2.sql
 # artefacts
 _pgddl/
 anon/*
