@@ -87,23 +87,37 @@ tests/expected/unit.out:
 ## S T A N D A L O N E
 ##
 
-anon.standalone_PG11.sql: _pgddl anon.sql
-	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
-	VERSION=11.0 _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
-	echo 'CREATE SCHEMA anon;\n' >> $@ 
-	sed 's/@extschema@/anon/' anon.sql >> $@
+STD_ARTEFACTS=anon.standalone_PG96.sql
+STD_ARTEFACTS+=anon.standalone_PG10.sql
+STD_ARTEFACTS+=anon.standalone_PG11.sql
+STD_ARTEFACTS+=anon.standalone_PG12.sql
 
-anon.standalone_PG12.sql: _pgddl anon.sql
+anon.standalone_PG96.sql: VERSION = 9.6.0
+anon.standalone_PG10.sql: VERSION = 10.0
+anon.standalone_PG12.sql: VERSION = 11.0
+anon.standalone_PG12.sql: VERSION = 12.0
+
+standalone: $(STD_ARTEFACTS)
+
+$(STD_ARTEFACTS): anon.sql | _pgddl 
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
-	VERSION=12.0 _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
+	VERSION=$(VERSION) _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
 	echo 'CREATE SCHEMA anon;\n' >> $@	
 	sed 's/@extschema@/anon/' anon.sql >> $@
 	sed -i 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
+	echo "COPY anon.city FROM 'data/city.csv';\n" >> $@
+	echo "COPY anon.company FROM 'data/company.csv';\n" >> $@
+	echo "COPY anon.email FROM 'data/email.csv';\n" >> $@
+	echo "COPY anon.first_name FROM 'data/first_name.csv';\n" >> $@
+	echo "COPY anon.iban FROM 'data/iban.csv';\n" >> $@
+	echo "COPY anon.last_name FROM 'data/last_name.csv';\n" >> $@
+	echo "COPY anon.siret FROM 'data/siret.csv';\n" >> $@
 
 _pgddl:
 	-git clone https://github.com/lacanoid/pgddl.git $@
 
-clean:
+clean_standalone:
+	rm -fr $(STD_ARTEFACTS)
 	rm -fr _pgddl
 
 ##
