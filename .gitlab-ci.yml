@@ -5,8 +5,15 @@
 variables:
     PGDATA: /var/lib/postgresql/data
     PGUSER: postgres
-    EXTDIR: /usr/share/postgresql/10/extension/
+    EXTDIR: /usr/share/postgresql/11/extension/
     PSQL: psql -v ON_ERROR_STOP=1
+    POSTGRES_DB: nice_marmot
+    POSTGRES_USER: runner
+    POSTGRES_PASSWORD: plop
+    PGHOST: postgres
+    PGDATABASE: nice_marmot
+    PGUSER: runner
+    PGPASSWORD: plop
 
 image: postgres:11
 
@@ -36,6 +43,7 @@ make9.4:
   when: manual
   allow_failure: yes
 
+# PostgreSQL 9.5 is not supported
 make9.5:
   stage: build
   image: postgres:9.5
@@ -140,6 +148,18 @@ make11-centos:
     - make
     - make install
   when: manual
+
+standalone12:
+    stage: build
+    image: alpine:make
+    services:
+      - postgres:12
+    script:
+      - apk add --no-cache git
+      - make anon.standalone_PG12.sql
+      - psql -f anon.standalone_PG12.sql 
+
+
 
 ##
 ## T E S T

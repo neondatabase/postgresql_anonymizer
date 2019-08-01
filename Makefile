@@ -84,6 +84,26 @@ tests/expected/unit.out:
 	cp tests/results/unit.out tests/expected/unit.out
 
 ##
+## S T A N D A L O N E
+##
+
+anon.standalone_PG11.sql: _pgddl anon.sql
+	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
+	VERSION=11.0 _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
+	sed 's/@extschema@/anon/' anon.sql >> $@
+
+anon.standalone_PG12.sql: _pgddl anon.sql
+    echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
+    VERSION=12.0 _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
+    sed 's/@extschema@/anon/' anon.sql >> $@
+
+_pgddl:
+	-git clone https://github.com/lacanoid/pgddl.git $@
+
+clean:
+	rm -fr _pgddl
+
+##
 ## L O A D
 ##
 
