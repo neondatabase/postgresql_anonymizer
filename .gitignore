@@ -10,6 +10,7 @@ tests/results/*
 *.out
 *.diffs
 # artefacts
+_pgddl/
 anon/*
 anon_*/
 anon*.zip

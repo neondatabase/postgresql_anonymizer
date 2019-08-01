@@ -151,7 +151,7 @@ make11-centos:
 
 standalone12:
     stage: build
-    image: alpine:make
+    image: alpine/make
     services:
       - postgres:12
     script:
