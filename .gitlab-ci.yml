@@ -108,6 +108,7 @@ make12:
   image: postgres:12
   script:
     - apt-get update && apt-get install -y make git postgresql-server-dev-12 pgxnclient
+# https://gitlab.com/dalibo/postgresql_anonymizer/issues/62
 #    - pgxn install ddlx
     - git clone https://github.com/lacanoid/pgddl.git
     - make -C pgddl && make -C pgddl install
@@ -121,7 +122,6 @@ make12:
         - regression.*
         - results/
     expire_in: 1 day
-  allow_failure: true # https://gitlab.com/dalibo/postgresql_anonymizer/issues/62
 
 make11-centos:
   stage: build
