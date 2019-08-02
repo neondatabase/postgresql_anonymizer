@@ -532,14 +532,17 @@ $$
 LANGUAGE SQL STABLE;
 
 -- Walk through all masked columns and permanently apply the mask
--- This is not a "masking function" per se , but it relies on the masking infra
-CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
+-- This is not a "masking function" per se, but it relies on the masking infra
+CREATE OR REPLACE FUNCTION @extschema@.anonymize()
 RETURNS BOOLEAN
 AS $$
 DECLARE
     col RECORD;
 BEGIN
-  RAISE DEBUG 'ANONYMIZE ALL THE THINGS \o/';
+  IF not @extschema@.isloaded() THEN
+	RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT @extschema@.load()'' ';
+  END IF;
+
   FOR col IN
     SELECT * FROM @extschema@.pg_masks
   LOOP
@@ -550,6 +553,14 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql VOLATILE;
+
+-- Backward compatibility
+CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
+RETURNS BOOLEAN AS
+$$
+SELECT @extschema@.anonymize();
+$$
+LANGUAGE SQL VOLATILE;
 
 -- True if the role is masked
 CREATE OR REPLACE FUNCTION @extschema@.hasmask(role REGROLE)
@@ -706,12 +717,10 @@ RETURNS SETOF VOID AS
 $$
 DECLARE
     sourceschema TEXT;
-    maskschema TEXT;
 BEGIN
     SELECT value INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
-    SELECT value INTO maskschema FROM @extschema@.config WHERE param='maskschema';
     PERFORM @extschema@.mask_disable();
-    PERFORM @extschema@.mask_create(sourceschema,maskschema);
+    PERFORM @extschema@.mask_create(sourceschema,@extschema@.mask_schema());
     PERFORM @extschema@.mask_roles();
     PERFORM @extschema@.mask_enable();
 END
