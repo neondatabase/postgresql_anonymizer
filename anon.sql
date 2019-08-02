@@ -720,13 +720,8 @@ DECLARE
 BEGIN
     SELECT value INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
     PERFORM @extschema@.mask_disable();
-<<<<<<< HEAD
     PERFORM @extschema@.mask_create(sourceschema,@extschema@.mask_schema());
-    PERFORM @extschema@.mask_roles(sourceschema::REGNAMESPACE,@extschema@.mask_schema()::REGNAMESPACE);
-=======
-    PERFORM @extschema@.mask_create(sourceschema,maskschema);
     PERFORM @extschema@.mask_roles();
->>>>>>> origin/master
     PERFORM @extschema@.mask_enable();
 END
 $$
