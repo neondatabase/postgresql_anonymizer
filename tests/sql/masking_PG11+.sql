@@ -100,6 +100,10 @@ SELECT anon.hasmask(NULL) IS NULL;
 
 \! psql contrib_regression -U skynet -c "DELETE FROM work;";
 
+
+-- A masked role cannot access the stats of a masked column
+\! psql contrib_regression -U skynet -c "SELECT count(histogram_bounds)=0 FROM pg_stats WHERE tablename='people' AND attname='name';"
+
 --  CLEAN
 
 --DROP SCHEMA mask CASCADE;

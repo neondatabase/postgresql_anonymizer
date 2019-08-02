@@ -41,6 +41,7 @@ __Dependencies:__
 
 * Add `anon.no_extension.sql` for people in the cloud
 
+* Improve security tests
 
 
 20181029 : 0.2.1 - Dynamic masking and partial functions

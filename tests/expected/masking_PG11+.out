@@ -131,6 +131,13 @@ ERROR:  cannot insert into column "name" of view "people"
 DETAIL:  View columns that are not columns of their base relation are not updatable.
 \! psql contrib_regression -U skynet -c "DELETE FROM work;";
 ERROR:  permission denied for view work
+-- A masked role cannot access the stats of a masked column
+\! psql contrib_regression -U skynet -c "SELECT count(histogram_bounds)=0 FROM pg_stats WHERE tablename='people' AND attname='name';"
+ ?column? 
+----------
+ t
+(1 row)
+
 --  CLEAN
 --DROP SCHEMA mask CASCADE;
 DROP TABLE test_type_casts CASCADE;
