@@ -484,7 +484,6 @@ LANGUAGE SQL IMMUTABLE;
 -- Masking
 -------------------------------------------------------------------------------
 
-
 -- List of all the masked columns
 CREATE OR REPLACE VIEW @extschema@.pg_masks AS
 WITH const AS (
@@ -521,8 +520,19 @@ SELECT r.*,
 FROM pg_roles r
 ;
 
+-- name of the masking schema
+CREATE OR REPLACE FUNCTION @extschema@.mask_schema()
+RETURNS TEXT AS
+$$
+SELECT value
+FROM @extschema@.config
+WHERE param='maskschema'
+;
+$$
+LANGUAGE SQL STABLE;
+
 -- Walk through all masked columns and permanently apply the mask
--- This is not makeing function, but it relies on the masking infra
+-- This is not a "masking function" per se , but it relies on the masking infra
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS BOOLEAN
 AS $$
@@ -574,11 +584,10 @@ LANGUAGE SQL VOLATILE;
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
 -- We can't use the namespace oids because the mask schema may not be present
-CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema NAME, maskschema NAME)
+CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema NAME, maskschema TEXT)
 RETURNS SETOF VOID AS
 $$
 DECLARE
-	maskschemaid OID;
     t RECORD;
 BEGIN
   -- Be sure that the target schema is here
@@ -591,9 +600,6 @@ BEGIN
     EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I',maskschema);
   END IF;
 
-  -- get schema OID. Now that we're sure it is present
-  SELECT oid INTO maskschemaid FROM pg_namespace WHERE nspname = maskschema;
-
   -- Walk through all tables in the source schema
   FOR  t IN
 	SELECT oid
@@ -601,15 +607,16 @@ BEGIN
 	WHERE relnamespace=sourceschema::regnamespace
 	AND relkind = 'r' -- relations only
   LOOP
-    PERFORM @extschema@.mask_create_view(t.oid,maskschemaid);
+    PERFORM @extschema@.mask_create_view(t.oid);
   END LOOP;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- Build a masked view for a table
-CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID, maskschemaid OID)
-RETURNS BOOLEAN AS
+
+-- get the "select filters" that will mask the real data of a table
+CREATE OR REPLACE FUNCTION @extschema@.mask_filters( relid OID )
+RETURNS TEXT AS
 $$
 DECLARE
     m RECORD;
@@ -630,8 +637,22 @@ BEGIN
         END IF;
         comma := ',';
     END LOOP;
-    EXECUTE format('CREATE OR REPLACE VIEW %s.%s AS SELECT %s FROM %s', maskschemaid::regnamespace, relid::regclass, expression, relid::regclass);
-	RETURN TRUE; 
+	RETURN expression;
+END
+$$
+LANGUAGE plpgsql VOLATILE;
+
+-- Build a masked view for a table
+CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID)
+RETURNS BOOLEAN AS
+$$
+BEGIN
+    EXECUTE format('CREATE OR REPLACE VIEW %s.%s AS SELECT %s FROM %s',
+																	@extschema@.mask_schema()::REGNAMESPACE,
+																	relid::REGCLASS,
+																	@extschema@.mask_filters(relid),
+																	relid::REGCLASS);
+	RETURN TRUE;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
@@ -691,14 +712,14 @@ BEGIN
     SELECT value INTO maskschema FROM @extschema@.config WHERE param='maskschema';
     PERFORM @extschema@.mask_disable();
     PERFORM @extschema@.mask_create(sourceschema,maskschema);
-    PERFORM @extschema@.mask_roles(sourceschema::REGNAMESPACE,maskschema::REGNAMESPACE);
+    PERFORM @extschema@.mask_roles();
     PERFORM @extschema@.mask_enable();
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Mask all roles
-CREATE OR REPLACE FUNCTION @extschema@.mask_roles(sourceschema REGNAMESPACE, maskschema REGNAMESPACE)
+CREATE OR REPLACE FUNCTION @extschema@.mask_roles()
 RETURNS SETOF VOID AS
 $$
 DECLARE
@@ -706,17 +727,22 @@ DECLARE
 BEGIN
     FOR r IN SELECT * FROM @extschema@.pg_masked_roles WHERE hasmask
     LOOP
-		PERFORM @extschema@.mask_role(r.rolname::REGROLE,sourceschema,maskschema);
+		PERFORM @extschema@.mask_role(r.rolname::REGROLE);
     END LOOP;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Mask a specific role
-CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole REGROLE, sourceschema REGNAMESPACE, maskschema REGNAMESPACE)
+CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole REGROLE)
 RETURNS BOOLEAN AS
 $$
+DECLARE
+	sourceschema REGNAMESPACE;
+	maskschema REGNAMESPACE;
 BEGIN
+	SELECT value::REGNAMESPACE INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
+    SELECT value::REGNAMESPACE INTO maskschema FROM @extschema@.config WHERE param='maskschema';
     RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
     EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
     EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', '@extschema@', maskedrole);
@@ -775,23 +801,20 @@ RETURNS TABLE (
 $$
     SELECT ddlx_create(oid)
     FROM pg_class
-    WHERE relkind != 't' -- exlcude the TOAST objects
+    WHERE relkind != 't' -- exclude the TOAST objects
     AND relnamespace IN (
       SELECT oid
       FROM pg_namespace
       WHERE nspname NOT LIKE 'pg_%'
-      AND nspname NOT IN ( 'information_schema' , '@extschema@' , 'mask') --FIXME mask
+      AND nspname NOT IN ( 'information_schema' , '@extschema@' , @extschema@.mask_schema()) 
     )
 	ORDER BY array_position(ARRAY['S','t'], relkind::TEXT), oid::regclass  -- drop [S]equences before [t]ables
     ;
 $$
 LANGUAGE SQL;
 
-
-CREATE OR REPLACE FUNCTION @extschema@.get_insert_statement(
-														source_tablename regclass,
-														dest_tablename regclass	
-)
+-- generate the "COPY ... FROM STDIN" statement for a table 
+CREATE OR REPLACE FUNCTION @extschema@.get_copy_statement(relid OID)
 RETURNS TEXT AS
 $$
 DECLARE
@@ -800,10 +823,14 @@ DECLARE
   rec RECORD;
 BEGIN
 --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
-  copy_statement := format(E'COPY %s FROM STDIN; \n', dest_tablename);
+  copy_statement := format(E'COPY %s FROM STDIN; \n', relid::REGCLASS);
   FOR rec IN
-    EXECUTE format(E'SELECT tmp::TEXT AS r FROM %s AS tmp;',source_tablename) 
+    EXECUTE format(E'SELECT tmp::TEXT AS r FROM (SELECT %s FROM %s) AS tmp;',
+													anon.mask_filters(relid),
+													relid::REGCLASS
+	)
   LOOP
+	-- FIXME Find another way to convert rows into CSV
 	val := ltrim(rec.r,'(');
 	val := rtrim(val,')');
 	val := replace(val,',',E'\t');
@@ -815,41 +842,21 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- export content of the tables that don't have a mask
-CREATE OR REPLACE FUNCTION @extschema@.dump_clear_data()
-RETURNS TABLE(
-	data TEXT
-) AS
-$$
-  SELECT @extschema@.get_insert_statement(relid,relid)
-  FROM pg_stat_user_tables
-  WHERE schemaname NOT IN ( '@extschema@' , 'mask') --FIXME mask
-  AND relid NOT IN (
-      SELECT relid
-      FROM @extschema@.pg_masks
-    )
-  ORDER BY relid::regclass -- sort by name to force the dump order
-$$
-LANGUAGE SQL;
 
--- export content of the masked tables
-CREATE OR REPLACE FUNCTION @extschema@.dump_anon_data()
+-- export content of all the tables as COPY statements
+CREATE OR REPLACE FUNCTION @extschema@.dump_data()
 RETURNS TABLE (
-	data TEXT
+    data TEXT 
 ) AS
 $$
-  SELECT @extschema@.get_insert_statement('mask'||'.'||relid::regclass,relid)
+  SELECT @extschema@.get_copy_statement(relid)
   FROM pg_stat_user_tables
-  WHERE schemaname NOT IN ( '@extschema@' , 'mask') --FIXME mask
-  AND relid IN (
-      SELECT relid
-      FROM @extschema@.pg_masks
-    )
+  WHERE schemaname NOT IN ( '@extschema@' , @extschema@.mask_schema() )
   ORDER BY  relid::regclass -- sort by name to force the dump order 
 $$
 LANGUAGE SQL;
 
--- export the database schema + anonmyized data
+-- export the database schema + anonymized data
 CREATE OR REPLACE FUNCTION @extschema@.dump()
 RETURNS TABLE (
 	dump TEXT
@@ -857,9 +864,7 @@ RETURNS TABLE (
 $$
     SELECT @extschema@.dump_ddl()
     UNION ALL -- ALL is required to maintain the lines order as appended
-    SELECT @extschema@.dump_clear_data()
-	UNION ALL
-	SELECT @extschema@.dump_anon_data();
+    SELECT @extschema@.dump_data()
 $$
 LANGUAGE SQL;
 
