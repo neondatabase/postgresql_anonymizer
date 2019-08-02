@@ -107,8 +107,11 @@ make12:
   stage: build
   image: postgres:12
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-12 pgxnclient
-    - pgxn install ddlx
+    - apt-get update && apt-get install -y make git postgresql-server-dev-12 pgxnclient
+# https://gitlab.com/dalibo/postgresql_anonymizer/issues/62
+#    - pgxn install ddlx
+    - git clone https://github.com/lacanoid/pgddl.git
+    - make -C pgddl && make -C pgddl install
     - make extension
     - make install
     - export PG_TEST_EXTRA='masking_PG11+'
@@ -119,7 +122,6 @@ make12:
         - regression.*
         - results/
     expire_in: 1 day
-  allow_failure: true # https://gitlab.com/dalibo/postgresql_anonymizer/issues/62
 
 make11-centos:
   stage: build
