@@ -131,13 +131,25 @@ This extension is officially supported on PostgreSQL 9.6 and later.
 It should also work on PostgreSQL 9.5 with a bit of hacking.
 See [NOTES.md](NOTES.md) for more details.
 
-It requires an extension named `tsm_system_rows`, which is delivered by the
-`postgresql-contrib` package of the main linux distributions.
+It requires two extensions :
+
+* [tsm_system_rows] which is delivered by the `postgresql-contrib` package of 
+  the main linux distributions
+
+* [ddlx] a very cool DDL extrator
+
+[tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
+[ddlx]: https://github.com/lacanoid/pgddl
 
 Install
 -------------------------------------------------------------------------------
 
-Simply run `sudo pgxn install postgresql_anonymizer`
+Simply run :
+
+```console
+sudo pgxn install ddlx
+sudo pgxn install postgresql_anonymizer
+```
 
 or see [INSTALL.md] for more detailed instructions or if you want to deploy it
 on Amazon RDS or some other DBAAS service. 
