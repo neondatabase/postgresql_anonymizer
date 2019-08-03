@@ -727,21 +727,6 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- Mask all roles
-CREATE OR REPLACE FUNCTION @extschema@.mask_roles()
-RETURNS SETOF VOID AS
-$$
-DECLARE
-    r RECORD;
-BEGIN
-    FOR r IN SELECT * FROM @extschema@.pg_masked_roles WHERE hasmask
-    LOOP
-		PERFORM @extschema@.mask_role(r.rolname::REGROLE);
-    END LOOP;
-END
-$$
-LANGUAGE plpgsql VOLATILE;
-
 -- Mask a specific role
 CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole REGROLE)
 RETURNS BOOLEAN AS
@@ -763,6 +748,16 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
+-- Mask all roles
+CREATE OR REPLACE FUNCTION @extschema@.mask_roles()
+RETURNS SETOF VOID AS
+$$
+    SELECT @extschema@.mask_role(rolname::REGROLE)
+    FROM @extschema@.pg_masked_roles
+    WHERE hasmask;
+$$
+LANGUAGE SQL VOLATILE;
 
 -- load the event trigger
 CREATE OR REPLACE FUNCTION @extschema@.mask_enable()
@@ -839,10 +834,8 @@ BEGIN
 													relid::REGCLASS
 	)
   LOOP
-	-- FIXME Find another way to convert rows into CSV
 	val := ltrim(rec.r,'(');
 	val := rtrim(val,')');
---	val := replace(val,',',E'\t');
 	copy_statement := copy_statement || val || E'\n';
   END LOOP;
   copy_statement := copy_statement || E'\\.\n';
