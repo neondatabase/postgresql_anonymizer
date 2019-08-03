@@ -745,7 +745,7 @@ LANGUAGE plpgsql;
 
 -- Mask all roles
 CREATE OR REPLACE FUNCTION @extschema@.mask_roles()
-RETURNS SETOF VOID AS
+RETURNS BOOLEAN AS
 $$
     SELECT @extschema@.mask_role(rolname::REGROLE)
     FROM @extschema@.pg_masked_roles
