@@ -520,6 +520,13 @@ SELECT r.*,
 FROM pg_roles r
 ;
 
+
+-- name of the source schema
+CREATE OR REPLACE FUNCTION @extschema@.source_schema()
+RETURNS TEXT AS 
+$$ SELECT value FROM @extschema@.config WHERE param='sourceschema' $$
+LANGUAGE SQL STABLE;
+
 -- name of the masking schema
 CREATE OR REPLACE FUNCTION @extschema@.mask_schema()
 RETURNS TEXT AS
@@ -598,28 +605,29 @@ LANGUAGE SQL VOLATILE;
 CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema NAME, maskschema TEXT)
 RETURNS SETOF VOID AS
 $$
-DECLARE
-    t RECORD;
 BEGIN
   -- Be sure that the target schema is here
   IF NOT EXISTS (
+	-- CREATE SCHEMA already has a clause `IF NOT EXITS` !
+    -- but it will output a NOTICE message for each call of `mask_create`.
+    -- This function will be called after every DDL event
+    -- to avoid unecessary NOTICE messages, we check if 
+    -- the schema is present and call `CREATE SCHEMA` only if needed
     SELECT
     FROM information_schema.schemata
     WHERE schema_name = maskschema
   )
   THEN
-    EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I',maskschema);
+    EXECUTE format('CREATE SCHEMA %I',maskschema);
   END IF;
 
+
   -- Walk through all tables in the source schema
-  FOR  t IN
-	SELECT oid
-	FROM pg_class
-	WHERE relnamespace=sourceschema::regnamespace
-	AND relkind = 'r' -- relations only
-  LOOP
-    PERFORM @extschema@.mask_create_view(t.oid);
-  END LOOP;
+  PERFORM @extschema@.mask_create_view(oid) 
+  FROM pg_class
+  WHERE relnamespace=sourceschema::regnamespace
+  AND relkind = 'r' -- relations only
+  ;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
@@ -712,20 +720,6 @@ END
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION @extschema@.mask_update()
-RETURNS SETOF VOID AS
-$$
-DECLARE
-    sourceschema TEXT;
-BEGIN
-    SELECT value INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
-    PERFORM @extschema@.mask_disable();
-    PERFORM @extschema@.mask_create(sourceschema,@extschema@.mask_schema());
-    PERFORM @extschema@.mask_roles();
-    PERFORM @extschema@.mask_enable();
-END
-$$
-LANGUAGE plpgsql VOLATILE;
 
 -- Mask a specific role
 CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole REGROLE)
@@ -735,8 +729,8 @@ DECLARE
 	sourceschema REGNAMESPACE;
 	maskschema REGNAMESPACE;
 BEGIN
-	SELECT value::REGNAMESPACE INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
-    SELECT value::REGNAMESPACE INTO maskschema FROM @extschema@.config WHERE param='maskschema';
+	SELECT @extschema@.source_schema()::REGNAMESPACE INTO sourceschema;
+    SELECT @extschema@.mask_schema()::REGNAMESPACE INTO maskschema;
     RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
     EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
     EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', '@extschema@', maskedrole);
@@ -793,6 +787,17 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql VOLATILE;
+
+-- Rebuild the masking views from scratch
+CREATE OR REPLACE FUNCTION @extschema@.mask_update()
+RETURNS SETOF VOID AS
+$$
+    SELECT @extschema@.mask_disable();
+    SELECT @extschema@.mask_create(@extschema@.source_schema(),@extschema@.mask_schema());
+    SELECT @extschema@.mask_roles();
+    SELECT @extschema@.mask_enable();
+$$
+LANGUAGE SQL VOLATILE;
 
 -------------------------------------------------------------------------------
 -- Dumping
