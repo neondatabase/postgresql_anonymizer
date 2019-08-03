@@ -832,7 +832,7 @@ DECLARE
   rec RECORD;
 BEGIN
 --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
-  copy_statement := format(E'COPY %s  FROM STDIN DELIMITER '',''; \n', relid::REGCLASS);
+  copy_statement := format(E'COPY %s  FROM STDIN CSV QUOTE AS ''"'' DELIMITER '',''; \n', relid::REGCLASS);
   FOR rec IN
     EXECUTE format(E'SELECT tmp::TEXT AS r FROM (SELECT %s FROM %s) AS tmp;',
 													anon.mask_filters(relid),
