@@ -15,7 +15,7 @@ CREATE TABLE cards (
 INSERT INTO cards VALUES (2, 1, 'Clean');
 INSERT INTO cards VALUES (3, 1, 'Cook');
 INSERT INTO cards VALUES (4, 1, 'Vacuum');
-INSERT INTO cards VALUES (999999,0, E'(,Very,Weird,value\t trying, to\,break CSV\)export)');
+INSERT INTO cards VALUES (999999,0, E'(,Very"Weird\'\'value\t trying\n to\,break '' CSV\)export)');
 
 CREATE TABLE customer (
 	id SERIAL,
