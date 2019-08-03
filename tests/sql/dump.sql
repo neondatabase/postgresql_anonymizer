@@ -51,7 +51,7 @@ IS E'MASKED WITH FUNCTION md5(''0'')';
 SELECT count(d) FROM anon.dump() AS d;
 
 -- 1. Dump into a file
-\! psql -q -t -A -c 'SELECT anon.dump()' contrib_regression > dump1.sql
+\! psql -q -t -A -c 'SELECT anon.dump()' contrib_regression > _dump1.sql
 
 -- 2. Clean the database and Restore with the dump file
 DROP TABLE cards CASCADE;
@@ -60,14 +60,14 @@ DROP TABLE "COMPANY" CASCADE;
 
 -- output will vary a lot between PG versions
 -- So have to disable it to pass this test
-\! psql -f dump1.sql contrib_regression >/dev/null
+\! psql -f _dump1.sql contrib_regression >/dev/null
 
 -- 3. Dump again into a second file
-\! psql -t -A -c 'SELECT anon.dump()' contrib_regression > dump2.sql
+\! psql -t -A -c 'SELECT anon.dump()' contrib_regression > _dump2.sql
 
 
 -- 4. Check that both dump files are identical
-\! diff dump1.sql dump2.sql
+\! diff _dump1.sql _dump2.sql
 
 --  CLEAN
 
