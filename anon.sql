@@ -832,7 +832,7 @@ DECLARE
   rec RECORD;
 BEGIN
 --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
-  copy_statement := format(E'COPY %s FROM STDIN; \n', relid::REGCLASS);
+  copy_statement := format(E'COPY %s  FROM STDIN DELIMITER '',''; \n', relid::REGCLASS);
   FOR rec IN
     EXECUTE format(E'SELECT tmp::TEXT AS r FROM (SELECT %s FROM %s) AS tmp;',
 													anon.mask_filters(relid),
@@ -842,7 +842,7 @@ BEGIN
 	-- FIXME Find another way to convert rows into CSV
 	val := ltrim(rec.r,'(');
 	val := rtrim(val,')');
-	val := replace(val,',',E'\t');
+--	val := replace(val,',',E'\t');
 	copy_statement := copy_statement || val || E'\n';
   END LOOP;
   copy_statement := copy_statement || E'\\.\n';
@@ -855,7 +855,7 @@ LANGUAGE plpgsql VOLATILE;
 -- export content of all the tables as COPY statements
 CREATE OR REPLACE FUNCTION @extschema@.dump_data()
 RETURNS TABLE (
-    data TEXT 
+    data TEXT
 ) AS
 $$
   SELECT @extschema@.get_copy_statement(relid)
