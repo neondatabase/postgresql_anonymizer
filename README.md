@@ -280,6 +280,19 @@ For now, this extension is especially focusing on  **randomization** and
 other methods as well.
 
 
+Limitations
+------------------------------------------------------------------------------
+
+* The masking are declared using the comments on columns. If you data model
+  already contains comments on some columns, you must append the masking 
+  rule after the original comment
+
+* The dynamic masking system only works with one schema (by default `public`). 
+  When you start the masking engine with the `mask_init` function, you can 
+  specify the schema that will be masked with `SELECT mask_init('sales');`. 
+  **However** in-place anonymization with `anon.anonymize()`and anonymous 
+  export with `anon.dump()` will work fine will multiple schemas.
+
 
 
 Performance
