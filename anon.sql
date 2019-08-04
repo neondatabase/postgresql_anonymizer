@@ -73,16 +73,14 @@ LANGUAGE plpgsql VOLATILE;
 -- Shuffle
 -------------------------------------------------------------------------------
 
-
 CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(
                                                 shuffle_table regclass,
-                                                shuffle_column TEXT,
-                                                primary_key TEXT
+                                                shuffle_column NAME,
+                                                primary_key NAME
                                                 )
 RETURNS BOOLEAN
 AS $func$
 BEGIN
-
   EXECUTE format('
   WITH s1 AS (
     -- shuffle the primary key
@@ -480,8 +478,11 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL IMMUTABLE;
 
+
 -------------------------------------------------------------------------------
--- Masking
+-- Masking Rules Management
+-- This is the common metadata used by the 3 main features :
+-- anonymize(), dump() and dynamic masking engine
 -------------------------------------------------------------------------------
 
 -- List of all the masked columns
@@ -538,36 +539,73 @@ WHERE param='maskschema'
 $$
 LANGUAGE SQL STABLE;
 
--- Walk through all masked columns and permanently apply the mask
--- This is not a "masking function" per se, but it relies on the masking infra
-CREATE OR REPLACE FUNCTION @extschema@.anonymize()
-RETURNS BOOLEAN
-AS $$
+-------------------------------------------------------------------------------
+-- In-Place Anonymization
+-------------------------------------------------------------------------------
+
+-- Replace masked data in a column
+CREATE OR REPLACE FUNCTION @extschema@.anonymize_column(tablename REGCLASS, colname NAME)
+RETURNS BOOLEAN AS
+$$
 DECLARE
-    col RECORD;
+    mf TEXT;
+	mf_is_a_faking_function BOOLEAN;
 BEGIN
-  IF not @extschema@.isloaded() THEN
-	RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT @extschema@.load()'' ';
+  SELECT masking_function INTO mf
+  FROM @extschema@.pg_masks 
+  WHERE relid = tablename::OID
+  AND	attname = colname;
+
+  IF mf IS NULL THEN
+	RAISE WARNING 'There is no masking rule for column % in table %', colname, tablename; 	
+	RETURN FALSE;
   END IF;
 
-  FOR col IN
-    SELECT * FROM @extschema@.pg_masks
-  LOOP
-    RAISE DEBUG 'Anonymize %.% with %', col.relid::regclass,col.attname, col.masking_function;
-    EXECUTE format('UPDATE %s SET %I = %s', col.relid::regclass,col.attname, col.masking_function);
-  END LOOP;
+  SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function; 	
+  IF mf_is_a_faking_function AND not anon.isloaded() THEN
+    RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT @extschema@.load()'' ';
+  END IF;
+
+  RAISE DEBUG 'Anonymize %.% with %', tablename,colname, mf;
+  EXECUTE format('UPDATE %s SET %I = %s', tablename,colname, mf);
+
   RETURN TRUE;
 END;
 $$
 LANGUAGE plpgsql VOLATILE;
 
+
+-- Replace masked data in a table
+CREATE OR REPLACE FUNCTION @extschema@.anonymize_table(tablename REGCLASS)
+RETURNS BOOLEAN
+AS $func$ 
+  SELECT @extschema@.anonymize_column(tablename,attname)
+  FROM @extschema@.pg_masks
+  WHERE relid::regclass=tablename;
+$func$
+LANGUAGE SQL VOLATILE;
+
+
+-- Walk through all masked columns and permanently apply the mask
+CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
+RETURNS BOOLEAN
+AS $func$
+SELECT @extschema@.anonymize_column(relid::regclass,attname)
+FROM @extschema@.pg_masks;
+$func$
+LANGUAGE SQL VOLATILE;
+
 -- Backward compatibility
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS BOOLEAN AS
 $$
-SELECT @extschema@.anonymize();
+SELECT @extschema@.anonymize_database();
 $$
 LANGUAGE SQL VOLATILE;
+
+-------------------------------------------------------------------------------
+-- Dynamic Masking
+-------------------------------------------------------------------------------
 
 -- True if the role is masked
 CREATE OR REPLACE FUNCTION @extschema@.hasmask(role REGROLE)
@@ -602,30 +640,14 @@ LANGUAGE SQL VOLATILE;
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
 -- We can't use the namespace oids because the mask schema may not be present
-CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema NAME, maskschema TEXT)
+CREATE OR REPLACE FUNCTION  @extschema@.mask_create()
 RETURNS SETOF VOID AS
 $$
 BEGIN
-  -- Be sure that the target schema is here
-  IF NOT EXISTS (
-	-- CREATE SCHEMA already has a clause `IF NOT EXITS` !
-    -- but it will output a NOTICE message for each call of `mask_create`.
-    -- This function will be called after every DDL event
-    -- to avoid unecessary NOTICE messages, we check if 
-    -- the schema is present and call `CREATE SCHEMA` only if needed
-    SELECT
-    FROM information_schema.schemata
-    WHERE schema_name = maskschema
-  )
-  THEN
-    EXECUTE format('CREATE SCHEMA %I',maskschema);
-  END IF;
-
-
   -- Walk through all tables in the source schema
   PERFORM @extschema@.mask_create_view(oid) 
   FROM pg_class
-  WHERE relnamespace=sourceschema::regnamespace
+  WHERE relnamespace=@extschema@.sourceschema()::regnamespace
   AND relkind = 'r' -- relations only
   ;
 END
@@ -697,10 +719,12 @@ BEGIN
     PERFORM @extschema@.load();
   END IF;
 
-  UPDATE @extschema@.config SET value=sourceschema WHERE param='sourceschema';
-  UPDATE @extschema@.config SET value=maskschema WHERE param='maskschema';
+  EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', maskschema);
+  EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''sourceschema'';', sourceschema);
+  EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''maskschema'';', maskschema);
 
   PERFORM @extschema@.mask_update();
+
   RETURN TRUE;
 END
 $$
@@ -743,15 +767,6 @@ END
 $$
 LANGUAGE plpgsql;
 
--- Mask all roles
-CREATE OR REPLACE FUNCTION @extschema@.mask_roles()
-RETURNS BOOLEAN AS
-$$
-    SELECT @extschema@.mask_role(rolname::REGROLE)
-    FROM @extschema@.pg_masked_roles
-    WHERE hasmask;
-$$
-LANGUAGE SQL VOLATILE;
 
 -- load the event trigger
 CREATE OR REPLACE FUNCTION @extschema@.mask_enable()
@@ -788,19 +803,31 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- Rebuild the masking views from scratch
+-- Rebuild the dynamic masking views and masked roles from scratch
 CREATE OR REPLACE FUNCTION @extschema@.mask_update()
 RETURNS SETOF VOID AS
 $$
-    SELECT @extschema@.mask_disable();
-    SELECT @extschema@.mask_create(@extschema@.source_schema(),@extschema@.mask_schema());
-    SELECT @extschema@.mask_roles();
-    SELECT @extschema@.mask_enable();
+  -- This DDL EVENT TRIGGER will launch new DDL statements
+  -- therefor we have disable the EVENT TRIGGER first 
+  -- in order to avoid an infinite triggering loop :-)
+  SELECT @extschema@.mask_disable();
+  -- Walk through all tables in the source schema and build a dynamic masking view
+  SELECT @extschema@.mask_create_view(oid) 
+  FROM pg_class
+  WHERE relnamespace=@extschema@.source_schema()::regnamespace
+  AND relkind = 'r' -- relations only
+  ;
+  -- Walk through all masked roles and apply the restrictions 
+  SELECT @extschema@.mask_role(rolname::REGROLE)
+  FROM @extschema@.pg_masked_roles
+  WHERE hasmask;
+  -- Restore the mighty DDL EVENT TRIGGER
+  SELECT @extschema@.mask_enable();
 $$
 LANGUAGE SQL VOLATILE;
 
 -------------------------------------------------------------------------------
--- Dumping
+-- Anonymous Dumps
 -------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION @extschema@.dump_ddl()
@@ -810,7 +837,7 @@ RETURNS TABLE (
 $$
     SELECT ddlx_create(oid)
     FROM pg_class
-    WHERE relkind != 't' -- exclude the TOAST objects
+    WHERE relkind != 't' -- exclude the TOAST objeema@.mask_rolests
     AND relnamespace IN (
       SELECT oid
       FROM pg_namespace
