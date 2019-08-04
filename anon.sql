@@ -80,7 +80,30 @@ CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(
                                                 )
 RETURNS BOOLEAN
 AS $func$
+DECLARE
+	colname TEXT;
 BEGIN
+  -- Stop if shuffle_column does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=shuffle_table::TEXT
+  AND column_name=shuffle_column::TEXT;
+  IF colname IS NULL THEN
+	RAISE WARNING 'Column ''%'' is not present in table ''%''.', shuffle_column, shuffle_table;
+	RETURN FALSE;
+  END IF;	
+
+  -- Stop if primary_key does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=shuffle_table::TEXT
+  AND column_name=primary_key::TEXT;
+  IF colname IS NULL THEN
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.', primary_key, shuffle_table;
+    RETURN FALSE;
+  END IF;
+
+  -- shuffle
   EXECUTE format('
   WITH s1 AS (
     -- shuffle the primary key

@@ -17,7 +17,7 @@ CREATE TABLE a (
 
 SELECT anon.shuffle_column('a; SELECT 1','x','i');
 SELECT anon.shuffle_column('a','x; SELECT 1','i');
---SELECT anon.shuffle_column('a','x','i; SELECT 1');
+SELECT anon.shuffle_column('a','x','i; SELECT 1');
 
 --SELECT anon.load('/dev/null''; CREATE TABLE inject (i int);--');
 
