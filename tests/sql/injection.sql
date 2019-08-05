@@ -50,7 +50,7 @@ SELECT anon.shuffle_column('a','x','i; SELECT 1');
 --
 
 -- returns a WARNING and FALSE
-SELECT anon.load('/dev/null''; CREATE TABLE inject (i int);--');
+SELECT anon.load('base/''; CREATE TABLE inject (i int);--');
 
 --
 -- mask_init

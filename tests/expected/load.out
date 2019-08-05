@@ -8,8 +8,8 @@ SELECT anon.isloaded() IS FALSE;
  t
 (1 row)
 
-SELECT anon.load('/does/not/exists/cd2ks3s/') IS FALSE;
-WARNING:  The path '/does/not/exists/cd2ks3s/' does not exist or is not a directory.
+SELECT anon.load('./does/not/exists/cd2ks3s/') IS FALSE;
+WARNING:  The path './does/not/exists/cd2ks3s/' does not exist or is not a directory.
 HINT:   'anon.load' instructs PostgreSQL to read a file on the server side.
  ?column? 
 ----------

@@ -80,8 +80,8 @@ WARNING:  Column 'i; SELECT 1' is not present in table 'a'.
 -- load
 --
 -- returns a WARNING and FALSE
-SELECT anon.load('/dev/null''; CREATE TABLE inject (i int);--');
-WARNING:  The path '/dev/null'; CREATE TABLE inject (i int);--' does not exist or is not a directory.
+SELECT anon.load('base/''; CREATE TABLE inject (i int);--');
+WARNING:  The path 'base/'; CREATE TABLE inject (i int);--' does not exist or is not a directory.
 HINT:   'anon.load' instructs PostgreSQL to read a file on the server side.
  load 
 ------
