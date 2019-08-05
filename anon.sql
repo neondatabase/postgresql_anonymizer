@@ -40,7 +40,20 @@ CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_numeric_column(
                                                         )
 RETURNS BOOLEAN
 AS $func$
+DECLARE
+  colname TEXT;
 BEGIN
+
+  -- Stop if shuffle_column does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=noise_table::TEXT
+  AND column_name=noise_column::TEXT;
+  IF colname IS NULL THEN
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.', noise_column, noise_table;
+    RETURN FALSE;
+  END IF;
+
   EXECUTE format('
      UPDATE %I
      SET %I = %I *  (1+ (2 * random() - 1 ) * %L) ;
@@ -54,17 +67,31 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(
                                                         noise_table regclass,
                                                         noise_column TEXT,
-                                                        variation TEXT
+                                                        variation INTERVAL
                                                         )
 RETURNS BOOLEAN
 AS $func$
+DECLARE
+  colname TEXT;
 BEGIN
-  EXECUTE format('
-    UPDATE %I
-    SET %I = %I + (2 * random() - 1 ) * %L ::INTERVAL
-    ', noise_table, noise_column, noise_column, variation
-);
-RETURN TRUE;
+
+  -- Stop if shuffle_column does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=noise_table::TEXT
+  AND column_name=noise_column::TEXT;
+  IF colname IS NULL THEN
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.', noise_column, noise_table;
+    RETURN FALSE;
+  END IF;
+
+  EXECUTE format('UPDATE %I SET %I = %I + (2 * random() - 1 ) * ''%s''::INTERVAL',
+									noise_table,
+									noise_column,
+									noise_column,
+									variation
+  );
+  RETURN TRUE;
 END;
 $func$
 LANGUAGE plpgsql VOLATILE;
@@ -199,19 +226,18 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
 -- ADD unit tests in tests/sql/load.sql
 
 -- load fake data from a given path
--- FIXME sanitize datapath
 CREATE OR REPLACE FUNCTION @extschema@.load(datapath TEXT)
 RETURNS BOOLEAN
 AS $func$
 BEGIN
     -- ADD NEW TABLE HERE
-    EXECUTE format('COPY @extschema@.city FROM ''%s/city.csv''',datapath);
-    EXECUTE format('COPY @extschema@.company FROM ''%s/company.csv''',datapath);
-    EXECUTE format('COPY @extschema@.email FROM ''%s/email.csv''',datapath);
-    EXECUTE format('COPY @extschema@.first_name FROM ''%s/first_name.csv''',datapath);
-    EXECUTE format('COPY @extschema@.iban FROM ''%s/iban.csv''',datapath);
-    EXECUTE format('COPY @extschema@.last_name FROM ''%s/last_name.csv''',datapath);
-    EXECUTE format('COPY @extschema@.siret FROM ''%s/siret.csv''',datapath);
+    EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
+    EXECUTE 'COPY @extschema@.company FROM    '|| quote_literal(datapath ||'/company.csv');
+    EXECUTE 'COPY @extschema@.email FROM      '|| quote_literal(datapath ||'/email.csv');
+    EXECUTE 'COPY @extschema@.first_name FROM '|| quote_literal(datapath ||'/first_name.csv');
+    EXECUTE 'COPY @extschema@.iban FROM       '|| quote_literal(datapath ||'/iban.csv');
+    EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
+    EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
     RETURN TRUE;
 END;
 $func$
@@ -722,7 +748,6 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Activate the masking engine
--- FIXME sanitize maskschema
 CREATE OR REPLACE FUNCTION @extschema@.mask_init(
                                                 sourceschema TEXT DEFAULT 'public',
                                                 maskschema TEXT DEFAULT 'mask',
