@@ -229,16 +229,28 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
 CREATE OR REPLACE FUNCTION @extschema@.load(datapath TEXT)
 RETURNS BOOLEAN
 AS $func$
+DECLARE 
+  datapath_check RECORD;
 BEGIN
-    -- ADD NEW TABLE HERE
-    EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
-    EXECUTE 'COPY @extschema@.company FROM    '|| quote_literal(datapath ||'/company.csv');
-    EXECUTE 'COPY @extschema@.email FROM      '|| quote_literal(datapath ||'/email.csv');
-    EXECUTE 'COPY @extschema@.first_name FROM '|| quote_literal(datapath ||'/first_name.csv');
-    EXECUTE 'COPY @extschema@.iban FROM       '|| quote_literal(datapath ||'/iban.csv');
-    EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
-    EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
-    RETURN TRUE;
+  -- Stop if is the directory does not exist
+  SELECT * INTO  datapath_check
+  FROM pg_stat_file(datapath, missing_ok := TRUE ) 
+  WHERE isdir;
+  IF datapath_check IS NULL THEN
+    RAISE WARNING 'The path ''%'' does not exist or is not a directory.', datapath
+          USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';		
+    RETURN FALSE;
+  END IF;
+
+  -- ADD NEW TABLE HERE
+  EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
+  EXECUTE 'COPY @extschema@.company FROM    '|| quote_literal(datapath ||'/company.csv');
+  EXECUTE 'COPY @extschema@.email FROM      '|| quote_literal(datapath ||'/email.csv');
+  EXECUTE 'COPY @extschema@.first_name FROM '|| quote_literal(datapath ||'/first_name.csv');
+  EXECUTE 'COPY @extschema@.iban FROM       '|| quote_literal(datapath ||'/iban.csv');
+  EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
+  EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
+  RETURN TRUE;
 END;
 $func$
 LANGUAGE PLPGSQL VOLATILE;
@@ -737,8 +749,8 @@ CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID)
 RETURNS BOOLEAN AS
 $$
 BEGIN
-    EXECUTE format('CREATE OR REPLACE VIEW %s.%s AS SELECT %s FROM %s',
-																	@extschema@.mask_schema()::REGNAMESPACE,
+    EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
+																	@extschema@.mask_schema(),
 																	relid::REGCLASS,
 																	@extschema@.mask_filters(relid),
 																	relid::REGCLASS);
@@ -770,7 +782,7 @@ BEGIN
   EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', maskschema);
   EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''sourceschema'';', sourceschema);
   EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''maskschema'';', maskschema);
-
+	
   PERFORM @extschema@.mask_update();
 
   RETURN TRUE;

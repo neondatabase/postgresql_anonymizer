@@ -5,18 +5,25 @@ CREATE TABLE a (
     d TIMESTAMP,
     x INTEGER
 );
+--
 -- random_phone
+--
+--returns TRUE 
 SELECT anon.random_phone('11; SELECT 0;') LIKE '11; SELECT 0;%';
  ?column? 
 ----------
  t
 (1 row)
 
+--
 -- add_noise_on_numeric_column
+--
+-- returns 'invalid name syntax'
 SELECT anon.add_noise_on_numeric_column('a; SELECT 1','x',0.5);
 ERROR:  invalid name syntax
 LINE 1: SELECT anon.add_noise_on_numeric_column('a; SELECT 1','x',0....
                                                 ^
+-- returns a WARNING and FALSE
 SELECT anon.add_noise_on_numeric_column('a','x; SELECT 1',0.5);
 WARNING:  Column 'x; SELECT 1' is not present in table 'a'.
  add_noise_on_numeric_column 
@@ -24,11 +31,15 @@ WARNING:  Column 'x; SELECT 1' is not present in table 'a'.
  f
 (1 row)
 
+--
 -- add_noise_on_datetime_column
+--
+-- returns 'invalid name syntax'
 SELECT anon.add_noise_on_datetime_column('a; SELECT 1','d','2 days');
 ERROR:  invalid name syntax
 LINE 1: SELECT anon.add_noise_on_datetime_column('a; SELECT 1','d','...
                                                  ^
+-- returns a WARNING and FALSE
 SELECT anon.add_noise_on_datetime_column('a','d; SELECT 1','2 days');
 WARNING:  Column 'd; SELECT 1' is not present in table 'a'.
  add_noise_on_datetime_column 
@@ -36,15 +47,20 @@ WARNING:  Column 'd; SELECT 1' is not present in table 'a'.
  f
 (1 row)
 
+-- returns 'invalid name syntax'
 SELECT anon.add_noise_on_datetime_column('a','d','2 days; SELECT 1');
 ERROR:  invalid input syntax for type interval: "2 days; SELECT 1"
 LINE 1: SELECT anon.add_noise_on_datetime_column('a','d','2 days; SE...
                                                          ^
+--
 -- shuffle_column
+--
+-- returns 'invalid name syntax'
 SELECT anon.shuffle_column('a; SELECT 1','x','i');
 ERROR:  invalid name syntax
 LINE 1: SELECT anon.shuffle_column('a; SELECT 1','x','i');
                                    ^
+-- returns a WARNING and FALSE
 SELECT anon.shuffle_column('a','x; SELECT 1','i');
 WARNING:  Column 'x; SELECT 1' is not present in table 'a'.
  shuffle_column 
@@ -52,6 +68,7 @@ WARNING:  Column 'x; SELECT 1' is not present in table 'a'.
  f
 (1 row)
 
+-- returns a WARNING and FALSE
 SELECT anon.shuffle_column('a','x','i; SELECT 1');
 WARNING:  Column 'i; SELECT 1' is not present in table 'a'.
  shuffle_column 
@@ -59,19 +76,30 @@ WARNING:  Column 'i; SELECT 1' is not present in table 'a'.
  f
 (1 row)
 
+--
 -- load
+--
+-- returns a WARNING and FALSE
 SELECT anon.load('/dev/null''; CREATE TABLE inject (i int);--');
-ERROR:  could not open file "/dev/null'; CREATE TABLE inject (i int);--/city.csv" for reading: No such file or directory
-HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
-CONTEXT:  SQL statement "COPY anon.city FROM       '/dev/null''; CREATE TABLE inject (i int);--/city.csv'"
-PL/pgSQL function anon.load(text) line 4 at EXECUTE
+WARNING:  The path '/dev/null'; CREATE TABLE inject (i int);--' does not exist or is not a directory.
+HINT:   'anon.load' instructs PostgreSQL to read a file on the server side.
+ load 
+------
+ f
+(1 row)
+
+--
 -- mask_init
+--
+-- returns TRUE
 SELECT anon.mask_init('public','foo; CREATE TABLE inject (i int);--');
-ERROR:  invalid name syntax
-CONTEXT:  PL/pgSQL function mask_create_view(oid) line 3 at EXECUTE
-SQL function "mask_update" statement 2
-SQL statement "SELECT anon.mask_update()"
-PL/pgSQL function anon.mask_init(text,text,boolean) line 18 at PERFORM
+ mask_init 
+-----------
+ t
+(1 row)
+
 -- CLEAN UP
-DROP TABLE a;
+DROP TABLE a CASCADE;
+NOTICE:  drop cascades to view "foo; CREATE TABLE inject (i int);--".a
 DROP EXTENSION anon CASCADE;
+NOTICE:  drop cascades to event trigger anon_mask_update
