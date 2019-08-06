@@ -20,7 +20,7 @@ Read the [Concepts] section for more details and [NEWS.md] for information
 about the latest version.
 
 [NEWS.md]: NEWS.md
-[INSTALL.md]: INSTALL.md
+[INSTALL.md]: docs/INSTALL.md
 [Concepts]: #Concepts
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
@@ -129,7 +129,7 @@ Requirements
 
 This extension is officially supported on PostgreSQL 9.6 and later.
 It should also work on PostgreSQL 9.5 with a bit of hacking.
-See [NOTES.md](NOTES.md) for more details.
+See [NOTES.md](docs/NOTES.md) for more details.
 
 It requires two extensions :
 
