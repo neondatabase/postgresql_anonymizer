@@ -229,16 +229,24 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
 CREATE OR REPLACE FUNCTION @extschema@.load(datapath TEXT)
 RETURNS BOOLEAN
 AS $func$
-DECLARE 
-  datapath_check RECORD;
+DECLARE
+  datapath_regexp  TEXT;
+  datapath_check TEXT;
 BEGIN
+  -- This check does not work with PG10 and below
+  -- because absolute paths are not allowed
+  --SELECT * INTO  datapath_check
+  --FROM pg_stat_file(datapath, missing_ok := TRUE ) 
+  --WHERE isdir;
+
+  -- This works with all current version of Postgres
+  datapath_regexp := '^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\0])[^/\0]+)*\/?$';
+  SELECT regexp_matches(datapath,datapath_regexp) INTO datapath_check;
+
   -- Stop if is the directory does not exist
-  SELECT * INTO  datapath_check
-  FROM pg_stat_file(datapath, missing_ok := TRUE ) 
-  WHERE isdir;
   IF datapath_check IS NULL THEN
-    RAISE WARNING 'The path ''%'' does not exist or is not a directory.', datapath
-          USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';		
+    RAISE WARNING 'The path ''%'' is not correct.', datapath;
+          --USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';		
     RETURN FALSE;
   END IF;
 

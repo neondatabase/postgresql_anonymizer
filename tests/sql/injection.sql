@@ -50,14 +50,22 @@ SELECT anon.shuffle_column('a','x','i; SELECT 1');
 --
 
 -- returns a WARNING and FALSE
-SELECT anon.load('base/''; CREATE TABLE inject (i int);--');
+SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--');
+
+SELECT COUNT(*) = 0 
+FROM pg_tables
+WHERE tablename='inject_via_load';
 
 --
 -- mask_init
 --
 
 -- returns TRUE
-SELECT anon.mask_init('public','foo; CREATE TABLE inject (i int);--');
+SELECT anon.mask_init('public','foo; CREATE TABLE inject_via_init (i int);--');
+
+SELECT COUNT(*) = 0 
+FROM pg_tables
+WHERE tablename='inject_via_init';
 
 -- CLEAN UP
 DROP TABLE a CASCADE;

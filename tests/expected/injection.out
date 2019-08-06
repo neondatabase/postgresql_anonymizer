@@ -80,26 +80,41 @@ WARNING:  Column 'i; SELECT 1' is not present in table 'a'.
 -- load
 --
 -- returns a WARNING and FALSE
-SELECT anon.load('base/''; CREATE TABLE inject (i int);--');
-WARNING:  The path 'base/'; CREATE TABLE inject (i int);--' does not exist or is not a directory.
-HINT:   'anon.load' instructs PostgreSQL to read a file on the server side.
+SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--');
+WARNING:  The path 'base/'; CREATE TABLE inject_via_load (i int);--' is not correct.
  load 
 ------
  f
+(1 row)
+
+SELECT COUNT(*) = 0 
+FROM pg_tables
+WHERE tablename='inject_via_load';
+ ?column? 
+----------
+ t
 (1 row)
 
 --
 -- mask_init
 --
 -- returns TRUE
-SELECT anon.mask_init('public','foo; CREATE TABLE inject (i int);--');
+SELECT anon.mask_init('public','foo; CREATE TABLE inject_via_init (i int);--');
  mask_init 
 -----------
  t
 (1 row)
 
+SELECT COUNT(*) = 0 
+FROM pg_tables
+WHERE tablename='inject_via_init';
+ ?column? 
+----------
+ t
+(1 row)
+
 -- CLEAN UP
 DROP TABLE a CASCADE;
-NOTICE:  drop cascades to view "foo; CREATE TABLE inject (i int);--".a
+NOTICE:  drop cascades to view "foo; CREATE TABLE inject_via_init (i int);--".a
 DROP EXTENSION anon CASCADE;
 NOTICE:  drop cascades to event trigger anon_mask_update
