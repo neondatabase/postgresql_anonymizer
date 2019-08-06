@@ -66,7 +66,7 @@ docker_push:
 	docker push registry.gitlab.com/dalibo/postgresql_anonymizer
 
 docker_bash:
-	docker exec -it postgresqlanonymizer_PostgreSQL_1 bash
+	docker exec -it docker_PostgreSQL_1 bash
 
 COMPOSE=docker-compose --file docker/docker-compose.yml
 

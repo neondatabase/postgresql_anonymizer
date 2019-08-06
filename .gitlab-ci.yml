@@ -152,7 +152,7 @@ standalone12:
   before_script:
     - echo "disable the before_script"
   script:
-    - apt-get update && apt-get install -y make git postgresql-server-dev-12 
+    - apt-get update && apt-get install -y make git postgresql-server-dev-all 
     - make anon.standalone_PG12.sql
     - export PGPASSWORD=$POSTGRES_PASSWORD
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon.standalone_PG12.sql
