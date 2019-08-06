@@ -87,15 +87,15 @@ tests/expected/unit.out:
 ## S T A N D A L O N E
 ##
 
-STD_ARTEFACTS=anon.standalone_PG96.sql
-STD_ARTEFACTS+=anon.standalone_PG10.sql
-STD_ARTEFACTS+=anon.standalone_PG11.sql
-STD_ARTEFACTS+=anon.standalone_PG12.sql
+STD_ARTEFACTS=anon_standalone_PG96.sql
+STD_ARTEFACTS+=anon_standalone_PG10.sql
+STD_ARTEFACTS+=anon_standalone_PG11.sql
+STD_ARTEFACTS+=anon_standalone_PG12.sql
 
-anon.standalone_PG96.sql: VERSION = 9.6.0
-anon.standalone_PG10.sql: VERSION = 10.0
-anon.standalone_PG12.sql: VERSION = 11.0
-anon.standalone_PG12.sql: VERSION = 12.0
+anon_standalone_PG96.sql: VERSION = 9.6.0
+anon_standalone_PG10.sql: VERSION = 10.0
+anon_standalone_PG12.sql: VERSION = 11.0
+anon_standalone_PG12.sql: VERSION = 12.0
 
 standalone: $(STD_ARTEFACTS)
 

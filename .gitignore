@@ -16,3 +16,4 @@ _pgddl/
 anon/*
 anon_*/
 anon*.zip
+anon_standalone_PG*
