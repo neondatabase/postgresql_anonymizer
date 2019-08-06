@@ -13,7 +13,7 @@
       "runtime": {
          "requires": {
             "PostgreSQL": "9.6.0",
-			"ddlx": "0.12.0"
+			"ddlx": "0.14.0"
          }
       }
    },
