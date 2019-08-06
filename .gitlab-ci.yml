@@ -78,6 +78,7 @@ make10:
     - pgxn install ddlx
     - make extension
     - make install
+    - export PG_TEST_EXTRA=''
     - make installcheck || diff results tests/expected
   artifacts:
     paths:

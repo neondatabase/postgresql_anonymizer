@@ -1,6 +1,21 @@
+BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "ddlx"
+SELECT anon.isloaded() IS FALSE;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- returns a WARNING and FALSE
+SELECT anon.load('./does/not/exists/cd2ks3s/') IS FALSE; 
+WARNING:  The path './does/not/exists/cd2ks3s/' does not exist. Data is not loaded.
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT anon.isloaded() IS FALSE; 
  ?column? 
 ----------
@@ -43,4 +58,4 @@ SELECT anon.isloaded() IS FALSE;
  t
 (1 row)
 
-DROP EXTENSION anon CASCADE;
+ROLLBACK;
