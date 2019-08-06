@@ -27,7 +27,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS = load noise shuffle random faking partial anonymize masking dump
+REGRESS = load noise shuffle random faking partial anonymize masking dump injection
 REGRESS+=$(PG_TEST_EXTRA)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests

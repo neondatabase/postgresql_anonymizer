@@ -4,6 +4,8 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.mask_init();
 
+SELECT anon.mask_init('public','foo');
+
 CREATE TABLE t1 (
 	id SERIAL,
 	name TEXT,

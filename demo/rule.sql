@@ -1,3 +1,15 @@
+--
+-- This file contains various experiments to implement the 
+-- dynamic masking engine using the RULE system.
+--
+-- The main issue is that PostgreSQL considers that a VIEW 
+-- is an empty TABLE and a RULE. Therefore it does not allow
+-- user to put a RULE on a non-empty TABLE :
+-- 
+-- The examples below will return the following error:
+-- « could not convert table x to a view because it is not empty »
+--
+--
 
 BEGIN;
 
@@ -29,3 +41,15 @@ DO INSTEAD
 ;
 
 SELECT * FROM t2;
+
+
+CREATE VIEW mask_dot_public_dot_t1 AS
+SELECT id, md5(credit_card) AS credit_card
+FROM public.t1;
+
+CREATE RULE "_RETURN" AS
+ON SELECT TO t1
+WHERE CURRENT_USER IN anon.mask_roles()'
+DO INSTEAD
+SELECT * FROM mask_dot_public_dot_t1
+;

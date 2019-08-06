@@ -1,4 +1,6 @@
 BEGIN;
+CREATE TABLE stock ( id int, amount int);
+INSERT INTO stock VALUES (1,1000), (2,400);
 CREATE TABLE employee ( fisrtname TEXT, lastname TEXT, phone TEXT);
 INSERT INTO employee VALUES ('Sarah','Connor','0609110911');
 SELECT * FROM employee;
@@ -8,13 +10,13 @@ SELECT * FROM employee;
 (1 row)
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-COMMENT ON COLUMN employee.lastname IS 'MASKED WITH FUNCTION anon.random_last_name()';
+COMMENT ON COLUMN employee.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 COMMENT ON COLUMN employee.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 -- Should return a NOTICE but anonymize data anyway
-SELECT anon.anonymize();
+SELECT anon.anonymize_column('employee','lastname');
 NOTICE:  The faking data is not loaded. You probably need to run 'SELECT anon.load()' 
- anonymize 
------------
+ anonymize_column 
+------------------
  t
 (1 row)
 
@@ -30,10 +32,57 @@ SELECT anon.load();
  t
 (1 row)
 
--- No NOTICE this time
-SELECT anon.anonymize();
- anonymize 
------------
+-- Anonymize all
+SELECT anon.anonymize_database();
+ anonymize_database 
+--------------------
+ t
+(1 row)
+
+-- Anonymize a masked table
+SELECT anon.anonymize_table('employee');
+ anonymize_table 
+-----------------
+ t
+(1 row)
+
+-- Anonymize a table with no mask
+-- returns NULL
+SELECT anon.anonymize_table('stock') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- Anonymize a table that does not exist
+SELECT anon.anonymize_table('employee');
+ anonymize_table 
+-----------------
+ t
+(1 row)
+
+-- Anonymize a masked column
+SELECT anon.anonymize_column('employee','phone');
+ anonymize_column 
+------------------
+ t
+(1 row)
+
+-- Anonymize an unmasked column
+-- returns FALSE and a WARNING
+SELECT anon.anonymize_column('employee','firstname') IS FALSE;
+WARNING:  There is no masking rule for column firstname in table employee
+ ?column? 
+----------
+ t
+(1 row)
+
+-- Anonymize a column that does not exist
+-- returns FALSE and a WARNING
+SELECT anon.anonymize_column('employee','xxxxxxxxxxxxxxxx') IS FALSE;
+WARNING:  There is no masking rule for column xxxxxxxxxxxxxxxx in table employee
+ ?column? 
+----------
  t
 (1 row)
 

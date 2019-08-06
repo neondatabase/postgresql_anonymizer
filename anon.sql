@@ -40,7 +40,20 @@ CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_numeric_column(
                                                         )
 RETURNS BOOLEAN
 AS $func$
+DECLARE
+  colname TEXT;
 BEGIN
+
+  -- Stop if shuffle_column does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=noise_table::TEXT
+  AND column_name=noise_column::TEXT;
+  IF colname IS NULL THEN
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.', noise_column, noise_table;
+    RETURN FALSE;
+  END IF;
+
   EXECUTE format('
      UPDATE %I
      SET %I = %I *  (1+ (2 * random() - 1 ) * %L) ;
@@ -54,17 +67,31 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(
                                                         noise_table regclass,
                                                         noise_column TEXT,
-                                                        variation TEXT
+                                                        variation INTERVAL
                                                         )
 RETURNS BOOLEAN
 AS $func$
+DECLARE
+  colname TEXT;
 BEGIN
-  EXECUTE format('
-    UPDATE %I
-    SET %I = %I + (2 * random() - 1 ) * %L ::INTERVAL
-    ', noise_table, noise_column, noise_column, variation
-);
-RETURN TRUE;
+
+  -- Stop if shuffle_column does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=noise_table::TEXT
+  AND column_name=noise_column::TEXT;
+  IF colname IS NULL THEN
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.', noise_column, noise_table;
+    RETURN FALSE;
+  END IF;
+
+  EXECUTE format('UPDATE %I SET %I = %I + (2 * random() - 1 ) * ''%s''::INTERVAL',
+									noise_table,
+									noise_column,
+									noise_column,
+									variation
+  );
+  RETURN TRUE;
 END;
 $func$
 LANGUAGE plpgsql VOLATILE;
@@ -73,16 +100,37 @@ LANGUAGE plpgsql VOLATILE;
 -- Shuffle
 -------------------------------------------------------------------------------
 
-
 CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(
                                                 shuffle_table regclass,
-                                                shuffle_column TEXT,
-                                                primary_key TEXT
+                                                shuffle_column NAME,
+                                                primary_key NAME
                                                 )
 RETURNS BOOLEAN
 AS $func$
+DECLARE
+	colname TEXT;
 BEGIN
+  -- Stop if shuffle_column does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=shuffle_table::TEXT
+  AND column_name=shuffle_column::TEXT;
+  IF colname IS NULL THEN
+	RAISE WARNING 'Column ''%'' is not present in table ''%''.', shuffle_column, shuffle_table;
+	RETURN FALSE;
+  END IF;	
 
+  -- Stop if primary_key does not exist
+  SELECT column_name INTO colname
+  FROM information_schema.columns
+  WHERE table_name=shuffle_table::TEXT
+  AND column_name=primary_key::TEXT;
+  IF colname IS NULL THEN
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.', primary_key, shuffle_table;
+    RETURN FALSE;
+  END IF;
+
+  -- shuffle
   EXECUTE format('
   WITH s1 AS (
     -- shuffle the primary key
@@ -178,20 +226,44 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
 -- ADD unit tests in tests/sql/load.sql
 
 -- load fake data from a given path
--- FIXME sanitize datapath
 CREATE OR REPLACE FUNCTION @extschema@.load(datapath TEXT)
 RETURNS BOOLEAN
 AS $func$
+DECLARE
+  datapath_regexp  TEXT;
+  datapath_check TEXT;
 BEGIN
-    -- ADD NEW TABLE HERE
-    EXECUTE format('COPY @extschema@.city FROM ''%s/city.csv''',datapath);
-    EXECUTE format('COPY @extschema@.company FROM ''%s/company.csv''',datapath);
-    EXECUTE format('COPY @extschema@.email FROM ''%s/email.csv''',datapath);
-    EXECUTE format('COPY @extschema@.first_name FROM ''%s/first_name.csv''',datapath);
-    EXECUTE format('COPY @extschema@.iban FROM ''%s/iban.csv''',datapath);
-    EXECUTE format('COPY @extschema@.last_name FROM ''%s/last_name.csv''',datapath);
-    EXECUTE format('COPY @extschema@.siret FROM ''%s/siret.csv''',datapath);
-    RETURN TRUE;
+  -- This check does not work with PG10 and below
+  -- because absolute paths are not allowed
+  --SELECT * INTO  datapath_check
+  --FROM pg_stat_file(datapath, missing_ok := TRUE ) 
+  --WHERE isdir;
+
+  -- This works with all current version of Postgres
+  datapath_regexp := '^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\0])[^/\0]+)*\/?$';
+  SELECT regexp_matches(datapath,datapath_regexp) INTO datapath_check;
+
+  -- Stop if is the directory does not exist
+  IF datapath_check IS NULL THEN
+    RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath;
+          --USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';		
+    RETURN FALSE;
+  END IF;
+
+  -- ADD NEW TABLE HERE
+  EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
+  EXECUTE 'COPY @extschema@.company FROM    '|| quote_literal(datapath ||'/company.csv');
+  EXECUTE 'COPY @extschema@.email FROM      '|| quote_literal(datapath ||'/email.csv');
+  EXECUTE 'COPY @extschema@.first_name FROM '|| quote_literal(datapath ||'/first_name.csv');
+  EXECUTE 'COPY @extschema@.iban FROM       '|| quote_literal(datapath ||'/iban.csv');
+  EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
+  EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
+  RETURN TRUE;
+	
+  EXCEPTION
+    WHEN undefined_file THEN
+      RAISE WARNING 'The path ''%'' does not exist. Data is not loaded.', datapath;
+	  RETURN FALSE;	
 END;
 $func$
 LANGUAGE PLPGSQL VOLATILE;
@@ -480,8 +552,11 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL IMMUTABLE;
 
+
 -------------------------------------------------------------------------------
--- Masking
+-- Masking Rules Management
+-- This is the common metadata used by the 3 main features :
+-- anonymize(), dump() and dynamic masking engine
 -------------------------------------------------------------------------------
 
 -- List of all the masked columns
@@ -520,6 +595,13 @@ SELECT r.*,
 FROM pg_roles r
 ;
 
+
+-- name of the source schema
+CREATE OR REPLACE FUNCTION @extschema@.source_schema()
+RETURNS TEXT AS 
+$$ SELECT value FROM @extschema@.config WHERE param='sourceschema' $$
+LANGUAGE SQL STABLE;
+
 -- name of the masking schema
 CREATE OR REPLACE FUNCTION @extschema@.mask_schema()
 RETURNS TEXT AS
@@ -531,36 +613,73 @@ WHERE param='maskschema'
 $$
 LANGUAGE SQL STABLE;
 
--- Walk through all masked columns and permanently apply the mask
--- This is not a "masking function" per se, but it relies on the masking infra
-CREATE OR REPLACE FUNCTION @extschema@.anonymize()
-RETURNS BOOLEAN
-AS $$
+-------------------------------------------------------------------------------
+-- In-Place Anonymization
+-------------------------------------------------------------------------------
+
+-- Replace masked data in a column
+CREATE OR REPLACE FUNCTION @extschema@.anonymize_column(tablename REGCLASS, colname NAME)
+RETURNS BOOLEAN AS
+$$
 DECLARE
-    col RECORD;
+    mf TEXT;
+	mf_is_a_faking_function BOOLEAN;
 BEGIN
-  IF not @extschema@.isloaded() THEN
-	RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT @extschema@.load()'' ';
+  SELECT masking_function INTO mf
+  FROM @extschema@.pg_masks 
+  WHERE relid = tablename::OID
+  AND	attname = colname;
+
+  IF mf IS NULL THEN
+	RAISE WARNING 'There is no masking rule for column % in table %', colname, tablename; 	
+	RETURN FALSE;
   END IF;
 
-  FOR col IN
-    SELECT * FROM @extschema@.pg_masks
-  LOOP
-    RAISE DEBUG 'Anonymize %.% with %', col.relid::regclass,col.attname, col.masking_function;
-    EXECUTE format('UPDATE %s SET %I = %s', col.relid::regclass,col.attname, col.masking_function);
-  END LOOP;
+  SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function; 	
+  IF mf_is_a_faking_function AND not anon.isloaded() THEN
+    RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT @extschema@.load()'' ';
+  END IF;
+
+  RAISE DEBUG 'Anonymize %.% with %', tablename,colname, mf;
+  EXECUTE format('UPDATE %s SET %I = %s', tablename,colname, mf);
+
   RETURN TRUE;
 END;
 $$
 LANGUAGE plpgsql VOLATILE;
 
+
+-- Replace masked data in a table
+CREATE OR REPLACE FUNCTION @extschema@.anonymize_table(tablename REGCLASS)
+RETURNS BOOLEAN
+AS $func$ 
+  SELECT @extschema@.anonymize_column(tablename,attname)
+  FROM @extschema@.pg_masks
+  WHERE relid::regclass=tablename;
+$func$
+LANGUAGE SQL VOLATILE;
+
+
+-- Walk through all masked columns and permanently apply the mask
+CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
+RETURNS BOOLEAN
+AS $func$
+SELECT @extschema@.anonymize_column(relid::regclass,attname)
+FROM @extschema@.pg_masks;
+$func$
+LANGUAGE SQL VOLATILE;
+
 -- Backward compatibility
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS BOOLEAN AS
 $$
-SELECT @extschema@.anonymize();
+SELECT @extschema@.anonymize_database();
 $$
 LANGUAGE SQL VOLATILE;
+
+-------------------------------------------------------------------------------
+-- Dynamic Masking
+-------------------------------------------------------------------------------
 
 -- True if the role is masked
 CREATE OR REPLACE FUNCTION @extschema@.hasmask(role REGROLE)
@@ -595,31 +714,16 @@ LANGUAGE SQL VOLATILE;
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
 -- We can't use the namespace oids because the mask schema may not be present
-CREATE OR REPLACE FUNCTION  @extschema@.mask_create(sourceschema NAME, maskschema TEXT)
+CREATE OR REPLACE FUNCTION  @extschema@.mask_create()
 RETURNS SETOF VOID AS
 $$
-DECLARE
-    t RECORD;
 BEGIN
-  -- Be sure that the target schema is here
-  IF NOT EXISTS (
-    SELECT
-    FROM information_schema.schemata
-    WHERE schema_name = maskschema
-  )
-  THEN
-    EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I',maskschema);
-  END IF;
-
   -- Walk through all tables in the source schema
-  FOR  t IN
-	SELECT oid
-	FROM pg_class
-	WHERE relnamespace=sourceschema::regnamespace
-	AND relkind = 'r' -- relations only
-  LOOP
-    PERFORM @extschema@.mask_create_view(t.oid);
-  END LOOP;
+  PERFORM @extschema@.mask_create_view(oid) 
+  FROM pg_class
+  WHERE relnamespace=@extschema@.sourceschema()::regnamespace
+  AND relkind = 'r' -- relations only
+  ;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
@@ -658,8 +762,8 @@ CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID)
 RETURNS BOOLEAN AS
 $$
 BEGIN
-    EXECUTE format('CREATE OR REPLACE VIEW %s.%s AS SELECT %s FROM %s',
-																	@extschema@.mask_schema()::REGNAMESPACE,
+    EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
+																	@extschema@.mask_schema(),
 																	relid::REGCLASS,
 																	@extschema@.mask_filters(relid),
 																	relid::REGCLASS);
@@ -669,7 +773,6 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Activate the masking engine
--- FIXME sanitize maskschema
 CREATE OR REPLACE FUNCTION @extschema@.mask_init(
                                                 sourceschema TEXT DEFAULT 'public',
                                                 maskschema TEXT DEFAULT 'mask',
@@ -689,10 +792,12 @@ BEGIN
     PERFORM @extschema@.load();
   END IF;
 
-  UPDATE @extschema@.config SET value=sourceschema WHERE param='sourceschema';
-  UPDATE @extschema@.config SET value=maskschema WHERE param='maskschema';
-
+  EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', maskschema);
+  EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''sourceschema'';', sourceschema);
+  EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''maskschema'';', maskschema);
+	
   PERFORM @extschema@.mask_update();
+
   RETURN TRUE;
 END
 $$
@@ -712,35 +817,6 @@ END
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION @extschema@.mask_update()
-RETURNS SETOF VOID AS
-$$
-DECLARE
-    sourceschema TEXT;
-BEGIN
-    SELECT value INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
-    PERFORM @extschema@.mask_disable();
-    PERFORM @extschema@.mask_create(sourceschema,@extschema@.mask_schema());
-    PERFORM @extschema@.mask_roles();
-    PERFORM @extschema@.mask_enable();
-END
-$$
-LANGUAGE plpgsql VOLATILE;
-
--- Mask all roles
-CREATE OR REPLACE FUNCTION @extschema@.mask_roles()
-RETURNS SETOF VOID AS
-$$
-DECLARE
-    r RECORD;
-BEGIN
-    FOR r IN SELECT * FROM @extschema@.pg_masked_roles WHERE hasmask
-    LOOP
-		PERFORM @extschema@.mask_role(r.rolname::REGROLE);
-    END LOOP;
-END
-$$
-LANGUAGE plpgsql VOLATILE;
 
 -- Mask a specific role
 CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole REGROLE)
@@ -750,8 +826,8 @@ DECLARE
 	sourceschema REGNAMESPACE;
 	maskschema REGNAMESPACE;
 BEGIN
-	SELECT value::REGNAMESPACE INTO sourceschema FROM @extschema@.config WHERE param='sourceschema';
-    SELECT value::REGNAMESPACE INTO maskschema FROM @extschema@.config WHERE param='maskschema';
+	SELECT @extschema@.source_schema()::REGNAMESPACE INTO sourceschema;
+    SELECT @extschema@.mask_schema()::REGNAMESPACE INTO maskschema;
     RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
     EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
     EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', '@extschema@', maskedrole);
@@ -763,6 +839,7 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
 
 -- load the event trigger
 CREATE OR REPLACE FUNCTION @extschema@.mask_enable()
@@ -799,8 +876,31 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
+-- Rebuild the dynamic masking views and masked roles from scratch
+CREATE OR REPLACE FUNCTION @extschema@.mask_update()
+RETURNS SETOF VOID AS
+$$
+  -- This DDL EVENT TRIGGER will launch new DDL statements
+  -- therefor we have disable the EVENT TRIGGER first 
+  -- in order to avoid an infinite triggering loop :-)
+  SELECT @extschema@.mask_disable();
+  -- Walk through all tables in the source schema and build a dynamic masking view
+  SELECT @extschema@.mask_create_view(oid) 
+  FROM pg_class
+  WHERE relnamespace=@extschema@.source_schema()::regnamespace
+  AND relkind = 'r' -- relations only
+  ;
+  -- Walk through all masked roles and apply the restrictions 
+  SELECT @extschema@.mask_role(rolname::REGROLE)
+  FROM @extschema@.pg_masked_roles
+  WHERE hasmask;
+  -- Restore the mighty DDL EVENT TRIGGER
+  SELECT @extschema@.mask_enable();
+$$
+LANGUAGE SQL VOLATILE;
+
 -------------------------------------------------------------------------------
--- Dumping
+-- Anonymous Dumps
 -------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION @extschema@.dump_ddl()
@@ -810,7 +910,7 @@ RETURNS TABLE (
 $$
     SELECT ddlx_create(oid)
     FROM pg_class
-    WHERE relkind != 't' -- exclude the TOAST objects
+    WHERE relkind != 't' -- exclude the TOAST objeema@.mask_rolests
     AND relnamespace IN (
       SELECT oid
       FROM pg_namespace
@@ -832,17 +932,15 @@ DECLARE
   rec RECORD;
 BEGIN
 --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
-  copy_statement := format(E'COPY %s FROM STDIN; \n', relid::REGCLASS);
+  copy_statement := format(E'COPY %s  FROM STDIN CSV QUOTE AS ''"'' DELIMITER '',''; \n', relid::REGCLASS);
   FOR rec IN
     EXECUTE format(E'SELECT tmp::TEXT AS r FROM (SELECT %s FROM %s) AS tmp;',
 													anon.mask_filters(relid),
 													relid::REGCLASS
 	)
   LOOP
-	-- FIXME Find another way to convert rows into CSV
 	val := ltrim(rec.r,'(');
 	val := rtrim(val,')');
-	val := replace(val,',',E'\t');
 	copy_statement := copy_statement || val || E'\n';
   END LOOP;
   copy_statement := copy_statement || E'\\.\n';
@@ -855,7 +953,7 @@ LANGUAGE plpgsql VOLATILE;
 -- export content of all the tables as COPY statements
 CREATE OR REPLACE FUNCTION @extschema@.dump_data()
 RETURNS TABLE (
-    data TEXT 
+    data TEXT
 ) AS
 $$
   SELECT @extschema@.get_copy_statement(relid)
