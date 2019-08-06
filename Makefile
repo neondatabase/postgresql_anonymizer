@@ -59,8 +59,8 @@ PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib
 ## D O C K E R
 ##
 
-docker_image: Dockerfile
-	docker build -t registry.gitlab.com/dalibo/postgresql_anonymizer .
+docker_image: docker/Dockerfile
+	docker build -t registry.gitlab.com/dalibo/postgresql_anonymizer . --file $^
 
 docker_push:
 	docker push registry.gitlab.com/dalibo/postgresql_anonymizer
@@ -68,7 +68,7 @@ docker_push:
 docker_bash:
 	docker exec -it postgresqlanonymizer_PostgreSQL_1 bash
 
-COMPOSE=docker-compose
+COMPOSE=docker-compose --file docker/docker-compose.yml
 
 docker_init:
 	$(COMPOSE) down
@@ -179,7 +179,7 @@ pgxn:
 	cp -pr anon ./$(EXTENSION)_$(EXTENSION_VERSION)/
 	# remove folders and files that are useless in the PGXN package 
 	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/images 
-	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/Dockerfile*
+	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/docker
 	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/docs
 	# rebuild the package
 	zip -r $(ZIPBALL) ./$(EXTENSION)_$(EXTENSION_VERSION)/
