@@ -2,15 +2,10 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
--- This will throw an error and break the transaction
-SELECT anon.load('./does/not/exists/cd2ks3s/'); 
+SELECT anon.isloaded() IS FALSE;
 
-ROLLBACK;
-
-
-BEGIN;
-
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+-- returns a WARNING and FALSE
+SELECT anon.load('./does/not/exists/cd2ks3s/') IS FALSE; 
 
 SELECT anon.isloaded() IS FALSE; 
 

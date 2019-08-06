@@ -2,17 +2,20 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "ddlx"
--- This will throw an error and break the transaction
-SELECT anon.load('./does/not/exists/cd2ks3s/'); 
-ERROR:  could not open file "./does/not/exists/cd2ks3s//city.csv" for reading: No such file or directory
-HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
-CONTEXT:  SQL statement "COPY anon.city FROM       './does/not/exists/cd2ks3s//city.csv'"
-PL/pgSQL function anon.load(text) line 24 at EXECUTE
-ROLLBACK;
-BEGIN;
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "tsm_system_rows"
-NOTICE:  installing required extension "ddlx"
+SELECT anon.isloaded() IS FALSE;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- returns a WARNING and FALSE
+SELECT anon.load('./does/not/exists/cd2ks3s/') IS FALSE; 
+WARNING:  The path './does/not/exists/cd2ks3s/' does not exist. Data is not loaded.
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT anon.isloaded() IS FALSE; 
  ?column? 
 ----------

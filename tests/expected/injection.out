@@ -81,7 +81,7 @@ WARNING:  Column 'i; SELECT 1' is not present in table 'a'.
 --
 -- returns a WARNING and FALSE
 SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--');
-WARNING:  The path 'base/'; CREATE TABLE inject_via_load (i int);--' is not correct.
+WARNING:  The path 'base/'; CREATE TABLE inject_via_load (i int);--' is not correct. Data is not loaded.
  load 
 ------
  f

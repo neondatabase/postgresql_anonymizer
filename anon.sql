@@ -245,7 +245,7 @@ BEGIN
 
   -- Stop if is the directory does not exist
   IF datapath_check IS NULL THEN
-    RAISE WARNING 'The path ''%'' is not correct.', datapath;
+    RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath;
           --USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';		
     RETURN FALSE;
   END IF;
@@ -259,6 +259,11 @@ BEGIN
   EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
   EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
   RETURN TRUE;
+	
+  EXCEPTION
+    WHEN undefined_file THEN
+      RAISE WARNING 'The path ''%'' does not exist. Data is not loaded.', datapath;
+	  RETURN FALSE;	
 END;
 $func$
 LANGUAGE PLPGSQL VOLATILE;
