@@ -950,7 +950,7 @@ LANGUAGE plpgsql VOLATILE;
 
 -- Rebuild the dynamic masking views and masked roles from scratch
 CREATE OR REPLACE FUNCTION @extschema@.mask_update()
-RETURNS SETOF VOID AS
+RETURNS BOOLEAN AS
 $$
   -- This DDL EVENT TRIGGER will launch new DDL statements
   -- therefor we have disable the EVENT TRIGGER first 

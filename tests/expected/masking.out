@@ -79,7 +79,8 @@ COMMENT ON ROLE skynet IS 'MASKED';
 SELECT anon.mask_update();
  mask_update 
 -------------
-(0 rows)
+ t
+(1 row)
 
 SELECT anon.hasmask('skynet');
  hasmask 
