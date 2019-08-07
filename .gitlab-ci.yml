@@ -5,8 +5,11 @@
 variables:
     PGDATA: /var/lib/postgresql/data
     PGUSER: postgres
-    EXTDIR: /usr/share/postgresql/10/extension/
+    EXTDIR: /usr/share/postgresql/11/extension/
     PSQL: psql -v ON_ERROR_STOP=1
+    POSTGRES_DB: nice_marmot
+    POSTGRES_USER: runner
+    POSTGRES_PASSWORD: plop
 
 image: postgres:11
 
@@ -36,6 +39,7 @@ make9.4:
   when: manual
   allow_failure: yes
 
+# PostgreSQL 9.5 is not supported
 make9.5:
   stage: build
   image: postgres:9.5
@@ -140,6 +144,20 @@ make11-centos:
     - make
     - make install
   when: manual
+
+standalone12:
+  stage: build
+  services:
+    - postgres:12
+  before_script:
+    - echo "disable the before_script"
+  script:
+    - apt-get update && apt-get install -y make git postgresql-server-dev-all 
+    - make anon_standalone_PG12.sql
+    - export PGPASSWORD=$POSTGRES_PASSWORD
+    - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone_PG12.sql
+
+
 
 ##
 ## T E S T

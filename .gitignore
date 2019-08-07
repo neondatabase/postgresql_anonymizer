@@ -12,6 +12,8 @@ tests/results/*
 _dump1.sql
 _dump2.sql
 # artefacts
+_pgddl/
 anon/*
 anon_*/
 anon*.zip
+anon_standalone_PG*

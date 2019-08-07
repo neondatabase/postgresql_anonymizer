@@ -5,6 +5,37 @@ This project is an **experiment**. Any comment or idea is more than welcome.
 
 Here's a few tips to get started if you want to get involved
 
+Where to start ?
+------------------------------------------------------------------------------
+
+If you want to help, here's a few ideas :
+
+1- **Testing** : You can install the `master` branch of the project and realize
+extensive tests based on your use case. This is very useful to improve the
+stability of the code. Eventually if you can publish you test cases, please
+add them in the `/tests/sql` directory or in `demo`. I have recently
+implemented "anonymous dumps" and I need feedback !
+
+2- **Documentation** : You can write documentation and examples to help new
+users. I have created a `docs` folder where you can put documentation on
+how to install and use the extension...
+
+3- **Benchmark** : You run tests on various setups and measure the impact of the
+extension on performances
+
+4- **Junior Jobs** : I have flagged a few issues as "[Junior Jobs]"  on the project
+[issue board]. If you want to give a try, simply fork the git repository
+and start coding !
+
+5- **Spread the Word** : If you loke this extension, just let other people know !
+You can publish a blog post about it or a youtube video or wahtever format
+you feel comfortable with !
+
+In any case, let us know how we can help you moving forward
+
+[Junior Jobs]: https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+[issue board]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
+
 
 Adding new functions
 -------------------------------------------------------------------------------
