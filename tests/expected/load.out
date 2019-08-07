@@ -46,9 +46,9 @@ SELECT anon.isloaded() IS FALSE;
  t
 (1 row)
 
-SELECT anon.mask_init( autoload := FALSE);
- mask_init 
------------
+SELECT anon.start_dynamic_masking( autoload := FALSE );
+ start_dynamic_masking 
+-----------------------
  t
 (1 row)
 

@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-SELECT anon.mask_init();
+SELECT anon.start_dynamic_masking();
 
 CREATE TABLE t1 (
 	id TEXT,

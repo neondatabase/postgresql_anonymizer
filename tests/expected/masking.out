@@ -1,3 +1,5 @@
+-- This test cannot be run in a single transcation
+-- This test must be run on a database named ''
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- INIT
 SELECT anon.mask_init();
@@ -9,6 +11,20 @@ SELECT anon.mask_init();
 SELECT anon.mask_init('public','foo');
  mask_init 
 -----------
+ t
+(1 row)
+
+SELECT anon.start_dynamic_masking();
+NOTICE:  schema "mask" already exists, skipping
+ start_dynamic_masking 
+-----------------------
+ t
+(1 row)
+
+SELECT anon.start_dynamic_masking('public','foo');
+NOTICE:  schema "foo" already exists, skipping
+ start_dynamic_masking 
+-----------------------
  t
 (1 row)
 
@@ -44,14 +60,18 @@ SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname 
 (1 row)
 
 --
-SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE rn=1991;
-ERROR:  relation "mask.T2" does not exist
-LINE 1: SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE r...
-                                                   ^
-SELECT name != 'Schwarzenegger' FROM mask.t1 WHERE id = 1;
-ERROR:  relation "mask.t1" does not exist
-LINE 1: SELECT name != 'Schwarzenegger' FROM mask.t1 WHERE id = 1;
-                                             ^
+SELECT company != 'Cyberdyne Systems' FROM foo."T2" WHERE rn=1991;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT name != 'Schwarzenegger' FROM foo.t1 WHERE id = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
 -- ROLE
 CREATE ROLE skynet LOGIN;
 COMMENT ON ROLE skynet IS 'MASKED';
@@ -100,32 +120,18 @@ SELECT anon.hasmask(NULL) IS NULL;
  t
 (1 row)
 
--- STATIC SUBST
-SELECT anon.static_substitution();
- static_substitution 
----------------------
- t
-(1 row)
-
-SELECT company != 'Cyberdyne Systems' FROM "T2" WHERE rn=1991;
- ?column? 
-----------
- f
-(1 row)
-
-SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;
- ?column? 
-----------
+-- STOP
+SELECT anon.stop_dynamic_masking();
+NOTICE:  The previous priviledges of 'skynet' are not restored. You need to grant them manually.
+ stop_dynamic_masking 
+----------------------
  t
 (1 row)
 
 --  CLEAN
 DROP TABLE "T2" CASCADE;
-NOTICE:  drop cascades to view foo."T2"
 DROP TABLE t1 CASCADE;
-NOTICE:  drop cascades to view foo.t1
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to event trigger anon_mask_update
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;

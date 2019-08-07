@@ -1,6 +1,6 @@
 -- STEP 1 : Activate the masking engine
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-SELECT anon.mask_init();
+SELECT anon.start_dynamic_masking();
 
 -- STEP 2 : Declare a masked user
 CREATE ROLE skynet LOGIN;

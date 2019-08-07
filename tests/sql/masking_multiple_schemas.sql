@@ -47,7 +47,7 @@ SELECT anon.anonymize();
 
 SELECT * FROM sales.staff;
 
-SELECT anon.mask_init();
+SELECT anon.start_dynamic_masking();
 
 ROLLBACK;
 

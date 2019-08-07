@@ -51,7 +51,7 @@ _NB_ : Replace `PG11` with the version of Postgres offered by your DBaaS operato
 When you activate the masking engine, you need to disable `autoload`:
 
 ```sql
-SELECT anon.mask_init( autoload := FALSE );
+SELECT anon.start_dynamic_masking( autoload := FALSE );
 ```
 
 

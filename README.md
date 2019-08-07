@@ -82,7 +82,7 @@ STEP 1 : Activate the masking engine
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-=# SELECT anon.mask_init();
+=# SELECT anon.start_dynamic_masking();
 ```
 
 STEP 2 : Declare a masked user
@@ -288,9 +288,9 @@ Limitations
   rule after the original comment
 
 * The dynamic masking system only works with one schema (by default `public`). 
-  When you start the masking engine with the `mask_init` function, you can 
-  specify the schema that will be masked with `SELECT mask_init('sales');`. 
-  **However** in-place anonymization with `anon.anonymize()`and anonymous 
+  When you start the masking engine with `start_dynamic_masking()`, you can 
+  specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`. 
+  **However** in-place anonymization with `anon.anonymize()`and anonymous
   export with `anon.dump()` will work fine will multiple schemas.
 
 
