@@ -57,11 +57,11 @@ FROM pg_tables
 WHERE tablename='inject_via_load';
 
 --
--- mask_init
+-- Dynamic Masking
 --
 
 -- returns TRUE
-SELECT anon.mask_init('public','foo; CREATE TABLE inject_via_init (i int);--');
+SELECT anon.start_dynamic_masking('public','foo; CREATE TABLE inject_via_init (i int);--');
 
 SELECT COUNT(*) = 0 
 FROM pg_tables

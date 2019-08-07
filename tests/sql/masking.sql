@@ -1,3 +1,6 @@
+-- This test cannot be run in a single transcation
+-- This test must be run on a database named ''
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 -- INIT
@@ -5,6 +8,10 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.mask_init();
 
 SELECT anon.mask_init('public','foo');
+
+SELECT anon.start_dynamic_masking();
+
+SELECT anon.start_dynamic_masking('public','foo');
 
 CREATE TABLE t1 (
 	id SERIAL,
@@ -39,9 +46,9 @@ SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname 
 
 --
 
-SELECT company != 'Cyberdyne Systems' FROM mask."T2" WHERE rn=1991;
+SELECT company != 'Cyberdyne Systems' FROM foo."T2" WHERE rn=1991;
 
-SELECT name != 'Schwarzenegger' FROM mask.t1 WHERE id = 1;
+SELECT name != 'Schwarzenegger' FROM foo.t1 WHERE id = 1;
 
 -- ROLE
 
@@ -67,13 +74,9 @@ SELECT anon.hasmask(NULL) IS NULL;
 
 \! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE rn=1991;"
 
--- STATIC SUBST
+-- STOP
 
-SELECT anon.static_substitution();
-
-SELECT company != 'Cyberdyne Systems' FROM "T2" WHERE rn=1991;
-
-SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;
+SELECT anon.stop_dynamic_masking();
 
 --  CLEAN
 
@@ -85,3 +88,4 @@ DROP EXTENSION anon CASCADE;
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
+

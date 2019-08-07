@@ -1,9 +1,9 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- INIT
-SELECT anon.mask_init();
+SELECT anon.start_dynamic_masking();
 NOTICE:  schema "mask" already exists, skipping
- mask_init 
------------
+ start_dynamic_masking 
+-----------------------
  t
 (1 row)
 
@@ -78,7 +78,8 @@ COMMENT ON ROLE skynet IS 'MASKED';
 SELECT anon.mask_update();
  mask_update 
 -------------
-(0 rows)
+ t
+(1 row)
 
 SELECT anon.hasmask('skynet');
  hasmask 

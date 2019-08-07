@@ -1,10 +1,9 @@
--- this test must be runned on a databse named 'contrib_regression'
+-- this test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- INIT
-SELECT anon.mask_init();
-NOTICE:  schema "mask" already exists, skipping
- mask_init 
------------
+SELECT anon.load();
+ load 
+------
  t
 (1 row)
 
@@ -13,7 +12,7 @@ CREATE TABLE cards (
   board_id integer NOT NULL,
   data TEXT 
 );
---INSERT INTO cards VALUES (1, 1, 'Paint house');
+INSERT INTO cards VALUES (1, 1, 'Paint house');
 INSERT INTO cards VALUES (2, 1, 'Clean');
 INSERT INTO cards VALUES (3, 1, 'Cook');
 INSERT INTO cards VALUES (4, 1, 'Vacuum');
@@ -51,11 +50,8 @@ SELECT count(d) FROM anon.dump() AS d;
 \! psql -q -t -A -c 'SELECT anon.dump()' contrib_regression > _dump1.sql
 -- 2. Clean the database and Restore with the dump file
 DROP TABLE cards CASCADE;
-NOTICE:  drop cascades to view mask.cards
 DROP TABLE customer CASCADE;
-NOTICE:  drop cascades to view mask.customer
 DROP TABLE "COMPANY" CASCADE;
-NOTICE:  drop cascades to view mask."COMPANY"
 -- output will vary a lot between PG versions
 -- So have to disable it to pass this test
 \! psql -f _dump1.sql contrib_regression >/dev/null
@@ -65,10 +61,6 @@ NOTICE:  drop cascades to view mask."COMPANY"
 \! diff _dump1.sql _dump2.sql
 --  CLEAN
 DROP TABLE "COMPANY" CASCADE;
-NOTICE:  drop cascades to view mask."COMPANY"
 DROP TABLE customer CASCADE;
-NOTICE:  drop cascades to view mask.customer
 DROP TABLE cards CASCADE;
-NOTICE:  drop cascades to view mask.cards
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to event trigger anon_mask_update

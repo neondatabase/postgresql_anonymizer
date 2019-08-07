@@ -758,22 +758,35 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Build a masked view for a table
-CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID)
+CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( relid OID )
 RETURNS BOOLEAN AS
 $$
 BEGIN
-    EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
+  EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
 																	@extschema@.mask_schema(),
 																	relid::REGCLASS,
 																	@extschema@.mask_filters(relid),
 																	relid::REGCLASS);
-	RETURN TRUE;
+  RETURN TRUE;
+END
+$$
+LANGUAGE plpgsql VOLATILE;
+
+-- Remove a masked view for a given table
+CREATE OR REPLACE FUNCTION @extschema@.mask_drop_view( relid OID )
+RETURNS BOOLEAN AS
+$$
+BEGIN
+  EXECUTE format('DROP VIEW "%s".%s;', @extschema@.mask_schema(),
+                                         relid::REGCLASS
+  );
+  RETURN TRUE;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Activate the masking engine
-CREATE OR REPLACE FUNCTION @extschema@.mask_init(
+CREATE OR REPLACE FUNCTION @extschema@.start_dynamic_masking(
                                                 sourceschema TEXT DEFAULT 'public',
                                                 maskschema TEXT DEFAULT 'mask',
                                                 autoload BOOLEAN DEFAULT TRUE
@@ -803,8 +816,47 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- TODO 
--- CREATE OR REPLACE FUNCTION mask_destroy()
+-- Backward compatibility with 0.3.1 
+CREATE OR REPLACE FUNCTION @extschema@.mask_init(
+                                                sourceschema TEXT DEFAULT 'public',
+                                                maskschema TEXT DEFAULT 'mask',
+                                                autoload BOOLEAN DEFAULT TRUE
+                                                )
+RETURNS BOOLEAN AS
+$$
+SELECT @extschema@.start_dynamic_masking(sourceschema,maskschema,autoload);
+$$
+LANGUAGE SQL VOLATILE;
+
+-- this is opposite of start_dynamic_masking()
+CREATE OR REPLACE FUNCTION @extschema@.stop_dynamic_masking()
+RETURNS BOOLEAN AS
+$$
+BEGIN
+  PERFORM @extschema@.mask_disable();
+
+  -- Walk through all tables in the source schema and drop the masking view
+  PERFORM @extschema@.mask_drop_view(oid) 
+  FROM pg_class
+  WHERE relnamespace=@extschema@.source_schema()::regnamespace
+  AND relkind = 'r' -- relations only
+  ;
+
+  -- Walk through all masked roles and remove their masl
+  PERFORM @extschema@.unmask_role(rolname::REGROLE)
+  FROM @extschema@.pg_masked_roles
+  WHERE hasmask;
+
+  -- Erase the config
+  DELETE FROM @extschema@.config WHERE param='sourceschema';
+  DELETE FROM @extschema@.config WHERE param='maskschema';
+
+  RETURN TRUE;
+END
+$$
+LANGUAGE plpgsql VOLATILE;
+
+
 
 -- This is run after all DDL query
 CREATE OR REPLACE FUNCTION @extschema@.mask_trigger()
@@ -840,10 +892,26 @@ END
 $$
 LANGUAGE plpgsql;
 
+-- Remove (partially) the mask of a specific role
+CREATE OR REPLACE FUNCTION @extschema@.unmask_role(maskedrole REGROLE)
+RETURNS BOOLEAN AS
+$$
+BEGIN
+  -- we dont know what priviledges this role had before putting his mask on
+  -- so we keep most of the priviledges as they are and let the 
+  -- administrator restore the correct access right.
+  RAISE NOTICE 'The previous priviledges of ''%'' are not restored. You need to grant them manually.', maskedrole;
+  -- restore default search_path
+  EXECUTE format('ALTER ROLE %s RESET search_path;', maskedrole);
+  RETURN TRUE;
+END
+$$
+LANGUAGE plpgsql;
+
 
 -- load the event trigger
 CREATE OR REPLACE FUNCTION @extschema@.mask_enable()
-RETURNS SETOF VOID AS
+RETURNS BOOLEAN AS
 $$
 BEGIN
   IF NOT EXISTS (
@@ -854,14 +922,16 @@ BEGIN
     EXECUTE PROCEDURE @extschema@.mask_trigger();
   ELSE
     RAISE DEBUG 'event trigger "@extschema@_mask_update" already exists: skipping';
+    RETURN FALSE;
   END IF;
+  RETURN TRUE;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
 -- unload the event trigger
 CREATE OR REPLACE FUNCTION @extschema@.mask_disable()
-RETURNS SETOF VOID AS
+RETURNS BOOLEAN AS
 $$
 BEGIN
   IF EXISTS (
@@ -871,14 +941,16 @@ BEGIN
     DROP EVENT TRIGGER IF EXISTS @extschema@_mask_update;
   ELSE
     RAISE DEBUG 'event trigger "@extschema@_mask_update" does not exist: skipping';
+	RETURN FALSE;
   END IF;
+  RETURN TRUE;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Rebuild the dynamic masking views and masked roles from scratch
 CREATE OR REPLACE FUNCTION @extschema@.mask_update()
-RETURNS SETOF VOID AS
+RETURNS BOOLEAN AS
 $$
   -- This DDL EVENT TRIGGER will launch new DDL statements
   -- therefor we have disable the EVENT TRIGGER first 

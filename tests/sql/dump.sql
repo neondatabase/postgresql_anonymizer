@@ -1,9 +1,9 @@
--- this test must be runned on a databse named 'contrib_regression'
+-- this test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 -- INIT
 
-SELECT anon.mask_init();
+SELECT anon.load();
 
 CREATE TABLE cards (
   id integer NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE cards (
   data TEXT 
 );
 
---INSERT INTO cards VALUES (1, 1, 'Paint house');
+INSERT INTO cards VALUES (1, 1, 'Paint house');
 INSERT INTO cards VALUES (2, 1, 'Clean');
 INSERT INTO cards VALUES (3, 1, 'Cook');
 INSERT INTO cards VALUES (4, 1, 'Vacuum');

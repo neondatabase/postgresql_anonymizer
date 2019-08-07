@@ -1,7 +1,7 @@
 
 CREATE EXTENSION anon CASCADE;
 
-SELECT anon.mask_init();
+SELECT anon.start_dynamic_masking();
 
 DROP TABLE if EXISTS companies CASCADE;
 CREATE TABLE companies (

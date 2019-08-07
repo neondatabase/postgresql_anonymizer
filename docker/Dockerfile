@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 # Install pgddl extension
-RUN pgxn install ddlx=0.12.0
+RUN pgxn install ddlx
 
 # Install anon extension
-COPY anon*  /usr/share/postgresql/11/extension/
+COPY anon*  /usr/share/postgresql/12/extension/

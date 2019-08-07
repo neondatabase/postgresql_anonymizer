@@ -12,9 +12,15 @@ The projet is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 
-The extension can be used to put dynamic masks on certain users or permanently
-modify sensitive data. Various masking techniques are available : randomization,
-partial scrambling or custom rules.
+Once the maskings rules are defined, you can access the anonymized data in 3  
+different ways :
+
+* [Anonymous Dumps] : Simply export the masked data into an SQL file
+* [In-Place Anonymization] : Remove the PII according to the rules
+* [Dynamic Masking] : Hide PII only for the masked users
+
+In addition, various masking techniques are available : randomization, faking,
+partial scrambling, shufflin, noise or even your own custom function !
 
 Read the [Concepts] section for more details and [NEWS.md] for information
 about the latest version.
@@ -24,51 +30,91 @@ about the latest version.
 [Concepts]: #Concepts
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
+[Anonymous Dumps]: #Anonymous-Dumps
+[In-Place Anonymization]: #In-Place-Anonymization
+[Dynamic Masking]: #Dynamic-Masking
 
-Warning
+
+Declaring The Masking Rules
 ------------------------------------------------------------------------------
 
-*This is projet is at an early stage of development and should used carefully.*
+The main idea of this extension is to offer **anonymization by design**.
 
-We need your feedback and ideas ! Let us know what you think of this tool,how it
-fits your needs and what features are missing.
+The data masking rules should be written by the people who develop the 
+application because they have the best knowledge of how the data models works.
+Therefore masking rules must be implemented directly inside the database schema.
 
-You can either [open an issue] or send a message at <contact@dalibo.com>.
+This allows to mask the data directly inside the PostgreSQL instance without 
+using an external tool and thus limiting the exposure and the risks of data leak.
 
-[open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
-
-Example
-------------------------------------------------------------------------------
+The data masking rules are declared simply by using the `COMMENT` syntax :
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 =# SELECT anon.load();
 
+=# CREATE TABLE player( id SERIAL, name TEXT, score INT);
+
+=# COMMENT ON COLUMN player.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+```
+
+If your columns already have comments, simply append the `MASKED WITH FUNCTION` 
+statement at the end of the comment.
+
+
+In-Place Anonymization
+------------------------------------------------------------------------------
+
+You can permanetly remove the PII from a database with `anon.anymize_database()`.
+This will destroy the original data. Use with care.
+
+```sql
 =# SELECT * FROM customer;
  id  |   full_name      |   birth    |    employer   | zipcode | fk_shop
 -----+------------------+------------+---------------+---------+---------
  911 | Chuck Norris     | 1940-03-10 | Texas Rangers | 75001   | 12
  112 | David Hasselhoff | 1952-07-17 | Baywatch      | 90001   | 423
 
-=# UPDATE customer
--# SET
--#   full_name=anon.fake_first_name() || ' ' || anon.fake_last_name(),
--#   birth=anon.random_date_between('01/01/1920'::DATE,now()),
--#   employer=anon.fake_company(),
--#   zipcode=anon.random_zip()
--# ;
+
+=# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+=# SELECT anon.load();
+
+=# COMMENT ON COLUMN customer.full_name 
+-# IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
+
+=# COMMENT ON COLUMN customer.birth   
+-# IS 'MASKED WITH FUNCTION anon.random_date_between(''01/01/1920''::DATE,now())';
+
+=# COMMENT ON COLUMN customer.employer
+-# IS 'MASKED WITH FUNCTION anon.fake_company()';
+
+=# COMMENT ON COLUMN customer.zipcode
+-# IS 'MASKED WITH FUNCTION anon.random_zip()';
+
+=# SELECT anon.anonymize_database();
 
 =# SELECT * FROM customer;
  id  |     full_name     |   birth    |     employer     | zipcode | fk_shop
 -----+-------------------+------------+------------------+---------+---------
  911 | michel Duffus     | 1970-03-24 | Body Expressions | 63824   | 12
- 112 | andromache Tulip  | 1921-03-24 | Dot Darcy        | 73231   | 423
+ 112 | andromache Tulip  | 1921-03-24 | Dot Darcy  
+
 ```
 
-Declarative Data Masking
---------------------------------------------------------------------------------
+You can also use `anonymize_table()` and `anonymize_column()` to remove data from
+a subset of the database.
 
+
+
+
+Dynamic Masking
+------------------------------------------------------------------------------
+
+You can hide the PII from a role by declaring it as a "MASKED". Other roles
+will still access the original data.  
+
+**Example**:
 
 ```sql
 =# SELECT * FROM people;
@@ -82,7 +128,7 @@ STEP 1 : Activate the masking engine
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-=# SELECT anon.mask_init();
+=# SELECT anon.start_dynamic_masking();
 ```
 
 STEP 2 : Declare a masked user
@@ -111,18 +157,32 @@ STEP 4 : Connect with the masked user
 ```
 
 
-Dumping the anonymous data
---------------------------------------------------------------------------------
+Anonymous Dumps
+------------------------------------------------------------------------------
 
-Due to the core design of this extension, you cannot use `pg_dump` with a maked 
+Due to the core design of this extension, you cannot use `pg_dump` with a masked 
 user. If you want to export the entire database with the anonymized data, you 
 must use the `anon.dump()` function :
 
 ```console
-$ psql -qtA -c 'SELECT anon.dump()' your_dabatase > dump.sql
+$ psql [...] -qtA -c 'SELECT anon.dump()' your_dabatase > dump.sql
 ```
 
-The `-qtA` flags are required.
+NB: The `-qtA` flags are required.
+
+
+Warning
+------------------------------------------------------------------------------
+
+*This is projet is at an early stage of development and should used carefully.*
+
+We need your feedback and ideas ! Let us know what you think of this tool,how it
+fits your needs and what features are missing.
+
+You can either [open an issue] or send a message at <contact@dalibo.com>.
+
+[open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
+
 
 Requirements
 --------------------------------------------------------------------------------
@@ -155,7 +215,7 @@ or see [INSTALL.md] for more detailed instructions or if you want to deploy it
 on Amazon RDS or some other DBAAS service. 
 
 
-How To Use
+Various Masking Strategies
 ------------------------------------------------------------------------------
 
 Load the extension in your database like this:
@@ -288,9 +348,9 @@ Limitations
   rule after the original comment
 
 * The dynamic masking system only works with one schema (by default `public`). 
-  When you start the masking engine with the `mask_init` function, you can 
-  specify the schema that will be masked with `SELECT mask_init('sales');`. 
-  **However** in-place anonymization with `anon.anonymize()`and anonymous 
+  When you start the masking engine with `start_dynamic_masking()`, you can 
+  specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`. 
+  **However** in-place anonymization with `anon.anonymize()`and anonymous
   export with `anon.dump()` will work fine will multiple schemas.
 
 

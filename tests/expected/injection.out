@@ -96,12 +96,12 @@ WHERE tablename='inject_via_load';
 (1 row)
 
 --
--- mask_init
+-- Dynamic Masking
 --
 -- returns TRUE
-SELECT anon.mask_init('public','foo; CREATE TABLE inject_via_init (i int);--');
- mask_init 
------------
+SELECT anon.start_dynamic_masking('public','foo; CREATE TABLE inject_via_init (i int);--');
+ start_dynamic_masking 
+-----------------------
  t
 (1 row)
 
