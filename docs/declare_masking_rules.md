@@ -1,4 +1,4 @@
-Defining the 
+Put on your Masks !
 ===============================================================================
 
 The main idea of this extension is to offer **anonymization by design**.
@@ -27,6 +27,9 @@ INSERT INTO player VALUES
 
 COMMENT ON COLUMN player.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 ```
+
+Limitations
+------------------------------------------------------------------------------
 
 If your columns already have comments, simply append the `MASKED WITH FUNCTION` 
 statement at the end of the comment.

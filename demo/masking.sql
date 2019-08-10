@@ -7,8 +7,8 @@ CREATE ROLE skynet LOGIN;
 COMMENT ON ROLE skynet IS 'MASKED';
 
 -- STEP 3 : Declare the masking rules
-CREATE TABLE people ( id TEXT, name TEXT, phone TEXT);
-INSERT INTO people VALUES ('T800','Schwarzenegger','0609110911');
+CREATE TABLE people ( id TEXT, fistname TEXT, lastname TEXT, phone TEXT);
+INSERT INTO people VALUES ('T1','Sarah', 'Conor','0609110911');
 SELECT * FROM people;
 
 -- STEP 3 : Declare the masking rules 
