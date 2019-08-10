@@ -5,3 +5,8 @@ copyright: Copyright 2018-2019 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://gitlab.com/dalibo/postgresql_anonymizer
 theme:
   name: readthedocs 
+nav:
+  - 'Home': 'index.md'
+  - 'Install': 'INSTALL.md'
+  - 'Anonymous Dumps': 'anonymous_dumps.md'
+  - 'Notes': 'NOTES.md'  
