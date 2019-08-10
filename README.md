@@ -41,7 +41,7 @@ Declaring The Masking Rules
 The main idea of this extension is to offer **anonymization by design**.
 
 The data masking rules should be written by the people who develop the 
-application because they have the best knowledge of how the data models works.
+application because they have the best knowledge of how the data model works.
 Therefore masking rules must be implemented directly inside the database schema.
 
 This allows to mask the data directly inside the PostgreSQL instance without 

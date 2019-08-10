@@ -8,5 +8,6 @@ theme:
 nav:
   - 'Home': 'index.md'
   - 'Install': 'INSTALL.md'
+  - 'Declare Masking rules': 'declare_masking_rules.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
   - 'Notes': 'NOTES.md'  
