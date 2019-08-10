@@ -8,8 +8,8 @@ Paris, FIXME
 identifiable information (PII) or commercially sensitive data from a PostgreSQL 
 database.
 
-This masking rules are declared directly inside the database model with SQL 
-comments like this :
+Firts of all, you declare a list of [masking rules] directly inside the database 
+model with SQL comments like this :
 
 ```
 COMMENT ON COLUMN users.name IS 'MASKED WITH FUNCTION md5(name)';
@@ -25,6 +25,14 @@ different ways:
 In addition, various masking functions are available : randomization, faking,
 partial scrambling, shuffling, noise, etc... You can also user your own custom 
 function !
+
+For more detail, please take a look at the documention:
+https://postgresql-anonymizer.readthedocs.io/
+
+[masking rules]: https://postgresql-anonymizer.readthedocs.io/en/latest/declare_masking_rules/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[In-Place Anonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/in_place_anonymization/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
 
 
 How to Install
@@ -44,6 +52,7 @@ $ pgxn install postgresql_anonymizer
 carefully.
 
 
+
 How to contribute
 --------------------------------------------------------------------------------
 
@@ -60,10 +69,15 @@ If you want to help, you can find a list of `Junior Jobs` here:
 https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
 
 
-[Dalibo]: https://dalibo.com
+[Dalibo Labs]: https://labs.dalibo.com
 
 
-Inroducing PostgreSQL Anonymizer 0.2.1 !
+
+
+------------------------------------------------
+
+
+Introducing PostgreSQL Anonymizer 0.2.1 !
 ================================================================================
 
 Paris, october 29, 2018

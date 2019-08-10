@@ -18,7 +18,7 @@ SELECT * FROM people;
 (1 row)
 ```
 
-Activate the masking engine
+3. Activate the masking engine
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;

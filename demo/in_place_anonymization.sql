@@ -29,9 +29,6 @@ SELECT anon.load();
 COMMENT ON COLUMN customer.full_name 
 IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
-COMMENT ON COLUMN customer.birth   
-IS 'MASKED WITH FUNCTION anon.random_date_between(''01/01/1920''::DATE,now())::DATE';
-
 COMMENT ON COLUMN customer.employer
 IS 'MASKED WITH FUNCTION anon.fake_company()';
 

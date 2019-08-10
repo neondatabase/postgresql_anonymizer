@@ -7,7 +7,7 @@ with `anon.anymize_database()`.
 This will destroy the original data. Use with care.
 
 
-Let's use a basic example :
+Step 1: Let's use a basic example :
 
 ```sql
 
@@ -35,14 +35,14 @@ SELECT * FROM customer;
 
 ```
 
-Load the extension :
+Step 2: Load the extension :
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.load();
 ``` 
 
-Declare masking rules 
+Step 3: Declare the masking rules 
 
 ```sql
 COMMENT ON COLUMN customer.full_name 
@@ -55,20 +55,28 @@ COMMENT ON COLUMN customer.zipcode
 IS 'MASKED WITH FUNCTION anon.random_zip()';
 ```
 
-Replace authentic data in the masked columns :
+
+Step 4: Replace authentic data in the masked columns :
 
 ```sql
 SELECT anon.anonymize_database();
 
 SELECT * FROM customer;
+
  id  |  full_name  |   birth    |      employer       | zipcode | fk_shop 
 -----+-------------+------------+---------------------+---------+---------
  911 | jesse Kosel | 1940-03-10 | Marigold Properties | 62172   |      12
  312 | leolin Bose | 1952-07-17 | Inventure           | 20026   |     423
- ```
+
+```
 
 
 
 You can also use `anonymize_table()` and `anonymize_column()` to remove data from
-a subset of the database.
+a subset of the database :
+
+```sql
+SELECT anon.anonymize_table('customer');
+SELECT anon.anonymize_column('customer','zipcode');
+```
 
