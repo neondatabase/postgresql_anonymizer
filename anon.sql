@@ -669,7 +669,7 @@ FROM @extschema@.pg_masks;
 $func$
 LANGUAGE SQL VOLATILE;
 
--- Backward compatibility
+-- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS BOOLEAN AS
 $$
@@ -816,7 +816,7 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- Backward compatibility with 0.3.1 
+-- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.mask_init(
                                                 sourceschema TEXT DEFAULT 'public',
                                                 maskschema TEXT DEFAULT 'mask',
