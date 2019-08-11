@@ -8,28 +8,29 @@ Paris, FIXME
 identifiable information (PII) or commercially sensitive data from a PostgreSQL 
 database.
 
-Firts of all, you declare a list of [masking rules] directly inside the database 
+Firts of all, you declare a list of [Masking Rules] directly inside the database 
 model with SQL comments like this :
 
 ```
 COMMENT ON COLUMN users.name IS 'MASKED WITH FUNCTION md5(name)';
 ```
 
-Once the masking rules are declared, anomization can be acheived in 3 
+Once the masking rules are declared, anonymization can be acheived in 3 
 different ways:
 
 * [Anonymous Dumps]: Simply export the masked data into an SQL file
 * [In-Place Anonymization]: Remove the sensible data according to the rules
 * [Dynamic Masking]: Hide sensible data, only for the masked users
 
-In addition, various masking functions are available : randomization, faking,
+In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shuffling, noise, etc... You can also user your own custom 
 function !
 
 For more detail, please take a look at the documention:
 https://postgresql-anonymizer.readthedocs.io/
 
-[masking rules]: https://postgresql-anonymizer.readthedocs.io/en/latest/declare_masking_rules/
+[Masking Rules]: https://postgresql-anonymizer.readthedocs.io/en/latest/declare_masking_rules/
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
 [Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
 [In-Place Anonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/in_place_anonymization/
 [Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
@@ -48,8 +49,8 @@ $ pgxn install ddlx
 $ pgxn install postgresql_anonymizer
 ```
 
-**WARNING:** The project is at an early stage of development and should be used 
-carefully.
+> **WARNING:** The project is at an early stage of development and should be used 
+> carefully.
 
 
 
