@@ -2,18 +2,26 @@ CHANGELOG
 ===============================================================================
 
 
-2019FIXME : 0.3.1 - Shuffle and Variance
+2019FIXME : 0.3 - In-place Anonymization and Anonymous dumps
 -------------------------------------------------------------------------------
 
 __Dependencies:__
   - tms_system_rows
-  - pgddl 0.12
+  - ddlx
 
-* dump the entire anonymized database with :
+* In-place Anonymization : Permanently remove sensitive data 
+  with `anonymize_database()`, `anonymize_table()` or
+  `anonymize_column()`.
+
+* Anonymous dumps : Export the entire anonymized database with 
+  the new `dump()` function. For instance:
 
   ```console
   $ psql -q -t -A -c 'SELECT anon.dump()' the_database
   ```
+
+* Dynamic Masking : new functions `start_dynamic_masking()` and
+  `stop_dynamic_masking()`
 
 * shuffle an entire column with the new function :
 	```sql
@@ -22,12 +30,12 @@ __Dependencies:__
 
 * Add +/-33% of noise to a column with:
 	```sql
-  SELECT anon.numeric_noise_on_column('employees','salary',0.33);
+  SELECT anon.numeric_noise_on_column('employee','salary',0.33);
 	```
 
 * Add +/-10 years of noise to a date with :
   ```sql
-  SELECT anon.datetime_noise_on_column('employees','birth_day','10 years');
+  SELECT anon.datetime_noise_on_column('employee','birthday','10 years');
   ```
 
 * Renamed faking functions for clarity
@@ -44,7 +52,7 @@ __Dependencies:__
 * [masking] Improve security tests
 
 
-20181029 : 0.2.1 - Dynamic masking and partial functions
+20181029 : 0.2 - Dynamic masking and partial functions
 -------------------------------------------------------------------------------
 
 ## Declare masking rules within the DDL :
