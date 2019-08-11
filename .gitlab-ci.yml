@@ -134,13 +134,13 @@ make11-centos:
     - echo 'ignoring global before_script'
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-centos11-11-2.noarch.rpm
-    - yum -y install git make postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools 
+    - yum -y install git make postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools
+    - export PATH="$PATH:/usr/pgsql-11/bin"
     - pgxn install ddlx
     - cd /tmp
     - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git anonymizer
     - cd anonymizer
     - /usr/pgsql-11/bin/pg_config
-    - export PATH="$PATH:/usr/pgsql-11/bin"
     - make
     - make install
   when: manual
@@ -163,44 +163,18 @@ standalone12:
 ## T E S T
 ##
 
-perf:
+demo:
   stage: test
   script:
     - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
     - make extension
     - make install
-    - make --always-make demo_perf
+    - make demo
   when: manual
-
-random:
-  stage: test
-  script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
-    - make extension
-    - make install
-    - make --always-make demo_random
-  when: manual
-
-masking:
-  stage: test
-  script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
-    - make extension
-    - make install
-    - make --always-make demo_masking
-  when: manual
-
-
-partial:
-  stage: test
-  script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11
-    - make extension
-    - make install
-    - make --always-make demo_partial
-  when: manual
-
-
+  artifacts:
+    paths:
+        - demo/*.out
+    expire_in: 1 day
 
 pgxn:
   stage: deploy
