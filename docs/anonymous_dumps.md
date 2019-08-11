@@ -22,20 +22,21 @@ INSERT INTO cluedo VALUES
 SELECT * FROM cluedo;
 ```
 
-Then load the extension:
+Step 1: Load the extension:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.load();
 ```
 
-Now declare the masking rules
+Step 2: declare the masking rules
 
 ```sql
 COMMENT ON COLUMN cluedo.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
+COMMENT ON COLUMN cluedo.room IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
 ```
 
-You can now export the anonymized data with :
+Step 3: Export the anonymized data with :
 
 ```sql
 SELECT anon.dump();

@@ -81,6 +81,7 @@ in your database first:
 ```sql
 SELECT anon.load();
 ```
+
 The `load()` function will charge a default dataset of random data ( lists
 names, cities, etc. ). If you want to use your own dataset, you can load
 custom CSV files with `load('/path/to/custom_cvs_files/')`

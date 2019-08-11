@@ -118,6 +118,45 @@ will still access the original data.
 
 ```sql
 =# SELECT * FROM people;
+ id | fistname | lastname |   phone    
+----+----------+----------+------------
+ T1 | Sarah    | Conor    | 0609110911
+(1 row)
+```
+
+Step 1 : Activate the dynamic masking engine
+
+```sql
+=# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+=# SELECT anon.start_dynamic_masking();
+```
+
+Step 2 : Declare a masked user
+
+```sql
+=# CREATE ROLE skynet LOGIN;
+=# COMMENT ON ROLE skynet IS 'MASKED';
+```
+
+Step 3 : Declare the masking rules
+
+```sql
+=# COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+=# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
+```
+
+Step 4 : Connect with the masked user
+
+```sql
+=# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
+ id | fistname | lastname  |   phone    
+----+----------+-----------+------------
+ T1 | Sarah    | Stranahan | 06******11
+(1 row)
+```
+
+=# SELECT * FROM people;
   id  |      name      |   phone
 ------+----------------+------------
  T800 | Schwarzenegger | 0609110911

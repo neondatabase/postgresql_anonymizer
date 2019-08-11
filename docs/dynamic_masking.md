@@ -18,21 +18,21 @@ SELECT * FROM people;
 (1 row)
 ```
 
-3. Activate the masking engine
+Step 1 : Activate the dynamic masking engine
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 =# SELECT anon.start_dynamic_masking();
 ```
 
-Declare a masked user
+Step 2 : Declare a masked user
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
 =# COMMENT ON ROLE skynet IS 'MASKED';
 ```
 
-Declare the masking rules
+Step 3 : Declare the masking rules
 
 ```sql
 =# COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
@@ -40,7 +40,7 @@ Declare the masking rules
 =# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
-Connect with the masked user
+Step 4 : Connect with the masked user
 
 ```sql
 =# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
