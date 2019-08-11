@@ -9,6 +9,7 @@ nav:
   - 'Home': 'index.md'
   - 'Install': 'INSTALL.md'
   - 'Declare Masking rules': 'declare_masking_rules.md'
+  - 'Masking Functions': 'masking_functions.md'
   - 'In-Place Anonymization': 'in_place_anonymization.md' 
   - 'Dynamic Masking': 'dynamic_masking.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
