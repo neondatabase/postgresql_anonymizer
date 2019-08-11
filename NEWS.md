@@ -2,7 +2,7 @@
 PostgreSQL Anonymizer 0.3 : In-Place Masking and Anonymous Dumps
 ================================================================================
 
-Paris, FIXME
+Paris, August 26, 2019
 
 `postgresql_anonymizer` is an extension that hides or replaces personally 
 identifiable information (PII) or commercially sensitive data from a PostgreSQL 
@@ -42,7 +42,7 @@ How to Install
 This extension is officially supported on PostgreSQL 9.6 and later.
 
 It requires extension named [tsm_system_rows] (available in the `contrib` 
-package) and an extension called [ddlx] (available via PGXN) :
+package) and an extension called [ddlx] (available via [PGXN]) :
 
 ```
 $ pgxn install ddlx
@@ -52,17 +52,19 @@ $ pgxn install postgresql_anonymizer
 > **WARNING:** The project is at an early stage of development and should be used 
 > carefully.
 
+[tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
+[ddlx]: https://github.com/lacanoid/pgddl
+[PGXN]: https://pgxn.org/
 
 
 How to contribute
 --------------------------------------------------------------------------------
 
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly 
+developed by [Damien Clochard].
 
-FIXME : I'd like to thanks all my wonderful colleagues at [Dalibo] for their support 
-and especially Thibaut Madelaine for the initial ideas.
-
-This is an open project, contributions are welcome. I need your feedback and 
-ideas ! Let me know what you think of this tool, how it fits your needs and 
+This is an open project, contributions are welcome. We need your feedback and 
+ideas ! Let us know what you think of this tool, how it fits your needs and 
 what features are missing.
 
 If you want to help, you can find a list of `Junior Jobs` here:
@@ -71,7 +73,7 @@ https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+J
 
 
 [Dalibo Labs]: https://labs.dalibo.com
-
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
 
 
 
