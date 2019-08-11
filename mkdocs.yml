@@ -14,4 +14,6 @@ nav:
   - 'Dynamic Masking': 'dynamic_masking.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
   - 'Concepts': concepts.md
+  - 'Upgrade': UPGRADE.md
   - 'Notes': 'NOTES.md'  
+  - 'Links': 'links.md'

@@ -24,10 +24,10 @@ In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shufflin, noise or even your own custom function !
 
 [INSTALL.md]: INSTALL/
-[Concepts]: Concepts/
+[Concepts]: concepts/
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
-[Anonymous Dumps]: anonymous-Dumps/
+[Anonymous Dumps]: anonymous_dumps/
 [In-Place Anonymization]: in_place_anonymization/
 [Dynamic Masking]: dynamic_masking/
 [Masking Functions]: masking_functions/
