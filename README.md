@@ -33,7 +33,7 @@ about the latest version.
 [Anonymous Dumps]: #Anonymous-Dumps
 [In-Place Anonymization]: #In-Place-Anonymization
 [Dynamic Masking]: #Dynamic-Masking
-[Masking Functions]:
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/masking_functions/
 
 Declaring The Masking Rules
 ------------------------------------------------------------------------------
@@ -153,45 +153,6 @@ Step 4 : Connect with the masked user
  id | fistname | lastname  |   phone    
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
-(1 row)
-```
-
-=# SELECT * FROM people;
-  id  |      name      |   phone
-------+----------------+------------
- T800 | Schwarzenegger | 0609110911
-(1 row)
-```
-
-STEP 1 : Activate the masking engine
-
-```sql
-=# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-=# SELECT anon.start_dynamic_masking();
-```
-
-STEP 2 : Declare a masked user
-
-```sql
-=# CREATE ROLE skynet LOGIN;
-=# COMMENT ON ROLE skynet IS 'MASKED';
-```
-
-STEP 3 : Declare the masking rules
-
-```sql
-=# COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-
-=# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
-```
-
-STEP 4 : Connect with the masked user
-
-```sql
-=# \! psql test -U skynet -c 'SELECT * FROM people;'
-  id  |   name   |   phone
-------+----------+------------
- T800 | Nunziata | 06******11
 (1 row)
 ```
 

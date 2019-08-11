@@ -13,71 +13,79 @@ The projet is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 
-The extension can be used to put dynamic masks on certain users or permanently
-modify sensitive data. Various masking techniques are available : randomization,
-partial scrambling or custom rules.
+Once the maskings rules are defined, you can access the anonymized data in 3  
+different ways :
 
-Read the [Concepts] section for more details and [NEWS.md] for information
-about the latest version.
+* [Anonymous Dumps] : Simply export the masked data into an SQL file
+* [In-Place Anonymization] : Remove the PII according to the rules
+* [Dynamic Masking] : Hide PII only for the masked users
 
-[NEWS.md]: NEWS.md
-[INSTALL.md]: INSTALL.md
-[Concepts]: #Concepts
+In addition, various [Masking Functions] are available : randomization, faking,
+partial scrambling, shufflin, noise or even your own custom function !
+
+[INSTALL.md]: INSTALL/
+[Concepts]: Concepts/
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
+[Anonymous Dumps]: anonymous-Dumps/
+[In-Place Anonymization]: in_place_anonymization/
+[Dynamic Masking]: dynamic_masking/
+[Masking Functions]: masking_functions/
 
-Warning
-------------------------------------------------------------------------------
-
-*This is projet is at an early stage of development and should used carefully.*
-
-We need your feedback and ideas ! Let us know what you think of this tool,how it
-fits your needs and what features are missing.
-
-You can either [open an issue] or send a message at <contact@dalibo.com>.
-
-[open an issue]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
 
 Example
 ------------------------------------------------------------------------------
 
 ```sql
 =# SELECT * FROM people;
-  id  |      name      |   phone
-------+----------------+------------
- T800 | Schwarzenegger | 0609110911
-(1 row)
+ id | fistname | lastname |   phone    
+----+----------+----------+------------
+ T1 | Sarah    | Conor    | 0609110911
 ```
 
-STEP 1 : Activate the masking engine
+Step 1 : Activate the dynamic masking engine
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 =# SELECT anon.start_dynamic_masking();
 ```
 
-STEP 2 : Declare a masked user
+Step 2 : Declare a masked user
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
 =# COMMENT ON ROLE skynet IS 'MASKED';
 ```
 
-STEP 3 : Declare the masking rules
+Step 3 : Declare the masking rules
 
 ```sql
-=# COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+=# COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 =# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
-STEP 4 : Connect with the masked user
+Step 4 : Connect with the masked user
 
 ```sql
-=# \! psql test -U skynet -c 'SELECT * FROM people;'
-  id  |   name   |   phone
-------+----------+------------
- T800 | Nunziata | 06******11
-(1 row)
+=# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
+ id | fistname | lastname  |   phone    
+----+----------+-----------+------------
+ T1 | Sarah    | Stranahan | 06******11
 ```
+
+
+Warning
+------------------------------------------------------------------------------
+
+> *This is projet is at an early stage of development and should used carefully.*
+
+We need your feedback and ideas ! Let us know what you think of this tool,how it
+fits your needs and what features are missing.
+
+You can either [open an issue] or send a message at <contact@dalibo.com>.
+
+[open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
+
+
 
