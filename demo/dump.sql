@@ -14,6 +14,8 @@ SELECT anon.load();
 -- STEP  : Declare the masking rules
 COMMENT ON COLUMN cluedo.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
 
+COMMENT ON COLUMN cluedo.room IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
+
 -- STEP 4 : Dump
 SELECT anon.dump();
 

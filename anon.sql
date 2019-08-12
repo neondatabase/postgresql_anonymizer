@@ -44,7 +44,7 @@ DECLARE
   colname TEXT;
 BEGIN
 
-  -- Stop if shuffle_column does not exist
+  -- Stop if noise_column does not exist
   SELECT column_name INTO colname
   FROM information_schema.columns
   WHERE table_name=noise_table::TEXT
@@ -75,7 +75,7 @@ DECLARE
   colname TEXT;
 BEGIN
 
-  -- Stop if shuffle_column does not exist
+  -- Stop if noise_column does not exist
   SELECT column_name INTO colname
   FROM information_schema.columns
   WHERE table_name=noise_table::TEXT
@@ -669,7 +669,7 @@ $func$
 $func$
 LANGUAGE SQL VOLATILE;
 
--- Backward compatibility
+-- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS BOOLEAN AS
 $func$
@@ -816,7 +816,7 @@ END
 $$
 LANGUAGE plpgsql VOLATILE;
 
--- Backward compatibility with 0.3.1 
+-- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.mask_init(
                                                 sourceschema TEXT DEFAULT 'public',
                                                 maskschema TEXT DEFAULT 'mask',

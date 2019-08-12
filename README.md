@@ -19,7 +19,7 @@ different ways :
 * [In-Place Anonymization] : Remove the PII according to the rules
 * [Dynamic Masking] : Hide PII only for the masked users
 
-In addition, various masking techniques are available : randomization, faking,
+In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shufflin, noise or even your own custom function !
 
 Read the [Concepts] section for more details and [NEWS.md] for information
@@ -33,7 +33,7 @@ about the latest version.
 [Anonymous Dumps]: #Anonymous-Dumps
 [In-Place Anonymization]: #In-Place-Anonymization
 [Dynamic Masking]: #Dynamic-Masking
-
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/masking_functions/
 
 Declaring The Masking Rules
 ------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ Declaring The Masking Rules
 The main idea of this extension is to offer **anonymization by design**.
 
 The data masking rules should be written by the people who develop the 
-application because they have the best knowledge of how the data models works.
+application because they have the best knowledge of how the data model works.
 Therefore masking rules must be implemented directly inside the database schema.
 
 This allows to mask the data directly inside the PostgreSQL instance without 
@@ -54,7 +54,7 @@ The data masking rules are declared simply by using the `COMMENT` syntax :
 
 =# SELECT anon.load();
 
-=# CREATE TABLE player( id SERIAL, name TEXT, score INT);
+=# CREATE TABLE player( id SERIAL, name TEXT, points INT);
 
 =# COMMENT ON COLUMN player.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 ```
@@ -118,41 +118,41 @@ will still access the original data.
 
 ```sql
 =# SELECT * FROM people;
-  id  |      name      |   phone
-------+----------------+------------
- T800 | Schwarzenegger | 0609110911
+ id | fistname | lastname |   phone    
+----+----------+----------+------------
+ T1 | Sarah    | Conor    | 0609110911
 (1 row)
 ```
 
-STEP 1 : Activate the masking engine
+Step 1 : Activate the dynamic masking engine
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 =# SELECT anon.start_dynamic_masking();
 ```
 
-STEP 2 : Declare a masked user
+Step 2 : Declare a masked user
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
 =# COMMENT ON ROLE skynet IS 'MASKED';
 ```
 
-STEP 3 : Declare the masking rules
+Step 3 : Declare the masking rules
 
 ```sql
-=# COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+=# COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 =# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
-STEP 4 : Connect with the masked user
+Step 4 : Connect with the masked user
 
 ```sql
-=# \! psql test -U skynet -c 'SELECT * FROM people;'
-  id  |   name   |   phone
-------+----------+------------
- T800 | Nunziata | 06******11
+=# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
+ id | fistname | lastname  |   phone    
+----+----------+-----------+------------
+ T1 | Sarah    | Stranahan | 06******11
 (1 row)
 ```
 
@@ -215,129 +215,10 @@ or see [INSTALL.md] for more detailed instructions or if you want to deploy it
 on Amazon RDS or some other DBAAS service. 
 
 
-Various Masking Strategies
-------------------------------------------------------------------------------
-
-Load the extension in your database like this:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-SELECT anon.load();
-```
-
-The `load()` function will charge a default dataset of random data ( lists
-names, cities, etc. ). If you want to use your own dataset, you can load
-custom CSV files with `load('/path/to/custom_cvs_files/')`
-
-**You now have access to the following functions :**
 
 
-### Noise
-
-* anon.add_noise_on_numeric_column(table, column,ratio) if ratio = 0.33, all values
-  of the column will be randomly shifted with a ratio of +/- 33%
-
-* anon.add_noise_on_datetime_column(table, column,interval) if interval = '2 days', 
-  all values of the column will be randomly shifted by +/- 2 days
-
-### Shuffling 
-
-* anon.shuffle_column(table, column) will rearrange all values in a given column
 
 
-### Random values
-
-* anon.random_date() returns a date
-* anon.random_date_between(d1,d2) returns a date between `d1` and `d2`
-* anon.random_int_between(i1,i2) returns an integer between `i1` and `i2`
-* anon.random_string(n) returns a TEXT value containing `n` letters
-* anon.random_zip() returns a 5-digit code
-* anon.random_phone(p) return a 8-digit phone with `p` as a prefix
-
-### Fake data
-
-* anon.fake_first_name() returns a generic first name
-* anon.fake_last_name() returns a generic last name
-* anon.fake_email() returns a valid email address
-* anon.fake_city() returns an existing city
-* anon.fake_city_in_country(c) returns a city in country `c`
-* anon.fake_region() returns an existing region
-* anon.fake_region_in_country(c) returns a region in country `c`
-* anon.fake_country() returns a country
-* anon.fake_company() returns a generic company name
-* anon.fake_iban() returns a valid IBAN
-* anon.fake_siret() returns a valid SIRET
-* anon.fake_siren() returns a valid SIREN
-
-### Data types 
-
-The faking functions will return values in `TEXT` data types. The random 
-functions will return `TEXT`, `INTEGER` or `TIMESTAMP WITH TIMEZONE`. If the 
-column you want to mask is in another data type (for instance `VARCHAR(30)`, 
-then you need to add an explicit cast directly in the `COMMENT` declaration,
-like this:
-
-```sql
-=# COMMENT ON COLUMN clients.family_name 
--# IS 'MASKED WITH FUNCTION anon.fake_last_name()::VARCHAR(30)';
-```
-
-
-Upgrade
-------------------------------------------------------------------------------
-
-Currently there's no way to upgrade easily from a version to another.
-The operation `ALTER EXTENSION ... UPDATE ...` is not supported.
-
-You need to drop and recreate the extension after every upgrade.
-
-
-Concepts
-------------------------------------------------------------------------------
-
-Two main strategies are used:
-
-* **Dynamic Masking** offers an altered view of the real data without
-  modifying it. Some users may only read the masked data, others may access
-  the authentic version.
-
-* **Permanent Destruction** is the definitive action of substituting the
-  sensitive information with uncorrelated data. Once processed, the authentic
-  data cannot be retrieved.
-
-The data can be altered with several techniques:
-
-1. **Deletion** or **Nullification** simply removes data.
-
-2. **Static Subtitution** consistently replaces the data with a generic
-   values. For instance: replacing all values of TEXT column with the value
-   "CONFIDENTIAL".
-
-3. **Variance** is the action of "shifting" dates and numeric values. For
-   example, by applying a +/- 10% variance to a salary column, the dataset will
-   remain meaningful.
-
-4. **Encryption** uses an encryption algorithm and requires a private key. If
-   the key is stolen, authentic data can be revealed.
-
-5. **Shuffling** mixes values within the same columns. This method is open to
-   being reversed if the shuffling algorithm can be deciphered.
-
-6. **Randomization** replace sensitive data with **random-but-plausible**
-   values. The goal is to avoid any identification from the data record while
-   remaining suitable for testing, data analysis and data processing.
-
-7. **Partial scrambling** is similar to static substitution but leaves out some
-   part of the data. For instance : a credit card number can be replaced by
-   '40XX XXXX XXXX XX96'
-
-8. **Custom rules** are designed to alter data following specific needs. For
-   instance, randomizing simultanously a zipcode and a city name while keeping
-   them coherent.
-
-For now, this extension is especially focusing on  **randomization** and
-**Partial Scrambling** and **Custom Rules** but it should be easy to implement
-other methods as well.
 
 
 Limitations
@@ -397,27 +278,3 @@ FROM customer;
 [Materialized Views]: https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html
 
 
-
-
-Links
---------------------------------------------------------------------------------
-
-* [Dynamic Data Masking With MS SQL Server](https://docs.microsoft.com/en-us/sql/relational-databases/security/dynamic-data-masking)
-
-* [Citus : Using search_path and views to hide columns for reporting with Postgres](https://www.citusdata.com/blog/2018/07/03/masking-columns-in-postgresql/)
-
-* [MariaDB : Masking with maxscale](https://mariadb.com/kb/en/mariadb-enterprise/mariadb-maxscale-21-masking/)
-
-* [Ultimate Guide to Data Anonymization](https://piwik.pro/blog/the-ultimate-guide-to-data-anonymization-in-analytics/)
-
-* [UK ICO Anonymisation Code of Practice](https://ico.org.uk/media/1061/anonymisation-code.pdf)
-
-* [L. Sweeney, Simple Demographics Often Identify People Uniquely, 2000](https://dataprivacylab.org/projects/identifiability/paper1.pdf)
-
-* [How Google anonymizes data](https://policies.google.com/technologies/anonymization?hl=en)
-
-* [IAPP's Guide To Anonymisation](https://iapp.org/media/pdf/resource_center/Guide_to_Anonymisation.pdf)
-
-* [Differential_Privacy](https://en.wikipedia.org/wiki/Differential_Privacy)
-
-* [K-Anonymity](https://en.wikipedia.org/wiki/K-anonymity)
