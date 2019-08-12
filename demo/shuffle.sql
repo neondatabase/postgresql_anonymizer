@@ -1,3 +1,9 @@
+--
+-- This example shows why the shuffling method is usefull with foreign keys
+--
+
+BEGIN;
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 CREATE TABLE city (
@@ -36,10 +42,12 @@ VALUES
 ( 24, 'Sidney', '2019-01-20', 23, 0.0 )
 ;
 
+SELECT * FROM weather ORDER BY id;
 
-SELECT anon.shuffle_column('weather','fk_city_name');
+SELECT anon.shuffle_column('weather','fk_city_name','id');
 
-DROP EXTENSION anon CASCADE;
+SELECT * FROM weather ORDER BY id;
 
-DROP TABLE weather;
-DROP TABLE city;
+-- Clean up
+ROLLBACK;
+

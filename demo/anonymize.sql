@@ -14,7 +14,7 @@ COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.random_last_name
 COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 
 -- STEP 4 : Anonymize data  
-SELECT anon.anonymize();
+SELECT anon.anonymize_database();
 SELECT * FROM people;
 
 -- STEP 5 : Clean up
