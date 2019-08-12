@@ -1,14 +1,13 @@
 
--- ********* QUERY OK **********
 
 BEGIN;
 
-CREATE TABLE anon.suggest(
+CREATE TABLE suggest(
 	attname TEXT,
 	suggested_mask TEXT	
 );
 
-INSERT INTO anon.suggest 
+INSERT INTO suggest 
 VALUES 
 ('firstname','random_first_name()'),
 ('first_name','random_first_name()'),
@@ -27,5 +26,7 @@ SELECT
   s.suggested_mask,
   pg_catalog.col_description(a.attrelid, a.attnum)
 FROM pg_catalog.pg_attribute a
-JOIN anon.suggest s ON  lower(a.attname) = s.attname
+JOIN suggest s ON  lower(a.attname) = s.attname
 ;
+
+ROLLBACK;

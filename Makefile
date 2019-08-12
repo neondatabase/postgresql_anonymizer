@@ -134,16 +134,23 @@ load:
 ## D E M O   &   T E S T S
 ##
 
-.PHONY: demo_masking demo_perf demo_random demo_partial
-demo_masking: demo/masking.sql
-demo_perf: demo/perf.sql
-demo_random: demo/random.sql
-demo_partial: demo/partial.sql
+#.PHONY: demo_masking demo_perf demo_random demo_partial
 
-demo/%.sql:
+demo_in := $(wildcard demo/*.sql)
+demo_out = $(demo_in:.sql=.out)
+
+.PHONY: demo
+demo:: $(demo_out)
+
+demo/%.out: demo/%.sql
 	$(PSQL) -c 'CREATE DATABASE demo;'
-	$(PSQL) --echo-all demo -f $@
+	$(PSQL) --echo-all demo < $^ > $@ 2>&1
 	$(PSQL) -c 'DROP DATABASE demo;'
+	cat $@
+
+
+clean_demo:
+	rm $(demo_out)
 
 tests/sql/%.sql:
 	$(PSQL)	-f $@

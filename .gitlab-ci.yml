@@ -163,48 +163,19 @@ standalone12:
 ## T E S T
 ##
 
-perf:
+demo:
   stage: test
   script:
     - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11  pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
-    - make --always-make demo_perf
+    - make demo
   when: manual
-
-random:
-  stage: test
-  script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11  pgxnclient
-    - pgxn install ddlx
-    - make extension
-    - make install
-    - make --always-make demo_random
-  when: manual
-
-masking:
-  stage: test
-  script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11 pgxnclient
-    - pgxn install ddlx
-    - make extension
-    - make install
-    - make --always-make demo_masking
-  when: manual
-
-
-partial:
-  stage: test
-  script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11 pgxnclient
-    - pgxn install ddlx
-    - make extension
-    - make install
-    - make --always-make demo_partial
-  when: manual
-
-
+  artifacts:
+    paths:
+        - demo/*.out
+    expire_in: 1 day
 
 pgxn:
   stage: deploy

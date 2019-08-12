@@ -651,8 +651,8 @@ LANGUAGE plpgsql VOLATILE;
 
 -- Replace masked data in a table
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_table(tablename REGCLASS)
-RETURNS BOOLEAN
-AS $func$ 
+RETURNS BOOLEAN AS
+$func$
   SELECT @extschema@.anonymize_column(tablename,attname)
   FROM @extschema@.pg_masks
   WHERE relid::regclass=tablename;
@@ -662,19 +662,19 @@ LANGUAGE SQL VOLATILE;
 
 -- Walk through all masked columns and permanently apply the mask
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
-RETURNS BOOLEAN
-AS $func$
-SELECT @extschema@.anonymize_column(relid::regclass,attname)
-FROM @extschema@.pg_masks;
+RETURNS BOOLEAN AS
+$func$
+  SELECT SUM(anon.anonymize_column(relid::REGCLASS,attname)::INT) = COUNT(relid) 
+  FROM anon.pg_masks;
 $func$
 LANGUAGE SQL VOLATILE;
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
 RETURNS BOOLEAN AS
-$$
-SELECT @extschema@.anonymize_database();
-$$
+$func$
+  SELECT @extschema@.anonymize_database();
+$func$
 LANGUAGE SQL VOLATILE;
 
 -------------------------------------------------------------------------------
