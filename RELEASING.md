@@ -17,6 +17,8 @@ Publishing a new Release
 
 * [ ] Rebase the `stable` branch from `master`
 
+* [ ] Tag the master branch
+
 * [ ] Bump to the new version number in [anon.control]() and [META.json]()
 
 * [ ] Publish the announcement
