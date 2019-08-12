@@ -47,9 +47,11 @@ CREATE VIEW mask_dot_public_dot_t1 AS
 SELECT id, md5(credit_card) AS credit_card
 FROM public.t1;
 
+
+-- ERROR:  event qualifications are not implemented for rules on SELECT
 CREATE RULE "_RETURN" AS
 ON SELECT TO t1
-WHERE CURRENT_USER IN anon.mask_roles()'
+WHERE CURRENT_USER IN ('joe','alice') -- would be anon.mask_roles()
 DO INSTEAD
 SELECT * FROM mask_dot_public_dot_t1
 ;
