@@ -21,7 +21,7 @@
 ##
 ## C O N F I G
 ##
-
+MODULES = anon
 EXTENSION = anon
 EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 DATA = anon/*
@@ -32,9 +32,21 @@ REGRESS+=$(PG_TEST_EXTRA)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 
+OBJS = anon.o
+
+##
+## Mandatory PGXS stuff
+##
+PG_CONFIG = pg_config
+PGXS := $(shell $(PG_CONFIG) --pgxs)
+include $(PGXS)
+
+all: extension
+
 ##
 ## B U I L D
 ##
+
 
 .PHONY: extension
 extension:
@@ -194,9 +206,3 @@ pgxn:
 	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION) ./postgresql_anonymizer.git/
 
 
-##
-## Mandatory PGXS stuff
-##
-PG_CONFIG = pg_config
-PGXS := $(shell $(PG_CONFIG) --pgxs)
-include $(PGXS)

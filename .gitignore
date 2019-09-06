@@ -11,6 +11,10 @@ tests/results/*
 *.diffs
 _dump1.sql
 _dump2.sql
+# C objects
+*.bc
+*.o
+*.so
 # artefacts
 _pgddl/
 anon/*
