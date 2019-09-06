@@ -6,3 +6,4 @@ schema = 'anon'
 relocatable = false
 requires = 'tsm_system_rows,ddlx'
 superuser = false
+module_pathname = '$libdir/anon'
