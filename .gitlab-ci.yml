@@ -13,6 +13,13 @@ variables:
 
 image: postgres:11
 
+
+##
+## We run most test on the postgres instance inside the docker image.
+## We need to launch manually the instance because the entrypoint is skipped.
+## This means we can't load the anon.so library in `shared_preload_libraries`.
+## Therefore we can't test the SECURITY LABEL syntax.
+##
 before_script:
     - mkdir -p $PGDATA
     - mkdir -p $EXTDIR
@@ -25,7 +32,7 @@ make9.4:
   stage: build
   image: postgres:9.4
   script:
-    - apt-get update && apt-get install -y make pgxnclient postgresql-server-dev-9.4
+    - apt-get update && apt-get install -y make gcc pgxnclient postgresql-server-dev-9.4
     - pgxn install ddlx
     - make extension
     - make install
@@ -44,7 +51,7 @@ make9.5:
   stage: build
   image: postgres:9.5
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-9.5 pgxnclient
+    - apt-get update && apt-get install -y make gcc postgresql-server-dev-9.5 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -62,7 +69,7 @@ make9.6:
   stage: build
   image: postgres:9.6
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-9.6 pgxnclient
+    - apt-get update && apt-get install -y make gcc postgresql-server-dev-9.6 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -78,7 +85,7 @@ make10:
   stage: build
   image: postgres:10
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-10 pgxnclient
+    - apt-get update && apt-get install -y make gcc postgresql-server-dev-10 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -95,7 +102,7 @@ make11:
   stage: build
   image: postgres:11
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 pgxnclient
+    - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -112,7 +119,7 @@ make12:
   stage: build
   image: postgres:12
   script:
-    - apt-get update && apt-get install -y make git postgresql-server-dev-12 pgxnclient
+    - apt-get update && apt-get install -y make gcc git postgresql-server-dev-12 pgxnclient
     - pgxn install ddlx
 #    - git clone https://github.com/lacanoid/pgddl.git
 #    - make -C pgddl && make -C pgddl install
@@ -134,7 +141,7 @@ make11-centos:
     - echo 'ignoring global before_script'
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-centos11-11-2.noarch.rpm
-    - yum -y install git make postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools
+    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools
     - /usr/pgsql-11/bin/pg_config
     - export PATH="$PATH:/usr/pgsql-11/bin"
     - pgxn install ddlx
@@ -166,7 +173,7 @@ standalone12:
 demo:
   stage: test
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 postgresql-contrib-11  pgxnclient
+    - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 postgresql-contrib-11  pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -196,6 +203,6 @@ pgxn:
 test_pgxn:
   stage: deploy
   script:
-    - apt-get update && apt-get install -y make postgresql-server-dev-11 pgxnclient
+    - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
     - pgxn install postgresql_anonymizer
   when: manual
