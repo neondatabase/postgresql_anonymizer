@@ -19,12 +19,15 @@ void    _PG_init(void);
 PG_FUNCTION_INFO_V1(anon_seclabel_anon);
 
 /*
- * An entrypoint of SECURITY LABEL statement
+ * Checking the syntax of the masking rules
  */
 static void
 anon_object_relabel(const ObjectAddress *object, const char *seclabel)
 {
-  if (seclabel == NULL || strncmp(seclabel, "MASKED WITH", 11) == 0 )
+  if (seclabel == NULL
+   || strcmp(seclabel,"MASKED") == 0
+   || strncmp(seclabel, "MASKED WITH FUNCTION", 11) == 0
+   || strncmp(seclabel, "MASKED WITH CONSTANT", 11) == 0)
     return;
 
   ereport(ERROR,
