@@ -1,14 +1,18 @@
 FROM postgres:12
 
 RUN apt-get update && apt-get install -y \
-  		make \
-		postgresql-server-dev-all  \
-		pgxnclient \
-		wget \
+    gcc \
+    make \
+    postgresql-server-dev-12  \
+    pgxnclient \
+    wget \
  && rm -rf /var/lib/apt/lists/*
 
 # Install pgddl extension
 RUN pgxn install ddlx
 
 # Install anon extension
-COPY anon*  /usr/share/postgresql/12/extension/
+WORKDIR /src
+COPY . .
+RUN make clean && make && make install
+
