@@ -560,7 +560,7 @@ LANGUAGE SQL IMMUTABLE;
 -------------------------------------------------------------------------------
 
 -- List of all the masked columns
-CREATE OR REPLACE VIEW @extschema@.pg_masks AS
+CREATE OR REPLACE VIEW @extschema@.pg_masking_rules AS
 WITH const AS (
     SELECT
         '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT AS pattern_mask_column_function,
@@ -621,6 +621,10 @@ FROM rules_from_all
 ORDER BY attrelid, attnum, priority DESC
 ;
 
+-- Compatibility with version 0.3 and earlier
+CREATE OR REPLACE VIEW @extschema@.pg_masks AS
+SELECT * FROM @extschema@.pg_masking_rules
+;
 
 -- Adds a `hasmask` column to the pg_roles catalog
 -- True if the role is masked, else False
@@ -661,7 +665,7 @@ DECLARE
   mf_is_a_faking_function BOOLEAN;
 BEGIN
   SELECT masking_function INTO mf
-  FROM @extschema@.pg_masks
+  FROM @extschema@.pg_masking_rules
   WHERE attrelid = tablename::OID
   AND	attname = colname;
 
@@ -689,7 +693,7 @@ CREATE OR REPLACE FUNCTION @extschema@.anonymize_table(tablename REGCLASS)
 RETURNS BOOLEAN AS
 $func$
   SELECT @extschema@.anonymize_column(tablename,attname)
-  FROM @extschema@.pg_masks
+  FROM @extschema@.pg_masking_rules
   WHERE attrelid::regclass=tablename;
 $func$
 LANGUAGE SQL VOLATILE;
@@ -700,7 +704,7 @@ CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
 RETURNS BOOLEAN AS
 $func$
   SELECT SUM(anon.anonymize_column(attrelid::REGCLASS,attname)::INT) = COUNT(attrelid)
-  FROM anon.pg_masks;
+  FROM anon.pg_masking_rules;
 $func$
 LANGUAGE SQL VOLATILE;
 
@@ -737,7 +741,7 @@ SELECT
 	a.attname::NAME, -- explicit cast for PG 9.6
 	m.masking_function
 FROM pg_attribute a
-LEFT JOIN anon.pg_masks m ON m.attrelid = a.attrelid AND m.attname = a.attname
+LEFT JOIN @extschema@.pg_masking_rules m ON m.attrelid = a.attrelid AND m.attname = a.attname
 WHERE  a.attrelid = source_relid
 AND    a.attnum > 0 -- exclude ctid, cmin, cmax
 AND    NOT a.attisdropped
