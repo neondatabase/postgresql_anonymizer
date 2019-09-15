@@ -49,10 +49,10 @@ ON COLUMN "T2".COMPANY
 IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdvjs';
 
 
-SELECT count(*) = 4  FROM anon.pg_masks;
+SELECT count(*) = 4  FROM anon.pg_masking_rules;
 
 SELECT masking_function = 'anon.random_iban()'
-FROM anon.pg_masks
+FROM anon.pg_masking_rules
 WHERE attname = 'IBAN';
 
 --

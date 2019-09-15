@@ -29,7 +29,7 @@ WHERE masking_function = 'anon.fake_last_name()';
 
 -- pg_masks works too
 SELECT count(*)=0
-FROM anon.pg_masking_rules
+FROM anon.pg_masks
 WHERE masking_function = 'anon.fake_first_name()';
 
 -- Clean up
