@@ -14,35 +14,46 @@ SELECT anon.start_dynamic_masking();
 SELECT anon.start_dynamic_masking('public','foo');
 
 CREATE TABLE t1 (
-	id SERIAL,
-	name TEXT,
-	"CreditCard" TEXT
-	--fk_company INTEGER
+  id SERIAL,
+  name TEXT,
+  "CreditCard" TEXT
+--  fk_company INTEGER
 );
 
-INSERT INTO t1 
+INSERT INTO t1
 VALUES (1,'Schwarzenegger','1234567812345678');
 
+-- Check old syntax
+COMMENT ON COLUMN t1.name
+IS '    MASKED WITH FUNCTION anon.random_last_name() ';
 
-COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
-COMMENT ON COLUMN t1."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
+COMMENT ON COLUMN t1."CreditCard"
+IS 'dfkjdsiv MASKED    WITH    FUNCTION         anon.random_string(12)';
 
 CREATE TABLE "T2" (
-	rn SERIAL,
-	"IBAN" TEXT,
-	COMPANY TEXT
+  rn SERIAL,
+  "IBAN" TEXT,
+  COMPANY TEXT
 );
 
 INSERT INTO "T2"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 
-COMMENT ON COLUMN "T2"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
-COMMENT ON COLUMN "T2".COMPANY IS 'jvnosdfnvsjdnvfskngvknfvg MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
+-- New syntax
+SECURITY LABEL FOR anon
+ON COLUMN  "T2"."IBAN"
+IS 'MASKED WITH FUNCTION anon.random_iban()';
+
+SECURITY LABEL FOR anon
+ON COLUMN "T2".COMPANY
+IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdvjs';
 
 
 SELECT count(*) = 4  FROM anon.pg_masks;
 
-SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
+SELECT masking_function = 'anon.random_iban()'
+FROM anon.pg_masks
+WHERE attname = 'IBAN';
 
 --
 
@@ -53,18 +64,22 @@ SELECT name != 'Schwarzenegger' FROM foo.t1 WHERE id = 1;
 -- ROLE
 
 CREATE ROLE skynet LOGIN;
-COMMENT ON ROLE skynet IS 'MASKED';
 
--- FORCE update because COMMENT doesn't trigger the Event Trigger
+SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
+
 SELECT anon.mask_update();
 
-SELECT anon.hasmask('skynet');
+CREATE ROLE hal LOGIN;
 
-SELECT anon.hasmask('postgres') IS FALSE;
+COMMENT ON ROLE hal IS 'MASKED';
 
-SELECT anon.hasmask(NULL) IS NULL;
+SELECT anon.mask_update();
 
+-- search_path must be 'foo,public'
 \! psql contrib_regression -U skynet -c 'SHOW search_path;'
+
+-- search_path must be 'foo,public'
+\! psql contrib_regression -U hal -c 'SHOW search_path;'
 
 -- Disabling this test, because the error message has changed between PG10 and PG11
 -- This test should fail anyway, the skynet role is not allowed to access the t1 table
@@ -88,4 +103,8 @@ DROP EXTENSION anon CASCADE;
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
+
+REASSIGN OWNED BY hal TO postgres;
+DROP OWNED BY hal CASCADE;
+DROP ROLE hal;
 

@@ -16,6 +16,7 @@
 
 # PSQL : psql client ( default = local psql )
 # PGDUMP : pg_dump tool  ( default = docker )
+# REGRESS : run a specific test ( e.g. `REGRESS=noise make installcheck` )
 # PG_TEST_EXTRA : extra tests to be run by `installcheck` ( default = none )
 
 ##
@@ -27,10 +28,13 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS = load noise shuffle random faking partial
-REGRESS+= anonymize masking dump
-REGRESS+= injection conflict_seclabel_vs_comment syntax_checks
-REGRESS+=$(PG_TEST_EXTRA)
+REGRESS_TESTS = load noise shuffle random faking partial
+REGRESS_TESTS+= anonymize dump
+REGRESS_TESTS+= hasmask masked_roles masking
+REGRESS_TESTS+= injection conflict_seclabel_vs_comment syntax_checks
+REGRESS_TESTS+=$(PG_TEST_EXTRA)
+# This can be oerridden by an env variable
+REGRESS?=$(REGRESS_TESTS)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 
