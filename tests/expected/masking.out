@@ -9,6 +9,7 @@ SELECT anon.mask_init();
 (1 row)
 
 SELECT anon.mask_init('public','foo');
+NOTICE:  schema "foo" already exists, skipping
  mask_init 
 -----------
  t
@@ -29,31 +30,41 @@ NOTICE:  schema "foo" already exists, skipping
 (1 row)
 
 CREATE TABLE t1 (
-	id SERIAL,
-	name TEXT,
-	"CreditCard" TEXT
-	--fk_company INTEGER
+  id SERIAL,
+  name TEXT,
+  "CreditCard" TEXT
+--  fk_company INTEGER
 );
-INSERT INTO t1 
+INSERT INTO t1
 VALUES (1,'Schwarzenegger','1234567812345678');
-COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
-COMMENT ON COLUMN t1."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
+-- Check old syntax
+COMMENT ON COLUMN t1.name
+IS '    MASKED WITH FUNCTION anon.random_last_name() ';
+COMMENT ON COLUMN t1."CreditCard"
+IS 'dfkjdsiv MASKED    WITH    FUNCTION         anon.random_string(12)';
 CREATE TABLE "T2" (
-	rn SERIAL,
-	"IBAN" TEXT,
-	COMPANY TEXT
+  rn SERIAL,
+  "IBAN" TEXT,
+  COMPANY TEXT
 );
 INSERT INTO "T2"
 VALUES (1991,'12345677890','Cyberdyne Systems');
-COMMENT ON COLUMN "T2"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
-COMMENT ON COLUMN "T2".COMPANY IS 'jvnosdfnvsjdnvfskngvknfvg MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
-SELECT count(*) = 4  FROM anon.pg_masks;
+-- New syntax
+SECURITY LABEL FOR anon
+ON COLUMN  "T2"."IBAN"
+IS 'MASKED WITH FUNCTION anon.random_iban()';
+SECURITY LABEL FOR anon
+ON COLUMN "T2".COMPANY
+IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdvjs';
+SELECT count(*) = 4  FROM anon.pg_masking_rules;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
+SELECT masking_function = 'anon.random_iban()'
+FROM anon.pg_masking_rules
+WHERE attname = 'IBAN';
  ?column? 
 ----------
  t
@@ -74,33 +85,30 @@ SELECT name != 'Schwarzenegger' FROM foo.t1 WHERE id = 1;
 
 -- ROLE
 CREATE ROLE skynet LOGIN;
-COMMENT ON ROLE skynet IS 'MASKED';
--- FORCE update because COMMENT doesn't trigger the Event Trigger
+SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 SELECT anon.mask_update();
  mask_update 
 -------------
  t
 (1 row)
 
-SELECT anon.hasmask('skynet');
- hasmask 
----------
+CREATE ROLE hal LOGIN;
+COMMENT ON ROLE hal IS 'MASKED';
+SELECT anon.mask_update();
+ mask_update 
+-------------
  t
 (1 row)
 
-SELECT anon.hasmask('postgres') IS FALSE;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.hasmask(NULL) IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
+-- search_path must be 'foo,public'
 \! psql contrib_regression -U skynet -c 'SHOW search_path;'
+ search_path 
+-------------
+ foo, public
+(1 row)
+
+-- search_path must be 'foo,public'
+\! psql contrib_regression -U hal -c 'SHOW search_path;'
  search_path 
 -------------
  foo, public
@@ -124,6 +132,7 @@ SELECT anon.hasmask(NULL) IS NULL;
 -- STOP
 SELECT anon.stop_dynamic_masking();
 NOTICE:  The previous priviledges of 'skynet' are not restored. You need to grant them manually.
+NOTICE:  The previous priviledges of 'hal' are not restored. You need to grant them manually.
  stop_dynamic_masking 
 ----------------------
  t
@@ -136,3 +145,6 @@ DROP EXTENSION anon CASCADE;
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
+REASSIGN OWNED BY hal TO postgres;
+DROP OWNED BY hal CASCADE;
+DROP ROLE hal;
