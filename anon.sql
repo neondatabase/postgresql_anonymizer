@@ -739,10 +739,10 @@ $$
 LANGUAGE SQL STABLE
 ;
 
--- DEPRECATED : use directly `hasmask(role)` instead
+-- DEPRECATED : use directly `hasmask(oid::REGROLE)` instead
 -- Adds a `hasmask` column to the pg_roles catalog
 CREATE OR REPLACE VIEW @extschema@.pg_masked_roles AS
-SELECT r.*, @extschema@.hasmask(rolname::REGROLE)
+SELECT r.*, @extschema@.hasmask(r.oid::REGROLE)
 FROM pg_catalog.pg_roles r
 ;
 
@@ -898,9 +898,9 @@ BEGIN
   ;
 
   -- Walk through all masked roles and remove their masl
-  PERFORM @extschema@.unmask_role(rolname::REGROLE)
+  PERFORM @extschema@.unmask_role(oid::REGROLE)
   FROM pg_catalog.pg_roles
-  WHERE @extschema@.hasmask(rolname::REGROLE);
+  WHERE @extschema@.hasmask(oid::REGROLE);
 
   -- Erase the config
   DELETE FROM @extschema@.config WHERE param='sourceschema';
