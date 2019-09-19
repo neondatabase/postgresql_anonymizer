@@ -4,7 +4,9 @@ INSTALL
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
 
-This is the recommended way to install the extension
+**This is the recommended way to install the extension**
+
+1. Install the extension on the server with:
 
 ```console
 sudo apt install pgxnclient (or pip install pgxn)
@@ -12,19 +14,38 @@ sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 
+2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
+
+```
+shared_preload_libraries = 'pg_stat_statements, anon'
+```
+
+3. Restart your instance. 
+
+
+
 Install From source
 ------------------------------------------------------------------------------
 
-First you need to install the postgresql development libraries. On most
+0. First you need to install the postgresql development libraries. On most
 distribution, this is available through a package called `postgresql-devel`
 or `postgresql-server-dev`.
 
-Then build the project like any other PostgreSQL extension:
+1. Build the project like any other PostgreSQL extension:
 
 ```console
 make extension
 sudo make install
 ```
+
+2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
+
+```
+shared_preload_libraries = 'pg_stat_statements, anon'
+```
+
+3. Restart your instance. 
+
 
 Install in the cloud
 ------------------------------------------------------------------------------
@@ -55,6 +76,5 @@ SELECT anon.start_dynamic_masking( autoload := FALSE );
 ```
 
 
-**However** if privacy and anonymity are a concern to you, hosting your data on 
-someone else's computer is probably not a clever idea. But then again, what do I
-know...
+> **However** if privacy and anonymity are a concern to you, hosting your data on 
+> someone else's computer is probably not a clever idea....
