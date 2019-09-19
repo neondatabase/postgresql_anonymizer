@@ -1,10 +1,11 @@
+
 -- STEP 1 : Activate the masking engine
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.start_dynamic_masking();
 
 -- STEP 2 : Declare a masked user
 CREATE ROLE skynet LOGIN;
-COMMENT ON ROLE skynet IS 'MASKED';
+SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 
 -- STEP 3 : Declare the masking rules
 CREATE TABLE people ( id TEXT, fistname TEXT, lastname TEXT, phone TEXT);
@@ -12,8 +13,11 @@ INSERT INTO people VALUES ('T1','Sarah', 'Conor','0609110911');
 SELECT * FROM people;
 
 -- STEP 3 : Declare the masking rules 
-COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
-COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
+SECURITY LABEL FOR anon ON COLUMN people.name 
+IS 'MASKED WITH FUNCTION anon.random_last_name()';
+
+SECURITY LABEL FOR anon ON COLUMN people.phone 
+IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 
 -- STEP 4 : Connect with the masked user
 \! psql demo -U skynet -c 'SELECT * FROM people;'

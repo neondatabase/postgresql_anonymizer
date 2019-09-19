@@ -1,3 +1,5 @@
+BEGIN;
+
 -- STEP 0: Basic Example
 CREATE TABLE cluedo ( name TEXT, weapon TEXT, room TEXT);
 INSERT INTO cluedo VALUES
@@ -12,12 +14,16 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.load();
 
 -- STEP  : Declare the masking rules
-COMMENT ON COLUMN cluedo.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
+SECURITY LABEL FOR anon ON COLUMN cluedo.name 
+IS 'MASKED WITH FUNCTION anon.random_last_name()';
 
-COMMENT ON COLUMN cluedo.room IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
+SECURITY LABEL FOR anon ON COLUMN cluedo.room 
+IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
 
 -- STEP 4 : Dump
 SELECT anon.dump();
 
 -- STEP 5 : Clean up
 DROP EXTENSION anon CASCADE;
+
+ROLLBACK;
