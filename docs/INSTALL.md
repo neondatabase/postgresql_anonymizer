@@ -50,10 +50,13 @@ shared_preload_libraries = 'pg_stat_statements, anon'
 Install in the cloud
 ------------------------------------------------------------------------------
 
-Generally Database As A Service operators ( such as Amazon RDS ) do not allow their
-clients to load any extension. Instead they support only a limited subset of
-extensions, such as PostGIS or pgcrypto. You can ask them if they plan to support
-this one in the near future, but I wouldn't bet my life on it 😃
+> **DISCLAIMER** if privacy and anonymity are a concern to you, hosting your 
+> data on someone else's computer is probably not a clever idea....
+
+Generally Database As A Service operators ( such as Amazon RDS ) do not allow 
+their clients to load any extension. Instead they support only a limited subset 
+of extensions, such as PostGIS or pgcrypto. You can ask them if they plan to 
+support this one in the near future, but you shouldn't bet your life on it 😃
 
 However this tool is set of plpgsql functions, which means should you be able to
 install it directly without declaring an extension.
@@ -68,6 +71,10 @@ $ psql ..... -f anon_standalone_PG11.sql
 
 _NB_ : Replace `PG11` with the version of Postgres offered by your DBaaS operator.
 
+In this situation, you will have to declare the masking rules with COMMENT
+instead of security labels. See [Declaring Rules with COMMENTs] for more details.
+
+[Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with -comments 
 
 When you activate the masking engine, you need to disable `autoload`:
 
@@ -76,5 +83,4 @@ SELECT anon.start_dynamic_masking( autoload := FALSE );
 ```
 
 
-> **However** if privacy and anonymity are a concern to you, hosting your data on 
-> someone else's computer is probably not a clever idea....
+
