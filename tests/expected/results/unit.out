@@ -1,0 +1,156 @@
+CREATE EXTENSION IF NOT EXISTS anon;
+--                                                                                                                                                     
+-- Generic Types                                                                                                                                       
+--     
+-- zip
+SELECT pg_typeof(anon.random_zip());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+-- string
+SELECT pg_typeof(anon.random_string(1));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+--SELECT anon_string(123456789);
+-- Date                                                                                                                                                
+SELECT pg_typeof(anon.random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now()));                                                              
+        pg_typeof         
+--------------------------
+ timestamp with time zone
+(1 row)
+
+SELECT pg_typeof(anon.random_date_between('01/01/0001'::DATE,'01/01/4001'::DATE));                                                                     
+        pg_typeof         
+--------------------------
+ timestamp with time zone
+(1 row)
+
+SELECT pg_typeof(anon.random_date());  
+        pg_typeof         
+--------------------------
+ timestamp with time zone
+(1 row)
+
+-- Integer
+SELECT pg_typeof(anon.random_int_between(1,3));
+ pg_typeof 
+-----------
+ integer
+(1 row)
+
+--
+-- Personal Data (First Name, etc.)
+--
+-- First Name
+SELECT pg_typeof(anon.random_first_name());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+-- Last Name                                                                                                                                          
+SELECT pg_typeof(anon.random_last_name());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+-- Email
+SELECT pg_typeof(anon.random_email());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+-- Phone
+SELECT pg_typeof(anon.random_phone('0033'));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_phone(NULL));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_phone());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+-- Location
+SELECT pg_typeof(anon.random_city_in_country('France'));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_city_in_country('dfndjndjnjdnvjdnjvndjnvjdnvjdnjnvdnvjdnvj'));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_city_in_country(NULL));                                                                                   
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_city());                                                                                                               
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_region_in_country('Italy'));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_region_in_country('c,dksv,kdfsdnfvsjdnfjsdnjfndj'));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_region_in_country(NULL));
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_region());                                                                                 
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+SELECT pg_typeof(anon.random_country()); 
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+--
+-- Company
+--
+SELECT pg_typeof(anon.random_company());
+ pg_typeof 
+-----------
+ text
+(1 row)
+
+--
+-- End
+--
+DROP EXTENSION anon;
