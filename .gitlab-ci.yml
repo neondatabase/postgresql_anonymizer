@@ -106,6 +106,8 @@ make11:
     - pgxn install ddlx
     - make extension
     - make install
+    - echo "shared_preload_libraries = 'anon'" >> /etc/postgresql/11/main/postgresql.conf
+    - gosu postgres pg_ctl start
     - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
