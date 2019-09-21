@@ -107,7 +107,7 @@ make11:
     - make extension
     - make install
     - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
-    - gosu postgres pg_ctl start
+    - gosu postgres pg_ctl restart
     - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
