@@ -1,5 +1,5 @@
 -- This test cannot be run in a single transcation
--- This test must be run on a database named ''
+-- This test must be run on a database named 'contrib_regression'
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
