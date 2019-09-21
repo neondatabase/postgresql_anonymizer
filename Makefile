@@ -27,7 +27,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS = load noise shuffle random faking partial anonymize masking dump injection
+REGRESS = load noise shuffle random faking partial anonymize masking dump injection autocast
 REGRESS+=$(PG_TEST_EXTRA)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
@@ -42,9 +42,9 @@ extension:
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/default/* anon/
 
-PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner 
-SED1=sed 's/public.//' 
-SED2=sed 's/SELECT.*search_path.*//' 
+PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner
+SED1=sed 's/public.//'
+SED2=sed 's/SELECT.*search_path.*//'
 SED3=sed 's/^SET idle_in_transaction_session_timeout.*//'
 SED4=sed 's/^SET row_security.*//'
 
@@ -99,10 +99,10 @@ anon_standalone_PG12.sql: VERSION = 12.0
 
 standalone: $(STD_ARTEFACTS)
 
-$(STD_ARTEFACTS): anon.sql | _pgddl 
+$(STD_ARTEFACTS): anon.sql | _pgddl
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
 	VERSION=$(VERSION) _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
-	echo 'CREATE SCHEMA anon;\n' >> $@	
+	echo 'CREATE SCHEMA anon;\n' >> $@
 	sed 's/@extschema@/anon/g' anon.sql >> $@
 	sed -i 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
 	echo "\copy anon.city FROM 'data/default/city.csv';\n" >> $@
@@ -178,14 +178,14 @@ pgxn:
 	# required by CI : https://gitlab.com/gitlab-com/support-forum/issues/1351
 	git clone --bare https://gitlab.com/dalibo/postgresql_anonymizer.git
 	git -C postgresql_anonymizer.git archive --format zip --prefix=$(EXTENSION)_$(EXTENSION_VERSION)/ --output ../$(ZIPBALL) master
-	# open the package	
+	# open the package
 	unzip $(ZIPBALL)
 	# remove the zipball because we will rebuild it from scratch
 	rm -fr $(ZIPBALL)
 	# copy artefact into the package
 	cp -pr anon ./$(EXTENSION)_$(EXTENSION_VERSION)/
-	# remove folders and files that are useless in the PGXN package 
-	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/images 
+	# remove folders and files that are useless in the PGXN package
+	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/images
 	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/docker
 	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION)/docs
 	# rebuild the package

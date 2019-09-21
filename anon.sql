@@ -118,7 +118,7 @@ BEGIN
   IF colname IS NULL THEN
 	RAISE WARNING 'Column ''%'' is not present in table ''%''.', shuffle_column, shuffle_table;
 	RETURN FALSE;
-  END IF;	
+  END IF;
 
   -- Stop if primary_key does not exist
   SELECT column_name INTO colname
@@ -236,7 +236,7 @@ BEGIN
   -- This check does not work with PG10 and below
   -- because absolute paths are not allowed
   --SELECT * INTO  datapath_check
-  --FROM pg_stat_file(datapath, missing_ok := TRUE ) 
+  --FROM pg_stat_file(datapath, missing_ok := TRUE )
   --WHERE isdir;
 
   -- This works with all current version of Postgres
@@ -246,7 +246,7 @@ BEGIN
   -- Stop if is the directory does not exist
   IF datapath_check IS NULL THEN
     RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath;
-          --USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';		
+          --USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';
     RETURN FALSE;
   END IF;
 
@@ -259,11 +259,11 @@ BEGIN
   EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
   EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
   RETURN TRUE;
-	
+
   EXCEPTION
     WHEN undefined_file THEN
       RAISE WARNING 'The path ''%'' does not exist. Data is not loaded.', datapath;
-	  RETURN FALSE;	
+	  RETURN FALSE;
 END;
 $func$
 LANGUAGE PLPGSQL VOLATILE;
@@ -598,7 +598,7 @@ FROM pg_roles r
 
 -- name of the source schema
 CREATE OR REPLACE FUNCTION @extschema@.source_schema()
-RETURNS TEXT AS 
+RETURNS TEXT AS
 $$ SELECT value FROM @extschema@.config WHERE param='sourceschema' $$
 LANGUAGE SQL STABLE;
 
@@ -626,16 +626,16 @@ DECLARE
 	mf_is_a_faking_function BOOLEAN;
 BEGIN
   SELECT masking_function INTO mf
-  FROM @extschema@.pg_masks 
+  FROM @extschema@.pg_masks
   WHERE relid = tablename::OID
   AND	attname = colname;
 
   IF mf IS NULL THEN
-	RAISE WARNING 'There is no masking rule for column % in table %', colname, tablename; 	
+	RAISE WARNING 'There is no masking rule for column % in table %', colname, tablename;
 	RETURN FALSE;
   END IF;
 
-  SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function; 	
+  SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
   IF mf_is_a_faking_function AND not anon.isloaded() THEN
     RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT @extschema@.load()'' ';
   END IF;
@@ -664,7 +664,7 @@ LANGUAGE SQL VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
 RETURNS BOOLEAN AS
 $func$
-  SELECT SUM(anon.anonymize_column(relid::REGCLASS,attname)::INT) = COUNT(relid) 
+  SELECT SUM(anon.anonymize_column(relid::REGCLASS,attname)::INT) = COUNT(relid)
   FROM anon.pg_masks;
 $func$
 LANGUAGE SQL VOLATILE;
@@ -695,15 +695,17 @@ LANGUAGE SQL VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.mask_columns(source_relid OID)
 RETURNS TABLE (
     attname NAME,
-    masking_function TEXT
+    masking_function TEXT,
+    format_type TEXT
 ) AS
 $$
 SELECT
 	a.attname::NAME, -- explicit cast for PG 9.6
-	m.masking_function
+	m.masking_function,
+  m.format_type
 FROM pg_attribute a
 LEFT JOIN anon.pg_masks m ON m.relid = a.attrelid AND m.attname = a.attname
-WHERE  a.attrelid = source_relid 
+WHERE  a.attrelid = source_relid
 AND    a.attnum > 0 -- exclude ctid, cmin, cmax
 AND    NOT a.attisdropped
 ORDER BY a.attnum
@@ -719,7 +721,7 @@ RETURNS SETOF VOID AS
 $$
 BEGIN
   -- Walk through all tables in the source schema
-  PERFORM @extschema@.mask_create_view(oid) 
+  PERFORM @extschema@.mask_create_view(oid)
   FROM pg_class
   WHERE relnamespace=@extschema@.sourceschema()::regnamespace
   AND relkind = 'r' -- relations only
@@ -813,7 +815,7 @@ BEGIN
   EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', maskschema);
   EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''sourceschema'';', sourceschema);
   EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''maskschema'';', maskschema);
-	
+
   PERFORM @extschema@.mask_update();
 
   RETURN TRUE;
@@ -841,7 +843,7 @@ BEGIN
   PERFORM @extschema@.mask_disable();
 
   -- Walk through all tables in the source schema and drop the masking view
-  PERFORM @extschema@.mask_drop_view(oid) 
+  PERFORM @extschema@.mask_drop_view(oid)
   FROM pg_class
   WHERE relnamespace=@extschema@.source_schema()::regnamespace
   AND relkind = 'r' -- relations only
@@ -903,7 +905,7 @@ RETURNS BOOLEAN AS
 $$
 BEGIN
   -- we dont know what priviledges this role had before putting his mask on
-  -- so we keep most of the priviledges as they are and let the 
+  -- so we keep most of the priviledges as they are and let the
   -- administrator restore the correct access right.
   RAISE NOTICE 'The previous priviledges of ''%'' are not restored. You need to grant them manually.', maskedrole;
   -- restore default search_path
@@ -958,16 +960,16 @@ CREATE OR REPLACE FUNCTION @extschema@.mask_update()
 RETURNS BOOLEAN AS
 $$
   -- This DDL EVENT TRIGGER will launch new DDL statements
-  -- therefor we have disable the EVENT TRIGGER first 
+  -- therefor we have disable the EVENT TRIGGER first
   -- in order to avoid an infinite triggering loop :-)
   SELECT @extschema@.mask_disable();
   -- Walk through all tables in the source schema and build a dynamic masking view
-  SELECT @extschema@.mask_create_view(oid) 
+  SELECT @extschema@.mask_create_view(oid)
   FROM pg_class
   WHERE relnamespace=@extschema@.source_schema()::regnamespace
   AND relkind = 'r' -- relations only
   ;
-  -- Walk through all masked roles and apply the restrictions 
+  -- Walk through all masked roles and apply the restrictions
   SELECT @extschema@.mask_role(rolname::REGROLE)
   FROM @extschema@.pg_masked_roles
   WHERE hasmask;
@@ -992,20 +994,20 @@ $$
       SELECT oid
       FROM pg_namespace
       WHERE nspname NOT LIKE 'pg_%'
-      AND nspname NOT IN ( 'information_schema' , '@extschema@' , @extschema@.mask_schema()) 
+      AND nspname NOT IN ( 'information_schema' , '@extschema@' , @extschema@.mask_schema())
     )
 	ORDER BY array_position(ARRAY['S','t'], relkind::TEXT), oid::regclass  -- drop [S]equences before [t]ables
     ;
 $$
 LANGUAGE SQL;
 
--- generate the "COPY ... FROM STDIN" statement for a table 
+-- generate the "COPY ... FROM STDIN" statement for a table
 CREATE OR REPLACE FUNCTION @extschema@.get_copy_statement(relid OID)
 RETURNS TEXT AS
 $$
 DECLARE
   copy_statement TEXT;
-  val TEXT;	
+  val TEXT;
   rec RECORD;
 BEGIN
 --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
@@ -1036,7 +1038,7 @@ $$
   SELECT @extschema@.get_copy_statement(relid)
   FROM pg_stat_user_tables
   WHERE schemaname NOT IN ( '@extschema@' , @extschema@.mask_schema() )
-  ORDER BY  relid::regclass -- sort by name to force the dump order 
+  ORDER BY  relid::regclass -- sort by name to force the dump order
 $$
 LANGUAGE SQL;
 
