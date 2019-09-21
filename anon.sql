@@ -748,7 +748,12 @@ BEGIN
             expression := expression || quote_ident(m.attname);
         ELSE
             -- Call mask instead of column
-            expression := expression || m.masking_function || ' AS ' || quote_ident(m.attname);
+            -- the masking function is casted into the column type
+            expression := expression || format('CAST(%s AS %s) AS %s',
+                                                m.masking_function,
+                                                m.format_type,
+                                                quote_ident(m.attname)
+                                              );
         END IF;
         comma := ',';
     END LOOP;
@@ -1007,7 +1012,7 @@ BEGIN
   copy_statement := format(E'COPY %s  FROM STDIN CSV QUOTE AS ''"'' DELIMITER '',''; \n', relid::REGCLASS);
   FOR rec IN
     EXECUTE format(E'SELECT tmp::TEXT AS r FROM (SELECT %s FROM %s) AS tmp;',
-													anon.mask_filters(relid),
+													@extschema@.mask_filters(relid),
 													relid::REGCLASS
 	)
   LOOP
