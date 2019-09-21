@@ -32,8 +32,11 @@ SELECT anon.load();
 Step 2: declare the masking rules
 
 ```sql
-COMMENT ON COLUMN cluedo.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
-COMMENT ON COLUMN cluedo.room IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
+SECURITY LABEL FOR anon ON COLUMN cluedo.name 
+IS 'MASKED WITH FUNCTION anon.random_last_name()';
+
+SECURITY LABEL FOR anon ON COLUMN cluedo.room 
+IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
 ```
 
 Step 3: Export the anonymized data with :

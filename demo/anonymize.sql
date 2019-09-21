@@ -10,8 +10,11 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.load();
 
 -- STEP 3 : Declare the masking rules 
-COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.random_last_name()';
-COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
+SECURITY LABEL FOR anon ON COLUMN people.lastname 
+IS 'MASKED WITH FUNCTION anon.random_last_name()';
+
+SECURITY LABEL FOR anon ON COLUMN people.phone 
+IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 
 -- STEP 4 : Anonymize data  
 SELECT anon.anonymize_database();

@@ -73,6 +73,8 @@ make9.6:
     - pgxn install ddlx
     - make extension
     - make install
+    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
+    - gosu postgres pg_ctl restart
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
@@ -89,6 +91,8 @@ make10:
     - pgxn install ddlx
     - make extension
     - make install
+    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
+    - gosu postgres pg_ctl restart
     - export PG_TEST_EXTRA=''
     - make installcheck || diff results tests/expected
   artifacts:
@@ -106,6 +110,8 @@ make11:
     - pgxn install ddlx
     - make extension
     - make install
+    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
+    - gosu postgres pg_ctl restart
     - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
@@ -125,6 +131,8 @@ make12:
 #    - make -C pgddl && make -C pgddl install
     - make extension
     - make install
+    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
+    - gosu postgres pg_ctl restart
     - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
@@ -177,6 +185,8 @@ demo:
     - pgxn install ddlx
     - make extension
     - make install
+    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
+    - gosu postgres pg_ctl restart
     - make demo
   when: manual
   artifacts:
