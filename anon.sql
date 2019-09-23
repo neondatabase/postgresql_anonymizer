@@ -750,12 +750,14 @@ FROM pg_catalog.pg_roles r
 CREATE OR REPLACE FUNCTION @extschema@.mask_columns(source_relid OID)
 RETURNS TABLE (
     attname NAME,
-    masking_function TEXT
+    masking_function TEXT,
+    format_type TEXT
 ) AS
 $$
 SELECT
 	a.attname::NAME, -- explicit cast for PG 9.6
-	m.masking_function
+	m.masking_function,
+  m.format_type
 FROM pg_attribute a
 LEFT JOIN @extschema@.pg_masking_rules m ON m.attrelid = a.attrelid AND m.attname = a.attname
 WHERE  a.attrelid = source_relid
@@ -803,7 +805,12 @@ BEGIN
             expression := expression || quote_ident(m.attname);
         ELSE
             -- Call mask instead of column
-            expression := expression || m.masking_function || ' AS ' || quote_ident(m.attname);
+            -- the masking function is casted into the column type
+            expression := expression || format('CAST(%s AS %s) AS %s',
+                                                m.masking_function,
+                                                m.format_type,
+                                                quote_ident(m.attname)
+                                              );
         END IF;
         comma := ',';
     END LOOP;
