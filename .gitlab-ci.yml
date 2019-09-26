@@ -157,6 +157,18 @@ standalone12:
     - export PGPASSWORD=$POSTGRES_PASSWORD
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone_PG12.sql
 
+standalone11:
+  stage: build
+  services:
+    - postgres:11
+  before_script:
+    - echo "disable the before_script"
+  script:
+    - apt-get update && apt-get install -y make git postgresql-server-dev-all 
+    - make anon_standalone_PG11.sql
+    - export PGPASSWORD=$POSTGRES_PASSWORD
+    - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone_PG11.sql
+
 
 
 ##
