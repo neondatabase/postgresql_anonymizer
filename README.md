@@ -26,7 +26,7 @@ Read the [Concepts] section for more details and [NEWS.md] for information
 about the latest version.
 
 [NEWS.md]: NEWS.md
-[INSTALL.md]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+[INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
 [Concepts]: https://postgresql-anonymizer.readthedocs.io/en/latest/concepts/
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
@@ -181,7 +181,7 @@ fits your needs and what features are missing.
 
 You can either [open an issue] or send a message at <contact@dalibo.com>.
 
-[open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
+[open an issue]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
 
 
 Requirements
@@ -213,7 +213,7 @@ sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 
-or see [INSTALL.md] for more detailed instructions or if you want to deploy it
+or see the [INSTALL] section for more detailed instructions or if you want to deploy it
 on Amazon RDS or some other DBAAS service. 
 
 
