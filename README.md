@@ -26,14 +26,14 @@ Read the [Concepts] section for more details and [NEWS.md] for information
 about the latest version.
 
 [NEWS.md]: NEWS.md
-[INSTALL.md]: docs/INSTALL.md
-[Concepts]: #Concepts
+[INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+[Concepts]: https://postgresql-anonymizer.readthedocs.io/en/latest/concepts/
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
-[Anonymous Dumps]: #Anonymous-Dumps
-[In-Place Anonymization]: #In-Place-Anonymization
-[Dynamic Masking]: #Dynamic-Masking
-[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[In-Place Anonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/in_place_anonymization/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
 
 Declaring The Masking Rules
 ------------------------------------------------------------------------------
@@ -181,7 +181,7 @@ fits your needs and what features are missing.
 
 You can either [open an issue] or send a message at <contact@dalibo.com>.
 
-[open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
+[open an issue]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
 
 
 Requirements
@@ -189,7 +189,9 @@ Requirements
 
 This extension is officially supported on PostgreSQL 9.6 and later.
 It should also work on PostgreSQL 9.5 with a bit of hacking.
-See [NOTES.md](docs/NOTES.md) for more details.
+See the [Developement Notes] for more details.
+
+[Developement Notes]: https://postgresql-anonymizer.readthedocs.io/en/latest/NOTES/
 
 It requires two extensions :
 
@@ -211,12 +213,8 @@ sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 
-or see [INSTALL.md] for more detailed instructions or if you want to deploy it
+or see the [INSTALL] section for more detailed instructions or if you want to deploy it
 on Amazon RDS or some other DBAAS service. 
-
-
-
-
 
 
 
@@ -264,7 +262,7 @@ to build [Materialized Views] instead.
 
 For instance:
 
-```SQL
+```sql
 CREATE MATERIALIZED VIEW masked_customer AS
 SELECT
     id,
