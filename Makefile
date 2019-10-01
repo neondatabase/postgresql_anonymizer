@@ -112,7 +112,7 @@ STD_ARTEFACTS+=anon_standalone_PG12.sql
 
 anon_standalone_PG96.sql: VERSION = 9.6.0
 anon_standalone_PG10.sql: VERSION = 10.0
-anon_standalone_PG12.sql: VERSION = 11.0
+anon_standalone_PG11.sql: VERSION = 11.0
 anon_standalone_PG12.sql: VERSION = 12.0
 
 standalone: $(STD_ARTEFACTS)

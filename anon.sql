@@ -620,7 +620,7 @@ SELECT DISTINCT ON (attrelid, attnum) *
 FROM rules_from_all
 ORDER BY attrelid, attnum, priority DESC
 ;
-
+ 
 -- Compatibility with version 0.3 and earlier
 CREATE OR REPLACE VIEW @extschema@.pg_masks AS
 SELECT * FROM @extschema@.pg_masking_rules
