@@ -35,4 +35,4 @@ WHERE masking_function = 'anon.fake_first_name()';
 -- Clean up
 DROP TABLE people CASCADE;
 
-DROP EXTENSION anon CASCAD
+DROP EXTENSION anon CASCADE;

@@ -16,7 +16,13 @@ PG_MODULE_MAGIC;
  */
 void    _PG_init(void);
 
-PG_FUNCTION_INFO_V1(anon_seclabel_ananon_object_relabel(const ObjectAddress *object, const char *seclabel)
+PG_FUNCTION_INFO_V1(anon_seclabel_anon);
+
+/*
+ * Checking the syntax of the masking rules
+ */
+static void
+anon_object_relabel(const ObjectAddress *object, const char *seclabel)
 {
   if (seclabel == NULL
    || pg_strcasecmp(seclabel,"MASKED") == 0
