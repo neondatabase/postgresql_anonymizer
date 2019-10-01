@@ -565,27 +565,62 @@ WITH const AS (
     SELECT
         '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT AS pattern_mask_column_function,
         '%MASKED +WITH +CONSTANT +#"%#(%#)#"%'::TEXT AS pattern_mask_column_constant
-)
+),
+rules_from_comments AS (
 SELECT
   a.attrelid,
-  a.attname,
-  c.oid AS relid,
+  a.attnum,
   c.relname,
+  a.attname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   pg_catalog.col_description(a.attrelid, a.attnum),
   substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_function for '#')  AS masking_function,
-  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_constant for '#')  AS masking_constant
+  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_constant for '#')  AS masking_constant,
+  0 AS priority --low priority for the comment syntax
 FROM const k,
      pg_catalog.pg_attribute a
 JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
 WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
-AND (
-    pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
-OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_constant ESCAPE '#'
+AND (   pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
+    OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_constant ESCAPE '#'
+    )
+),
+rules_from_seclabels AS (
+SELECT
+  sl.objoid AS attrelid,
+  sl.objsubid  AS attnum,
+  c.relname,
+  a.attname,
+  pg_catalog.format_type(a.atttypid, a.atttypmod),
+  sl.label AS col_description,
+  substring(sl.label from k.pattern_mask_column_function for '#')  AS masking_function,
+  substring(sl.label from k.pattern_mask_column_constant for '#')  AS masking_constant,
+  100 AS priority -- high priority for the security label syntax
+FROM const k,
+     pg_catalog.pg_seclabel sl
+JOIN pg_catalog.pg_class c ON sl.classoid = c.tableoid AND sl.objoid = c.oid
+JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid
+WHERE a.attnum > 0
+--  TODO : Filter out the catalog tables
+AND NOT a.attisdropped
+AND (   sl.label SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
+    OR  sl.label SIMILAR TO k.pattern_mask_column_constant ESCAPE '#'
+    )
+AND sl.provider = 'anon' -- this is hard-coded in anon.c
+),
+rules_from_all AS (
+SELECT * FROM rules_from_comments
+UNION
+SELECT * FROM rules_from_seclabels
 )
+-- DISTINCT will keep just the 1st rule for each column based on priority,
+SELECT DISTINCT ON (attrelid, attnum) *
+FROM rules_from_all
+ORDER BY attrelid, attnum, priority DESC
 ;
+
 
 -- Adds a `hasmask` column to the pg_roles catalog
 -- True if the role is masked, else False
@@ -622,12 +657,12 @@ CREATE OR REPLACE FUNCTION @extschema@.anonymize_column(tablename REGCLASS, coln
 RETURNS BOOLEAN AS
 $$
 DECLARE
-    mf TEXT;
-	mf_is_a_faking_function BOOLEAN;
+  mf TEXT;
+  mf_is_a_faking_function BOOLEAN;
 BEGIN
   SELECT masking_function INTO mf
   FROM @extschema@.pg_masks
-  WHERE relid = tablename::OID
+  WHERE attrelid = tablename::OID
   AND	attname = colname;
 
   IF mf IS NULL THEN
@@ -655,7 +690,7 @@ RETURNS BOOLEAN AS
 $func$
   SELECT @extschema@.anonymize_column(tablename,attname)
   FROM @extschema@.pg_masks
-  WHERE relid::regclass=tablename;
+  WHERE attrelid::regclass=tablename;
 $func$
 LANGUAGE SQL VOLATILE;
 
@@ -664,7 +699,7 @@ LANGUAGE SQL VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
 RETURNS BOOLEAN AS
 $func$
-  SELECT SUM(anon.anonymize_column(relid::REGCLASS,attname)::INT) = COUNT(relid)
+  SELECT SUM(anon.anonymize_column(attrelid::REGCLASS,attname)::INT) = COUNT(attrelid)
   FROM anon.pg_masks;
 $func$
 LANGUAGE SQL VOLATILE;
@@ -704,7 +739,7 @@ SELECT
 	m.masking_function,
   m.format_type
 FROM pg_attribute a
-LEFT JOIN anon.pg_masks m ON m.relid = a.attrelid AND m.attname = a.attname
+LEFT JOIN anon.pg_masks m ON m.attrelid = a.attrelid AND m.attname = a.attname
 WHERE  a.attrelid = source_relid
 AND    a.attnum > 0 -- exclude ctid, cmin, cmax
 AND    NOT a.attisdropped
