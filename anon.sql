@@ -2,8 +2,11 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 --\echo Use "CREATE EXTENSION anon" to load this file. \quit
 
--- the tms_system_rows extension should be available with all distributions of postgres
---CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
+--
+-- Dependencies :
+--  * tms_system_rows (should be available with all distributions of postgres)
+--  * ddlx ( https://github.com/lacanoid/pgddl )
+--
 
 -------------------------------------------------------------------------------
 -- Config
@@ -21,8 +24,8 @@ COMMENT ON TABLE @extschema@.config IS 'Anonymization and Masking settings';
 
 INSERT INTO @extschema@.config
 VALUES
-    ('sourceschema','public'),
-    ('maskschema', 'mask')
+('sourceschema','public'),
+('maskschema', 'mask')
 ;
 
 
@@ -34,10 +37,10 @@ VALUES
 -------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_numeric_column(
-                                                        noise_table regclass,
-                                                        noise_column TEXT,
-                                                        ratio FLOAT
-                                                        )
+  noise_table regclass,
+  noise_column TEXT,
+  ratio FLOAT
+)
 RETURNS BOOLEAN
 AS $func$
 DECLARE
@@ -50,7 +53,9 @@ BEGIN
   WHERE table_name=noise_table::TEXT
   AND column_name=noise_column::TEXT;
   IF colname IS NULL THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.', noise_column, noise_table;
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+                    noise_column,
+                    noise_table;
     RETURN FALSE;
   END IF;
 
@@ -65,10 +70,10 @@ $func$
 LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(
-                                                        noise_table regclass,
-                                                        noise_column TEXT,
-                                                        variation INTERVAL
-                                                        )
+  noise_table regclass,
+  noise_column TEXT,
+  variation INTERVAL
+)
 RETURNS BOOLEAN
 AS $func$
 DECLARE
@@ -81,15 +86,17 @@ BEGIN
   WHERE table_name=noise_table::TEXT
   AND column_name=noise_column::TEXT;
   IF colname IS NULL THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.', noise_column, noise_table;
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+                  noise_column,
+                  noise_table;
     RETURN FALSE;
   END IF;
 
   EXECUTE format('UPDATE %I SET %I = %I + (2 * random() - 1 ) * ''%s''::INTERVAL',
-									noise_table,
-									noise_column,
-									noise_column,
-									variation
+                  noise_table,
+                  noise_column,
+                  noise_column,
+                  variation
   );
   RETURN TRUE;
 END;
@@ -108,7 +115,7 @@ CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(
 RETURNS BOOLEAN
 AS $func$
 DECLARE
-	colname TEXT;
+  colname TEXT;
 BEGIN
   -- Stop if shuffle_column does not exist
   SELECT column_name INTO colname
@@ -116,8 +123,10 @@ BEGIN
   WHERE table_name=shuffle_table::TEXT
   AND column_name=shuffle_column::TEXT;
   IF colname IS NULL THEN
-	RAISE WARNING 'Column ''%'' is not present in table ''%''.', shuffle_column, shuffle_table;
-	RETURN FALSE;
+  RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+                  shuffle_column,
+                  shuffle_table;
+  RETURN FALSE;
   END IF;
 
   -- Stop if primary_key does not exist
@@ -126,7 +135,9 @@ BEGIN
   WHERE table_name=shuffle_table::TEXT
   AND column_name=primary_key::TEXT;
   IF colname IS NULL THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.', primary_key, shuffle_table;
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+                    primary_key,
+                    shuffle_table;
     RETURN FALSE;
   END IF;
 
@@ -246,7 +257,6 @@ BEGIN
   -- Stop if is the directory does not exist
   IF datapath_check IS NULL THEN
     RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath;
-          --USING HINT = ' ''@extschema@.load'' instructs PostgreSQL to read a file on the server side.';
     RETURN FALSE;
   END IF;
 
@@ -263,7 +273,7 @@ BEGIN
   EXCEPTION
     WHEN undefined_file THEN
       RAISE WARNING 'The path ''%'' does not exist. Data is not loaded.', datapath;
-	  RETURN FALSE;
+    RETURN FALSE;
 END;
 $func$
 LANGUAGE PLPGSQL VOLATILE;
@@ -324,7 +334,9 @@ RETURNS text
 AS $$
   SELECT array_to_string(
     array(
-        select substr('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',((random()*(36-1)+1)::integer),1)
+        select substr('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+                      ((random()*(36-1)+1)::integer)
+                      ,1)
         from generate_series(1,l)
     ),''
   );
@@ -347,7 +359,11 @@ LANGUAGE SQL VOLATILE;
 
 -- date
 
-CREATE OR REPLACE FUNCTION @extschema@.random_date_between(date_start timestamp WITH TIME ZONE, date_end timestamp WITH TIME ZONE)
+CREATE OR REPLACE FUNCTION
+  @extschema@.random_date_between(
+                                  date_start timestamp WITH TIME ZONE,
+                                  date_end timestamp WITH TIME ZONE
+                                )
 RETURNS timestamp WITH TIME ZONE AS $$
     SELECT (random()*(date_end-date_start))::interval+date_start;
 $$
@@ -362,7 +378,8 @@ LANGUAGE SQL VOLATILE;
 
 -- integer
 
-CREATE OR REPLACE FUNCTION @extschema@.random_int_between(int_start INTEGER, int_stop INTEGER)
+CREATE OR REPLACE FUNCTION
+  @extschema@.random_int_between(int_start INTEGER, int_stop INTEGER)
 RETURNS INTEGER AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
 $$
@@ -526,7 +543,12 @@ LANGUAGE SQL VOLATILE;
 --
 -- partial('abcdefgh',1,'xxxx',3) will return 'axxxxfgh';
 --
-CREATE OR REPLACE FUNCTION @extschema@.partial(ov TEXT, prefix INT, padding TEXT, suffix INT)
+CREATE OR REPLACE FUNCTION @extschema@.partial(
+                                                ov TEXT,
+                                                prefix INT,
+                                                padding TEXT,
+                                                suffix INT
+                                              )
 RETURNS TEXT AS $$
   SELECT substring(ov FROM 1 FOR prefix)
       || padding
@@ -540,7 +562,8 @@ LANGUAGE SQL IMMUTABLE;
 CREATE OR REPLACE FUNCTION @extschema@.partial_email(ov TEXT)
 RETURNS TEXT AS $$
 -- This is an oversimplistic way to scramble an email address
--- The main goal is to avoid any complex regexp by splitting the job into simpler tasks
+-- The main goal is to avoid any complex regexp
+-- by splitting the job into simpler tasks
   SELECT substring(regexp_replace(ov, '@.*', '') FROM 1 FOR 2) -- da
       || '******'
       || '@'
@@ -562,9 +585,11 @@ LANGUAGE SQL IMMUTABLE;
 -- List of all the masked columns
 CREATE OR REPLACE VIEW @extschema@.pg_masking_rules AS
 WITH const AS (
-    SELECT
-        '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT AS pattern_mask_column_function,
-        '%MASKED +WITH +CONSTANT +#"%#(%#)#"%'::TEXT AS pattern_mask_column_constant
+  SELECT
+    '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT
+      AS pattern_mask_column_function,
+    '%MASKED +WITH +CONSTANT +#"%#(%#)#"%'::TEXT
+      AS pattern_mask_column_constant
 ),
 rules_from_comments AS (
 SELECT
@@ -574,8 +599,12 @@ SELECT
   a.attname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   pg_catalog.col_description(a.attrelid, a.attnum),
-  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_function for '#')  AS masking_function,
-  substring(pg_catalog.col_description(a.attrelid, a.attnum) from k.pattern_mask_column_constant for '#')  AS masking_constant,
+  substring(  pg_catalog.col_description(a.attrelid, a.attnum)
+              from k.pattern_mask_column_function for '#')
+    AS masking_function,
+  substring(  pg_catalog.col_description(a.attrelid, a.attnum)
+              from k.pattern_mask_column_constant for '#')
+    AS masking_constant,
   0 AS priority --low priority for the comment syntax
 FROM const k,
      pg_catalog.pg_attribute a
@@ -620,7 +649,7 @@ SELECT DISTINCT ON (attrelid, attnum) *
 FROM rules_from_all
 ORDER BY attrelid, attnum, priority DESC
 ;
- 
+
 -- Compatibility with version 0.3 and earlier
 CREATE OR REPLACE VIEW @extschema@.pg_masks AS
 SELECT * FROM @extschema@.pg_masking_rules
@@ -649,7 +678,10 @@ LANGUAGE SQL STABLE;
 -------------------------------------------------------------------------------
 
 -- Replace masked data in a column
-CREATE OR REPLACE FUNCTION @extschema@.anonymize_column(tablename REGCLASS, colname NAME)
+CREATE OR REPLACE FUNCTION @extschema@.anonymize_column(
+                                                        tablename REGCLASS,
+                                                        colname NAME
+                                                      )
 RETURNS BOOLEAN AS
 $$
 DECLARE
@@ -659,11 +691,11 @@ BEGIN
   SELECT masking_function INTO mf
   FROM @extschema@.pg_masking_rules
   WHERE attrelid = tablename::OID
-  AND	attname = colname;
+  AND attname = colname;
 
   IF mf IS NULL THEN
-	RAISE WARNING 'There is no masking rule for column % in table %', colname, tablename;
-	RETURN FALSE;
+  RAISE WARNING 'There is no masking rule for column % in table %', colname, tablename;
+  RETURN FALSE;
   END IF;
 
   SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
@@ -755,11 +787,13 @@ RETURNS TABLE (
 ) AS
 $$
 SELECT
-	a.attname::NAME, -- explicit cast for PG 9.6
-	m.masking_function,
+  a.attname::NAME, -- explicit cast for PG 9.6
+  m.masking_function,
   m.format_type
 FROM pg_attribute a
-LEFT JOIN @extschema@.pg_masking_rules m ON m.attrelid = a.attrelid AND m.attname = a.attname
+LEFT JOIN  @extschema@.pg_masking_rules m
+        ON m.attrelid = a.attrelid
+        AND m.attname = a.attname
 WHERE  a.attrelid = source_relid
 AND    a.attnum > 0 -- exclude ctid, cmin, cmax
 AND    NOT a.attisdropped
@@ -814,7 +848,7 @@ BEGIN
         END IF;
         comma := ',';
     END LOOP;
-	RETURN expression;
+  RETURN expression;
 END
 $$
 LANGUAGE plpgsql VOLATILE;
@@ -880,10 +914,10 @@ LANGUAGE plpgsql VOLATILE;
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.mask_init(
-                                                sourceschema TEXT DEFAULT 'public',
-                                                maskschema TEXT DEFAULT 'mask',
-                                                autoload BOOLEAN DEFAULT TRUE
-                                                )
+                                          sourceschema TEXT DEFAULT 'public',
+                                          maskschema TEXT DEFAULT 'mask',
+                                          autoload BOOLEAN DEFAULT TRUE
+                                          )
 RETURNS BOOLEAN AS
 $$
 SELECT @extschema@.start_dynamic_masking(sourceschema,maskschema,autoload);
@@ -924,7 +958,8 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.mask_trigger()
 RETURNS EVENT_TRIGGER AS
 $$
--- SQL Functions cannot return EVENT_TRIGGER, we're forced to write a plpgsql function
+-- SQL Functions cannot return EVENT_TRIGGER,
+-- we're forced to write a plpgsql function
 BEGIN
   PERFORM @extschema@.mask_update();
 END
@@ -937,19 +972,19 @@ CREATE OR REPLACE FUNCTION @extschema@.mask_role(maskedrole REGROLE)
 RETURNS BOOLEAN AS
 $$
 DECLARE
-	sourceschema REGNAMESPACE;
-	maskschema REGNAMESPACE;
+  sourceschema REGNAMESPACE;
+  maskschema REGNAMESPACE;
 BEGIN
-	SELECT @extschema@.source_schema()::REGNAMESPACE INTO sourceschema;
-    SELECT @extschema@.mask_schema()::REGNAMESPACE INTO maskschema;
-    RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
-    EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
-    EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', '@extschema@', maskedrole);
-    EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', '@extschema@', maskedrole);
-    EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', maskschema, maskedrole);
-    EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', maskschema, maskedrole);
-	EXECUTE format('ALTER ROLE %s SET search_path TO %s,%s;', maskedrole, maskschema,sourceschema);
-	RETURN TRUE;
+  SELECT @extschema@.source_schema()::REGNAMESPACE INTO sourceschema;
+  SELECT @extschema@.mask_schema()::REGNAMESPACE INTO maskschema;
+  RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
+  EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
+  EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', '@extschema@', maskedrole);
+  EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', '@extschema@', maskedrole);
+  EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', maskschema, maskedrole);
+  EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', maskschema, maskedrole);
+  EXECUTE format('ALTER ROLE %s SET search_path TO %s,%s;', maskedrole, maskschema,sourceschema);
+  RETURN TRUE;
 END
 $$
 LANGUAGE plpgsql;
@@ -1003,7 +1038,7 @@ BEGIN
     DROP EVENT TRIGGER IF EXISTS @extschema@_mask_update;
   ELSE
     RAISE DEBUG 'event trigger "@extschema@_mask_update" does not exist: skipping';
-	RETURN FALSE;
+  RETURN FALSE;
   END IF;
   RETURN TRUE;
 END
@@ -1018,16 +1053,20 @@ $$
   -- therefor we have disable the EVENT TRIGGER first
   -- in order to avoid an infinite triggering loop :-)
   SELECT @extschema@.mask_disable();
-  -- Walk through all tables in the source schema and build a dynamic masking view
+
+  -- Walk through all tables in the source schema
+  -- and build a dynamic masking view
   SELECT @extschema@.mask_create_view(oid)
   FROM pg_class
   WHERE relnamespace=@extschema@.source_schema()::regnamespace
   AND relkind = 'r' -- relations only
   ;
+
   -- Walk through all masked roles and apply the restrictions
   SELECT @extschema@.mask_role(oid::REGROLE)
   FROM pg_catalog.pg_roles
   WHERE @extschema@.hasmask(oid::REGROLE);
+
   -- Restore the mighty DDL EVENT TRIGGER
   SELECT @extschema@.mask_enable();
 $$
@@ -1049,9 +1088,14 @@ $$
       SELECT oid
       FROM pg_namespace
       WHERE nspname NOT LIKE 'pg_%'
-      AND nspname NOT IN ( 'information_schema' , '@extschema@' , @extschema@.mask_schema())
+      AND nspname NOT IN  ( 'information_schema' ,
+                            '@extschema@' ,
+                            @extschema@.mask_schema()
+                          )
     )
-	ORDER BY array_position(ARRAY['S','t'], relkind::TEXT), oid::regclass  -- drop [S]equences before [t]ables
+  -- drop [S]equences before [t]ables
+  ORDER BY  array_position(ARRAY['S','t'], relkind::TEXT),
+            oid::regclass
     ;
 $$
 LANGUAGE SQL;
@@ -1066,7 +1110,11 @@ DECLARE
   rec RECORD;
 BEGIN
 --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
-  copy_statement := format(E'COPY %s  FROM STDIN CSV QUOTE AS ''"'' DELIMITER '',''; \n', relid::REGCLASS);
+  copy_statement := format(E' COPY %s
+                              FROM STDIN
+                              CSV QUOTE AS ''"''
+                              DELIMITER '',''; \n',
+                          relid::REGCLASS);
   FOR rec IN
     EXECUTE format(E'SELECT tmp::TEXT AS r FROM (SELECT %s FROM %s) AS tmp;',
                           anon.mask_filters(relid),
@@ -1100,7 +1148,7 @@ LANGUAGE SQL;
 -- export the database schema + anonymized data
 CREATE OR REPLACE FUNCTION @extschema@.dump()
 RETURNS TABLE (
-	dump TEXT
+  dump TEXT
 ) AS
 $$
     SELECT @extschema@.dump_ddl()
