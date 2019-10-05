@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.load();
@@ -31,3 +33,5 @@ SET
 ;
 
 SELECT * FROM customer;
+
+ROLLBACK;

@@ -16,25 +16,43 @@
 
 # PSQL : psql client ( default = local psql )
 # PGDUMP : pg_dump tool  ( default = docker )
+# REGRESS : run a specific test ( e.g. `REGRESS=noise make installcheck` )
 # PG_TEST_EXTRA : extra tests to be run by `installcheck` ( default = none )
 
 ##
 ## C O N F I G
 ##
-
+MODULES = anon
 EXTENSION = anon
 EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS = load noise shuffle random faking partial anonymize masking dump injection autocast
-REGRESS+=$(PG_TEST_EXTRA)
+REGRESS_TESTS = load noise shuffle random faking partial
+REGRESS_TESTS+= anonymize dump
+REGRESS_TESTS+= hasmask masked_roles masking
+REGRESS_TESTS+= injection conflict_seclabel_vs_comment syntax_checks
+REGRESS_TESTS+=$(PG_TEST_EXTRA)
+# This can be oerridden by an env variable
+REGRESS?=$(REGRESS_TESTS)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
+
+OBJS = anon.o
+
+##
+## Mandatory PGXS stuff
+##
+PG_CONFIG = pg_config
+PGXS := $(shell $(PG_CONFIG) --pgxs)
+include $(PGXS)
+
+all: extension
 
 ##
 ## B U I L D
 ##
+
 
 .PHONY: extension
 extension:
@@ -194,9 +212,3 @@ pgxn:
 	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION) ./postgresql_anonymizer.git/
 
 
-##
-## Mandatory PGXS stuff
-##
-PG_CONFIG = pg_config
-PGXS := $(shell $(PG_CONFIG) --pgxs)
-include $(PGXS)

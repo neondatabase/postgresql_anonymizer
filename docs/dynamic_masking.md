@@ -6,6 +6,8 @@ Other roles will still access the original data.
 
 **Example**:
 
+<!-- demo/masking.sql -->
+
 ```sql
 CREATE TABLE people ( id TEXT, fistname TEXT, lastname TEXT, phone TEXT);
 INSERT INTO people VALUES ('T1','Sarah', 'Conor','0609110911');
@@ -29,16 +31,20 @@ Step 2 : Declare a masked user
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
-=# COMMENT ON ROLE skynet IS 'MASKED';
+=# SECURITY LABEL FOR anon ON ROLE skynet 
+-# IS 'MASKED';
 ```
 
 Step 3 : Declare the masking rules
 
 ```sql
-=# COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+SECURITY LABEL FOR anon ON COLUMN people.name 
+IS 'MASKED WITH FUNCTION anon.random_last_name()';
 
-=# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
+SECURITY LABEL FOR anon ON COLUMN people.phone 
+IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
+
 
 Step 4 : Connect with the masked user
 

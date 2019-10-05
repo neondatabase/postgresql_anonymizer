@@ -1,6 +1,11 @@
+-- This test cannot be run in a single transcation
+-- This test must be run on a database named 'contrib_regression'
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 -- INIT
+
+SELECT anon.mask_init();
 
 SELECT anon.start_dynamic_masking();
 
@@ -16,8 +21,11 @@ INSERT INTO people
 VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 
 
-COMMENT ON COLUMN people.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
-COMMENT ON COLUMN people."CreditCard" IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
+SECURITY LABEL FOR anon ON COLUMN people.name 
+IS 'MASKED WITH FUNCTION anon.random_last_name() ';
+
+SECURITY LABEL FOR anon ON COLUMN people."CreditCard" 
+IS 'MASKED WITH FUNCTION         anon.random_string(12)';
 
 -- Table `CoMPaNy`
 CREATE TABLE "CoMPaNy" (
@@ -29,15 +37,18 @@ CREATE TABLE "CoMPaNy" (
 INSERT INTO "CoMPaNy"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 
-COMMENT ON COLUMN "CoMPaNy"."IBAN" IS 'MASKED WITH FUNCTION anon.random_iban()';
-COMMENT ON COLUMN "CoMPaNy".NAME IS 'jvnosdfnvsjdnvfskngvknfvg MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
+SECURITY LABEL FOR anon ON COLUMN "CoMPaNy"."IBAN" 
+IS 'MASKED WITH FUNCTION anon.random_iban()';
+
+SECURITY LABEL FOR anon ON COLUMN "CoMPaNy".NAME 
+IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
 
 -- BUG #51 :
 CREATE TABLE test_type_casts(
 	last_name VARCHAR(30)
 );
 
-COMMENT ON column test_type_casts.last_name
+SECURITY LABEL FOR anon ON column test_type_casts.last_name
 IS 'MASKED WITH FUNCTION anon.random_last_name()::VARCHAR(30)';
 
 -- Table `work`
@@ -67,16 +78,11 @@ SELECT name != 'Schwarzenegger' FROM mask.people WHERE id = 1;
 -- ROLE
 
 CREATE ROLE skynet LOGIN;
-COMMENT ON ROLE skynet IS 'MASKED';
+SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 
--- FORCE update because COMMENT doesn't trigger the Event Trigger
+-- FORCE update because SECURITY LABEL doesn't trigger the Event Trigger
 SELECT anon.mask_update();
 
-SELECT anon.hasmask('skynet');
-
-SELECT anon.hasmask('postgres') IS FALSE;
-
-SELECT anon.hasmask(NULL) IS NULL;
 
 -- We're using an external connection instead of `SET ROLE`
 -- Because we need the tricky search_path

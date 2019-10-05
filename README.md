@@ -47,7 +47,7 @@ Therefore masking rules must be implemented directly inside the database schema.
 This allows to mask the data directly inside the PostgreSQL instance without 
 using an external tool and thus limiting the exposure and the risks of data leak.
 
-The data masking rules are declared simply by using the `COMMENT` syntax :
+The data masking rules are declared simply by using [security labels] :
 
 ```sql
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
@@ -56,12 +56,11 @@ The data masking rules are declared simply by using the `COMMENT` syntax :
 
 =# CREATE TABLE player( id SERIAL, name TEXT, points INT);
 
-=# COMMENT ON COLUMN player.name IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+=# SECURITY LABEL FOR anon ON COLUMN player.name 
+-# IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 ```
 
-If your columns already have comments, simply append the `MASKED WITH FUNCTION` 
-statement at the end of the comment.
-
+[security labels]: https://www.postgresql.org/docs/current/sql-security-label.html
 
 In-Place Anonymization
 ------------------------------------------------------------------------------
@@ -80,16 +79,16 @@ This will destroy the original data. Use with care.
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 =# SELECT anon.load();
 
-=# COMMENT ON COLUMN customer.full_name 
+=# SECURITY LABEL FOR anon ON COLUMN customer.full_name 
 -# IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
-=# COMMENT ON COLUMN customer.birth   
+=# SECURITY LABEL FOR anon ON COLUMN customer.birth   
 -# IS 'MASKED WITH FUNCTION anon.random_date_between(''01/01/1920''::DATE,now())';
 
-=# COMMENT ON COLUMN customer.employer
+=# SECURITY LABEL FOR anon ON COLUMN customer.employer
 -# IS 'MASKED WITH FUNCTION anon.fake_company()';
 
-=# COMMENT ON COLUMN customer.zipcode
+=# SECURITY LABEL FOR anon ON COLUMN customer.zipcode
 -# IS 'MASKED WITH FUNCTION anon.random_zip()';
 
 =# SELECT anon.anonymize_database();
@@ -98,12 +97,13 @@ This will destroy the original data. Use with care.
  id  |     full_name     |   birth    |     employer     | zipcode | fk_shop
 -----+-------------------+------------+------------------+---------+---------
  911 | michel Duffus     | 1970-03-24 | Body Expressions | 63824   | 12
- 112 | andromache Tulip  | 1921-03-24 | Dot Darcy  
+ 112 | andromache Tulip  | 1921-03-24 | Dot Darcy        | 38199   | 423
 
 ```
 
-You can also use `anonymize_table()` and `anonymize_column()` to remove data from
-a subset of the database.
+You can also use `anonymize_table()` and `anonymize_column()` to remove data
+from a subset of the database.
+
 
 
 
@@ -135,15 +135,17 @@ Step 2 : Declare a masked user
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
-=# COMMENT ON ROLE skynet IS 'MASKED';
+=# SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 ```
 
 Step 3 : Declare the masking rules
 
 ```sql
-=# COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+=# SECURITY LABEL FOR anon ON COLUMN people.lastname 
+-# IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
-=# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
+=# SECURITY LABEL FOR anon ON COLUMN people.phone 
+-# IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
 Step 4 : Connect with the masked user
@@ -203,18 +205,29 @@ It requires two extensions :
 [tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
 [ddlx]: https://github.com/lacanoid/pgddl
 
+
 Install
 -------------------------------------------------------------------------------
 
-Simply run :
+1. Install the extension on the server with :
 
 ```console
 sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 
-or see the [INSTALL] section for more detailed instructions or if you want to deploy it
-on Amazon RDS or some other DBAAS service. 
+2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
+
+```
+shared_preload_libraries = 'pg_stat_statements, anon'
+```
+
+3. Restart your instance. 
+
+
+
+You can also read the [INSTALL] section for detailed instructions 
+or if you want to deploy it on Amazon RDS or some other DBAAS service. 
 
 
 
@@ -222,15 +235,11 @@ on Amazon RDS or some other DBAAS service.
 Limitations
 ------------------------------------------------------------------------------
 
-* The masking are declared using the comments on columns. If you data model
-  already contains comments on some columns, you must append the masking 
-  rule after the original comment
-
 * The dynamic masking system only works with one schema (by default `public`). 
   When you start the masking engine with `start_dynamic_masking()`, you can 
   specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`. 
   **However** in-place anonymization with `anon.anonymize()`and anonymous
-  export with `anon.dump()` will work fine will multiple schemas.
+  export with `anon.dump()` will work fine with multiple schemas.
 
 
 

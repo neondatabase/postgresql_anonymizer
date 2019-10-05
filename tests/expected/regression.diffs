@@ -1,0 +1,20 @@
+*** /tmp/source/tests/expected/unit.out	2018-08-14 09:41:00.459140291 +0000
+--- /tmp/source/tests/expected/results/unit.out	2018-08-14 10:29:25.496112451 +0000
+***************
+*** 1,5 ****
+  CREATE EXTENSION IF NOT EXISTS anon;
+- CREATE EXTENSION
+  --                                                                                                                                                     
+  -- Generic Types                                                                                                                                       
+  --     
+--- 1,4 ----
+***************
+*** 155,158 ****
+  -- End
+  --
+  DROP EXTENSION anon;
+- DROP EXTENSION
+--- 154,156 ----
+
+======================================================================
+

@@ -1,3 +1,4 @@
+*BEGIN;
 
 -- STEP 1 : Basic Example 
 
@@ -26,13 +27,13 @@ SELECT anon.load();
 
 -- STEP 3: Declare the masking rules
 
-COMMENT ON COLUMN customer.full_name 
+SECURITY LABEL FOR anon ON COLUMN customer.full_name 
 IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
-COMMENT ON COLUMN customer.employer
+SECURITY LABEL FOR anon ON COLUMN customer.employer
 IS 'MASKED WITH FUNCTION anon.fake_company()';
 
-COMMENT ON COLUMN customer.zipcode
+SECURITY LABEL FOR anon ON COLUMN customer.zipcode
 IS 'MASKED WITH FUNCTION anon.random_zip()';
 
 -- STEP 4: Replace Sensitive Data 
@@ -40,3 +41,5 @@ IS 'MASKED WITH FUNCTION anon.random_zip()';
 SELECT anon.anonymize_database();
 
 SELECT * FROM customer;
+
+ROLLBACK;
