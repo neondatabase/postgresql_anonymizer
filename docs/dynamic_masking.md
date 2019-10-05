@@ -56,6 +56,27 @@ Step 4 : Connect with the masked user
 (1 row)
 ```
 
+Dropping a masking table
+------------------------------------------------------------------------------
+
+The dynamic masking engine will build _masking views_ upon the masked tables. 
+This means that it is not possible to drop a masked table directly. You will
+get an error like this :
+
+```sql
+# DROP TABLE company;
+psql: ERROR:  cannot drop table company because other objects depend on it
+DETAIL:  view mask.company depends on table company
+```
+
+To effectively remove the table, it is necessary to add the `CASCADE` options 
+so that the masking view will be dropped too:
+
+```sql
+# DROP TABLE company CASCADE;
+```
+
+
 Limitations
 ------------------------------------------------------------------------------
 
