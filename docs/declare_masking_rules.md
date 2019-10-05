@@ -31,6 +31,15 @@ SECURITY LABEL FOR anon ON COLUMN player.name
 IS 'MASKED WITH FUNCTION anon.fake_last_name()'
 ```
 
+Removing a masking rule
+------------------------------------------------------------------------------
+
+You can simply erase a masking rule like this: 
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN player.name IS NULL
+```
+
 Declaring Rules with COMMENTs 
 ------------------------------------------------------------------------------
 
