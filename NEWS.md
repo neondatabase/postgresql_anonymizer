@@ -1,3 +1,74 @@
+PostgreSQL Anonymizer 0.4 : Declare Masking Rules With Security Labels
+================================================================================
+
+Eymoutiers, October 14, 2019
+
+`Postgresql Anonymizer` is an extension that hides or replaces personally 
+identifiable information (PII) or commercially sensitive data from a PostgreSQL 
+database.
+
+This new version introduces a major change of syntax. In the previous versions, 
+the data masking rules were declared with column comments. They are now defined 
+by using [security labels]:
+
+[security labels]: https://www.postgresql.org/docs/current/sql-security-label.html
+
+```sql
+SECURITY LABEL FOR anon 
+ON COLUMN customer.lastname 
+IS 'MASKED WITH FUNCTION anon.fake_last_name()'
+```
+
+The previous syntax is still supported and backward compatibility is maintained.
+
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 9.6 and later.
+
+It requires extension named [tsm_system_rows] (available in the `contrib` 
+package) and an extension called [ddlx] (available via [PGXN]) :
+
+```
+$ pgxn install ddlx
+$ pgxn install postgresql_anonymizer
+```
+
+Then add 'anon' in the `shared_preload_libraries` parameter of your 
+`postgresql.conf` file. And restart your instance. 
+
+> **WARNING:** The project is at an early stage of development and should be used 
+> carefully.
+
+[tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
+[ddlx]: https://github.com/lacanoid/pgddl
+[PGXN]: https://pgxn.org/
+
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly 
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and 
+ideas ! Let us know what you think of this tool, how it fits your needs and 
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+
+
+------------------------------------------------
+
+
 
 PostgreSQL Anonymizer 0.3 : In-Place Masking and Anonymous Dumps
 ================================================================================
