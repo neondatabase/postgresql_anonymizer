@@ -1,8 +1,22 @@
 CHANGELOG
 ===============================================================================
 
+20191014 : 0.4 - Declare Masking Rules With Security Labels
+-------------------------------------------------------------------------------
 
-2019FIXME : 0.3 - In-place Anonymization and Anonymous dumps
+__Dependencies:__
+  - tms_system_rows
+  - ddlx
+
+* Use Security Labels instead of COMMENTs. COMMENTs are still supported
+
+* Automatic Type Casting
+
+* Improve documentation
+
+
+
+20190826 : 0.3 - In-place Anonymization and Anonymous dumps
 -------------------------------------------------------------------------------
 
 __Dependencies:__
