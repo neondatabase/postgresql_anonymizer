@@ -123,10 +123,10 @@ BEGIN
   WHERE table_name=shuffle_table::TEXT
   AND column_name=shuffle_column::TEXT;
   IF colname IS NULL THEN
-  RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
                   shuffle_column,
                   shuffle_table;
-  RETURN FALSE;
+    RETURN FALSE;
   END IF;
 
   -- Stop if primary_key does not exist
@@ -136,8 +136,8 @@ BEGIN
   AND column_name=primary_key::TEXT;
   IF colname IS NULL THEN
     RAISE WARNING 'Column ''%'' is not present in table ''%''.',
-                    primary_key,
-                    shuffle_table;
+                  primary_key,
+                  shuffle_table;
     RETURN FALSE;
   END IF;
 
@@ -382,7 +382,7 @@ LANGUAGE SQL VOLATILE;
 -- integer
 
 CREATE OR REPLACE FUNCTION @extschema@.random_int_between(
-  int_start INTEGER, 
+  int_start INTEGER,
   int_stop INTEGER
 )
 RETURNS INTEGER AS $$
@@ -391,10 +391,12 @@ $$
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_phone(
-  phone_prefix TEXT DEFAULT '0' 
+  phone_prefix TEXT DEFAULT '0'
 )
 RETURNS TEXT AS $$
-    SELECT phone_prefix || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT) AS "phone";
+  SELECT  phone_prefix
+          || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT)
+          AS "phone";
 $$
 LANGUAGE SQL VOLATILE;
 
@@ -458,48 +460,48 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_region()
 RETURNS TEXT AS $$
-    SELECT subcountry 
-    FROM @extschema@.city 
+    SELECT subcountry
+    FROM @extschema@.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_country()
 RETURNS TEXT AS $$
-    SELECT country 
-    FROM @extschema@.city 
+    SELECT country
+    FROM @extschema@.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_company()
 RETURNS TEXT AS $$
-    SELECT name 
-    FROM @extschema@.company 
+    SELECT name
+    FROM @extschema@.company
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_iban()
 RETURNS TEXT AS $$
-    SELECT id 
-    FROM @extschema@.iban 
+    SELECT id
+    FROM @extschema@.iban
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_siren()
 RETURNS TEXT AS $$
-    SELECT siren 
-    FROM @extschema@.siret 
+    SELECT siren
+    FROM @extschema@.siret
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_siret()
 RETURNS TEXT AS $$
-    SELECT siren||nic 
-    FROM @extschema@.siret 
+    SELECT siren||nic
+    FROM @extschema@.siret
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
 LANGUAGE SQL VOLATILE;
@@ -723,8 +725,10 @@ BEGIN
   AND attname = colname;
 
   IF mf IS NULL THEN
-  RAISE WARNING 'There is no masking rule for column % in table %', colname, tablename;
-  RETURN FALSE;
+    RAISE WARNING 'There is no masking rule for column % in table %',
+                  colname,
+                  tablename;
+    RETURN FALSE;
   END IF;
 
   SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
@@ -756,7 +760,8 @@ LANGUAGE SQL VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
 RETURNS BOOLEAN AS
 $func$
-  SELECT SUM(anon.anonymize_column(attrelid::REGCLASS,attname)::INT) = COUNT(attrelid)
+  SELECT   SUM(anon.anonymize_column(attrelid::REGCLASS,attname)::INT)
+         = COUNT(attrelid)
   FROM anon.pg_masking_rules;
 $func$
 LANGUAGE SQL VOLATILE;
@@ -855,7 +860,7 @@ LANGUAGE plpgsql VOLATILE;
 
 -- get the "select filters" that will mask the real data of a table
 CREATE OR REPLACE FUNCTION @extschema@.mask_filters(
-  relid OID 
+  relid OID
 )
 RETURNS TEXT AS
 $$
@@ -889,8 +894,8 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Build a masked view for a table
-CREATE OR REPLACE FUNCTION @extschema@.mask_create_view( 
-  relid OID 
+CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(
+  relid OID
 )
 RETURNS BOOLEAN AS
 $$
@@ -906,8 +911,8 @@ $$
 LANGUAGE plpgsql VOLATILE;
 
 -- Remove a masked view for a given table
-CREATE OR REPLACE FUNCTION @extschema@.mask_drop_view( 
-  relid OID 
+CREATE OR REPLACE FUNCTION @extschema@.mask_drop_view(
+  relid OID
 )
 RETURNS BOOLEAN AS
 $$
