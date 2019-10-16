@@ -228,3 +228,13 @@ test_pgxn:
     - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
     - pgxn install postgresql_anonymizer
   when: manual
+
+test_yum_centos7_pg12:
+  stage: deploy
+  image: centos:7
+  before_script:
+    - echo 'ignoring global before_script'
+  script:
+    - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - yum -y install postgresql12 postgresql12-server postgresql_anonymizer12 postgresql12-devel
+  when: manual
