@@ -236,5 +236,8 @@ test_yum_centos7_pg12:
     - echo 'ignoring global before_script'
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-    - yum -y install postgresql12 postgresql12-server postgresql_anonymizer12 postgresql12-devel
+    - yum -y install postgresql12-server postgresql_anonymizer12
+    - gosu postgres initdb
+    - gosu postgres pg_ctl start
+    - gosu postgres psql -c 'CREATE EXTENSION anon CASCADE;'
   when: manual
