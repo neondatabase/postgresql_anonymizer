@@ -1,6 +1,23 @@
 INSTALL
 ===============================================================================
 
+Install With Yum
+------------------------------------------------------------------------------
+
+**This is will work only for PostgreSQL 12 and later**
+
+1. Add the [Community RPM Repo] to your system. It shouldb be something like:
+
+```console
+$ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
+
+2. Install 
+
+```console
+$ sudo yum install postgresql12-server postgresql_anonymizer12
+```
+
+
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
 

@@ -240,6 +240,6 @@ test_yum_centos7_pg12:
     - mkdir -p $PGDATA
     - chown postgres $PGDATA
     - su postgres -c /usr/pgsql-12/bin/initdb $PGDATA
-    - su postgres -c "pg_ctl start"
+    - systemctl start postgresql
     - su postgres -c "psql -c 'CREATE EXTENSION anon CASCADE;'"
   when: manual
