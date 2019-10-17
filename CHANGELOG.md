@@ -1,6 +1,16 @@
 CHANGELOG
 ===============================================================================
 
+20191018 : 0.4.1 - bugfix release
+-------------------------------------------------------------------------------
+
+__Dependencies:__
+  - tms_system_rows
+  - ddlx
+
+* FIX #87 : anon.config loaded twice with pg_restore
+* [doc] : install with yum
+
 20191014 : 0.4 - Declare Masking Rules With Security Labels
 -------------------------------------------------------------------------------
 
@@ -23,11 +33,11 @@ __Dependencies:__
   - tms_system_rows
   - ddlx
 
-* In-place Anonymization : Permanently remove sensitive data 
+* In-place Anonymization : Permanently remove sensitive data
   with `anonymize_database()`, `anonymize_table()` or
   `anonymize_column()`.
 
-* Anonymous dumps : Export the entire anonymized database with 
+* Anonymous dumps : Export the entire anonymized database with
   the new `dump()` function. For instance:
 
   ```console
@@ -93,13 +103,13 @@ Checkout `demo/partial.sql` and `demo/masking.sql` for more details
 20180918 : 0.1.1 - Load a custom dataset
 -------------------------------------------------------------------------------
 
-* [doc] How To Contribute 
+* [doc] How To Contribute
 * Add tsm_system_rows in `requires` clause
 * Allow loading à custom dataset
 * use UNLOGGED tables to speed extension loading
 
 
-20180831 : 0.0.3 - PGXN Fixup 
+20180831 : 0.0.3 - PGXN Fixup
 -------------------------------------------------------------------------------
 
 * FIX #12 : bad package version
@@ -113,7 +123,7 @@ Checkout `demo/partial.sql` and `demo/masking.sql` for more details
 -------------------------------------------------------------------------------
 
 * `random_date()` and `random_date_between()``
-* `random_string()` 
+* `random_string()`
 * `random_zip()`
 * `random_company()`, `random_siret()`, `random_iban()`
 * `random_first_name()`, `random_last_name()`
