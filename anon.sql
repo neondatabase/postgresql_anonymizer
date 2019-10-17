@@ -22,13 +22,6 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.config','');
 
 COMMENT ON TABLE @extschema@.config IS 'Anonymization and Masking settings';
 
-INSERT INTO @extschema@.config
-VALUES
-('sourceschema','public'),
-('maskschema', 'mask')
-;
-
-
 
 
 
@@ -688,18 +681,31 @@ SELECT * FROM @extschema@.pg_masking_rules
 
 
 -- name of the source schema
+-- default value: 'public'
 CREATE OR REPLACE FUNCTION @extschema@.source_schema()
 RETURNS TEXT AS
-$$ SELECT value FROM @extschema@.config WHERE param='sourceschema' $$
+$$
+WITH default_config(value) AS (
+  VALUES ('public')
+)
+SELECT COALESCE(c.value, d.value)
+FROM default_config d
+LEFT JOIN @extschema@.config AS c ON (c.param = 'sourceschema')
+;
+$$
 LANGUAGE SQL STABLE;
 
 -- name of the masking schema
+-- default value: 'mask'
 CREATE OR REPLACE FUNCTION @extschema@.mask_schema()
 RETURNS TEXT AS
 $$
-SELECT value
-FROM @extschema@.config
-WHERE param='maskschema'
+WITH default_config(value) AS (
+  VALUES ('mask')
+)
+SELECT COALESCE(c.value, d.value)
+FROM default_config d
+LEFT JOIN @extschema@.config AS c ON (c.param = 'maskschema')
 ;
 $$
 LANGUAGE SQL STABLE;
@@ -936,6 +942,15 @@ $$
 DECLARE
   r RECORD;
 BEGIN
+  -- Load default config values
+  INSERT INTO @extschema@.config
+  VALUES
+  ('sourceschema','public'),
+  ('maskschema', 'mask')
+  ON CONFLICT DO NOTHING
+  ;
+
+  -- Load faking data
   SELECT @extschema@.isloaded() AS loaded INTO r;
   IF NOT autoload THEN
     RAISE DEBUG 'Autoload is disabled.';
