@@ -5,9 +5,9 @@ Publishing a new Release
 
 * [ ] Close all remaining issues on the current milestone
 
-* [ ] Update the [Changelog](CHANGELOG.md)
+* [ ] Update the [Changelog]
 
-* [ ] Write the [announcement](NEWS.md)
+* [ ] Write the announcement in [NEWS.md]
 
 * [ ] Upload the zipball to PGXN
 
@@ -19,6 +19,14 @@ Publishing a new Release
 
 * [ ] Tag the master branch
 
-* [ ] Bump to the new version number in [anon.control]() and [META.json]()
+* [ ] Open a ticket to the [PostgreSQL YUM repository project]
+
+* [ ] Bump to the new version number in [anon.control] and [META.json]
 
 * [ ] Publish the announcement
+
+[Changelog]: CHANGELOG.md
+[NEWS.md]: NEWS.md
+[anon.control]: anon.control
+[META.json]: META.json
+[PostgreSQL YUM repository project]: https://redmine.postgresql.org/projects/pgrpms/issues
