@@ -31,6 +31,7 @@ DATA = anon/*
 REGRESS_TESTS = load noise shuffle random faking partial
 REGRESS_TESTS+= anonymize dump restore
 REGRESS_TESTS+= hasmask masked_roles masking
+REGRESS_TESTS+= generalization
 REGRESS_TESTS+= injection conflict_seclabel_vs_comment syntax_checks
 REGRESS_TESTS+=$(PG_TEST_EXTRA)
 # This can be oerridden by an env variable

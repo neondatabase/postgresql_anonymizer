@@ -1312,6 +1312,76 @@ LANGUAGE SQL;
 
 
 
+-------------------------------------------------------------------------------
+-- Generalization
+-------------------------------------------------------------------------------
+
+-- ADD TEST IN FILES:
+--   * tests/sql/generalization.sql
+
+-- Transform an integer into a range of integer
+CREATE OR REPLACE FUNCTION @extschema@.generalize_int4range(
+  val INTEGER,
+  step INTEGER default 10
+)
+RETURNS INT4RANGE
+AS $$
+SELECT int4range(
+    val / step * step,
+    ((val / step)+1) * step
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- Transform a bigint into a range of bigint
+CREATE OR REPLACE FUNCTION @extschema@.generalize_int8range(
+  val BIGINT,
+  step BIGINT DEFAULT 10
+)
+RETURNS INT8RANGE
+AS $$
+SELECT int8range(
+    val / step * step,
+    ((val / step)+1) * step
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- Transform a numeric into a range of numeric
+CREATE OR REPLACE FUNCTION @extschema@.generalize_numrange(
+  val NUMERIC,
+  step NUMERIC DEFAULT 10
+)
+RETURNS NUMRANGE
+AS $$
+SELECT numrange(
+    val / step * step,
+    ((val / step)+1) * step
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- Transform a timestamp with out timezone (ts) into a range of ts 
+-- the `step` option can have the following values 
+--        microseconds,milliseconds,second,minute,hour,day,week,
+--        month,quarter,year,decade,century,millennium
+CREATE OR REPLACE FUNCTION @extschema@.generalize_tsrange_years(
+  val TIMESTAMP WITHOUT TIMEZONE,
+  step TEXT 
+)
+RETURNS TSRANGE
+AS $$
+SELECT tsrange(
+    date_trunc(step, val)::TIMESTAMP WITHOUT TIMEZONE
+    (date_trunc(step, val) + ('1 '|| step)::interval )::TIMESTAMP WITHOUT TIMEZONE
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
+
+
+--tstzrange — Range of timestamp with time zone
+
+--daterange — Range of date
 
 -------------------------------------------------------------------------------
 -- Scanning
