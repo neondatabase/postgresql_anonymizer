@@ -1350,38 +1350,66 @@ LANGUAGE SQL IMMUTABLE;
 -- Transform a numeric into a range of numeric
 CREATE OR REPLACE FUNCTION @extschema@.generalize_numrange(
   val NUMERIC,
-  step NUMERIC DEFAULT 10
+  step INTEGER DEFAULT 10
 )
 RETURNS NUMRANGE
 AS $$
+WITH i AS (
+  SELECT @extschema@.generalize_int4range(val::INTEGER,step) as r
+)
 SELECT numrange(
-    val / step * step,
-    ((val / step)+1) * step
-  );
+    lower(i.r)::NUMERIC,
+    upper(i.r)::NUMERIC
+  )
+FROM i
+;
 $$
 LANGUAGE SQL IMMUTABLE;
 
--- Transform a timestamp with out timezone (ts) into a range of ts 
--- the `step` option can have the following values 
+-- Transform a timestamp with out timezone (ts) into a range of ts
+-- the `step` option can have the following values
 --        microseconds,milliseconds,second,minute,hour,day,week,
---        month,quarter,year,decade,century,millennium
+--        month,year,decade,century,millennium
 CREATE OR REPLACE FUNCTION @extschema@.generalize_tsrange(
-  val TIMESTAMP WITHOUT TIMEZONE,
-  step TEXT 
+  val TIMESTAMP WITHOUT TIME ZONE,
+  step TEXT DEFAULT 'decade'
 )
 RETURNS TSRANGE
 AS $$
 SELECT tsrange(
-    date_trunc(step, val)::TIMESTAMP WITHOUT TIMEZONE,
-    (date_trunc(step, val) + ('1 '|| step)::interval )::TIMESTAMP WITHOUT TIMEZONE
+    date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE,
+    date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE + ('1 '|| step)::INTERVAL
   );
 $$
 LANGUAGE SQL IMMUTABLE;
 
+-- tstzrange
+CREATE OR REPLACE FUNCTION @extschema@.generalize_tstzrange(
+  val TIMESTAMP WITH TIME ZONE,
+  step TEXT DEFAULT 'decade'
+)
+RETURNS TSTZRANGE
+AS $$
+SELECT tstzrange(
+    date_trunc(step, val)::TIMESTAMP WITH TIME ZONE,
+    date_trunc(step, val)::TIMESTAMP WITH TIME ZONE + ('1 '|| step)::INTERVAL
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
 
---tstzrange — Range of timestamp with time zone
-
---daterange — Range of date
+-- daterange — Range of date
+CREATE OR REPLACE FUNCTION @extschema@.generalize_daterange(
+  val DATE,
+  step TEXT DEFAULT 'decade'
+)
+RETURNS DATERANGE
+AS $$
+SELECT daterange(
+    date_trunc(step, val)::DATE,
+    (date_trunc(step, val) + ('1 '|| step)::INTERVAL)::DATE
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
 
 -------------------------------------------------------------------------------
 -- Scanning
