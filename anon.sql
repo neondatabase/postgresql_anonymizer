@@ -1365,14 +1365,14 @@ LANGUAGE SQL IMMUTABLE;
 -- the `step` option can have the following values 
 --        microseconds,milliseconds,second,minute,hour,day,week,
 --        month,quarter,year,decade,century,millennium
-CREATE OR REPLACE FUNCTION @extschema@.generalize_tsrange_years(
+CREATE OR REPLACE FUNCTION @extschema@.generalize_tsrange(
   val TIMESTAMP WITHOUT TIMEZONE,
   step TEXT 
 )
 RETURNS TSRANGE
 AS $$
 SELECT tsrange(
-    date_trunc(step, val)::TIMESTAMP WITHOUT TIMEZONE
+    date_trunc(step, val)::TIMESTAMP WITHOUT TIMEZONE,
     (date_trunc(step, val) + ('1 '|| step)::interval )::TIMESTAMP WITHOUT TIMEZONE
   );
 $$
