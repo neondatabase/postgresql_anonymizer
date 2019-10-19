@@ -127,6 +127,85 @@ For instance : a credit card number can be replaced by '40XX XXXX XXXX XX96'.
 * anon.email('daamien@gmail.com') will becomme 'da******@gm******.com'
 
 
+Generalization 
+-------------------------------------------------------------------------------
+
+Genelization is the principle of replace the original value by a range 
+containing this values. For instance, instead of saying 'Paul is 42 years old',
+you would can say 'Paul is between 40 and 50 years old.
+
+> The generalization functions are a data type transformation. Therefore it is 
+> not possible to use them with the dynamic masking engine. Hower they are 
+> useful to create anonymized views. See example below 
+
+Let's imagine a table containing health information
+
+```sql
+SELECT * FROM patient;
+ id |   name   |  zipcode |   birth    |    disease    
+----+----------+----------+------------+---------------
+  1 | Alice    |    47678 | 1979-12-29 | Heart Disease 
+  2 | Bob      |    47678 | 1959-03-22 | Heart Disease 
+  3 | Caroline |    47678 | 1988-07-22 | Heart Disease 
+  4 | David    |    47905 | 1997-03-04 | Flu           
+  5 | Eleanor  |    47909 | 1999-12-15 | Heart Disease 
+  6 | Frank    |    47906 | 1968-07-04 | Cancer        
+  7 | Geri     |    47605 | 1977-10-30 | Heart Disease 
+  8 | Harry    |    47673 | 1978-06-13 | Cancer        
+  9 | Ingrid   |    47607 | 1991-12-12 | Cancer       
+```
+
+We can build a view upon this table to suppress some colums ( `SSN` 
+and `name` ) and generalized the zipcode and the birth date like
+this:
+
+```sql
+CREATE VIEW anonymized_patient AS
+SELECT 
+    'REDACTED' AS name,
+    anon.generalize_int4range(zipcode,100) AS zipcode,
+    anon.generalize_tsrange(birth,'decade') AS birth
+    disease
+FROM patients;
+```
+
+The anonymized table now look like that:
+
+```sql
+SELECT * FROM anonymized_patient;
+ lastname |   zipcode     |           birth             |    disease    
+----------+---------------+-----------------------------+---------------
+ REDACTED | [47600,47700) | ["1970-01-01","1980-01-01") | Heart Disease
+ REDACTED | [47600,47700) | ["1950-01-01","1960-01-01") | Heart Disease
+ REDACTED | [47600,47700) | ["1980-01-01","1990-01-01") | Heart Disease
+ REDACTED | [47900,48000) | ["1990-01-01","2000-01-01") | Flu  
+ REDACTED | [47900,48000) | ["1990-01-01","2000-01-01") | Heart Disease
+ REDACTED | [47900,48000) | ["1960-01-01","1970-01-01") | Cancer
+ REDACTED | [47600,47700) | ["1970-01-01","1980-01-01") | Heart Disease
+ REDACTED | [47600,47700) | ["1970-01-01","1980-01-01") | Cancer
+ REDACTED | [47600,47700) | ["1990-01-01","2000-01-01") | Cancer
+```
+
+
+The generalized values are still usefull for statistics because they remain 
+true but they are less accurante therefore reduce the risk of re-identification.
+
+PostgreSQL offers several [RANGE] data types which are perfect for dates and 
+numeric values. 
+
+For numeric values, 3 functions are available 
+
+* `generalize_int4range(value, step)`
+* `generalize_int8range(value, step)`
+* `generalize_numrange(value, step)`
+
+`value` is the data the will be generalized, `step` is the size of each range.
+
+
+
+
+
+[RANGE]: https://www.postgresql.org/docs/current/rangetypes.html
 
 Write your own Masks !
 ------------------------------------------------------------------------------
