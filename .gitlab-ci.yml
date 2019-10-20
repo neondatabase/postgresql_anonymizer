@@ -179,7 +179,7 @@ standalone11:
   before_script:
     - echo "disable the before_script"
   script:
-    - apt-get update && apt-get install -y make git postgresql-server-dev-all 
+    - apt-get update && apt-get install -y make git postgresql-server-dev-all
     - make anon_standalone_PG11.sql
     - export PGPASSWORD=$POSTGRES_PASSWORD
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone_PG11.sql
@@ -227,4 +227,19 @@ test_pgxn:
   script:
     - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
     - pgxn install postgresql_anonymizer
+  when: manual
+
+test_yum_centos7_pg12:
+  stage: deploy
+  image: centos:7
+  before_script:
+    - echo 'ignoring global before_script'
+  script:
+    - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - yum -y install postgresql12-contrib postgresql_anonymizer12
+    - mkdir -p $PGDATA
+    - chown postgres $PGDATA
+    - su postgres -c /usr/pgsql-12/bin/initdb $PGDATA
+    - su postgres -c "/usr/pgsql-12/bin/pg_ctl start"
+    - su postgres -c "psql -c 'CREATE EXTENSION anon CASCADE;'"
   when: manual

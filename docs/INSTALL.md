@@ -1,10 +1,29 @@
 INSTALL
 ===============================================================================
 
-Install With [PGXN](https://pgxn.org/) :
+Install on RedHat / CentOS
 ------------------------------------------------------------------------------
 
 **This is the recommended way to install the extension**
+
+
+1. Add the [Community RPM Repo] to your system. It shouldb be something like:
+
+```console
+$ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
+
+2. Install 
+
+```console
+$ sudo yum install postgresql_anonymizer12
+```
+
+Replace with the major version of you PostgreSQL instance.
+
+
+Install With [PGXN](https://pgxn.org/) :
+------------------------------------------------------------------------------
+
 
 1. Install the extension on the server with:
 
