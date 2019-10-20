@@ -25,10 +25,13 @@ static void
 anon_object_relabel(const ObjectAddress *object, const char *seclabel)
 {
   if (seclabel == NULL
-   || pg_strcasecmp(seclabel,"MASKED") == 0
-   || pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 11) == 0
-   || pg_strncasecmp(seclabel, "MASKED WITH CONSTANT", 11) == 0)
-    return;
+    || pg_strcasecmp(seclabel,"MASKED") == 0
+    || pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0
+    || pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0
+    || pg_strncasecmp(seclabel, "DIRECT IDENTIFIER",17) == 0
+    || pg_strncasecmp(seclabel, "INDIRECT IDENTIFIER",19) == 0
+  )
+  return;
 
   ereport(ERROR,
       (errcode(ERRCODE_INVALID_NAME),

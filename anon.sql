@@ -1390,10 +1390,12 @@ CREATE OR REPLACE FUNCTION @extschema@.generalize_tstzrange(
 )
 RETURNS TSTZRANGE
 AS $$
-SELECT tstzrange(
-    date_trunc(step, val)::TIMESTAMP WITH TIME ZONE,
-    date_trunc(step, val)::TIMESTAMP WITH TIME ZONE + ('1 '|| step)::INTERVAL
-  );
+WITH lowerbound AS (
+  SELECT date_trunc(step, val)::TIMESTAMP WITH TIME ZONE AS d
+)
+SELECT tstzrange( d, d + ('1 '|| step)::INTERVAL )
+FROM lowerbound
+;
 $$
 LANGUAGE SQL IMMUTABLE;
 
@@ -1412,7 +1414,7 @@ $$
 LANGUAGE SQL IMMUTABLE;
 
 -------------------------------------------------------------------------------
--- Scanning
+-- Discovery / Scanning
 -------------------------------------------------------------------------------
 
 CREATE TABLE @extschema@.suggest(
@@ -1442,3 +1444,49 @@ SELECT
 FROM pg_catalog.pg_attribute a
 JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
 ;
+
+-------------------------------------------------------------------------------
+-- Risk Evaluation
+-------------------------------------------------------------------------------
+
+-- This is an attempt to implement various anonymity assement methods.
+-- These functions should be used with care.
+
+
+-- see https://en.wikipedia.org/wiki/K-anonymity
+CREATE OR REPLACE FUNCTION  @extschema@.k_anonymity(
+  relid REGCLASS
+)
+RETURNS INTEGER
+AS $$
+DECLARE
+  identifiers TEXT;
+BEGIN
+  --SELECT INTO identifiers FROM ...
+  IF identifiers IS NULL THEN
+    RAISE WARNING 'There is no identifer declared for relation ''%''.',
+                  relid::REGCLASS;
+--  USING HINT = 'Use SECURITY LABEL FOR anon ... to declare which columns are
+--                direct or indirect identifiers.';
+    RETURN NULL;
+  END IF;
+
+  EXECUTE format(E'
+    SELECT min(c) AS k_anonymity
+    FROM (
+      SELECT COUNT(*) as c
+      FROM %s
+      GROUP BY %s
+    ) AS k;
+  ',
+  relid::REGCLASS,
+  identifiers
+  )
+;
+END
+$$
+LANGUAGE plpgsql IMMUTABLE;
+
+-- TODO : https://en.wikipedia.org/wiki/L-diversity
+
+-- TODO : https://en.wikipedia.org/wiki/T-closeness
