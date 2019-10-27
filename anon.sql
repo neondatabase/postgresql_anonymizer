@@ -1460,8 +1460,7 @@ JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
 CREATE OR REPLACE VIEW @extschema@.pg_identifiers AS
 WITH const AS (
   SELECT
-    '%DIRECT IDENTIFIER%'::TEXT AS pattern_direct_identifier,
-    '%INDIRECT IDENTIFIERS%'::TEXT AS pattern_indirect_identifier
+    '%(quasi|indirect) identifier%'::TEXT AS pattern_indirect_identifier
 )
 SELECT
   sl.objoid AS attrelid,
@@ -1470,8 +1469,7 @@ SELECT
   a.attname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   sl.label AS col_description,
-  sl.label SIMILAR TO k.pattern_direct_identifier ESCAPE '#'  AS direct_identifier,
-  sl.label SIMILAR TO k.pattern_indirect_identifier ESCAPE '#'  AS indirect_identifier,
+  lower(sl.label) SIMILAR TO k.pattern_indirect_identifier ESCAPE '#'  AS indirect_identifier,
   100 AS priority -- high priority for the security label syntax
 FROM const k,
      pg_catalog.pg_seclabel sl
@@ -1480,9 +1478,7 @@ JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid AND sl.objsubid = a.attnum
 WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
-AND (   sl.label SIMILAR TO k.pattern_direct_identifier ESCAPE '#'
-    OR  sl.label SIMILAR TO k.pattern_indirect_identifier ESCAPE '#'
-    )
+AND lower(sl.label) SIMILAR TO k.pattern_indirect_identifier ESCAPE '#'
 AND sl.provider = 'anon' -- this is hard-coded in anon.c
 ;
 
@@ -1506,7 +1502,7 @@ BEGIN
     RAISE WARNING 'There is no identifier declared for relation ''%''.',
                   relid::REGCLASS
     USING HINT = 'Use SECURITY LABEL FOR anon ... to declare which columns are '
-              || 'direct or indirect identifiers.';
+              || 'indirect identifiers.';
     RETURN NULL;
   END IF;
 

@@ -28,7 +28,7 @@ anon_object_relabel(const ObjectAddress *object, const char *seclabel)
     || pg_strcasecmp(seclabel,"MASKED") == 0
     || pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0
     || pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0
-    || pg_strncasecmp(seclabel, "DIRECT IDENTIFIER",17) == 0
+    || pg_strncasecmp(seclabel, "QUASI IDENTIFIER",17) == 0
     || pg_strncasecmp(seclabel, "INDIRECT IDENTIFIER",19) == 0
   )
   return;
