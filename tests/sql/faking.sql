@@ -66,5 +66,32 @@ SELECT pg_typeof(anon.fake_iban()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_siret()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_siren()) = 'TEXT'::REGTYPE;
 
+--
+-- Lorem Ipsum
+--
+SELECT COUNT(*) = 5-1
+FROM (
+  SELECT regexp_matches(anon.lorem_ipsum(), E'\n', 'g')
+) AS l;
+
+SELECT COUNT(*) = 19-1
+FROM (
+  SELECT regexp_matches(anon.lorem_ipsum(19), E'\n', 'g')
+) AS l;
+
+SELECT COUNT(*) = 7-1
+FROM (
+  SELECT regexp_matches(anon.lorem_ipsum( paragraphs := 7 ), E'\n', 'g')
+) AS l;
+
+SELECT COUNT(*) = 20
+FROM unnest(string_to_array( anon.lorem_ipsum( words := 20 ), ' ') )
+AS l;
+
+SELECT char_length(anon.lorem_ipsum( characters := 7 )) = 7;
+
+SELECT char_length(anon.lorem_ipsum( characters := 7 , words := 100)) = 7;
+
+SELECT char_length(anon.lorem_ipsum( characters := 7 , paragraphs := 100)) = 7;
 
 DROP EXTENSION anon CASCADE;
