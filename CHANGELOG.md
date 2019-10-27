@@ -4,6 +4,10 @@ CHANGELOG
 2019FIXME : 0.5.0 - Generalization and K-Anonymity
 -------------------------------------------------------------------------------
 
+__Dependencies:__
+  - tms_system_rows
+  - ddlx
+  
 * FIX #93 : better install documentation
 
 
