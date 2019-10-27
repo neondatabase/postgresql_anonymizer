@@ -7,19 +7,29 @@ Install on RedHat / CentOS
 **This is the recommended way to install the extension**
 
 
-1. Add the [Community RPM Repo] to your system. It shouldb be something like:
+0. Add the [PostgreSQL Official RPM Repo] to your system. It shouldb be something like:
 
 ```console
 $ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
-
-2. Install 
-
-```console
-$ sudo yum install postgresql_anonymizer12
 ```
 
-Replace with the major version of you PostgreSQL instance.
+[PostgreSQL Official RPM Repo]: https://yum.postgresql.org/
 
+1. Install 
+
+```console
+$ sudo yum install postgresql12-contrib postgresql_anonymizer12
+```
+
+(Replace `12` with the major version of your PostgreSQL instance.)
+
+2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
+
+```ini
+shared_preload_libraries = 'pg_stat_statements, anon'
+```
+
+3. Restart your instance. 
 
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
@@ -28,19 +38,32 @@ Install With [PGXN](https://pgxn.org/) :
 1. Install the extension on the server with:
 
 ```console
-sudo apt install pgxnclient (or pip install pgxn)
-sudo pgxn install ddlx
-sudo pgxn install postgresql_anonymizer
+$ sudo apt install pgxnclient postgresql-server-dev-12
+$ sudo pgxn install ddlx
+$ sudo pgxn install postgresql_anonymizer
 ```
+
+(Replace `12` with the major version of your PostgreSQL instance.)
 
 2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
 
-```
+```ini
 shared_preload_libraries = 'pg_stat_statements, anon'
 ```
 
 3. Restart your instance. 
 
+
+**Additional notes:**
+
+* PGXN can also be installed with `pip install pgxn`
+* If you have several versions of PostgreSQL installed on your system, 
+  you may have to point to the right version with the `--pg_config` 
+  parameter. See [Issue #93] for more details.
+* Check out the [pgxn install documentation] for more information.
+
+[pgxn install documentation]: https://github.com/pgxn/pgxnclient/blob/master/docs/usage.rst#pgxn-install
+[Issue #93]: https://gitlab.com/dalibo/postgresql_anonymizer/issues/93
 
 
 Install From source
@@ -53,13 +76,13 @@ or `postgresql-server-dev`.
 1. Build the project like any other PostgreSQL extension:
 
 ```console
-make extension
-sudo make install
+$ make extension
+$ sudo make install
 ```
 
 2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
 
-```
+```ini
 shared_preload_libraries = 'pg_stat_statements, anon'
 ```
 
@@ -93,13 +116,12 @@ _NB_ : Replace `PG11` with the version of Postgres offered by your DBaaS operato
 In this situation, you will have to declare the masking rules with COMMENT
 instead of security labels. See [Declaring Rules with COMMENTs] for more details.
 
-[Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with -comments 
+[Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments 
 
 When you activate the masking engine, you need to disable `autoload`:
 
 ```sql
 SELECT anon.start_dynamic_masking( autoload := FALSE );
 ```
-
 
 
