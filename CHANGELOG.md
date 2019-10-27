@@ -7,9 +7,9 @@ CHANGELOG
 __Dependencies:__
   - tms_system_rows
   - ddlx
-  
-* FIX #93 : better install documentation
 
+* FIX #93 : better install documentation
+* [faking] : Add `anon.lorem_ipsum()` to generate classic lorem ipsum texts
 
 20191018 : 0.4.1 - bugfix release
 -------------------------------------------------------------------------------
