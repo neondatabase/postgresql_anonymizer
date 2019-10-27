@@ -220,6 +220,13 @@ CREATE TABLE @extschema@.siret (
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
 
+-- Lorem Ipsum
+DROP TABLE IF EXISTS @extschema@.lorem_ipsum;
+CREATE TABLE @extschema@.lorem_ipsum (
+  paragraph TEXT
+);
+SELECT pg_catalog.pg_extension_config_dump('@extschema@.lorem_ipsum','');
+
 -- ADD NEW TABLE HERE
 
 
@@ -263,6 +270,7 @@ BEGIN
   EXECUTE 'COPY @extschema@.iban FROM       '|| quote_literal(datapath ||'/iban.csv');
   EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
   EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
+  EXECUTE 'COPY @extschema@.lorem_ipsum FROM '|| quote_literal(datapath ||'/lorem_ipsum.csv');
   RETURN TRUE;
 
   EXCEPTION
@@ -301,6 +309,8 @@ AS $$
      UNION SELECT 1 FROM @extschema@.email
      UNION SELECT 1 FROM @extschema@.first_name
      UNION SELECT 1 FROM @extschema@.iban
+     UNION SELECT 1 FROM @extschema@.lorem_ipsum
+     -- ADD NEW TABLE HERE
      LIMIT 1
   ) t
 $$
@@ -316,6 +326,8 @@ RETURNS BOOLEAN AS $$
     TRUNCATE @extschema@.iban;
     TRUNCATE @extschema@.last_name;
     TRUNCATE @extschema@.siret;
+    TRUNCATE @extschema@.lorem_ipsum;
+    -- ADD NEW TABLE HERE
     SELECT TRUE;
 $$
 LANGUAGE SQL VOLATILE;
@@ -496,6 +508,84 @@ RETURNS TEXT AS $$
     SELECT siren||nic
     FROM @extschema@.siret
     TABLESAMPLE SYSTEM_ROWS(1);
+$$
+LANGUAGE SQL VOLATILE;
+
+-- Lorem Ipsum
+-- Usage:
+--   `SELECT anon.lorem_ipsum()` returns 5 paragraphs
+--   `SELECT anon.lorem_ipsum(2)` return 2 paragraphs
+--   `SELECT anon.lorem_ipsum( paragraph := 4 )` return 4 paragraphs
+--   `SELECT anon.lorem_ipsum( words := 20 )` return 20 words
+--   `SELECT anon.lorem_ipsum( characters := 7 )` return 7 characters
+--
+CREATE OR REPLACE FUNCTION @extschema@.lorem_ipsum(
+  paragraphs INTEGER DEFAULT 5,
+  words INTEGER DEFAULT 0,
+  characters INTEGER DEFAULT 0
+)
+RETURNS TEXT AS $$
+WITH
+-- First let's shuffle the lorem_ipsum table
+randomized_lorem_ipsum AS (
+  SELECT *
+  FROM @extschema@.lorem_ipsum
+  ORDER BY RANDOM()
+),
+-- if `characters` is defined,
+-- then the limit is the number of characters
+-- else return NULL
+cte_characters AS (
+  SELECT
+    CASE characters
+      WHEN 0
+      THEN NULL
+      ELSE substring( c.agg_paragraphs for characters )
+    END AS n_characters
+  FROM (
+    SELECT string_agg(paragraph,E'\n') AS agg_paragraphs
+    FROM randomized_lorem_ipsum
+  ) AS c
+),
+-- if `characters` is not defined and if `words` defined,
+-- then the limit is the number of words
+-- else return NULL
+cte_words AS (
+  SELECT
+    CASE words
+      WHEN 0
+      THEN NULL
+      ELSE string_agg(w.unnested_words,' ')
+    END AS n_words
+  FROM (
+    SELECT unnest(string_to_array(p.agg_paragraphs,' ')) as unnested_words
+    FROM (
+      SELECT string_agg(paragraph,E' \n') AS agg_paragraphs
+      FROM randomized_lorem_ipsum
+      ) AS p
+    LIMIT words
+  ) as w
+),
+-- if `characters` is notdefined and `words` is not defined,
+-- then the limit is the number of paragraphs
+cte_paragraphs AS (
+  SELECT string_agg(l.paragraph,E'\n') AS n_paragraphs
+  FROM (
+    SELECT *
+    FROM randomized_lorem_ipsum
+    LIMIT paragraphs
+  ) AS l
+)
+SELECT COALESCE(
+  cte_characters.n_characters,
+  cte_words.n_words,
+  cte_paragraphs.n_paragraphs
+)
+FROM
+  cte_characters,
+  cte_words,
+  cte_paragraphs
+;
 $$
 LANGUAGE SQL VOLATILE;
 

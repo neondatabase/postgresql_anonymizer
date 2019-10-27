@@ -201,4 +201,60 @@ SELECT pg_typeof(anon.fake_siren()) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
+--
+-- Lorem Ipsum
+--
+SELECT COUNT(*) = 5-1
+FROM (
+  SELECT regexp_matches(anon.lorem_ipsum(), E'\n', 'g')
+) AS l;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) = 19-1
+FROM (
+  SELECT regexp_matches(anon.lorem_ipsum(19), E'\n', 'g')
+) AS l;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) = 7-1
+FROM (
+  SELECT regexp_matches(anon.lorem_ipsum( paragraphs := 7 ), E'\n', 'g')
+) AS l;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) = 20
+FROM unnest(string_to_array( anon.lorem_ipsum( words := 20 ), ' ') )
+AS l;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT char_length(anon.lorem_ipsum( characters := 7 )) = 7;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT char_length(anon.lorem_ipsum( characters := 7 , words := 100)) = 7;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT char_length(anon.lorem_ipsum( characters := 7 , paragraphs := 100)) = 7;
+ ?column? 
+----------
+ t
+(1 row)
+
 DROP EXTENSION anon CASCADE;
