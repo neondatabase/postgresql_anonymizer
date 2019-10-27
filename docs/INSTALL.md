@@ -59,11 +59,11 @@ shared_preload_libraries = 'pg_stat_statements, anon'
 * PGXN can also be installed with `pip install pgxn`
 * If you have several versions of PostgreSQL installed on your system, 
   you may have to point to the right version with the `--pg_config` 
-  parameter.
+  parameter. See [Issue #93] for more details.
 * Check out the [pgxn install documentation] for more information.
 
 [pgxn install documentation]: https://github.com/pgxn/pgxnclient/blob/master/docs/usage.rst#pgxn-install
-
+[Issue #93]: https://gitlab.com/dalibo/postgresql_anonymizer/issues/93
 
 
 Install From source
