@@ -40,7 +40,7 @@ SECURITY LABEL FOR anon ON COLUMN patient.birth IS 'INDIRECT IDENTIFIER';
 
 SELECT anon.k_anonymity('patient') = min(kanonymity)
 FROM (
-  SELECT COUNT(*) as KAnonymity
+  SELECT COUNT(*) as kanonymity
   FROM patient
   GROUP BY firstname, zipcode, birth
 ) AS k
@@ -49,7 +49,7 @@ FROM (
 
 CREATE TEMPORARY TABLE anon_patient
 AS SELECT
-  'REDACTED' AS firstname,
+  'REDACTED'::TEXT AS firstname,
   anon.generalize_int4range(zipcode,1000) AS zipcode,
   anon.generalize_daterange(birth,'decade') AS birth,
   disease
