@@ -23,6 +23,9 @@ different ways :
 In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shufflin, noise or even your own custom function !
 
+Beyond masking, it is also possible to use [Generalization] and [k-anonymity] 
+functions, which are perfect for analytics.
+
 [INSTALL.md]: INSTALL/
 [Concepts]: concepts/
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
@@ -31,6 +34,7 @@ partial scrambling, shufflin, noise or even your own custom function !
 [In-Place Anonymization]: in_place_anonymization/
 [Dynamic Masking]: dynamic_masking/
 [Masking Functions]: masking_functions/
+
 
 
 Example
