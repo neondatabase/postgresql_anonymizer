@@ -58,15 +58,17 @@ Step 2 : Declare a masked user
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
-=# COMMENT ON ROLE skynet IS 'MASKED';
+=# SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 ```
 
 Step 3 : Declare the masking rules
 
 ```sql
-=# COMMENT ON COLUMN people.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+=# SECURITY LABEL FOR anonON COLUMN people.lastname 
+-# IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
-=# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
+=# SECURITY LABEL FOR anon ON COLUMN people.phone 
+-# IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
 Step 4 : Connect with the masked user
@@ -89,7 +91,7 @@ fits your needs and what features are missing.
 
 You can either [open an issue] or send a message at <contact@dalibo.com>.
 
-[open an issue]: https://gitlab.com/daamien/postgresql_anonymizer/issues
+[open an issue]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
 
 
 
