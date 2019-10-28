@@ -7,7 +7,7 @@ CREATE TABLE disease (
 );
 SELECT anon.k_anonymity('disease');
 WARNING:  There is no identifier declared for relation 'disease'.
-HINT:  Use SECURITY LABEL FOR anon ... to declare which columns are direct or indirect identifiers.
+HINT:  Use SECURITY LABEL FOR anon ... to declare which columns are indirect identifiers.
  k_anonymity 
 -------------
             
