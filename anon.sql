@@ -1312,10 +1312,112 @@ LANGUAGE SQL;
 
 
 
+-------------------------------------------------------------------------------
+-- Generalization
+-------------------------------------------------------------------------------
+
+-- ADD TEST IN FILES:
+--   * tests/sql/generalization.sql
+
+-- Transform an integer into a range of integer
+CREATE OR REPLACE FUNCTION @extschema@.generalize_int4range(
+  val INTEGER,
+  step INTEGER default 10
+)
+RETURNS INT4RANGE
+AS $$
+SELECT int4range(
+    val / step * step,
+    ((val / step)+1) * step
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- Transform a bigint into a range of bigint
+CREATE OR REPLACE FUNCTION @extschema@.generalize_int8range(
+  val BIGINT,
+  step BIGINT DEFAULT 10
+)
+RETURNS INT8RANGE
+AS $$
+SELECT int8range(
+    val / step * step,
+    ((val / step)+1) * step
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- Transform a numeric into a range of numeric
+CREATE OR REPLACE FUNCTION @extschema@.generalize_numrange(
+  val NUMERIC,
+  step INTEGER DEFAULT 10
+)
+RETURNS NUMRANGE
+AS $$
+WITH i AS (
+  SELECT @extschema@.generalize_int4range(val::INTEGER,step) as r
+)
+SELECT numrange(
+    lower(i.r)::NUMERIC,
+    upper(i.r)::NUMERIC
+  )
+FROM i
+;
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- Transform a timestamp with out timezone (ts) into a range of ts
+-- the `step` option can have the following values
+--        microseconds,milliseconds,second,minute,hour,day,week,
+--        month,year,decade,century,millennium
+CREATE OR REPLACE FUNCTION @extschema@.generalize_tsrange(
+  val TIMESTAMP WITHOUT TIME ZONE,
+  step TEXT DEFAULT 'decade'
+)
+RETURNS TSRANGE
+AS $$
+SELECT tsrange(
+    date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE,
+    date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE + ('1 '|| step)::INTERVAL
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- tstzrange
+CREATE OR REPLACE FUNCTION @extschema@.generalize_tstzrange(
+  val TIMESTAMP WITH TIME ZONE,
+  step TEXT DEFAULT 'decade'
+)
+RETURNS TSTZRANGE
+AS $$
+WITH lowerbound AS (
+  SELECT date_trunc(step, val)::TIMESTAMP WITH TIME ZONE AS d
+)
+SELECT tstzrange( d, d + ('1 '|| step)::INTERVAL )
+FROM lowerbound
+;
+$$
+LANGUAGE SQL IMMUTABLE;
+
+-- daterange — Range of date
+CREATE OR REPLACE FUNCTION @extschema@.generalize_daterange(
+  val DATE,
+  step TEXT DEFAULT 'decade'
+)
+RETURNS DATERANGE
+AS $$
+SELECT daterange(
+    date_trunc(step, val)::DATE,
+    (date_trunc(step, val) + ('1 '|| step)::INTERVAL)::DATE
+  );
+$$
+LANGUAGE SQL IMMUTABLE;
 
 -------------------------------------------------------------------------------
--- Scanning
+-- Discovery / Scanning
 -------------------------------------------------------------------------------
+
+-- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
 
 CREATE TABLE @extschema@.suggest(
     attname TEXT,
@@ -1344,3 +1446,83 @@ SELECT
 FROM pg_catalog.pg_attribute a
 JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
 ;
+
+-------------------------------------------------------------------------------
+-- Risk Evaluation
+-------------------------------------------------------------------------------
+
+-- ADD TEST IN FILES:
+--   * tests/sql/k_anonymity.sql
+
+-- This is an attempt to implement various anonymity assement methods.
+-- These functions should be used with care.
+
+CREATE OR REPLACE VIEW @extschema@.pg_identifiers AS
+WITH const AS (
+  SELECT
+    '%(quasi|indirect) identifier%'::TEXT AS pattern_indirect_identifier
+)
+SELECT
+  sl.objoid AS attrelid,
+  sl.objsubid  AS attnum,
+  c.relname,
+  a.attname,
+  pg_catalog.format_type(a.atttypid, a.atttypmod),
+  sl.label AS col_description,
+  lower(sl.label) SIMILAR TO k.pattern_indirect_identifier ESCAPE '#'  AS indirect_identifier,
+  100 AS priority -- high priority for the security label syntax
+FROM const k,
+     pg_catalog.pg_seclabel sl
+JOIN pg_catalog.pg_class c ON sl.classoid = c.tableoid AND sl.objoid = c.oid
+JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid AND sl.objsubid = a.attnum
+WHERE a.attnum > 0
+--  TODO : Filter out the catalog tables
+AND NOT a.attisdropped
+AND lower(sl.label) SIMILAR TO k.pattern_indirect_identifier ESCAPE '#'
+AND sl.provider = 'anon' -- this is hard-coded in anon.c
+;
+
+
+-- see https://en.wikipedia.org/wiki/K-anonymity
+CREATE OR REPLACE FUNCTION  @extschema@.k_anonymity(
+  relid REGCLASS
+)
+RETURNS INTEGER
+AS $$
+DECLARE
+  identifiers TEXT;
+  result INTEGER;
+BEGIN
+  SELECT string_agg(attname,',')
+  INTO identifiers
+  FROM @extschema@.pg_identifiers
+  WHERE relname::REGCLASS = relid;
+
+  IF identifiers IS NULL THEN
+    RAISE WARNING 'There is no identifier declared for relation ''%''.',
+                  relid::REGCLASS
+    USING HINT = 'Use SECURITY LABEL FOR anon ... to declare which columns are '
+              || 'indirect identifiers.';
+    RETURN NULL;
+  END IF;
+
+  EXECUTE format(E'
+    SELECT min(c) AS k_anonymity
+    FROM (
+      SELECT COUNT(*) as c
+      FROM %s
+      GROUP BY %s
+    ) AS k;
+  ',
+  relid::REGCLASS,
+  identifiers
+  )
+  INTO result;
+  RETURN result;
+END
+$$
+LANGUAGE plpgsql IMMUTABLE;
+
+-- TODO : https://en.wikipedia.org/wiki/L-diversity
+
+-- TODO : https://en.wikipedia.org/wiki/T-closeness

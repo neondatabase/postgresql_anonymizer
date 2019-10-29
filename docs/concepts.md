@@ -24,13 +24,15 @@ The data can be altered with several techniques:
    example, by applying a +/- 10% variance to a salary column, the dataset will
    remain meaningful.
 
-4. **Encryption** uses an encryption algorithm and requires a private key. If
-   the key is stolen, authentic data can be revealed.
+4. **Generalization** reduces the accuracy of the data by replacing it with a 
+   range of values. Instead of saying "Bob is 28 years old", you can say "Bob 
+   is between 20 and 30 years old". This is useful for analytics because the
+   data remains true.
 
 5. **Shuffling** mixes values within the same columns. This method is open to
    being reversed if the shuffling algorithm can be deciphered.
 
-6. **Randomization** replace sensitive data with **random-but-plausible**
+6. **Randomization** replaces sensitive data with **random-but-plausible**
    values. The goal is to avoid any identification from the data record while
    remaining suitable for testing, data analysis and data processing.
 
@@ -42,7 +44,7 @@ The data can be altered with several techniques:
    instance, randomizing simultanously a zipcode and a city name while keeping
    them coherent.
 
-For now, this extension is especially focusing on  **randomization** and
-**Partial Scrambling** and **Custom Rules** but it should be easy to implement
-other methods as well.
+Please note that **Encryption** and **Hashing** are not considered as anonymization
+techniques, because they requires additional information (a private key or a salt)
+and if this information is stolen, then the authentic data can be revealed.
 

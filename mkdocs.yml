@@ -1,5 +1,5 @@
 site_name: PostgreSQL Anonymizer
-site_description: Anonymiztion and Data Masking with PostgreSQL
+site_description: Anonymization and Data Masking with PostgreSQL
 site_author: www.dalibo.com
 copyright: Copyright 2018-2019 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://gitlab.com/dalibo/postgresql_anonymizer
@@ -13,6 +13,7 @@ nav:
   - 'In-Place Anonymization': 'in_place_anonymization.md' 
   - 'Dynamic Masking': 'dynamic_masking.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
+  - 'Generalization': 'generalization.md'
   - 'Concepts': concepts.md
   - 'Upgrade': UPGRADE.md
   - 'Notes': 'NOTES.md'  
