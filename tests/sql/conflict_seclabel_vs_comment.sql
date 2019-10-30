@@ -25,8 +25,8 @@ IS 'MASKED WITH VALUE 100';
 COMMENT ON COLUMN people.score
 IS 'MASKED WITH VALUE NULL';
 
--- only 3 rules
-SELECT count(*)=3
+-- only 4 rules
+SELECT count(*) = 4
 FROM anon.pg_masking_rules;
 
 -- the main syntax overides the alternative
@@ -42,7 +42,7 @@ WHERE masking_function = 'anon.fake_first_name()';
 -- Values are overidden too
 SELECT count(*)=0
 FROM anon.pg_masks
-WHERE masking_value = '100';
+WHERE masking_constant = '100';
 
 -- Clean up
 DROP TABLE people CASCADE;

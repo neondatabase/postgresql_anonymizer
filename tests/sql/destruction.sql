@@ -3,7 +3,7 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 CREATE TABLE employee (
-  fisrtname TEXT,
+  firstname TEXT,
   lastname TEXT,
   phone TEXT,
   zipcode INTEGER
@@ -21,8 +21,8 @@ IS 'MASKED WITH VALUE $$REDACTED$$ ';
 SECURITY LABEL FOR anon ON COLUMN employee.phone
 IS 'MASKED WITH VALUE NULL ';
 
-COMMENT ON employee.zipcode
-IS 'MASKED WITH VALUE 100'
+COMMENT ON COLUMN employee.zipcode
+IS 'MASKED WITH VALUE 100';
 
 SELECT anon.anonymize_table('employee');
 

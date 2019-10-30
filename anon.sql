@@ -702,7 +702,7 @@ WITH const AS (
   SELECT
     '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT
       AS pattern_mask_column_function,
-    '%MASKED +WITH +CONSTANT +#"%#(%#)#"%'::TEXT
+    'MASKED WITH VALUE (''$[A-Za-z0-9]*) ?'::TEXT
       AS pattern_mask_column_constant
 ),
 rules_from_comments AS (
@@ -717,7 +717,7 @@ SELECT
               from k.pattern_mask_column_function for '#')
     AS masking_function,
   substring(  pg_catalog.col_description(a.attrelid, a.attnum)
-              from k.pattern_mask_column_constant for '#')
+              from k.pattern_mask_column_constant)
     AS masking_constant,
   0 AS priority --low priority for the comment syntax
 FROM const k,
@@ -727,7 +727,7 @@ WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
 AND (   pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
-    OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_constant ESCAPE '#'
+    OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_constant
     )
 ),
 rules_from_seclabels AS (
@@ -739,7 +739,7 @@ SELECT
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   sl.label AS col_description,
   substring(sl.label from k.pattern_mask_column_function for '#')  AS masking_function,
-  substring(sl.label from k.pattern_mask_column_constant for '#')  AS masking_constant,
+  substring(sl.label from k.pattern_mask_column_constant )  AS masking_constant,
   100 AS priority -- high priority for the security label syntax
 FROM const k,
      pg_catalog.pg_seclabel sl
@@ -749,7 +749,7 @@ WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
 AND (   sl.label SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
-    OR  sl.label SIMILAR TO k.pattern_mask_column_constant ESCAPE '#'
+    OR  sl.label SIMILAR TO k.pattern_mask_column_constant
     )
 AND sl.provider = 'anon' -- this is hard-coded in anon.c
 ),
