@@ -9,8 +9,11 @@ SELECT * FROM employee;
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
-COMMENT ON COLUMN employee.lastname IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-COMMENT ON COLUMN employee.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
+SECURITY LABEL FOR anon ON COLUMN employee.lastname
+IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+SECURITY LABEL FOR anon ON COLUMN employee.phone
+IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 
 -- Should return a NOTICE but anonymize data anyway
 SELECT anon.anonymize_column('employee','lastname');
