@@ -66,6 +66,8 @@ SED1=sed 's/public.//'
 SED2=sed 's/SELECT.*search_path.*//'
 SED3=sed 's/^SET idle_in_transaction_session_timeout.*//'
 SED4=sed 's/^SET row_security.*//'
+SEDI=$(shell sed --version >/dev/null 2>&1 && echo 'sed -i --' || echo 'sed -i ""')
+
 
 sql/tables/%.sql:
 	$(PG_DUMP) --table $* | $(SED1) | $(SED2) | $(SED3) | $(SED4) > $@
@@ -123,7 +125,7 @@ $(STD_ARTEFACTS): anon.sql | _pgddl
 	VERSION=$(VERSION) _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
 	echo 'CREATE SCHEMA anon;\n' >> $@
 	sed 's/@extschema@/anon/g' anon.sql >> $@
-	sed -i 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
+	$(SEDI) 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
 	echo "\copy anon.city FROM 'data/default/city.csv';\n" >> $@
 	echo "\copy anon.company FROM 'data/default/company.csv';\n" >> $@
 	echo "\copy anon.email FROM 'data/default/email.csv';\n" >> $@
