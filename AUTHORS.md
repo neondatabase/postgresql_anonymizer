@@ -16,6 +16,9 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
+* Travis Miller (@travismiller) : MacOS support
+* Jan Birk (@jabi27) : Install on Ubuntu
+* Olleg Samoylov (@Splarv) : Issue #87
 * Damien Cazeils (www.damiencazeils.com) : Logo
 * Ioseph Kim (@i0seph) : Documentation 
 * Matiss Zarkevics (@leovingi) : Tests on Amazon RDS
