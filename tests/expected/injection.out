@@ -1,4 +1,8 @@
+-- This test cannot be run in a single transaction
+-- because it will produce expected errors
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "tsm_system_rows"
+NOTICE:  installing required extension "ddlx"
 -- Sample Table
 CREATE TABLE a (
     i SERIAL,
@@ -8,7 +12,7 @@ CREATE TABLE a (
 --
 -- random_phone
 --
---returns TRUE 
+--returns TRUE
 SELECT anon.random_phone('11; SELECT 0;') LIKE '11; SELECT 0;%';
  ?column? 
 ----------
@@ -24,11 +28,11 @@ ERROR:  invalid name syntax
 LINE 1: SELECT anon.add_noise_on_numeric_column('a; SELECT 1','x',0....
                                                 ^
 -- returns a WARNING and FALSE
-SELECT anon.add_noise_on_numeric_column('a','x; SELECT 1',0.5);
+SELECT anon.add_noise_on_numeric_column('a','x; SELECT 1',0.5) IS FALSE;
 WARNING:  Column 'x; SELECT 1' is not present in table 'a'.
- add_noise_on_numeric_column 
------------------------------
- f
+ ?column? 
+----------
+ t
 (1 row)
 
 --
@@ -40,11 +44,11 @@ ERROR:  invalid name syntax
 LINE 1: SELECT anon.add_noise_on_datetime_column('a; SELECT 1','d','...
                                                  ^
 -- returns a WARNING and FALSE
-SELECT anon.add_noise_on_datetime_column('a','d; SELECT 1','2 days');
+SELECT anon.add_noise_on_datetime_column('a','d; SELECT 1','2 days') IS FALSE;
 WARNING:  Column 'd; SELECT 1' is not present in table 'a'.
- add_noise_on_datetime_column 
-------------------------------
- f
+ ?column? 
+----------
+ t
 (1 row)
 
 -- returns 'invalid name syntax'
@@ -61,33 +65,33 @@ ERROR:  invalid name syntax
 LINE 1: SELECT anon.shuffle_column('a; SELECT 1','x','i');
                                    ^
 -- returns a WARNING and FALSE
-SELECT anon.shuffle_column('a','x; SELECT 1','i');
+SELECT anon.shuffle_column('a','x; SELECT 1','i') IS FALSE;
 WARNING:  Column 'x; SELECT 1' is not present in table 'a'.
- shuffle_column 
-----------------
- f
+ ?column? 
+----------
+ t
 (1 row)
 
 -- returns a WARNING and FALSE
-SELECT anon.shuffle_column('a','x','i; SELECT 1');
+SELECT anon.shuffle_column('a','x','i; SELECT 1') IS FALSE;
 WARNING:  Column 'i; SELECT 1' is not present in table 'a'.
- shuffle_column 
-----------------
- f
+ ?column? 
+----------
+ t
 (1 row)
 
 --
 -- load
 --
 -- returns a WARNING and FALSE
-SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--');
+SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--') IS FALSE;
 WARNING:  The path 'base/'; CREATE TABLE inject_via_load (i int);--' is not correct. Data is not loaded.
- load 
-------
- f
+ ?column? 
+----------
+ t
 (1 row)
 
-SELECT COUNT(*) = 0 
+SELECT COUNT(*) = 0
 FROM pg_tables
 WHERE tablename='inject_via_load';
  ?column? 
@@ -99,13 +103,16 @@ WHERE tablename='inject_via_load';
 -- Dynamic Masking
 --
 -- returns TRUE
-SELECT anon.start_dynamic_masking('public','foo; CREATE TABLE inject_via_init (i int);--');
+SELECT anon.start_dynamic_masking(
+  'public',
+  'foo; CREATE TABLE inject_via_init (i int);--'
+);
  start_dynamic_masking 
 -----------------------
  t
 (1 row)
 
-SELECT COUNT(*) = 0 
+SELECT COUNT(*) = 0
 FROM pg_tables
 WHERE tablename='inject_via_init';
  ?column? 
@@ -113,8 +120,19 @@ WHERE tablename='inject_via_init';
  t
 (1 row)
 
+--
+-- Masking Rule Syntax
+--
+SECURITY LABEL FOR anon ON COLUMN a.x
+IS 'MASKED WITH VALUE foo; CREATE TABLE inject_via_rule (i int);--';
+SELECT COUNT(*) = 0
+FROM pg_tables
+WHERE tablename='inject_via_rule';
+ ?column? 
+----------
+ t
+(1 row)
+
 -- CLEAN UP
 DROP TABLE a CASCADE;
-NOTICE:  drop cascades to view "foo; CREATE TABLE inject_via_init (i int);--".a
 DROP EXTENSION anon CASCADE;
-NOTICE:  drop cascades to event trigger anon_mask_update
