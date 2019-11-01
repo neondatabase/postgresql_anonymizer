@@ -28,15 +28,15 @@ SELECT anon.anonymize_table('employee');
 
 SELECT count(*)=1
 FROM anon.pg_masking_rules
-WHERE masking_function = '$$REDACTED$$';
+WHERE masking_filter = '$$REDACTED$$';
 
 SELECT count(*)=1
 FROM anon.pg_masking_rules
-WHERE masking_function = 'NULL';
+WHERE masking_filter = 'NULL';
 
 SELECT count(*)=1
 FROM anon.pg_masking_rules
-WHERE masking_function = '100';
+WHERE masking_filter = '100';
 
 
 

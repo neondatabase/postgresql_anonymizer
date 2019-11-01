@@ -28,7 +28,7 @@ FROM anon.pg_masking_rules;
 -- the main syntax overides the alternative
 SELECT count(*)=1
 FROM anon.pg_masking_rules
-WHERE masking_function = 'anon.fake_last_name()';
+WHERE masking_filter = 'anon.fake_last_name()';
  ?column? 
 ----------
  t
@@ -37,16 +37,16 @@ WHERE masking_function = 'anon.fake_last_name()';
 -- pg_masks works too
 SELECT count(*)=0
 FROM anon.pg_masks
-WHERE masking_function = 'anon.fake_first_name()';
+WHERE masking_filter = 'anon.fake_first_name()';
  ?column? 
 ----------
  t
 (1 row)
 
 -- Values are overidden too
-SELECT count(*)=0
+SELECT count(*)=1
 FROM anon.pg_masks
-WHERE masking_constant = '100';
+WHERE masking_filter = '100';
  ?column? 
 ----------
  t
