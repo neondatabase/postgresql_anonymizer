@@ -32,8 +32,8 @@ this:
 
 ```sql
 SECURITY LABEL FOR anon
-ON COLUMN users.address
-IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
+  ON COLUMN users.address
+  IS 'MASKED WITH VALUE ''CONFIDENTIAL'' ';
 ```
 
 

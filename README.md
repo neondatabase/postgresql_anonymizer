@@ -58,6 +58,9 @@ The data masking rules are declared simply by using [security labels] :
 
 =# SECURITY LABEL FOR anon ON COLUMN player.name 
 -# IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+=# SECURITY LABEL FOR anon ON COLUMN player.id
+-# IS 'MASKED WITH VALUE NULL';
 ```
 
 [security labels]: https://www.postgresql.org/docs/current/sql-security-label.html
