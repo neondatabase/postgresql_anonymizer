@@ -1,8 +1,6 @@
 -- This test cannot be run in a single transaction
 -- because it will produce expected errors
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "tsm_system_rows"
-NOTICE:  installing required extension "ddlx"
 -- Sample Table
 CREATE TABLE a (
     i SERIAL,
@@ -135,4 +133,6 @@ WHERE tablename='inject_via_rule';
 
 -- CLEAN UP
 DROP TABLE a CASCADE;
+NOTICE:  drop cascades to view "foo; CREATE TABLE inject_via_init (i int);--".a
 DROP EXTENSION anon CASCADE;
+NOTICE:  drop cascades to event trigger anon_mask_update
