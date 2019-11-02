@@ -113,8 +113,9 @@ $ psql ..... -f anon_standalone_PG11.sql
 
 _NB_ : Replace `PG11` with the version of Postgres offered by your DBaaS operator.
 
-In this situation, you will have to declare the masking rules with COMMENT
-instead of security labels. See [Declaring Rules with COMMENTs] for more details.
+In this situation, you wregistry.gitlab.com/dalibo/postgresql_anonymizerill have 
+to declare the masking rules with COMMENT instead of security labels. 
+See [Declaring Rules with COMMENTs] for more details.
 
 [Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments 
 
@@ -125,3 +126,54 @@ SELECT anon.start_dynamic_masking( autoload := FALSE );
 ```
 
 
+Install with Docker
+------------------------------------------------------------------------------
+
+If you can't (or don't want to) install the PostgreSQL Anonymizer extension 
+directly inside your instance, then you can use the docker image :
+
+```console
+$ docker pull registry.gitlab.com/dalibo/postgresql_anonymizer
+```
+
+You can now run the docker image like the regular [postgres docker image].
+
+[postgres docker image]: https://hub.docker.com/_/postgres
+
+You can also treat the docker image as an "anonymizing black blox" by using a 
+specific entrypoint script called `/anon.sh`. You pass the original data 
+and the masking rules to the `/anon.sh` script and it will return a anonymized
+dump.
+
+Here's an example in 3 steps:
+
+1. Dump your original data (for instance `dump.sql`)
+
+```
+$ pg_dump [...] > dump.sql
+```
+
+2. Write your masking rules in a separate file (for instance `rules.sql`)
+
+```sql 
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+SELECT anon.load();
+
+SECURITY LABEL FOR anon ON COLUMN people.lastname
+IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+```
+
+3. Append the masking rules at the end of the original dump file
+
+```console
+$ cat rules.sql >> dump.sql 
+```
+
+4. Pass the dump file through the docker image and receive an anonymized dump.
+
+```console
+$ ANON=docker run --rm -i registry.gitlab.com/dalibo/postgresql_anonymizer /anon.sh 
+$ cat dump.sql | $ANON > anon_dump.sql
+```
+
+(this example is written on 2 lines for clarity)
