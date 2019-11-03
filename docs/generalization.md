@@ -38,7 +38,7 @@ Here's a basic table containing medical data:
 
 We want the anonymized data to remain **true** because it will be
 used for statistics. We can build a view upon this table to remove 
-useless columns and generalized the indirect identifiers :
+useless columns and generalize the indirect identifiers :
 
 ```sql
 CREATE VIEW generalized_patient AS
@@ -61,7 +61,7 @@ This will give us a less accurate view of the data:
  REDACTED  | [46000,47000) | [1970-01-01,1980-01-01) | Heart Disease
  REDACTED  | [47000,48000) | [1990-01-01,2000-01-01) | Flu
  REDACTED  | [47000,48000) | [1980-01-01,1990-01-01) | Heart Disease
- ```
+```
 
 Generalization Functions
 --------------------------------------------------------------------------------
@@ -79,15 +79,15 @@ For numeric values :
 For time values : 
 
 * `anon.generalize_tsrange('1904-11-07','year')` returns `['1904-01-01','1905-01-01')`
-* `anon.generalize_tstzrange('19041107','week')` returns `['1904-11-07','1904-11-14')` 
-* `anon.generalize_daterange('19041107','decade')` returns `[1900-01-01,1910-01-01)`
+* `anon.generalize_tstzrange('1904-11-07','week')` returns `['1904-11-07','1904-11-14')` 
+* `anon.generalize_daterange('1904-11-07','decade')` returns `[1900-01-01,1910-01-01)`
 
 The possible steps are : microseconds,milliseconds,second,minute,hour,day,week,
 month,year,decade,century and millennium. 
 
 
 
-Limitation
+Limitations
 --------------------------------------------------------------------------------
 
 ### Singling out and extreme values
@@ -115,7 +115,7 @@ of the company.
 With generalization, this is important because the size of the range (the "step")
 must be wide enough to avoid identify one single individual. 
 
-[K-Anonimity] is a way to assess this risk.
+[K-Anonymity] is a way to assess this risk.
 
 
 ### Generalization is not compatible with dynamic masking
@@ -128,16 +128,20 @@ be used for [dynamic masking]
 
 [dynamic masking]: dynamic_masking/
 
-K-Anonymity
+k-anonymity
 --------------------------------------------------------------------------------
 
-K-Anonymity is an industry-standard term used to describe a technique for hiding 
-the identity of individuals in a group of similar person.
+K-Anonymity is an industry-standard term used to describe a property of an 
+anonymized dataset. The k-anonymity principle states that within a 
+given dataset, any anonymized individual cannot be distinguished from at 
+least `k-1` other individuals. K-anonymity might be described as a "hiding 
+in the crowd" guarantee. A low value of `k` indicates there's a risk
+of re-identification using linkage with other data sources.
 
-You can evaluate the K-Anonymity value of table in 2 steps :
+You can evaluate the k-anonymity factor of a table in 2 steps :
 
-1. First defined the columns that are [indirect idenfiers] ( aka "quasi identifers")
-   like this:
+1. First defined the columns that are [indirect idenfiers] ( also known
+   as "quasi identifers") like this:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN patient.firstname IS 'INDIRECT IDENTIFIER';
