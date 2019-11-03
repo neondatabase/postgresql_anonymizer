@@ -16,3 +16,9 @@ WORKDIR /src
 COPY . .
 RUN make clean && make && make install
 
+# init script
+RUN mkdir -p /docker-entrypoint-initdb.d
+COPY ./docker/init_anon.sh /docker-entrypoint-initdb.d/init_anon.sh
+
+# Alternative Entrypoint
+COPY docker/anon.sh /anon.sh

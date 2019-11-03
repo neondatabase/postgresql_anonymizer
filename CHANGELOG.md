@@ -8,11 +8,14 @@ __Dependencies:__
   - tms_system_rows
   - ddlx
 
-* FIX #93 : better install documentation
-* [faking] : Add `anon.lorem_ipsum()` to generate classic lorem ipsum texts
-* [destruction] : new syntax `MASKED WITH VALUE ...`
-* [doc] : install on Ubuntu 18.04 (many thanks to Jan Birk )
-* FIX #95 : building on FreeBSD/MacOS (many thanks to Travis Miller)
+* [faking] Add `anon.lorem_ipsum()` to generate classic lorem ipsum texts
+* [destruction] New syntax `MASKED WITH VALUE ...`
+* [doc] Install on Ubuntu 18.04 (many thanks to Jan Birk )
+* [doc] Install with docker
+* FIX #93 : Better install documentation
+* FIX #95 : Building on FreeBSD/MacOS (many thanks to Travis Miller)
+
+
 
 20191018 : 0.4.1 - bugfix release
 -------------------------------------------------------------------------------
