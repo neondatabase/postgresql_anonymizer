@@ -8,7 +8,7 @@ CREATE ROLE skynet LOGIN;
 SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 
 -- STEP 3 : Declare the masking rules
-CREATE TABLE people ( id TEXT, fistname TEXT, lastname TEXT, phone TEXT);
+CREATE TABLE people ( id TEXT, firstname TEXT, lastname TEXT, phone TEXT);
 INSERT INTO people VALUES ('T1','Sarah', 'Conor','0609110911');
 SELECT * FROM people;
 
