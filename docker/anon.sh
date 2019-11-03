@@ -7,8 +7,6 @@ PGDATA=/var/lib/postgresql/data/
 chown postgres $PGDATA
 gosu postgres initdb
 
-echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
-
 gosu postgres pg_ctl start
 
 cat | gosu postgres psql

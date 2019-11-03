@@ -140,6 +140,30 @@ You can now run the docker image like the regular [postgres docker image].
 
 [postgres docker image]: https://hub.docker.com/_/postgres
 
+For example:
+
+Launch start a postgres docker container
+
+```console
+$ docker run -d --name anon -p 6543:5432 registry.gitlab.com/dalibo/postgresql_anonymizer
+
+Connect :
+
+```console
+$ psql -h localhost -p6543 -U postgres
+```
+
+The extension is already loaded, you can use it directly:
+
+```sql
+# SELECT anon.partial_email('daamien@gmail.com');
+     partial_email     
+-----------------------
+ da******@gm******.com
+(1 row)
+```
+
+
 You can also treat the docker image as an "anonymizing black blox" by using a 
 specific entrypoint script called `/anon.sh`. You pass the original data 
 and the masking rules to the `/anon.sh` script and it will return a anonymized
@@ -149,7 +173,7 @@ Here's an example in 3 steps:
 
 1. Dump your original data (for instance `dump.sql`)
 
-```
+```console
 $ pg_dump [...] > dump.sql
 ```
 
