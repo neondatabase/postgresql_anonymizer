@@ -1,12 +1,17 @@
 CHANGELOG
 ===============================================================================
 
-2019FIXME : 0.5.0 - Generalization and K-Anonymity
+2019FIXME : 0.5.0 - Generalization and k-anonymity
 -------------------------------------------------------------------------------
 
 __Dependencies:__
   - tms_system_rows
   - ddlx
+
+* Introduce the Generalization method with 6 functions that transforms dates 
+  and numeric values into ranges of value.
+
+* Introduce a k-anonymity assessment function.
 
 * [faking] Add `anon.lorem_ipsum()` to generate classic lorem ipsum texts
 * [destruction] New syntax `MASKED WITH VALUE ...`
