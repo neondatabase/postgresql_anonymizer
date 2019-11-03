@@ -18,7 +18,7 @@ $ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
 1. Install 
 
 ```console
-$ sudo yum install postgresql12-contrib postgresql_anonymizer12
+$ sudo yum install postgresql_anonymizer12
 ```
 
 (Replace `12` with the major version of your PostgreSQL instance.)
@@ -100,8 +100,8 @@ their clients to load any extension. Instead they support only a limited subset
 of extensions, such as PostGIS or pgcrypto. You can ask them if they plan to 
 support this one in the near future, but you shouldn't bet your life on it 😃
 
-However this tool is set of plpgsql functions, which means should you be able to
-install it directly without declaring an extension.
+However this tool is set of `plpgsql` functions, which means should you be able 
+to install it directly without declaring an extension.
 
 Here's a few steps to try it out:
 
@@ -113,13 +113,13 @@ $ psql ..... -f anon_standalone_PG11.sql
 
 _NB_ : Replace `PG11` with the version of Postgres offered by your DBaaS operator.
 
-In this situation, you wregistry.gitlab.com/dalibo/postgresql_anonymizerill have 
-to declare the masking rules with COMMENT instead of security labels. 
+In this situation, you will have to declare the masking rules with `COMMENT` instead 
+of security labels. 
 See [Declaring Rules with COMMENTs] for more details.
 
 [Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments 
 
-When you activate the masking engine, you need to disable `autoload`:
+When you activate the masking engine, you need also to disable `autoload`:
 
 ```sql
 SELECT anon.start_dynamic_masking( autoload := FALSE );
@@ -169,7 +169,7 @@ specific entrypoint script called `/anon.sh`. You pass the original data
 and the masking rules to the `/anon.sh` script and it will return a anonymized
 dump.
 
-Here's an example in 3 steps:
+Here's an example in 4 steps:
 
 1. Dump your original data (for instance `dump.sql`)
 
@@ -196,8 +196,8 @@ $ cat rules.sql >> dump.sql
 4. Pass the dump file through the docker image and receive an anonymized dump.
 
 ```console
-$ ANON=docker run --rm -i registry.gitlab.com/dalibo/postgresql_anonymizer /anon.sh 
+$ ANON="docker run --rm -i registry.gitlab.com/dalibo/postgresql_anonymizer /anon.sh" 
 $ cat dump.sql | $ANON > anon_dump.sql
 ```
 
-(this example is written on 2 lines for clarity)
+(this last step is written on 2 lines for clarity)
