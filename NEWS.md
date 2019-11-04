@@ -2,7 +2,7 @@
 PostgreSQL Anonymizer 0.5 : Generalization and k-anonymity
 ================================================================================
 
-Eymoutiers, France, November FIXME, 2019
+Eymoutiers, France, November 6, 2019
 
 `Postgresql Anonymizer` is an extension that hides or replaces personally 
 identifiable information (PII) or commercially sensitive data from a PostgreSQL 
