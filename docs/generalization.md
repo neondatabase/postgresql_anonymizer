@@ -80,7 +80,7 @@ Generalization Functions
 
 PostgreSQL Anonymizer provides 6 generalization functions. One for each [RANGE]
 type. Generally these functions take the original value as the first parameter 
-and a second parameter for the length of each step
+and a second parameter for the length of each step.
 
 For numeric values :
 
@@ -94,8 +94,8 @@ For time values :
 * `anon.generalize_tstzrange('1904-11-07','week')` returns `['1904-11-07','1904-11-14')` 
 * `anon.generalize_daterange('1904-11-07','decade')` returns `[1900-01-01,1910-01-01)`
 
-The possible steps are : microseconds,milliseconds,second,minute,hour,day,week,
-month,year,decade,century and millennium. 
+The possible steps are : microseconds, milliseconds, second, minute, hour, day, week,
+month, year, decade, century and millennium. 
 
 
 
@@ -136,7 +136,7 @@ By definition, with generalization the data remains true, but the column type
 is changed. 
 
 This means that the transformation is not transparent, and therefore it cannot 
-be used for [dynamic masking]
+be used for [dynamic masking].
 
 [dynamic masking]: dynamic_masking/
 
@@ -152,7 +152,7 @@ of re-identification using linkage with other data sources.
 
 You can evaluate the k-anonymity factor of a table in 2 steps :
 
-1. First defined the columns that are [indirect idenfiers] ( also known
+1. First defined the columns that are [indirect identifiers] ( also known
    as "quasi identifers") like this:
 
 ```sql
@@ -169,7 +169,7 @@ SELECT anon.k_anonymity('generalized_patient')
 
 The higher the value, the better...
 
-[indirect idenfiers] : https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
+[indirect identifiers]: https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
 
 References
 --------------------------------------------------------------------------------

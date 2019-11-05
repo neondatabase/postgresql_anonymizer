@@ -27,7 +27,7 @@ value. For instance, instead of saying "Bob is 28 years old", you can say
 the data remains true while avoiding the risk of re-identification.
 
 PostgreSQL can handle generalization very easily with the [RANGE] data types,
-a very powefull way to store and manipulate a set of values contained between
+a very poweful way to store and manipulate a set of values contained between
 a lower and an upper bound.
 
 [RANGE]: https://www.postgresql.org/docs/current/rangetypes.html
