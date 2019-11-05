@@ -1,5 +1,5 @@
 
-PostgreSQL Anonymizer 0.5 : Generalization and k-anonymity
+PostgreSQL Anonymizer 0.5: Generalization and k-anonymity
 ================================================================================
 
 Eymoutiers, France, November 6, 2019
@@ -8,7 +8,7 @@ Eymoutiers, France, November 6, 2019
 identifiable information (PII) or commercially sensitive data from a PostgreSQL 
 database.
 
-The extension supports 3 different anonymization strategies : [Dynamic Masking], 
+The extension supports 3 different anonymization strategies: [Dynamic Masking], 
 [In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of 
 [Masking Functions]: Substitution, Randomization, Faking, Partial Scrambling, 
 Shuffling, Noise Addition and Generalization.
