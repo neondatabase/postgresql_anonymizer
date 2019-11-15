@@ -1,4 +1,3 @@
-
 ![PostgreSQL Anonymizer](images/png_RVB/PostgreSQL-Anonymizer_H_couleur.png)
 
 Anonymization & Data Masking for PostgreSQL
@@ -8,7 +7,7 @@ Anonymization & Data Masking for PostgreSQL
 [personally identifiable information] (PII) or commercially sensitive data from
 a PostgreSQL database.
 
-The projet is aiming toward a **declarative approach** of anonymization. This
+The project is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 
@@ -19,8 +18,8 @@ different ways :
 * [In-Place Anonymization] : Remove the PII according to the rules
 * [Dynamic Masking] : Hide PII only for the masked users
 
-In addition, various [Masking Functions] are available : randomization, faking,
-partial scrambling, shufflin, noise or even your own custom function !
+In addition, various [Masking Functions] are available: randomization, faking,
+partial scrambling, shuffling, noise, or even your own custom function!
 
 Read the [Concepts] section for more details and [NEWS.md] for information
 about the latest version.
@@ -44,7 +43,7 @@ The data masking rules should be written by the people who develop the
 application because they have the best knowledge of how the data model works.
 Therefore masking rules must be implemented directly inside the database schema.
 
-This allows to mask the data directly inside the PostgreSQL instance without 
+This allows masking the data directly inside the PostgreSQL instance without 
 using an external tool and thus limiting the exposure and the risks of data leak.
 
 The data masking rules are declared simply by using [security labels] :
@@ -68,7 +67,7 @@ The data masking rules are declared simply by using [security labels] :
 In-Place Anonymization
 ------------------------------------------------------------------------------
 
-You can permanetly remove the PII from a database with `anon.anymize_database()`.
+You can permanently remove the PII from a database with `anon.anymize_database()`.
 This will destroy the original data. Use with care.
 
 ```sql
@@ -179,9 +178,9 @@ NB: The `-qtA` flags are required.
 Warning
 ------------------------------------------------------------------------------
 
-*This is projet is at an early stage of development and should used carefully.*
+*This is project is at an early stage of development and should be used carefully.*
 
-We need your feedback and ideas ! Let us know what you think of this tool,how it
+We need your feedback and ideas! Let us know what you think of this tool, how it
 fits your needs and what features are missing.
 
 You can either [open an issue] or send a message at <contact@dalibo.com>.
@@ -257,10 +256,10 @@ Here's some ideas :
 
 ### Sampling
 
-If your need to anonymize data for testing purpose, chances are that a smaller
+If you need to anonymize data for testing purpose, chances are that a smaller
 subset of your database will be enough. In that case, you can easily speed up
-the anonymization by downsizing the volume of data. There are mulitple way to
-extract a sample of database :
+the anonymization by downsizing the volume of data. There are mulitple ways to
+extract a sample of database:
 
 * [TABLESAMPLE](https://www.postgresql.org/docs/current/static/sql-select.html)
 * [pg_sample](https://github.com/mla/pg_sample)
@@ -269,7 +268,7 @@ extract a sample of database :
 
 ### Materialized Views
 
-Dynamic masking is not always required ! In some cases, it is more efficient
+Dynamic masking is not always required! In some cases, it is more efficient
 to build [Materialized Views] instead.
 
 For instance:
