@@ -16,6 +16,7 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
+* Nikolay Samokhvalov (@NikolayS) : Documentation
 * Travis Miller (@travismiller) : MacOS support
 * Jan Birk (@jabi27) : Install on Ubuntu
 * Olleg Samoylov (@Splarv) : Issue #87
