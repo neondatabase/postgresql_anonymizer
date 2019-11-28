@@ -164,7 +164,7 @@ The extension is already loaded, you can use it directly:
 ```
 
 
-You can also treat the docker image as an "anonymizing black blox" by using a 
+You can also treat the docker image as an "anonymizing black box" by using a 
 specific entrypoint script called `/anon.sh`. You pass the original data 
 and the masking rules to the `/anon.sh` script and it will return a anonymized
 dump.
@@ -201,3 +201,16 @@ $ cat dump.sql | $ANON > anon_dump.sql
 ```
 
 (this last step is written on 2 lines for clarity)
+
+
+Install on MacOS
+------------------------------------------------------------------------------
+
+Although the extension is not officially supported on MacOS systems, it should
+be possible to build the extension with the following lines:
+
+```console
+$ export C_INCLUDE_PATH="$(xcrun --show-sdk-path)/usr/include" 
+$ make extension
+$ make install
+```
