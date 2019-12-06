@@ -16,6 +16,7 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
+* Sebastien Delobel (@sdelobel) : typo
 * Nikolay Samokhvalov (@NikolayS) : Documentation
 * Travis Miller (@travismiller) : MacOS support
 * Jan Birk (@jabi27) : Install on Ubuntu
@@ -27,3 +28,4 @@ Contributors
 * Tim (@roconda) : Documentation
 * Michał Lipka (@michallipka) : Tests and typos
 * Thibaut Madeleine (@madtibo) : original idea :-)
+

@@ -21,7 +21,7 @@ columns :
 Destruction
 ------------------------------------------------------------------------------
 
-First of all, the fastest and safest way to anonymize a data is to destry it
+First of all, the fastest and safest way to anonymize a data is to destroy it
 :-)
 
 In many case, the best approach to hide the content of a column is to replace
