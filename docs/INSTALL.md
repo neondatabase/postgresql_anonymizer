@@ -75,16 +75,16 @@ or `postgresql-server-dev`.
 
 1. Build the project like any other PostgreSQL extension:
 
-```console
-$ make extension
-$ sudo make install
-```
+   ```console
+   $ make extension
+   $ sudo make install
+   ```
 
 2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
 
-```ini
-shared_preload_libraries = 'pg_stat_statements, anon'
-```
+   ```ini
+   shared_preload_libraries = 'pg_stat_statements, anon'
+   ```
 
 3. Restart your instance. 
 
@@ -163,6 +163,9 @@ The extension is already loaded, you can use it directly:
 (1 row)
 ```
 
+Install as a "Black Box"
+------------------------------------------------------------------------------
+
 
 You can also treat the docker image as an "anonymizing black box" by using a 
 specific entrypoint script called `/anon.sh`. You pass the original data 
@@ -173,34 +176,36 @@ Here's an example in 4 steps:
 
 1. Dump your original data (for instance `dump.sql`)
 
-```console
-$ pg_dump [...] > dump.sql
-```
+   ```console
+   $ pg_dump [...] > dump.sql
+   ```
 
 2. Write your masking rules in a separate file (for instance `rules.sql`)
 
-```sql 
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-SELECT anon.load();
+   ```sql 
+   CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+   SELECT anon.load();
 
-SECURITY LABEL FOR anon ON COLUMN people.lastname
-IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-```
+   SECURITY LABEL FOR anon ON COLUMN people.lastname
+   IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+   ```
 
 3. Append the masking rules at the end of the original dump file
 
-```console
-$ cat rules.sql >> dump.sql 
-```
+   ```console
+   $ cat rules.sql >> dump.sql 
+   ```
 
 4. Pass the dump file through the docker image and receive an anonymized dump.
 
-```console
-$ ANON="docker run --rm -i registry.gitlab.com/dalibo/postgresql_anonymizer /anon.sh" 
-$ cat dump.sql | $ANON > anon_dump.sql
-```
+   ```console
+   $ IMG=registry.gitlab.com/dalibo/postgresql_anonymize
+   $ ANON="docker run --rm -i $IMG /anon.sh" 
+   $ cat dump.sql | $ANON > anon_dump.sql
+   ```
 
-(this last step is written on 2 lines for clarity)
+   (this last step is written on 3 lines for clarity)
+
 
 
 Install on MacOS
