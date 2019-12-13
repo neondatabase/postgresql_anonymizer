@@ -7,27 +7,28 @@ Install on RedHat / CentOS
 **This is the recommended way to install the extension**
 
 
-0. Add the [PostgreSQL Official RPM Repo] to your system. It shouldb be something like:
+0. Add the [PostgreSQL Official RPM Repo] to your system. It shouldb be 
+   something like:
 
-```console
-$ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
-```
+   ```console
+   $ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
+   ```
+   [PostgreSQL Official RPM Repo]: https://yum.postgresql.org/
 
-[PostgreSQL Official RPM Repo]: https://yum.postgresql.org/
 
 1. Install 
 
-```console
-$ sudo yum install postgresql_anonymizer12
-```
+   ```console
+   $ sudo yum install postgresql_anonymizer12
+   ```
+   (Replace `12` with the major version of your PostgreSQL instance.)
 
-(Replace `12` with the major version of your PostgreSQL instance.)
+2. Add 'anon' in the `shared_preload_libraries` parameter of your 
+   `postgresql.conf` file. For example:
 
-2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
-
-```ini
-shared_preload_libraries = 'pg_stat_statements, anon'
-```
+   ```ini
+   shared_preload_libraries = 'pg_stat_statements, anon'
+   ```
 
 3. Restart your instance. 
 
@@ -37,19 +38,19 @@ Install With [PGXN](https://pgxn.org/) :
 
 1. Install the extension on the server with:
 
-```console
-$ sudo apt install pgxnclient postgresql-server-dev-12
-$ sudo pgxn install ddlx
-$ sudo pgxn install postgresql_anonymizer
-```
+   ```console
+   $ sudo apt install pgxnclient postgresql-server-dev-12 
+   $ sudo pgxn install ddlx
+   $ sudo pgxn install postgresql_anonymizer
+   ```
+   (Replace `12` with the major version of your PostgreSQL instance.)
 
-(Replace `12` with the major version of your PostgreSQL instance.)
+2. Add 'anon' in the `shared_preload_libraries` parameter of your 
+   `postgresql.conf` file. For example:
 
-2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
-
-```ini
-shared_preload_libraries = 'pg_stat_statements, anon'
-```
+   ```ini
+   shared_preload_libraries = 'pg_stat_statements, anon'
+   ```
 
 3. Restart your instance. 
 
@@ -80,7 +81,8 @@ or `postgresql-server-dev`.
    $ sudo make install
    ```
 
-2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
+2. Add 'anon' in the `shared_preload_libraries` parameter of your 
+   `postgresql.conf` file. For example:
 
    ```ini
    shared_preload_libraries = 'pg_stat_statements, anon'
@@ -146,6 +148,7 @@ Launch start a postgres docker container
 
 ```console
 $ docker run -d --name anon -p 6543:5432 registry.gitlab.com/dalibo/postgresql_anonymizer
+```
 
 Connect :
 
