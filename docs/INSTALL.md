@@ -7,52 +7,56 @@ Install on RedHat / CentOS
 **This is the recommended way to install the extension**
 
 
-0. Add the [PostgreSQL Official RPM Repo] to your system. It shouldb be 
-   something like:
+_Step 0:_ Add the [PostgreSQL Official RPM Repo] to your system. It shouldb be 
+something like:
 
-   ```console
-   $ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
-   ```
-   [PostgreSQL Official RPM Repo]: https://yum.postgresql.org/
+```console
+$ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
+```
+
+[PostgreSQL Official RPM Repo]: https://yum.postgresql.org/
 
 
-1. Install 
+_Step 1:_ Install 
 
-   ```console
-   $ sudo yum install postgresql_anonymizer12
-   ```
-   (Replace `12` with the major version of your PostgreSQL instance.)
+```console
+$ sudo yum install postgresql_anonymizer12
+```
 
-2. Add 'anon' in the `shared_preload_libraries` parameter of your 
-   `postgresql.conf` file. For example:
+(Replace `12` with the major version of your PostgreSQL instance.)
 
-   ```ini
-   shared_preload_libraries = 'pg_stat_statements, anon'
-   ```
+_Step 2:_  Add 'anon' in the `shared_preload_libraries` parameter of your 
+`postgresql.conf` file. For example:
 
-3. Restart your instance. 
+```ini
+shared_preload_libraries = 'pg_stat_statements, anon'
+```
+
+_Step 3:_  Restart your instance. 
+
 
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
 
 
-1. Install the extension on the server with:
+_Step 1:_  Install the extension on the server with:
 
-   ```console
-   $ sudo apt install pgxnclient postgresql-server-dev-12 
-   $ sudo pgxn install ddlx
-   $ sudo pgxn install postgresql_anonymizer
-   ```
-   (Replace `12` with the major version of your PostgreSQL instance.)
+```console
+$ sudo apt install pgxnclient postgresql-server-dev-12 
+$ sudo pgxn install ddlx
+$ sudo pgxn install postgresql_anonymizer
+```
 
-2. Add 'anon' in the `shared_preload_libraries` parameter of your 
-   `postgresql.conf` file. For example:
+(Replace `12` with the major version of your PostgreSQL instance.)
 
-   ```ini
-   shared_preload_libraries = 'pg_stat_statements, anon'
-   ```
+_Step 2:_  Add 'anon' in the `shared_preload_libraries` parameter of your 
+`postgresql.conf` file. For example:
 
-3. Restart your instance. 
+```ini
+shared_preload_libraries = 'pg_stat_statements, anon'
+```
+
+_Step 3:_  Restart your instance. 
 
 
 **Additional notes:**
@@ -70,25 +74,25 @@ Install With [PGXN](https://pgxn.org/) :
 Install From source
 ------------------------------------------------------------------------------
 
-0. First you need to install the postgresql development libraries. On most
+_Step 0:_ First you need to install the postgresql development libraries. On most
 distribution, this is available through a package called `postgresql-devel`
 or `postgresql-server-dev`.
 
-1. Build the project like any other PostgreSQL extension:
+_Step 1:_  Build the project like any other PostgreSQL extension:
+   
+```console
+$ make extension
+$ sudo make install
+```
 
-   ```console
-   $ make extension
-   $ sudo make install
-   ```
+_Step 2:_ Add 'anon' in the `shared_preload_libraries` parameter of your 
+`postgresql.conf` file. For example:
 
-2. Add 'anon' in the `shared_preload_libraries` parameter of your 
-   `postgresql.conf` file. For example:
+```ini
+shared_preload_libraries = 'pg_stat_statements, anon'
+```
 
-   ```ini
-   shared_preload_libraries = 'pg_stat_statements, anon'
-   ```
-
-3. Restart your instance. 
+_Step 3:_ Restart your instance. 
 
 
 Install in the cloud
@@ -177,37 +181,37 @@ dump.
 
 Here's an example in 4 steps:
 
-1. Dump your original data (for instance `dump.sql`)
+_Step 1:_  Dump your original data (for instance `dump.sql`)
 
-   ```console
-   $ pg_dump [...] > dump.sql
-   ```
+```console
+$ pg_dump [...] > dump.sql
+```
 
-2. Write your masking rules in a separate file (for instance `rules.sql`)
+_Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`)
 
-   ```sql 
-   CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-   SELECT anon.load();
+```sql 
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+SELECT anon.load();
 
-   SECURITY LABEL FOR anon ON COLUMN people.lastname
-   IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-   ```
+SECURITY LABEL FOR anon ON COLUMN people.lastname
+IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+```
 
-3. Append the masking rules at the end of the original dump file
+_Step 3:_  Append the masking rules at the end of the original dump file
 
-   ```console
-   $ cat rules.sql >> dump.sql 
-   ```
+```console
+$ cat rules.sql >> dump.sql 
+```
 
-4. Pass the dump file through the docker image and receive an anonymized dump.
+_Step 4:_  Pass the dump file through the docker image and receive an anonymized dump.
 
-   ```console
-   $ IMG=registry.gitlab.com/dalibo/postgresql_anonymize
-   $ ANON="docker run --rm -i $IMG /anon.sh" 
-   $ cat dump.sql | $ANON > anon_dump.sql
-   ```
+```console
+$ IMG=registry.gitlab.com/dalibo/postgresql_anonymize
+$ ANON="docker run --rm -i $IMG /anon.sh" 
+$ cat dump.sql | $ANON > anon_dump.sql
+```
 
-   (this last step is written on 3 lines for clarity)
+(this last step is written on 3 lines for clarity)
 
 
 
