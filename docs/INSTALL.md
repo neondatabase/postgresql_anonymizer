@@ -195,6 +195,8 @@ SELECT anon.load();
 
 SECURITY LABEL FOR anon ON COLUMN people.lastname
 IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+etc.
 ```
 
 _Step 3:_  Append the masking rules at the end of the original dump file
@@ -206,7 +208,7 @@ $ cat rules.sql >> dump.sql
 _Step 4:_  Pass the dump file through the docker image and receive an anonymized dump.
 
 ```console
-$ IMG=registry.gitlab.com/dalibo/postgresql_anonymize
+$ IMG=registry.gitlab.com/dalibo/postgresql_anonymizer
 $ ANON="docker run --rm -i $IMG /anon.sh" 
 $ cat dump.sql | $ANON > anon_dump.sql
 ```
