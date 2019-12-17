@@ -50,13 +50,32 @@ include $(PGXS)
 
 all: extension
 
+
+##
+## H E L P
+##
+
+#	@echo "Available targets for $(MODULE) $(EXTENSION_VERSION):"
+
+default:: help
+
+help::  #: display this message.
+	@echo
+	@echo "Available targets for $(EXTENSION) $(EXTENSION_VERSION):"
+	@echo
+	@gawk 'match($$0, /([^:]*):.+#'': (.*)/, m) { printf "    %-16s%s\n", m[1], m[2]}' $(MAKEFILE_LIST) | sort
+	@echo
+
+
+
+
 ##
 ## B U I L D
 ##
 
 
 .PHONY: extension
-extension:
+extension: #: build the extension
 	mkdir -p anon
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/default/* anon/
@@ -80,18 +99,18 @@ PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib
 ## D O C K E R
 ##
 
-docker_image: docker/Dockerfile
+docker_image: docker/Dockerfile #: build the docker image
 	docker build -t registry.gitlab.com/dalibo/postgresql_anonymizer . --file $^
 
-docker_push:
+docker_push: #: push the docker image to the registry
 	docker push registry.gitlab.com/dalibo/postgresql_anonymizer
 
-docker_bash:
+docker_bash: #: enter the docker image (useful for testing)
 	docker exec -it docker_PostgreSQL_1 bash
 
 COMPOSE=docker-compose --file docker/docker-compose.yml
 
-docker_init:
+docker_init: #: start a docker container
 	$(COMPOSE) down
 	$(COMPOSE) up -d
 	@echo "The Postgres server may take a few seconds to start. Please wait."
@@ -118,7 +137,7 @@ anon_standalone_PG10.sql: VERSION = 10.0
 anon_standalone_PG11.sql: VERSION = 11.0
 anon_standalone_PG12.sql: VERSION = 12.0
 
-standalone: $(STD_ARTEFACTS)
+standalone: $(STD_ARTEFACTS) # build the standalone scripts
 
 $(STD_ARTEFACTS): anon.sql | _pgddl
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
@@ -134,7 +153,7 @@ $(STD_ARTEFACTS): anon.sql | _pgddl
 	echo "\copy anon.last_name FROM 'data/default/last_name.csv';\n" >> $@
 	echo "\copy anon.siret FROM 'data/default/siret.csv';\n" >> $@
 
-_pgddl:
+_pgddl: # fetch the pgddl extension
 	-git clone https://github.com/lacanoid/pgddl.git $@
 
 clean_standalone:
@@ -146,9 +165,7 @@ clean_standalone:
 ##
 
 .PHONY: load
-
-# Load data from CSV files into SQL tables
-load:
+load: #: Load data from CSV files into SQL tables
 	$(PSQL) -f data/load.sql
 
 ##
@@ -161,7 +178,7 @@ demo_in := $(wildcard demo/*.sql)
 demo_out = $(demo_in:.sql=.out)
 
 .PHONY: demo
-demo:: $(demo_out)
+demo:: $(demo_out) #: launch the demo scripts
 
 demo/%.out: demo/%.sql
 	$(PSQL) -c 'CREATE DATABASE demo;'
@@ -195,7 +212,7 @@ ZIPBALL:=$(EXTENSION)-$(EXTENSION_VERSION).zip
 
 $(ZIPBALL): pgxn
 
-pgxn:
+pgxn: #: build the PGXN package
 	# required by CI : https://gitlab.com/gitlab-com/support-forum/issues/1351
 	git clone --bare https://gitlab.com/dalibo/postgresql_anonymizer.git
 	git -C postgresql_anonymizer.git archive --format zip --prefix=$(EXTENSION)_$(EXTENSION_VERSION)/ --output ../$(ZIPBALL) master
