@@ -3,10 +3,10 @@
 PGDATA=/var/lib/postgresql/data/
 
 {
- mkdir -p $PGDATA
+mkdir -p $PGDATA
 chown postgres $PGDATA
 gosu postgres initdb
-
+echo "shared_preload_libraries = 'anon'" >> $PGDATA/postgresql.conf
 gosu postgres pg_ctl start
 
 cat | gosu postgres psql
