@@ -184,35 +184,39 @@ Here's an example in 4 steps:
 _Step 1:_  Dump your original data (for instance `dump.sql`)
 
 ```console
-$ pg_dump [...] > dump.sql
+$ pg_dump [...] my_database > dump.sql
 ```
 
 _Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`)
 
 ```sql 
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+SELECT pg_catalog.set_config('search_path', 'public', false); 
+
+CREATE EXTENSION anon CASCADE;
 SELECT anon.load();
 
 SECURITY LABEL FOR anon ON COLUMN people.lastname
 IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+etc.
 ```
 
-_Step 3:_  Append the masking rules at the end of the original dump file
+_Step 3:_  Pass the dump and the rules through the docker image and receive an 
+anonymized dump !
 
 ```console
-$ cat rules.sql >> dump.sql 
-```
-
-_Step 4:_  Pass the dump file through the docker image and receive an anonymized dump.
-
-```console
-$ IMG=registry.gitlab.com/dalibo/postgresql_anonymize
+$ IMG=registry.gitlab.com/dalibo/postgresql_anonymizer
 $ ANON="docker run --rm -i $IMG /anon.sh" 
-$ cat dump.sql | $ANON > anon_dump.sql
+$ cat dump.sql rules.sql | $ANON > anon_dump.sql
 ```
 
 (this last step is written on 3 lines for clarity)
 
+_NB:_ You can also gather _step 1_ and _step 3_ in a single command:
+
+```console
+$ pg_dump my_database | cat - rules.sql | $ANON > anon_dump.sql
+```
 
 
 Install on MacOS

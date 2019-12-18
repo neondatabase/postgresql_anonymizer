@@ -161,7 +161,7 @@ demo_in := $(wildcard demo/*.sql)
 demo_out = $(demo_in:.sql=.out)
 
 .PHONY: demo
-demo:: $(demo_out)
+demo:: $(demo_out) demo_blackbox
 
 demo/%.out: demo/%.sql
 	$(PSQL) -c 'CREATE DATABASE demo;'
@@ -169,6 +169,8 @@ demo/%.out: demo/%.sql
 	$(PSQL) -c 'DROP DATABASE demo;'
 	cat $@
 
+demo_blackbox:
+	./demo/blackbox.sh
 
 clean_demo:
 	rm $(demo_out)
