@@ -1448,6 +1448,46 @@ FROM pg_catalog.pg_attribute a
 JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
 ;
 
+CREATE TABLE @extschema@.identifiers_category{
+    INTEGER id,
+		TEXT name,
+    BOOL direct_identifier,
+		TEXT anon_function,
+    PRIMARY KEY(id)
+);
+    
+CREATE TABLE @extschema@.field_name(
+  TEXT attname
+	TEXT lang
+  INTEGER fk_identifiers_category,
+  PRIMARY KEY(attname,lang),
+  FOREIGN KEY (fk_identifiers_category) REFERENCES identifiers_category(id)
+);
+
+
+CREATE OR REPLACE FUNCTION @extschema@.detect(
+  lang TEXT
+)
+RETURNS TABLE (
+  table_name TEXT,
+  column_name TEXT,
+  identifier_category TEXT,
+  direct BOOLEAN,
+)
+AS $$
+SELECT
+  a.attrelid,
+  a.attname,
+  ic.name,
+  ic.direct_identifier
+FROM pg_catalog.pg_attribute a
+JOIN @extschema@.field_name fn ON  lower(a.attname) = fn.attname
+JOIN @extschema@.identifiers_category ic ON  fn.fk_identifiers_category = ic.id
+WHERE ic.lang = lang
+;
+$$
+LANGUAGE SQL IMMUTABLE;
+
 -------------------------------------------------------------------------------
 -- Risk Evaluation
 -------------------------------------------------------------------------------

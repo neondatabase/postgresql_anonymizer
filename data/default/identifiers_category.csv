@@ -1,0 +1,48 @@
+100 name  1
+101 firstname   1
+102 lastname  1
+111 study_participant_name
+112 medical_practionner_name
+200 geodata
+201 street_address
+202 country
+203 city
+211 zipcode
+211 zipcode_france
+222 zipcode_us
+300 date 0  anon.random_date()
+301 birth_date 1 
+302 death_date 1
+303 admission_date
+304 discharge_date
+310 age 0
+400 phone_number    1
+500 fax_number  1
+600 email   1
+700 social_security_id  1
+800 medical_record_id   1
+900 health_plan_id 1
+1000 account_id 1
+1100 certificate_number 1
+1200 vehicle_id
+1201 vehicule_serial_number
+1202 licence_plate
+1300 device_id
+1301 device_serial_number
+1302 mac_address
+1400 URL
+1500 ip_address
+1600 biometric_id
+1601 finger_print
+1602 voice print
+1700 photo
+1800 other 1    NULL
+2000 bank_id
+2001 IBAN
+2002 BIC
+2003 creditcard
+2100 company_id
+2101 vat
+2102 duns
+2111 siret_france
+2112 siren_france
