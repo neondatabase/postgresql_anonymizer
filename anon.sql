@@ -231,6 +231,133 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.lorem_ipsum','');
 
 
 -------------------------------------------------------------------------------
+-- Discovery / Scanning
+-------------------------------------------------------------------------------
+
+-- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
+
+CREATE TABLE @extschema@.suggest(
+    attname TEXT,
+    suggested_mask TEXT
+);
+
+INSERT INTO @extschema@.suggest
+VALUES
+('firstname','random_first_name()'),
+('first_name','random_first_name()'),
+('given_name','random_first_name()'),
+('prenom','random_first_name()'),
+('creditcard','FIXME'),
+('credit_card','FIXME'),
+('CB','FIXME'),
+('carte_bancaire','FIXME'),
+('cartebancaire','FIXME')
+;
+
+CREATE OR REPLACE VIEW @extschema@.scan AS
+SELECT
+  a.attrelid,
+  a.attname,
+  s.suggested_mask,
+  pg_catalog.col_description(a.attrelid, a.attnum)
+FROM pg_catalog.pg_attribute a
+JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
+;
+
+CREATE TABLE @extschema@.identifiers_category(
+  id INTEGER,
+  name TEXT,
+  direct_identifier BOOLEAN,
+  anon_function TEXT,
+  PRIMARY KEY(name)
+);
+
+COMMENT ON TABLE @extschema@.identifiers_category
+IS 'Generic identifiers categories based the HIPAA classification';
+
+
+CREATE TABLE @extschema@.identifier(
+  attname TEXT,
+  lang TEXT,
+  fk_identifiers_category TEXT,
+  PRIMARY KEY(attname,lang),
+  FOREIGN KEY (fk_identifiers_category) REFERENCES identifiers_category(name)
+);
+
+COMMENT ON TABLE @extschema@.config
+IS 'Dictionnary of common identifiers field names';
+
+
+CREATE OR REPLACE FUNCTION @extschema@.load_identifiers(
+  lang TEXT,
+  csv_file TEXT
+)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+ CREATE TEMPORARY TABLE anon_tmp_import_identifier(
+    attname TEXT,
+    language TEXT,
+    fk_identifiers_category TEXT
+  );
+  EXECUTE 'COPY anon_tmp_import_identifier FROM ' || quote_literal(csv_file);
+  INSERT INTO @extschema@.identifier(
+    attname,
+    lang,
+    fk_identifiers_category
+  )
+  SELECT tmp.attname, language, tmp.fk_identifiers_category
+  FROM anon_tmp_import_identifier tmp;
+  SELECT TRUE;
+END;
+$$
+LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION @extschema@.load_identifiers(
+  lang TEXT
+)
+RETURNS BOOLEAN
+AS $$
+    WITH conf AS (
+        -- find the local extension directory
+        SELECT setting AS sharedir
+        FROM pg_config
+        WHERE name = 'SHAREDIR'
+    )
+    SELECT @extschema@.load_identifiers(lang,conf.sharedir || '/extension/anon/')
+    FROM conf;
+    SELECT TRUE;
+$$
+LANGUAGE SQL VOLATILE;
+
+
+CREATE OR REPLACE FUNCTION @extschema@.detect(
+  lang TEXT
+)
+RETURNS TABLE (
+  table_name REGCLASS,
+  column_name NAME,
+  identifier_category TEXT,
+  direct BOOLEAN
+)
+AS $$
+SELECT
+  a.attrelid::regclass,
+  a.attname,
+  ic.name,
+  ic.direct_identifier
+FROM pg_catalog.pg_attribute a
+JOIN @extschema@.identifier fn
+  ON lower(a.attname) = fn.attname
+JOIN @extschema@.identifiers_category ic
+  ON fn.fk_identifiers_category = ic.name
+WHERE fn.lang = lang
+;
+$$
+LANGUAGE SQL IMMUTABLE;
+
+
+-------------------------------------------------------------------------------
 -- Functions : LOAD / UNLOAD
 -------------------------------------------------------------------------------
 
@@ -262,6 +389,11 @@ BEGIN
     RETURN FALSE;
   END IF;
 
+  -- Identifiers dictionnaries
+  EXECUTE 'COPY @extschema@.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
+  --SELECT anon.load_identifiers('en_US',datapath || '/identifiers_en_US.csv');
+  --SELECT anon.load_identifiers('fr_FR',datapath || '/identifiers_fr_FR.csv');
+
   -- ADD NEW TABLE HERE
   EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
   EXECUTE 'COPY @extschema@.company FROM    '|| quote_literal(datapath ||'/company.csv');
@@ -271,6 +403,7 @@ BEGIN
   EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
   EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
   EXECUTE 'COPY @extschema@.lorem_ipsum FROM '|| quote_literal(datapath ||'/lorem_ipsum.csv');
+
   RETURN TRUE;
 
   EXCEPTION
@@ -1413,81 +1546,6 @@ SELECT daterange(
   );
 $$
 LANGUAGE SQL IMMUTABLE;
-
--------------------------------------------------------------------------------
--- Discovery / Scanning
--------------------------------------------------------------------------------
-
--- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
-
-CREATE TABLE @extschema@.suggest(
-    attname TEXT,
-    suggested_mask TEXT
-);
-
-INSERT INTO @extschema@.suggest
-VALUES
-('firstname','random_first_name()'),
-('first_name','random_first_name()'),
-('given_name','random_first_name()'),
-('prenom','random_first_name()'),
-('creditcard','FIXME'),
-('credit_card','FIXME'),
-('CB','FIXME'),
-('carte_bancaire','FIXME'),
-('cartebancaire','FIXME')
-;
-
-CREATE OR REPLACE VIEW @extschema@.scan AS
-SELECT
-  a.attrelid,
-  a.attname,
-  s.suggested_mask,
-  pg_catalog.col_description(a.attrelid, a.attnum)
-FROM pg_catalog.pg_attribute a
-JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
-;
-
-CREATE TABLE @extschema@.identifiers_category{
-    INTEGER id,
-		TEXT name,
-    BOOL direct_identifier,
-		TEXT anon_function,
-    PRIMARY KEY(id)
-);
-    
-CREATE TABLE @extschema@.field_name(
-  TEXT attname
-	TEXT lang
-  INTEGER fk_identifiers_category,
-  PRIMARY KEY(attname,lang),
-  FOREIGN KEY (fk_identifiers_category) REFERENCES identifiers_category(id)
-);
-
-
-CREATE OR REPLACE FUNCTION @extschema@.detect(
-  lang TEXT
-)
-RETURNS TABLE (
-  table_name TEXT,
-  column_name TEXT,
-  identifier_category TEXT,
-  direct BOOLEAN,
-)
-AS $$
-SELECT
-  a.attrelid,
-  a.attname,
-  ic.name,
-  ic.direct_identifier
-FROM pg_catalog.pg_attribute a
-JOIN @extschema@.field_name fn ON  lower(a.attname) = fn.attname
-JOIN @extschema@.identifiers_category ic ON  fn.fk_identifiers_category = ic.id
-WHERE ic.lang = lang
-;
-$$
-LANGUAGE SQL IMMUTABLE;
-
 -------------------------------------------------------------------------------
 -- Risk Evaluation
 -------------------------------------------------------------------------------
