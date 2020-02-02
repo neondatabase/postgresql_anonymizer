@@ -260,12 +260,12 @@ COMMENT ON TABLE @extschema@.config
 IS 'Dictionnary of common identifiers field names';
 
 CREATE OR REPLACE FUNCTION @extschema@.detect(
-  lang TEXT
+  lang TEXT DEFAULT 'en_US'
 )
 RETURNS TABLE (
   table_name REGCLASS,
   column_name NAME,
-  identifier_category TEXT,
+  identifiers_category TEXT,
   direct BOOLEAN
 )
 AS $$
@@ -279,7 +279,18 @@ JOIN @extschema@.identifier fn
   ON lower(a.attname) = fn.attname
 JOIN @extschema@.identifiers_category ic
   ON fn.fk_identifiers_category = ic.name
+JOIN pg_catalog.pg_class c
+  ON c.oid = a.attrelid
 WHERE fn.lang = lang
+  AND c.relnamespace IN ( -- exclude the extension tables and the catalog
+        SELECT oid
+        FROM pg_namespace
+        WHERE nspname NOT LIKE 'pg_%'
+        AND nspname NOT IN  ( 'information_schema',
+                              '@extschema@',
+                              @extschema@.mask_schema()
+                            )
+      )
 ;
 $$
 LANGUAGE SQL IMMUTABLE;
@@ -319,8 +330,8 @@ BEGIN
 
   -- Identifiers dictionnaries
   EXECUTE 'COPY @extschema@.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
-  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifiers_fr_FR.csv');
-  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifiers_en_US.csv');
+  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifier_fr_FR.csv');
+  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifier_en_US.csv');
 
   -- ADD NEW TABLE HERE
   EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');

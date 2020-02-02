@@ -28,7 +28,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS_TESTS = load dectection
+REGRESS_TESTS = load detection
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= anonymize dump restore
 REGRESS_TESTS+= hasmask masked_roles masking

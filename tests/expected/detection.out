@@ -1,0 +1,57 @@
+BEGIN;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "tsm_system_rows"
+NOTICE:  installing required extension "ddlx"
+-- INIT
+SELECT anon.load();
+ load 
+------
+ t
+(1 row)
+
+CREATE TABLE customer (
+  id SERIAL,
+  firstname TEXT,
+  last_name TEXT,
+  "CreditCard" TEXT
+);
+CREATE TABLE vendor (
+  employee_id INTEGER UNIQUE,
+  "Firstname" TEXT,
+  lastname TEXT,
+  phone_number TEXT,
+  birth DATE
+);
+SELECT anon.detect();
+                   detect                    
+---------------------------------------------
+ (customer,CreditCard,creditcard,t)
+ (customer,CreditCard,creditcard,t)
+ (anon.first_name,first_name,firstname,t)
+ (vendor,Firstname,firstname,t)
+ (customer,firstname,firstname,t)
+ (customer,id,account_id,t)
+ (anon.iban,id,account_id,t)
+ (anon.identifiers_category,id,account_id,t)
+ (anon.identifier,lang,lang,f)
+ (anon.identifier_pkey,lang,lang,f)
+ (anon.siret,siren,siren_france,t)
+(11 rows)
+
+SELECT * FROM anon.detect('fr_FR');
+        table_name         | column_name | identifiers_category | direct 
+---------------------------+-------------+----------------------+--------
+ customer                  | CreditCard  | creditcard           | t
+ customer                  | CreditCard  | creditcard           | t
+ anon.first_name           | first_name  | firstname            | t
+ vendor                    | Firstname   | firstname            | t
+ customer                  | firstname   | firstname            | t
+ customer                  | id          | account_id           | t
+ anon.iban                 | id          | account_id           | t
+ anon.identifiers_category | id          | account_id           | t
+ anon.identifier           | lang        | lang                 | f
+ anon.identifier_pkey      | lang        | lang                 | f
+ anon.siret                | siren       | siren_france         | t
+(11 rows)
+
+ROLLBACK;

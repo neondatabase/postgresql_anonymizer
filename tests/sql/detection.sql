@@ -26,4 +26,7 @@ CREATE TABLE vendor (
 
 SELECT anon.detect();
 
+SELECT * FROM anon.detect('fr_FR');
+
+
 ROLLBACK;
