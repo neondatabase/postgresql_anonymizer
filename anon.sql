@@ -236,34 +236,6 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.lorem_ipsum','');
 
 -- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
 
-CREATE TABLE @extschema@.suggest(
-    attname TEXT,
-    suggested_mask TEXT
-);
-
-INSERT INTO @extschema@.suggest
-VALUES
-('firstname','random_first_name()'),
-('first_name','random_first_name()'),
-('given_name','random_first_name()'),
-('prenom','random_first_name()'),
-('creditcard','FIXME'),
-('credit_card','FIXME'),
-('CB','FIXME'),
-('carte_bancaire','FIXME'),
-('cartebancaire','FIXME')
-;
-
-CREATE OR REPLACE VIEW @extschema@.scan AS
-SELECT
-  a.attrelid,
-  a.attname,
-  s.suggested_mask,
-  pg_catalog.col_description(a.attrelid, a.attnum)
-FROM pg_catalog.pg_attribute a
-JOIN @extschema@.suggest s ON  lower(a.attname) = s.attname
-;
-
 CREATE TABLE @extschema@.identifiers_category(
   id INTEGER,
   name TEXT,
@@ -277,8 +249,8 @@ IS 'Generic identifiers categories based the HIPAA classification';
 
 
 CREATE TABLE @extschema@.identifier(
-  attname TEXT,
   lang TEXT,
+  attname TEXT,
   fk_identifiers_category TEXT,
   PRIMARY KEY(attname,lang),
   FOREIGN KEY (fk_identifiers_category) REFERENCES identifiers_category(name)
@@ -391,6 +363,7 @@ BEGIN
 
   -- Identifiers dictionnaries
   EXECUTE 'COPY @extschema@.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
+  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifiers_fr_FR.csv');
   --SELECT anon.load_identifiers('en_US',datapath || '/identifiers_en_US.csv');
   --SELECT anon.load_identifiers('fr_FR',datapath || '/identifiers_fr_FR.csv');
 

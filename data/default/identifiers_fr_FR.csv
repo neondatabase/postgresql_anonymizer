@@ -1,6 +1,6 @@
-cartecredit creditcard
-cartebancaire   creditcard
-carte_credit    creditcard
-carte_bancaire  creditcard
-cb  creditcard
-prenom    first_name
+fr_FR	cartecredit	creditcard
+fr_FR	cartebancaire	creditcard
+fr_FR	carte_credit	creditcard
+fr_FR	carte_bancaire	creditcard
+fr_FR	cb	creditcard
+fr_FR	prenom	firstname
