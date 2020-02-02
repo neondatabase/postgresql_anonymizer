@@ -19,6 +19,9 @@ insert_final_newline = true
 # A line should not have more than this amount of chars (not supported by all plugins)
 max_line_length = 80
 
+[*.csv]
+indent_style = tab
+
 [*.md]
 trim_trailing_whitespace = false
 
