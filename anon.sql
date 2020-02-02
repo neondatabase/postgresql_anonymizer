@@ -259,50 +259,6 @@ CREATE TABLE @extschema@.identifier(
 COMMENT ON TABLE @extschema@.config
 IS 'Dictionnary of common identifiers field names';
 
-
-CREATE OR REPLACE FUNCTION @extschema@.load_identifiers(
-  lang TEXT,
-  csv_file TEXT
-)
-RETURNS BOOLEAN
-AS $$
-BEGIN
- CREATE TEMPORARY TABLE anon_tmp_import_identifier(
-    attname TEXT,
-    language TEXT,
-    fk_identifiers_category TEXT
-  );
-  EXECUTE 'COPY anon_tmp_import_identifier FROM ' || quote_literal(csv_file);
-  INSERT INTO @extschema@.identifier(
-    attname,
-    lang,
-    fk_identifiers_category
-  )
-  SELECT tmp.attname, language, tmp.fk_identifiers_category
-  FROM anon_tmp_import_identifier tmp;
-  SELECT TRUE;
-END;
-$$
-LANGUAGE PLPGSQL;
-
-CREATE OR REPLACE FUNCTION @extschema@.load_identifiers(
-  lang TEXT
-)
-RETURNS BOOLEAN
-AS $$
-    WITH conf AS (
-        -- find the local extension directory
-        SELECT setting AS sharedir
-        FROM pg_config
-        WHERE name = 'SHAREDIR'
-    )
-    SELECT @extschema@.load_identifiers(lang,conf.sharedir || '/extension/anon/')
-    FROM conf;
-    SELECT TRUE;
-$$
-LANGUAGE SQL VOLATILE;
-
-
 CREATE OR REPLACE FUNCTION @extschema@.detect(
   lang TEXT
 )
@@ -364,8 +320,7 @@ BEGIN
   -- Identifiers dictionnaries
   EXECUTE 'COPY @extschema@.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
   EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifiers_fr_FR.csv');
-  --SELECT anon.load_identifiers('en_US',datapath || '/identifiers_en_US.csv');
-  --SELECT anon.load_identifiers('fr_FR',datapath || '/identifiers_fr_FR.csv');
+  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifiers_en_US.csv');
 
   -- ADD NEW TABLE HERE
   EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
