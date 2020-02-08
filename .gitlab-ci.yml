@@ -131,8 +131,10 @@ make12:
 #    - make -C pgddl && make -C pgddl install
     - make extension
     - make install
-    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
-    - gosu postgres pg_ctl restart
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+#   - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
+#    - gosu postgres pg_ctl restart
     - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
@@ -197,8 +199,10 @@ demo:
     - pgxn install ddlx
     - make extension
     - make install
-    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
-    - gosu postgres pg_ctl restart
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+#    - echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
+#    - gosu postgres pg_ctl restart
     - make demo
   when: manual
   artifacts:
