@@ -60,7 +60,7 @@ BEGIN
 RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(
   noise_table regclass,
@@ -94,7 +94,7 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Shuffle
@@ -156,7 +156,7 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Fake Data
@@ -279,7 +279,7 @@ BEGIN
     RETURN FALSE;
 END;
 $func$
-LANGUAGE PLPGSQL VOLATILE;
+LANGUAGE PLPGSQL VOLATILE SECURITY INVOKER;
 
 -- If no path given, use the default data
 CREATE OR REPLACE FUNCTION @extschema@.load()
@@ -295,7 +295,7 @@ AS $$
     FROM conf;
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- True, the fake data is already here
 CREATE OR REPLACE FUNCTION @extschema@.isloaded()
@@ -314,7 +314,7 @@ AS $$
      LIMIT 1
   ) t
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- remove all fake data
 CREATE OR REPLACE FUNCTION @extschema@.unload()
@@ -330,7 +330,7 @@ RETURNS BOOLEAN AS $$
     -- ADD NEW TABLE HERE
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Random Generic Data
@@ -350,7 +350,7 @@ AS $$
     ),''
   );
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Zip code
 CREATE OR REPLACE FUNCTION @extschema@.random_zip()
@@ -363,7 +363,7 @@ AS $$
             ),''
           );
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 -- date
@@ -375,13 +375,13 @@ CREATE OR REPLACE FUNCTION @extschema@.random_date_between(
 RETURNS timestamp WITH TIME ZONE AS $$
     SELECT (random()*(date_end-date_start))::interval+date_start;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION random_date()
 RETURNS timestamp with time zone AS $$
     SELECT @extschema@.random_date_between('01/01/1900'::DATE,now());
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 -- integer
@@ -393,7 +393,7 @@ CREATE OR REPLACE FUNCTION @extschema@.random_int_between(
 RETURNS INTEGER AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_phone(
   phone_prefix TEXT DEFAULT '0'
@@ -403,7 +403,7 @@ RETURNS TEXT AS $$
           || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT)
           AS "phone";
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- FAKE data
@@ -415,7 +415,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.first_name
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_last_name()
 RETURNS TEXT AS $$
@@ -423,7 +423,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.last_name
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_email()
 RETURNS TEXT AS $$
@@ -431,7 +431,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.email
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_city_in_country(
   country_name TEXT
@@ -442,7 +442,7 @@ RETURNS TEXT AS $$
     WHERE country=country_name
     ORDER BY random() LIMIT 1;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_city()
 RETURNS TEXT AS $$
@@ -450,7 +450,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_region_in_country(
   country_name TEXT
@@ -461,7 +461,7 @@ RETURNS TEXT AS $$
     WHERE country=country_name
     ORDER BY random() LIMIT 1;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_region()
 RETURNS TEXT AS $$
@@ -469,7 +469,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_country()
 RETURNS TEXT AS $$
@@ -477,7 +477,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_company()
 RETURNS TEXT AS $$
@@ -485,7 +485,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.company
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_iban()
 RETURNS TEXT AS $$
@@ -493,7 +493,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.iban
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_siren()
 RETURNS TEXT AS $$
@@ -501,7 +501,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.siret
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.fake_siret()
 RETURNS TEXT AS $$
@@ -509,7 +509,7 @@ RETURNS TEXT AS $$
     FROM @extschema@.siret
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Lorem Ipsum
 -- Usage:
@@ -587,7 +587,7 @@ FROM
   cte_paragraphs
 ;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 --
 -- Backward compatibility with version 0.2.1 and earlier
@@ -595,56 +595,56 @@ LANGUAGE SQL VOLATILE;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_first_name()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_first_name() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 CREATE OR REPLACE FUNCTION @extschema@.random_last_name()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_last_name() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_email()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_email() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_city_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$ SELECT @extschema@.fake_city_in_country(country_name) $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_city()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_city() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_region_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$ SELECT @extschema@.fake_region_in_country(country_name) $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_region()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_region() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_country()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_country() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_company()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_company() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_iban()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_iban() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_siren()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_siren() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION @extschema@.random_siret()
 RETURNS TEXT AS $$ SELECT @extschema@.fake_siret() $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 
@@ -666,7 +666,7 @@ RETURNS TEXT AS $$
       || padding
       || substring(ov FROM (length(ov)-suffix+1) FOR suffix);
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 --
 -- email('daamien@gmail.com') will becomme 'da******@gm******.com'
@@ -687,7 +687,7 @@ RETURNS TEXT AS $$
       || regexp_replace(ov, '.*\.', '') -- com
   ;
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 
 -------------------------------------------------------------------------------
@@ -784,7 +784,7 @@ FROM default_config d
 LEFT JOIN @extschema@.config AS c ON (c.param = 'sourceschema')
 ;
 $$
-LANGUAGE SQL STABLE;
+LANGUAGE SQL STABLE SECURITY INVOKER;
 
 -- name of the masking schema
 -- default value: 'mask'
@@ -799,7 +799,7 @@ FROM default_config d
 LEFT JOIN @extschema@.config AS c ON (c.param = 'maskschema')
 ;
 $$
-LANGUAGE SQL STABLE;
+LANGUAGE SQL STABLE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- In-Place Anonymization
@@ -839,7 +839,7 @@ BEGIN
   RETURN TRUE;
 END;
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 -- Replace masked data in a table
@@ -853,7 +853,7 @@ $func$
   FROM @extschema@.pg_masking_rules
   WHERE attrelid::regclass=tablename;
 $func$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Walk through all masked columns and permanently apply the mask
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
@@ -862,7 +862,7 @@ $func$
   SELECT bool_or(@extschema@.anonymize_column(attrelid::REGCLASS,attname))
   FROM @extschema@.pg_masking_rules;
 $func$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
@@ -870,7 +870,7 @@ RETURNS BOOLEAN AS
 $func$
   SELECT @extschema@.anonymize_database();
 $func$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Dynamic Masking
@@ -902,8 +902,7 @@ FROM (
   SELECT FALSE as masked --
 ) AS m
 $$
-LANGUAGE SQL STABLE
-;
+LANGUAGE SQL STABLE SECURITY INVOKER;
 
 -- DEPRECATED : use directly `hasmask(oid::REGROLE)` instead
 -- Adds a `hasmask` column to the pg_roles catalog
@@ -936,7 +935,7 @@ AND    NOT a.attisdropped
 ORDER BY a.attnum
 ;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
@@ -953,7 +952,7 @@ BEGIN
   ;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 -- get the "select filters" that will mask the real data of a table
@@ -989,7 +988,7 @@ BEGIN
   RETURN expression;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Build a masked view for a table
 CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(
@@ -1006,7 +1005,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Remove a masked view for a given table
 CREATE OR REPLACE FUNCTION @extschema@.mask_drop_view(
@@ -1021,7 +1020,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Activate the masking engine
 CREATE OR REPLACE FUNCTION @extschema@.start_dynamic_masking(
@@ -1061,7 +1060,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION @extschema@.mask_init(
@@ -1073,7 +1072,7 @@ RETURNS BOOLEAN AS
 $$
 SELECT @extschema@.start_dynamic_masking(sourceschema,maskschema,autoload);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- this is opposite of start_dynamic_masking()
 CREATE OR REPLACE FUNCTION @extschema@.stop_dynamic_masking()
@@ -1101,7 +1100,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 
@@ -1115,7 +1114,7 @@ BEGIN
   PERFORM @extschema@.mask_update();
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql SECURITY INVOKER;
 
 
 -- Mask a specific role
@@ -1140,7 +1139,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql SECURITY INVOKER;
 
 -- Remove (partially) the mask of a specific role
 CREATE OR REPLACE FUNCTION @extschema@.unmask_role(
@@ -1158,7 +1157,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql SECURITY INVOKER;
 
 
 -- load the event trigger
@@ -1179,7 +1178,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- unload the event trigger
 CREATE OR REPLACE FUNCTION @extschema@.mask_disable()
@@ -1198,7 +1197,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Rebuild the dynamic masking views and masked roles from scratch
 CREATE OR REPLACE FUNCTION @extschema@.mask_update()
@@ -1225,7 +1224,7 @@ $$
   -- Restore the mighty DDL EVENT TRIGGER
   SELECT @extschema@.mask_enable();
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Anonymous Dumps
@@ -1253,7 +1252,7 @@ $$
             oid::regclass
     ;
 $$
-LANGUAGE SQL;
+LANGUAGE SQL SECURITY INVOKER;
 
 -- generate the "COPY ... FROM STDIN" statement for a table
 CREATE OR REPLACE FUNCTION @extschema@.get_copy_statement(relid OID)
@@ -1293,7 +1292,7 @@ BEGIN
   RETURN copy_statement;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 -- export content of all the tables as COPY statements
@@ -1307,7 +1306,7 @@ $$
   WHERE schemaname NOT IN ( '@extschema@' , @extschema@.mask_schema() )
   ORDER BY  relid::regclass -- sort by name to force the dump order
 $$
-LANGUAGE SQL;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- export the database schema + anonymized data
 CREATE OR REPLACE FUNCTION @extschema@.dump()
@@ -1319,7 +1318,7 @@ $$
     UNION ALL -- ALL is required to maintain the lines order as appended
     SELECT @extschema@.dump_data()
 $$
-LANGUAGE SQL;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 
@@ -1342,7 +1341,7 @@ SELECT int4range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- Transform a bigint into a range of bigint
 CREATE OR REPLACE FUNCTION @extschema@.generalize_int8range(
@@ -1356,7 +1355,7 @@ SELECT int8range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- Transform a numeric into a range of numeric
 CREATE OR REPLACE FUNCTION @extschema@.generalize_numrange(
@@ -1375,7 +1374,7 @@ SELECT numrange(
 FROM i
 ;
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- Transform a timestamp with out timezone (ts) into a range of ts
 -- the `step` option can have the following values
@@ -1392,7 +1391,7 @@ SELECT tsrange(
     date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE + ('1 '|| step)::INTERVAL
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- tstzrange
 CREATE OR REPLACE FUNCTION @extschema@.generalize_tstzrange(
@@ -1408,7 +1407,7 @@ SELECT tstzrange( d, d + ('1 '|| step)::INTERVAL )
 FROM lowerbound
 ;
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- daterange — Range of date
 CREATE OR REPLACE FUNCTION @extschema@.generalize_daterange(
@@ -1422,7 +1421,7 @@ SELECT daterange(
     (date_trunc(step, val) + ('1 '|| step)::INTERVAL)::DATE
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Discovery / Scanning
@@ -1532,7 +1531,7 @@ BEGIN
   RETURN result;
 END
 $$
-LANGUAGE plpgsql IMMUTABLE;
+LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER;
 
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
