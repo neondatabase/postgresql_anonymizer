@@ -16,7 +16,10 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
-* Sebastien Delobel (@sdelobel) : typo
+* Joe Auty (@joeauty) : Issue #114
+* Bernie Caessens (@bcaessens) : Feedback on the black box method
+* Sam Buckingham (@sam.buckingham) : Feedback on the black box method
+* Sebastien Delobel (@sdelobel) : Typos
 * Nikolay Samokhvalov (@NikolayS) : Documentation
 * Travis Miller (@travismiller) : MacOS support
 * Jan Birk (@jabi27) : Install on Ubuntu

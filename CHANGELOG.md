@@ -5,6 +5,13 @@ CHANGELOG
 -------------------------------------------------------------------------------
 
 * [doc] Typos, grammar (Nikolay Samokhvalov)
+* [doc] make help
+* [security] declare explicitly all functions as SECURITY INVOKER
+* [doc] typos (sebastien delobel)
+* [docker] improve the "black box" method (Sam Buckingham)
+* [dump] Fix #112 : invalid command \."
+* [install] use session_preload_libs instead of shared_preload_libs (Olleg Samoylov)
+* [anonymize] FIX #114 : bug in anonymize_table() (Joe Auty)
 
 20191106 : 0.5.0 - Generalization and k-anonymity
 -------------------------------------------------------------------------------
