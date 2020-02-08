@@ -846,20 +846,21 @@ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_table(tablename REGCLASS)
 RETURNS BOOLEAN AS
 $func$
-  SELECT @extschema@.anonymize_column(tablename,attname)
+  -- bool_or is required to aggregate all tuples
+  -- otherwise only the first masking rule is applied
+  -- see issue #114
+  SELECT bool_or(@extschema@.anonymize_column(tablename,attname))
   FROM @extschema@.pg_masking_rules
   WHERE attrelid::regclass=tablename;
 $func$
 LANGUAGE SQL VOLATILE;
 
-
 -- Walk through all masked columns and permanently apply the mask
 CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
 RETURNS BOOLEAN AS
 $func$
-  SELECT   SUM(anon.anonymize_column(attrelid::REGCLASS,attname)::INT)
-         = COUNT(attrelid)
-  FROM anon.pg_masking_rules;
+  SELECT bool_or(@extschema@.anonymize_column(attrelid::REGCLASS,attname))
+  FROM @extschema@.pg_masking_rules;
 $func$
 LANGUAGE SQL VOLATILE;
 
