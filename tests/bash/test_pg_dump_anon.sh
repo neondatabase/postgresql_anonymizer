@@ -23,7 +23,7 @@ EOSQL
 ##
 
 createdb $DB_TARGET
-./bin/pg_dump_anon $DB_SOURCE | $PSQL $DB_TARGET
+./bin/pg_dump_anon.sh $DB_SOURCE | $PSQL $DB_TARGET
 #PGPASSWORD=$MASKED_ROLE_PWD ./pg_dump_anon.sh -U $MASKED_ROLE $DB_SOURCE | $PSQL $DB_TARGET
 
 $PSQL $DB_TARGET << EOSQL
