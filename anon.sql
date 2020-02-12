@@ -999,7 +999,7 @@ $$
 BEGIN
   EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
                                   @extschema@.mask_schema(),
-                                  relid::REGCLASS,
+                                  (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid),
                                   @extschema@.mask_filters(relid),
                                   relid::REGCLASS);
   RETURN TRUE;
@@ -1015,7 +1015,7 @@ RETURNS BOOLEAN AS
 $$
 BEGIN
   EXECUTE format('DROP VIEW "%s".%s;', @extschema@.mask_schema(),
-                                         relid::REGCLASS
+                  (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid)
   );
   RETURN TRUE;
 END
