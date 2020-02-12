@@ -379,7 +379,7 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION random_date()
 RETURNS timestamp with time zone AS $$
-    SELECT @extschema@.random_date_between('01/01/1900'::DATE,now());
+    SELECT @extschema@.random_date_between('01/01/1900'::timestamp with time zone,now());
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
