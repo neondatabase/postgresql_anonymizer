@@ -55,7 +55,7 @@ IS 'MASKED WITH FUNCTION anon.fake_last_name()'
 ```
 
 This is useful especially if you can't modify the instance confiraguration and 
-load the extension with `shared_preload_libraries`. In this situation, the 
+load the extension with `session_preload_libraries`. In this situation, the 
 security labels won't work and you have to declare rules with comments.
 
 See also [Install in the Cloud].

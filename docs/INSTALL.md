@@ -25,14 +25,14 @@ $ sudo yum install postgresql_anonymizer12
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add 'anon' in the `shared_preload_libraries` parameter of your 
-`postgresql.conf` file. For example:
+_Step 2:_  Add the extension to the preload librairies and reload 
+the configuration:
 
-```ini
-shared_preload_libraries = 'pg_stat_statements, anon'
+```sql
+ALTER SYSTEM SET session_preload_libraries = 'anon';
+SELECT pg_reload_conf();
 ```
 
-_Step 3:_  Restart your instance. 
 
 
 Install With [PGXN](https://pgxn.org/) :
@@ -49,15 +49,13 @@ $ sudo pgxn install postgresql_anonymizer
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add 'anon' in the `shared_preload_libraries` parameter of your 
-`postgresql.conf` file. For example:
+_Step 2:_  Add the extension to the preload librairies and reload 
+the configuration:
 
-```ini
-shared_preload_libraries = 'pg_stat_statements, anon'
+```sql
+ALTER SYSTEM SET session_preload_libraries = 'anon';
+SELECT pg_reload_conf();
 ```
-
-_Step 3:_  Restart your instance. 
-
 
 **Additional notes:**
 
@@ -85,14 +83,13 @@ $ make extension
 $ sudo make install
 ```
 
-_Step 2:_ Add 'anon' in the `shared_preload_libraries` parameter of your 
-`postgresql.conf` file. For example:
+_Step 2:_  Add the extension to the preload librairies and reload 
+the configuration:
 
-```ini
-shared_preload_libraries = 'pg_stat_statements, anon'
-```
-
-_Step 3:_ Restart your instance. 
+```sql
+ALTER SYSTEM SET session_preload_libraries = 'anon';
+SELECT pg_reload_conf();
+``` 
 
 
 Install in the cloud
@@ -230,3 +227,22 @@ $ export C_INCLUDE_PATH="$(xcrun --show-sdk-path)/usr/include"
 $ make extension
 $ make install
 ```
+
+
+Additionnal notes
+------------------------------------------------------------------------------
+
+
+* You can load the extension with the `shared_preload_libraries` parameter.
+  If you do so, you have to restart the PostgreSQL instance.
+
+* You can load the extension exclusively into a specific database like this: 
+    ```sql
+    ALTER DATABASE mydatabase SET session_preload_libraries='anon'
+    ```
+  It has several benefits:  First, it will be dumped by `pg_dump` with the`-C` 
+  option, so the database dump will be self efficient. Second, it is propagated 
+  to a standby instance by streaming replication. Which means you can use the 
+  anonymization functions on a read-only clone of the database (provided the 
+  extension is installed on the standby instance)
+  
