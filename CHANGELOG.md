@@ -7,11 +7,13 @@ CHANGELOG
 * [doc] Typos, grammar (Nikolay Samokhvalov)
 * [doc] make help
 * [security] declare explicitly all functions as SECURITY INVOKER
-* [doc] typos (sebastien delobel)
+* [doc] typos (Sebastien Delobel)
 * [docker] improve the "black box" method (Sam Buckingham)
 * [dump] Fix #112 : invalid command \."
 * [install] use session_preload_libs instead of shared_preload_libs (Olleg Samoylov)
 * [anonymize] FIX #114 : bug in anonymize_table() (Joe Auty)
+* [bug] Fix syntax error when schema in not in search_path (Olleg Samoylov)
+* [doc] Use ISO 8601 for dates (Olleg Samoylov)
 
 20191106 : 0.5.0 - Generalization and k-anonymity
 -------------------------------------------------------------------------------
