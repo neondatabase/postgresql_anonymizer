@@ -85,7 +85,7 @@ This will destroy the original data. Use with care.
 -# IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
 =# SECURITY LABEL FOR anon ON COLUMN customer.birth   
--# IS 'MASKED WITH FUNCTION anon.random_date_between(''01/01/1920''::DATE,now())';
+-# IS 'MASKED WITH FUNCTION anon.random_date_between(''1920-01-01''::DATE,now())';
 
 =# SECURITY LABEL FOR anon ON COLUMN customer.employer
 -# IS 'MASKED WITH FUNCTION anon.fake_company()';
@@ -278,7 +278,7 @@ CREATE MATERIALIZED VIEW masked_customer AS
 SELECT
     id,
     anon.random_last_name() AS name,
-    anon.random_date_between('01/01/1920'::DATE,now()) AS birth,
+    anon.random_date_between('1920-01-01'::DATE,now()) AS birth,
     fk_last_order,
     store_id
 FROM customer;

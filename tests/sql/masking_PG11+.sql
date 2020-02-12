@@ -63,7 +63,7 @@ CREATE TABLE work (
 );
 
 INSERT INTO work
-VALUES ( 1, 1 , 1991, DATE '1985/05/25',NULL);
+VALUES ( 1, 1 , 1991, DATE '1985-05-25',NULL);
 
 SELECT count(*) = 4  FROM anon.pg_masks;
 

@@ -34,7 +34,7 @@ REGRESS_TESTS+= hasmask masked_roles masking
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= injection conflict_seclabel_vs_comment syntax_checks
 REGRESS_TESTS+=$(PG_TEST_EXTRA)
-# This can be oerridden by an env variable
+# This can be overridden by an env variable
 REGRESS?=$(REGRESS_TESTS)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
