@@ -22,8 +22,8 @@ CREATE TABLE customer(
 
 INSERT INTO customer
 VALUES 
-(911,'Chuck Norris','1940/03/10','Texas Rangers', '75001',12),
-(312,'David Hasselhoff','1952/07/17','Baywatch', '90001',423)
+(911,'Chuck Norris','1940-03-10','Texas Rangers', '75001',12),
+(312,'David Hasselhoff','1952-07-17','Baywatch', '90001',423)
 ;
 
 SELECT * FROM customer;

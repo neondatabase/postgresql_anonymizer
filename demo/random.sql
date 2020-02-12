@@ -18,8 +18,8 @@ CREATE TEMPORARY TABLE customer(
 
 INSERT INTO customer
 VALUES 
-(911,'Chuck Norris','1940/03/10','Texas Rangers', '75001',12),
-(312,'David Hasselhoff','1952/07/17','Baywatch', '90001',423)
+(911,'Chuck Norris','1940-03-10','Texas Rangers', '75001',12),
+(312,'David Hasselhoff','1952-07-17','Baywatch', '90001',423)
 ;
 
 SELECT * FROM customer;
@@ -27,7 +27,7 @@ SELECT * FROM customer;
 UPDATE customer
 SET 
 	full_name=anon.random_first_name() || ' ' || anon.random_last_name(),
-	birth=anon.random_date_between('01/01/1920'::DATE,now()),
+	birth=anon.random_date_between('1920-01-01'::DATE,now()),
 	employer=anon.random_company(),
 	zipcode=anon.random_zip()	
 ;
