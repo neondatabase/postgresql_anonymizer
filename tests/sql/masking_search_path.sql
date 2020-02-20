@@ -4,10 +4,10 @@ CREATE SCHEMA dbo;
 
 CREATE TABLE dbo.tbl1 AS
 SELECT
-    1234 AS staff_id,
-    'John' AS firstname,
-    'Doe'  AS lastname,
-    'john@doe.com' AS email
+    1234::INTEGER AS staff_id,
+    'John'::TEXT AS firstname,
+    'Doe'::TEXT  AS lastname,
+    'john@doe.com'::TEXT AS email
 ;
 
 
