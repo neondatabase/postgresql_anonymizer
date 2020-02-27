@@ -1,0 +1,36 @@
+BEGIN;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+SELECT anon.load();
+ load 
+------
+ t
+(1 row)
+
+-- First Name
+SELECT  anon.pseudo_first_name('bob')
+      = anon.pseudo_first_name('bob');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT  anon.pseudo_first_name('bob','123salt*!')
+      = anon.pseudo_first_name('bob','123salt*!');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.pseudo_first_name(NULL) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pg_typeof(anon.pseudo_first_name(NULL)) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
+ROLLBACK;
