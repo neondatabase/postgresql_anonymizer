@@ -165,10 +165,11 @@ LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 -- Cities, Regions & Countries
 DROP TABLE IF EXISTS @extschema@.city;
 CREATE TABLE @extschema@.city (
-    name TEXT,
-    country TEXT,
-    subcountry TEXT,
-    geonameid TEXT
+  oid SERIAL,
+  name TEXT,
+  country TEXT,
+  subcountry TEXT,
+  geonameid TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.city','');
 
@@ -177,52 +178,59 @@ COMMENT ON TABLE @extschema@.city IS 'Cities, Regions & Countries';
 -- Companies
 DROP TABLE IF EXISTS @extschema@.company;
 CREATE TABLE @extschema@.company (
-    name TEXT
+  oid SERIAL,
+  name TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.company','');
 
 -- Email
 DROP TABLE IF EXISTS @extschema@.email;
 CREATE TABLE @extschema@.email (
-    address TEXT
+  oid SERIAL,
+  address TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.email','');
 
 -- First names
 DROP TABLE IF EXISTS @extschema@.first_name;
 CREATE TABLE @extschema@.first_name (
-    first_name TEXT,
-    male BOOLEAN,
-    female BOOLEAN,
-    language TEXT
+  oid SERIAL,
+  first_name TEXT,
+  male BOOLEAN,
+  female BOOLEAN,
+  language TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
 
 -- IBAN
 DROP TABLE IF EXISTS @extschema@.iban;
 CREATE TABLE @extschema@.iban (
-    id TEXT
+  oid SERIAL,
+  id TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
 
 -- Last names
 DROP TABLE IF EXISTS @extschema@.last_name;
 CREATE TABLE @extschema@.last_name (
-    name TEXT
+  oid SERIAL,
+  name TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.last_name','');
 
 -- SIRET
 DROP TABLE IF EXISTS @extschema@.siret;
 CREATE TABLE @extschema@.siret (
-    siren TEXT,
-    nic TEXT
+  oid SERIAL,
+  siren TEXT,
+  nic TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
 
 -- Lorem Ipsum
 DROP TABLE IF EXISTS @extschema@.lorem_ipsum;
 CREATE TABLE @extschema@.lorem_ipsum (
+  oid SERIAL,
   paragraph TEXT
 );
 SELECT pg_catalog.pg_extension_config_dump('@extschema@.lorem_ipsum','');
@@ -263,14 +271,30 @@ BEGIN
   END IF;
 
   -- ADD NEW TABLE HERE
-  EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
-  EXECUTE 'COPY @extschema@.company FROM    '|| quote_literal(datapath ||'/company.csv');
-  EXECUTE 'COPY @extschema@.email FROM      '|| quote_literal(datapath ||'/email.csv');
-  EXECUTE 'COPY @extschema@.first_name FROM '|| quote_literal(datapath ||'/first_name.csv');
-  EXECUTE 'COPY @extschema@.iban FROM       '|| quote_literal(datapath ||'/iban.csv');
-  EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
-  EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
-  EXECUTE 'COPY @extschema@.lorem_ipsum FROM '|| quote_literal(datapath ||'/lorem_ipsum.csv');
+  EXECUTE 'COPY @extschema@.city(name,country,subcountry,geonameid) FROM '
+    || quote_literal(datapath ||'/city.csv');
+
+  EXECUTE 'COPY @extschema@.company(name) FROM '
+    || quote_literal(datapath ||'/company.csv');
+
+  EXECUTE 'COPY @extschema@.email(address) FROM '
+    || quote_literal(datapath ||'/email.csv');
+
+  EXECUTE 'COPY @extschema@.first_name(first_name,male,female,language) FROM '
+    || quote_literal(datapath ||'/first_name.csv');
+
+  EXECUTE 'COPY @extschema@.iban(id) FROM '
+    || quote_literal(datapath ||'/iban.csv');
+
+  EXECUTE 'COPY @extschema@.last_name(name) FROM '
+    || quote_literal(datapath ||'/last_name.csv');
+
+  EXECUTE 'COPY @extschema@.siret(siren, nic) FROM '
+    || quote_literal(datapath ||'/siret.csv');
+
+  EXECUTE 'COPY @extschema@.lorem_ipsum(paragraph) FROM '
+    || quote_literal(datapath ||'/lorem_ipsum.csv');
+
   RETURN TRUE;
 
   EXCEPTION
@@ -647,6 +671,166 @@ RETURNS TEXT AS $$ SELECT @extschema@.fake_siret() $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
+-------------------------------------------------------------------------------
+-- Pseudonymized data
+-------------------------------------------------------------------------------
+
+--
+-- Convert an hexadecimal value to an integer
+--
+CREATE OR REPLACE FUNCTION anon.hex_to_int(
+  hexval TEXT
+)
+RETURNS INT AS $$
+DECLARE
+    result  INT;
+BEGIN
+    EXECUTE 'SELECT x' || quote_literal(hexval) || '::INT' INTO result;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER;
+
+--
+-- get a md5 hash of an original value and then project it on a 0-to-1 scale
+-- MD5 signatures values have a uniform distribution
+--
+CREATE OR REPLACE FUNCTION @extschema@.md5_project(
+  seed TEXT,
+  salt TEXT
+)
+RETURNS NUMERIC AS $$
+  -- we use only the 6 first characters of the md5 signature
+  -- and we divide by the max value : x'FFFFFF' = 16777215
+  SELECT  anon.hex_to_int(md5(seed||COALESCE(salt,''))::char(6)) / 16777215.0
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+--
+-- use a seed and a salt to get a deterministic position
+-- inside a linear sequence
+--
+CREATE OR REPLACE FUNCTION @extschema@.project_oid(
+  seed TEXT,
+  salt TEXT,
+  seq REGCLASS
+)
+RETURNS INT AS $$
+  SELECT CAST( anon.md5_project(seed,salt)*currval(seq) AS INT)
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_first_name(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT first_name
+  FROM @extschema@.first_name
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.first_name_oid_seq');
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_last_name(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM @extschema@.last_name
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.last_name_oid_seq');
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_email(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT address
+  FROM @extschema@.email
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.email_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_city(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM @extschema@.city
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_region(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT subcountry
+  FROM @extschema@.city
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_country(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT country
+  FROM @extschema@.city
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_company(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM @extschema@.company
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.company_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_iban(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT id
+  FROM @extschema@.iban
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.iban_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_siren(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT siren
+  FROM @extschema@.siret
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.siret_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_siret(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT siren||nic
+  FROM @extschema@.siret
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.siret_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Partial Scrambling

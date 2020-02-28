@@ -1,21 +1,24 @@
 Various Masking Strategies
 ==============================================================================
 
-The extension provides functions to implement 4 main anonymization strategies:
+The extension provides functions to implement 8 main anonymization strategies:
 
-* Adding Noise
-* Shuffling
-* Randomization
-* Faking
-* Partial scrambling
+* [Destruction](#destruction)
+* [Adding Noise](#adding-noise)
+* [Shuffling](#shuffling)
+* [Randomization](#randomization)
+* [Faking](#faking)
+* [Pseudonymization](#pseudonymization)
+* [Partial scrambling](#partial-scrambling)
+* [Generalization](#generalization)
 
 Depending on your data, you may need to use different strategies on different
 columns :
 
-* For names and other 'direct identifiers' , faking is often usefull
-* Shuffling is convienient for foreign keys
-* Adding noise is interesting for numeric values and dates
-* Partial Scrambling is perfect for email address and phone numbers
+* For names and other 'direct identifiers' , [Faking] is often usefull
+* [Shuffling] is convienient for foreign keys
+* [Adding Noise] is interesting for numeric values and dates
+* [Partial Scrambling] is perfect for email address and phone numbers
 * etc.
 
 Destruction
@@ -120,6 +123,64 @@ For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 [Lorem Ipsum]: https://lipsum.com
 
 
+Pseudonymization
+------------------------------------------------------------------------------
+
+Pseudonymization is similar to [Faking] in the sense that it generates 
+realistic values. The main difference is that the pseudonymization is 
+deterministic : the functions always will return the same fake value based 
+on a seed and an optional salt. 
+
+In order to use the faking functions, you have to `load()` the extension
+in your database first:
+
+```sql
+SELECT anon.load();
+```
+
+Once the fake data is loaded you have access to 10 pseudo functions:
+
+* anon.pseudo_first_name('seed','salt') returns a generic first name
+* anon.pseudo_last_name('seed','salt') returns a generic last name
+* anon.pseudo_email('seed','salt') returns a valid email address
+* anon.pseudo_city('seed','salt') returns an existing city
+* anon.pseudo_region('seed','salt') returns an existing region
+* anon.pseudo_country('seed','salt') returns a country
+* anon.pseudo_company('seed','salt') returns a generic company name
+* anon.pseudo_iban('seed','salt') returns a valid IBAN
+* anon.pseudo_siret('seed','salt') returns a valid SIRET
+* anon.pseudo_siren('seed','salt') returns a valid SIREN
+
+The second argument is optional. You can call each function with only the 
+seed like this `anon.pseudo_city('bob')`. The salt is here to increase 
+complexity and avoid dictionnary and brute force attacks (see warning below).
+
+The seed can be any information related to the subjet. For instance, we can
+consistenty generate the same fake email address for a given person by using 
+her login as the seed :
+
+```sql
+SECURITY LABEL FOR anon
+  ON COLUMN users.emailaddress
+  IS 'MASKED WITH FUNCTION anon.pseudo_email(users.login) ';
+```
+
+**WARNING** : Pseudonymization is often confused with anonymization but in fact 
+they serve 2 different purposes. With pseudonymization, the real data can be 
+rebuild using the pseudo data, the masking rules and the seed. If an attacker
+gets access to these 3 elements, he/she can easily re-identify some people 
+using `brute force` or `dictionnary` attacks. Therefore, you should protect any 
+pseudonymized data and your seeds with the same level of security that the original 
+dataset. The GDPR makes it very clear that personal data which have undergone 
+pseudonymization are still considered to be personnal information (see [Recital 26])
+
+In a nutshell: pseudonymization may be usefull in some use cases. But if your 
+goal is to escape from GDPR or similar data regulation, it is clearly a bad solution. 
+
+
+[Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
+
+
 Partial Scrambling
 -------------------------------------------------------------------------------
 
@@ -161,7 +222,7 @@ SELECT * FROM patient;
 ```
 
 We can build a view upon this table to suppress some colums ( `SSN` 
-and `name` ) and generalized the zipcode and the birth date like
+and `name` ) and generalize the zipcode and the birth date like
 this:
 
 ```sql
@@ -192,7 +253,7 @@ SELECT * FROM anonymized_patient;
 ```
 
 
-The generalized values are still usefull for statistics because they remain 
+The generalized values are still useful for statistics because they remain 
 true but they are less accurante therefore reduce the risk of re-identification.
 
 PostgreSQL offers several [RANGE] data types which are perfect for dates and 
