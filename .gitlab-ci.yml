@@ -73,7 +73,7 @@ make10:
     - pgxn install ddlx
     - make extension
     - make install
-    - psql -c "ALTER SYSTEM SET shared_preload_libraries = 'anon'"
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
     - export PG_TEST_EXTRA=''
     - make installcheck || diff results tests/expected
