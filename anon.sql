@@ -695,50 +695,142 @@ $$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER;
 -- MD5 signatures values have a uniform distribution
 --
 CREATE OR REPLACE FUNCTION @extschema@.md5_project(
-  ov TEXT,
+  seed TEXT,
   salt TEXT
 )
 RETURNS NUMERIC AS $$
-  -- we use only the 6 first character of the md5 signature
+  -- we use only the 6 first characters of the md5 signature
   -- and we divide by the max value : x'FFFFFF' = 16777215
-  SELECT  anon.hex_to_int(md5(ov||COALESCE(salt,''))::char(6)) / 16777215.0
+  SELECT  anon.hex_to_int(md5(seed||COALESCE(salt,''))::char(6)) / 16777215.0
 $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
+--
+-- use a seed and a salt to get a deterministic position
+-- inside a linear sequence
+--
 CREATE OR REPLACE FUNCTION @extschema@.project_oid(
-  ov TEXT,
+  seed TEXT,
   salt TEXT,
   seq REGCLASS
 )
 RETURNS INT AS $$
-  SELECT CAST( anon.md5_project(ov,salt)*currval(seq) AS INT)
+  SELECT CAST( anon.md5_project(seed,salt)*currval(seq) AS INT)
 $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 
 CREATE OR REPLACE FUNCTION @extschema@.pseudo_first_name(
-  ov TEXT,
+  seed TEXT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
   SELECT first_name
   FROM @extschema@.first_name
-  WHERE oid = anon.project_oid(ov,salt,'@extschema@.first_name_oid_seq');
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.first_name_oid_seq');
 $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 
 CREATE OR REPLACE FUNCTION @extschema@.pseudo_last_name(
-  ov TEXT,
+  seed TEXT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
   SELECT name
   FROM @extschema@.last_name
-  WHERE oid = anon.project_oid(ov,salt,'@extschema@.last_name_oid_seq');
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.last_name_oid_seq');
 $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_email(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT address
+  FROM @extschema@.email
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.email_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_city(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM @extschema@.city
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_region(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT subcountry
+  FROM @extschema@.city
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_country(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT country
+  FROM @extschema@.city
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_company(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM @extschema@.company
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.company_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_iban(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT id
+  FROM @extschema@.iban
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.iban_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_siren(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT siren
+  FROM @extschema@.siret
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.siret_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION @extschema@.pseudo_siret(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT siren||nic
+  FROM @extschema@.siret
+  WHERE oid = anon.project_oid(seed,salt,'@extschema@.siret_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Partial Scrambling
