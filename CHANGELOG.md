@@ -14,6 +14,10 @@ CHANGELOG
 * [anonymize] FIX #114 : bug in anonymize_table() (Joe Auty)
 * [bug] Fix syntax error when schema in not in search_path (Olleg Samoylov)
 * [doc] Use ISO 8601 for dates (Olleg Samoylov)
+* [dump] anon.dump() is not deprecated
+* [dump] introducing `pg_dump_anon` command line tool
+* [pseudo] introducing pseudonymization functions
+* [security] declare explicitly all function as `SECURITY INVOKER`
 
 20191106 : 0.5.0 - Generalization and k-anonymity
 -------------------------------------------------------------------------------
