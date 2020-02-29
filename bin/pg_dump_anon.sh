@@ -23,8 +23,7 @@ usage()
   echo "--help                   display this message"
 }
 
-
-
+## Return the version of the anon extension
 get_anon_version() {
 $PSQL << EOSQL
   SELECT extversion FROM pg_catalog.pg_extension WHERE extname='anon';
@@ -86,10 +85,11 @@ then
 fi
 
 ##
-## pg_dump and psql have a lot a common parameter ( -h, -d, etc.) but they
-## also have ( `pg_dump -f` and `psql -o` ). This script allows a subset of
-## pg_dump's parameter and when needed, we transform the pg_dump options into
-## the matching psql options
+## pg_dump and psql have a lot of common parameters ( -h, -d, etc.) but they
+## also have similar parameters with different names (e.g. `pg_dump -f` and 
+## `psql -o` ). This wrapper script allows a subset of pg_dump's parameters 
+## and when needed, we transform the pg_dump options into the matching psql 
+## options
 ##
 psql_connect_opt= # connections options
 psql_other_opt=   # other options (currently only -f is supported)

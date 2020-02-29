@@ -3,56 +3,55 @@ Anonymous Dumps
 
 Due to the core design of this extension, you cannot use `pg_dump` with a masked 
 user. If you want to export the entire database with the anonymized data, you 
-must use the `anon.dump()` function.
+must use the `pg_dump_anon` command.
 
 
-<!-- demo/dump.sql-->
+pg_dump_anon
+------------------------------------------------------------------------------
 
-Let's use a basic example :
+The `pg_dump_anon` wrapper is designed to export the masked data. You can use 
+it like the regular `pg_dump` command.
 
-```sql
-CREATE TABLE cluedo ( name TEXT, weapon TEXT, room TEXT);
-
-INSERT INTO cluedo VALUES
-('Colonel Mustard','Candlestick', 'Kitchen'),
-('Professor Plum', 'Revolver', 'Ballroom'),
-('Miss Scarlett', 'Dagger', 'Lounge'),
-('Mrs. Peacock', 'Rope', 'Dining Room');
-
-SELECT * FROM cluedo;
+```bash
+$ pg_dump_anon -h localhost -U bob mydb > anonymous_dump.sql
 ```
 
-Step 1: Load the extension:
+It uses the same connections parameters that `pg_dump` :
 
-```sql
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-SELECT anon.load();
+```bash
+$ bin/pg_dump_anon.sh --help
+Usage: pg_dump_anon.sh [OPTION]... [DBNAME]
+Connection options:
+-d, --dbname=DBNAME      database to dump
+-f, --file=FILENAME      output file
+-h, --host=HOSTNAME      database server host or socket directory
+-p, --port=PORT          database server port number
+-U, --username=NAME      connect as specified database user
+-w, --no-password        never prompt for password
+-W, --password           force password prompt (should happen automatically)
+--help                   display this message
 ```
 
-Step 2: declare the masking rules
 
-```sql
-SECURITY LABEL FOR anon ON COLUMN cluedo.name 
-IS 'MASKED WITH FUNCTION anon.random_last_name()';
+* The [PostgreSQL environement variables] ($PGHOST, PGUSER, etc.) are supported. 
+* The [.pgpass] file is also supported.
+* The `plain` format is the only supported format. The other formats (`custom`, `dir`
+  and `tar`) are not supported
 
-SECURITY LABEL FOR anon ON COLUMN cluedo.room 
-IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
-```
-
-Step 3: Export the anonymized data with :
-
-```sql
-SELECT anon.dump();
-```
-
-If you want to write the SQL dump directly into a file, you can call the 
-function from the command line with :
-
-```console
-$ psql [...] -qtA -c 'SELECT anon.dump()' your_dabatase > dump.sql
-```
-
-NB: The `-qtA` flags are required.
+[PostgreSQL environement variables]: https://www.postgresql.org/docs/current/libpq-envars.html
+[.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 
 
+DEPRECATED: DO NOT USE anon.dump()
+------------------------------------------------------------------------------
+
+The version 0.3 of PostgreSQL Anonymizer introduced a function called 
+`anon.dump()`. This function is extremely slow. Since version 0.6, it has 
+been deprecated and it is not supported anymore.
+
+The function is kept as is for backward compatibility. It will be probably be
+remove from one ogf the forthcoming versions.
+
+Again: do not use this function ! To dump the masked data, use the 
+`pg_dump_anon` command line tool as described above.
