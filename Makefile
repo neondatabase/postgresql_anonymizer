@@ -43,6 +43,7 @@ OBJS = anon.o
 
 ##
 ## Mandatory PGXS stuff
+## see https://github.com/postgres/postgres/blob/master/src/makefiles/pgxs.mk
 ##
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
@@ -67,7 +68,17 @@ help::  #: display this message.
 	@echo
 
 
+##
+## I N S T A L L
+##
 
+BINDIR    ?= $(shell $(PG_CONFIG) --bindir)
+
+install: install-bin
+
+install-bin:
+	install -d $(DESTDIR)$(BINDIR)
+	install -m 0755 bin/pg_dump_anon.sh $(DESTDIR)$(BINDIR)/pg_dump_anon
 
 ##
 ## B U I L D
