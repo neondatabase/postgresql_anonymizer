@@ -17,8 +17,8 @@ SELECT pg_typeof(anon.random_string(1)) = 'TEXT'::REGTYPE;
 
 
 -- Date
-SELECT pg_typeof(anon.random_date_between('01/01/1900'::TIMESTAMP WITH TIME ZONE,now())) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
-SELECT pg_typeof(anon.random_date_between('01/01/0001'::DATE,'01/01/4001'::DATE)) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
+SELECT pg_typeof(anon.random_date_between('1900-01-01'::TIMESTAMP WITH TIME ZONE,now())) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
+SELECT pg_typeof(anon.random_date_between('0001-01-01'::DATE,'4001-01-01'::DATE)) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
 SELECT pg_typeof(anon.random_date()) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
 
 -- Integer

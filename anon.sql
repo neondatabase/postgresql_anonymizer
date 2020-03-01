@@ -12,15 +12,15 @@
 -- Config
 -------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS @extschema@.config;
-CREATE TABLE @extschema@.config (
+DROP TABLE IF EXISTS anon.config;
+CREATE TABLE anon.config (
     param TEXT UNIQUE NOT NULL,
     value TEXT
 );
 
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.config','');
+SELECT pg_catalog.pg_extension_config_dump('anon.config','');
 
-COMMENT ON TABLE @extschema@.config IS 'Anonymization and Masking settings';
+COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
 
 
 
@@ -29,7 +29,7 @@ COMMENT ON TABLE @extschema@.config IS 'Anonymization and Masking settings';
 -- Noise
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_numeric_column(
+CREATE OR REPLACE FUNCTION anon.add_noise_on_numeric_column(
   noise_table regclass,
   noise_column TEXT,
   ratio FLOAT
@@ -60,9 +60,9 @@ BEGIN
 RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.add_noise_on_datetime_column(
+CREATE OR REPLACE FUNCTION anon.add_noise_on_datetime_column(
   noise_table regclass,
   noise_column TEXT,
   variation INTERVAL
@@ -94,13 +94,13 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Shuffle
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.shuffle_column(
+CREATE OR REPLACE FUNCTION anon.shuffle_column(
   shuffle_table regclass,
   shuffle_column NAME,
   primary_key NAME
@@ -156,76 +156,84 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Fake Data
 -------------------------------------------------------------------------------
 
 -- Cities, Regions & Countries
-DROP TABLE IF EXISTS @extschema@.city;
-CREATE TABLE @extschema@.city (
-    name TEXT,
-    country TEXT,
-    subcountry TEXT,
-    geonameid TEXT
+DROP TABLE IF EXISTS anon.city;
+CREATE TABLE anon.city (
+  oid SERIAL,
+  name TEXT,
+  country TEXT,
+  subcountry TEXT,
+  geonameid TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.city','');
+SELECT pg_catalog.pg_extension_config_dump('anon.city','');
 
-COMMENT ON TABLE @extschema@.city IS 'Cities, Regions & Countries';
+COMMENT ON TABLE anon.city IS 'Cities, Regions & Countries';
 
 -- Companies
-DROP TABLE IF EXISTS @extschema@.company;
-CREATE TABLE @extschema@.company (
-    name TEXT
+DROP TABLE IF EXISTS anon.company;
+CREATE TABLE anon.company (
+  oid SERIAL,
+  name TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.company','');
+SELECT pg_catalog.pg_extension_config_dump('anon.company','');
 
 -- Email
-DROP TABLE IF EXISTS @extschema@.email;
-CREATE TABLE @extschema@.email (
-    address TEXT
+DROP TABLE IF EXISTS anon.email;
+CREATE TABLE anon.email (
+  oid SERIAL,
+  address TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.email','');
+SELECT pg_catalog.pg_extension_config_dump('anon.email','');
 
 -- First names
-DROP TABLE IF EXISTS @extschema@.first_name;
-CREATE TABLE @extschema@.first_name (
-    first_name TEXT,
-    male BOOLEAN,
-    female BOOLEAN,
-    language TEXT
+DROP TABLE IF EXISTS anon.first_name;
+CREATE TABLE anon.first_name (
+  oid SERIAL,
+  first_name TEXT,
+  male BOOLEAN,
+  female BOOLEAN,
+  language TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.first_name','');
+SELECT pg_catalog.pg_extension_config_dump('anon.first_name','');
 
 -- IBAN
-DROP TABLE IF EXISTS @extschema@.iban;
-CREATE TABLE @extschema@.iban (
-    id TEXT
+DROP TABLE IF EXISTS anon.iban;
+CREATE TABLE anon.iban (
+  oid SERIAL,
+  id TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.iban','');
+SELECT pg_catalog.pg_extension_config_dump('anon.iban','');
 
 -- Last names
-DROP TABLE IF EXISTS @extschema@.last_name;
-CREATE TABLE @extschema@.last_name (
-    name TEXT
+DROP TABLE IF EXISTS anon.last_name;
+CREATE TABLE anon.last_name (
+  oid SERIAL,
+  name TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.last_name','');
+SELECT pg_catalog.pg_extension_config_dump('anon.last_name','');
 
 -- SIRET
-DROP TABLE IF EXISTS @extschema@.siret;
-CREATE TABLE @extschema@.siret (
-    siren TEXT,
-    nic TEXT
+DROP TABLE IF EXISTS anon.siret;
+CREATE TABLE anon.siret (
+  oid SERIAL,
+  siren TEXT,
+  nic TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.siret','');
+SELECT pg_catalog.pg_extension_config_dump('anon.siret','');
 
 -- Lorem Ipsum
-DROP TABLE IF EXISTS @extschema@.lorem_ipsum;
-CREATE TABLE @extschema@.lorem_ipsum (
+DROP TABLE IF EXISTS anon.lorem_ipsum;
+CREATE TABLE anon.lorem_ipsum (
+  oid SERIAL,
   paragraph TEXT
 );
-SELECT pg_catalog.pg_extension_config_dump('@extschema@.lorem_ipsum','');
+SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum','');
 
 -- ADD NEW TABLE HERE
 
@@ -236,7 +244,7 @@ SELECT pg_catalog.pg_extension_config_dump('@extschema@.lorem_ipsum','');
 
 -- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
 
-CREATE TABLE @extschema@.identifiers_category(
+CREATE TABLE anon.identifiers_category(
   id INTEGER,
   name TEXT,
   direct_identifier BOOLEAN,
@@ -244,11 +252,11 @@ CREATE TABLE @extschema@.identifiers_category(
   PRIMARY KEY(name)
 );
 
-COMMENT ON TABLE @extschema@.identifiers_category
+COMMENT ON TABLE anon.identifiers_category
 IS 'Generic identifiers categories based the HIPAA classification';
 
 
-CREATE TABLE @extschema@.identifier(
+CREATE TABLE anon.identifier(
   lang TEXT,
   attname TEXT,
   fk_identifiers_category TEXT,
@@ -256,10 +264,10 @@ CREATE TABLE @extschema@.identifier(
   FOREIGN KEY (fk_identifiers_category) REFERENCES identifiers_category(name)
 );
 
-COMMENT ON TABLE @extschema@.config
+COMMENT ON TABLE anon.config
 IS 'Dictionnary of common identifiers field names';
 
-CREATE OR REPLACE FUNCTION @extschema@.detect(
+CREATE OR REPLACE FUNCTION anon.detect(
   lang TEXT DEFAULT 'en_US'
 )
 RETURNS TABLE (
@@ -275,9 +283,9 @@ SELECT
   ic.name,
   ic.direct_identifier
 FROM pg_catalog.pg_attribute a
-JOIN @extschema@.identifier fn
+JOIN anon.identifier fn
   ON lower(a.attname) = fn.attname
-JOIN @extschema@.identifiers_category ic
+JOIN anon.identifiers_category ic
   ON fn.fk_identifiers_category = ic.name
 JOIN pg_catalog.pg_class c
   ON c.oid = a.attrelid
@@ -287,8 +295,8 @@ WHERE fn.lang = lang
         FROM pg_namespace
         WHERE nspname NOT LIKE 'pg_%'
         AND nspname NOT IN  ( 'information_schema',
-                              '@extschema@',
-                              @extschema@.mask_schema()
+                              'anon',
+                              anon.mask_schema()
                             )
       )
 ;
@@ -303,7 +311,7 @@ LANGUAGE SQL IMMUTABLE;
 -- ADD unit tests in tests/sql/load.sql
 
 -- load fake data from a given path
-CREATE OR REPLACE FUNCTION @extschema@.load(
+CREATE OR REPLACE FUNCTION anon.load(
   datapath TEXT
 )
 RETURNS BOOLEAN
@@ -329,19 +337,34 @@ BEGIN
   END IF;
 
   -- Identifiers dictionnaries
-  EXECUTE 'COPY @extschema@.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
-  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifier_fr_FR.csv');
-  EXECUTE 'COPY @extschema@.identifier FROM '|| quote_literal(datapath ||'/identifier_en_US.csv');
+  EXECUTE 'COPY anon.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
+  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_fr_FR.csv');
+  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_en_US.csv');
 
   -- ADD NEW TABLE HERE
-  EXECUTE 'COPY @extschema@.city FROM       '|| quote_literal(datapath ||'/city.csv');
-  EXECUTE 'COPY @extschema@.company FROM    '|| quote_literal(datapath ||'/company.csv');
-  EXECUTE 'COPY @extschema@.email FROM      '|| quote_literal(datapath ||'/email.csv');
-  EXECUTE 'COPY @extschema@.first_name FROM '|| quote_literal(datapath ||'/first_name.csv');
-  EXECUTE 'COPY @extschema@.iban FROM       '|| quote_literal(datapath ||'/iban.csv');
-  EXECUTE 'COPY @extschema@.last_name FROM  '|| quote_literal(datapath ||'/last_name.csv');
-  EXECUTE 'COPY @extschema@.siret FROM      '|| quote_literal(datapath ||'/siret.csv');
-  EXECUTE 'COPY @extschema@.lorem_ipsum FROM '|| quote_literal(datapath ||'/lorem_ipsum.csv');
+  EXECUTE 'COPY anon.city(name,country,subcountry,geonameid) FROM '
+    || quote_literal(datapath ||'/city.csv');
+
+  EXECUTE 'COPY anon.company(name) FROM '
+    || quote_literal(datapath ||'/company.csv');
+
+  EXECUTE 'COPY anon.email(address) FROM '
+    || quote_literal(datapath ||'/email.csv');
+
+  EXECUTE 'COPY anon.first_name(first_name,male,female,language) FROM '
+    || quote_literal(datapath ||'/first_name.csv');
+
+  EXECUTE 'COPY anon.iban(id) FROM '
+    || quote_literal(datapath ||'/iban.csv');
+
+  EXECUTE 'COPY anon.last_name(name) FROM '
+    || quote_literal(datapath ||'/last_name.csv');
+
+  EXECUTE 'COPY anon.siret(siren, nic) FROM '
+    || quote_literal(datapath ||'/siret.csv');
+
+  EXECUTE 'COPY anon.lorem_ipsum(paragraph) FROM '
+    || quote_literal(datapath ||'/lorem_ipsum.csv');
 
   RETURN TRUE;
 
@@ -351,10 +374,10 @@ BEGIN
     RETURN FALSE;
 END;
 $func$
-LANGUAGE PLPGSQL VOLATILE;
+LANGUAGE PLPGSQL VOLATILE SECURITY INVOKER;
 
 -- If no path given, use the default data
-CREATE OR REPLACE FUNCTION @extschema@.load()
+CREATE OR REPLACE FUNCTION anon.load()
 RETURNS BOOLEAN
 AS $$
     WITH conf AS (
@@ -363,52 +386,52 @@ AS $$
         FROM pg_config
         WHERE name = 'SHAREDIR'
     )
-    SELECT @extschema@.load(conf.sharedir || '/extension/anon/')
+    SELECT anon.load(conf.sharedir || '/extension/anon/')
     FROM conf;
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- True, the fake data is already here
-CREATE OR REPLACE FUNCTION @extschema@.isloaded()
+CREATE OR REPLACE FUNCTION anon.isloaded()
 RETURNS BOOL
 AS $$
   SELECT count(*)::INT::BOOL
-  FROM (   SELECT 1 FROM @extschema@.siret
-     UNION SELECT 1 FROM @extschema@.company
-     UNION SELECT 1 FROM @extschema@.last_name
-     UNION SELECT 1 FROM @extschema@.city
-     UNION SELECT 1 FROM @extschema@.email
-     UNION SELECT 1 FROM @extschema@.first_name
-     UNION SELECT 1 FROM @extschema@.iban
-     UNION SELECT 1 FROM @extschema@.lorem_ipsum
+  FROM (   SELECT 1 FROM anon.siret
+     UNION SELECT 1 FROM anon.company
+     UNION SELECT 1 FROM anon.last_name
+     UNION SELECT 1 FROM anon.city
+     UNION SELECT 1 FROM anon.email
+     UNION SELECT 1 FROM anon.first_name
+     UNION SELECT 1 FROM anon.iban
+     UNION SELECT 1 FROM anon.lorem_ipsum
      -- ADD NEW TABLE HERE
      LIMIT 1
   ) t
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- remove all fake data
-CREATE OR REPLACE FUNCTION @extschema@.unload()
+CREATE OR REPLACE FUNCTION anon.unload()
 RETURNS BOOLEAN AS $$
-    TRUNCATE @extschema@.city;
-    TRUNCATE @extschema@.company;
-    TRUNCATE @extschema@.email;
-    TRUNCATE @extschema@.first_name;
-    TRUNCATE @extschema@.iban;
-    TRUNCATE @extschema@.last_name;
-    TRUNCATE @extschema@.siret;
-    TRUNCATE @extschema@.lorem_ipsum;
+    TRUNCATE anon.city;
+    TRUNCATE anon.company;
+    TRUNCATE anon.email;
+    TRUNCATE anon.first_name;
+    TRUNCATE anon.iban;
+    TRUNCATE anon.last_name;
+    TRUNCATE anon.siret;
+    TRUNCATE anon.lorem_ipsum;
     -- ADD NEW TABLE HERE
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Random Generic Data
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.random_string(
+CREATE OR REPLACE FUNCTION anon.random_string(
   l integer
 )
 RETURNS text
@@ -422,10 +445,10 @@ AS $$
     ),''
   );
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Zip code
-CREATE OR REPLACE FUNCTION @extschema@.random_zip()
+CREATE OR REPLACE FUNCTION anon.random_zip()
 RETURNS text
 AS $$
   SELECT array_to_string(
@@ -435,153 +458,153 @@ AS $$
             ),''
           );
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 -- date
 
-CREATE OR REPLACE FUNCTION @extschema@.random_date_between(
+CREATE OR REPLACE FUNCTION anon.random_date_between(
   date_start timestamp WITH TIME ZONE,
   date_end timestamp WITH TIME ZONE
 )
 RETURNS timestamp WITH TIME ZONE AS $$
     SELECT (random()*(date_end-date_start))::interval+date_start;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION random_date()
 RETURNS timestamp with time zone AS $$
-    SELECT @extschema@.random_date_between('01/01/1900'::DATE,now());
+    SELECT anon.random_date_between('1900-01-01'::timestamp with time zone,now());
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 -- integer
 
-CREATE OR REPLACE FUNCTION @extschema@.random_int_between(
+CREATE OR REPLACE FUNCTION anon.random_int_between(
   int_start INTEGER,
   int_stop INTEGER
 )
 RETURNS INTEGER AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_phone(
+CREATE OR REPLACE FUNCTION anon.random_phone(
   phone_prefix TEXT DEFAULT '0'
 )
 RETURNS TEXT AS $$
   SELECT  phone_prefix
-          || CAST(@extschema@.random_int_between(100000000,999999999) AS TEXT)
+          || CAST(anon.random_int_between(100000000,999999999) AS TEXT)
           AS "phone";
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- FAKE data
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_first_name()
+CREATE OR REPLACE FUNCTION anon.fake_first_name()
 RETURNS TEXT AS $$
     SELECT first_name
-    FROM @extschema@.first_name
+    FROM anon.first_name
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_last_name()
+CREATE OR REPLACE FUNCTION anon.fake_last_name()
 RETURNS TEXT AS $$
     SELECT name
-    FROM @extschema@.last_name
+    FROM anon.last_name
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_email()
+CREATE OR REPLACE FUNCTION anon.fake_email()
 RETURNS TEXT AS $$
     SELECT address
-    FROM @extschema@.email
+    FROM anon.email
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_city_in_country(
+CREATE OR REPLACE FUNCTION anon.fake_city_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$
     SELECT name
-    FROM @extschema@.city
+    FROM anon.city
     WHERE country=country_name
     ORDER BY random() LIMIT 1;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_city()
+CREATE OR REPLACE FUNCTION anon.fake_city()
 RETURNS TEXT AS $$
     SELECT name
-    FROM @extschema@.city
+    FROM anon.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_region_in_country(
+CREATE OR REPLACE FUNCTION anon.fake_region_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$
     SELECT subcountry
-    FROM @extschema@.city
+    FROM anon.city
     WHERE country=country_name
     ORDER BY random() LIMIT 1;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_region()
+CREATE OR REPLACE FUNCTION anon.fake_region()
 RETURNS TEXT AS $$
     SELECT subcountry
-    FROM @extschema@.city
+    FROM anon.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_country()
+CREATE OR REPLACE FUNCTION anon.fake_country()
 RETURNS TEXT AS $$
     SELECT country
-    FROM @extschema@.city
+    FROM anon.city
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_company()
+CREATE OR REPLACE FUNCTION anon.fake_company()
 RETURNS TEXT AS $$
     SELECT name
-    FROM @extschema@.company
+    FROM anon.company
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_iban()
+CREATE OR REPLACE FUNCTION anon.fake_iban()
 RETURNS TEXT AS $$
     SELECT id
-    FROM @extschema@.iban
+    FROM anon.iban
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_siren()
+CREATE OR REPLACE FUNCTION anon.fake_siren()
 RETURNS TEXT AS $$
     SELECT siren
-    FROM @extschema@.siret
+    FROM anon.siret
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.fake_siret()
+CREATE OR REPLACE FUNCTION anon.fake_siret()
 RETURNS TEXT AS $$
     SELECT siren||nic
-    FROM @extschema@.siret
+    FROM anon.siret
     TABLESAMPLE SYSTEM_ROWS(1);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Lorem Ipsum
 -- Usage:
@@ -591,7 +614,7 @@ LANGUAGE SQL VOLATILE;
 --   `SELECT anon.lorem_ipsum( words := 20 )` return 20 words
 --   `SELECT anon.lorem_ipsum( characters := 7 )` return 7 characters
 --
-CREATE OR REPLACE FUNCTION @extschema@.lorem_ipsum(
+CREATE OR REPLACE FUNCTION anon.lorem_ipsum(
   paragraphs INTEGER DEFAULT 5,
   words INTEGER DEFAULT 0,
   characters INTEGER DEFAULT 0
@@ -601,7 +624,7 @@ WITH
 -- First let's shuffle the lorem_ipsum table
 randomized_lorem_ipsum AS (
   SELECT *
-  FROM @extschema@.lorem_ipsum
+  FROM anon.lorem_ipsum
   ORDER BY RANDOM()
 ),
 -- if `characters` is defined,
@@ -659,66 +682,226 @@ FROM
   cte_paragraphs
 ;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 --
 -- Backward compatibility with version 0.2.1 and earlier
 --
 
-CREATE OR REPLACE FUNCTION @extschema@.random_first_name()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_first_name() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_first_name()
+RETURNS TEXT AS $$ SELECT anon.fake_first_name() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
-CREATE OR REPLACE FUNCTION @extschema@.random_last_name()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_last_name() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_last_name()
+RETURNS TEXT AS $$ SELECT anon.fake_last_name() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_email()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_email() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_email()
+RETURNS TEXT AS $$ SELECT anon.fake_email() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_city_in_country(
+CREATE OR REPLACE FUNCTION anon.random_city_in_country(
   country_name TEXT
 )
-RETURNS TEXT AS $$ SELECT @extschema@.fake_city_in_country(country_name) $$
-LANGUAGE SQL VOLATILE;
+RETURNS TEXT AS $$ SELECT anon.fake_city_in_country(country_name) $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_city()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_city() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_city()
+RETURNS TEXT AS $$ SELECT anon.fake_city() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_region_in_country(
+CREATE OR REPLACE FUNCTION anon.random_region_in_country(
   country_name TEXT
 )
-RETURNS TEXT AS $$ SELECT @extschema@.fake_region_in_country(country_name) $$
-LANGUAGE SQL VOLATILE;
+RETURNS TEXT AS $$ SELECT anon.fake_region_in_country(country_name) $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_region()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_region() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_region()
+RETURNS TEXT AS $$ SELECT anon.fake_region() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_country()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_country() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_country()
+RETURNS TEXT AS $$ SELECT anon.fake_country() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_company()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_company() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_company()
+RETURNS TEXT AS $$ SELECT anon.fake_company() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_iban()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_iban() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_iban()
+RETURNS TEXT AS $$ SELECT anon.fake_iban() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_siren()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_siren() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_siren()
+RETURNS TEXT AS $$ SELECT anon.fake_siren() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
-CREATE OR REPLACE FUNCTION @extschema@.random_siret()
-RETURNS TEXT AS $$ SELECT @extschema@.fake_siret() $$
-LANGUAGE SQL VOLATILE;
+CREATE OR REPLACE FUNCTION anon.random_siret()
+RETURNS TEXT AS $$ SELECT anon.fake_siret() $$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
+-------------------------------------------------------------------------------
+-- Pseudonymized data
+-------------------------------------------------------------------------------
+
+--
+-- Convert an hexadecimal value to an integer
+--
+CREATE OR REPLACE FUNCTION anon.hex_to_int(
+  hexval TEXT
+)
+RETURNS INT AS $$
+DECLARE
+    result  INT;
+BEGIN
+    EXECUTE 'SELECT x' || quote_literal(hexval) || '::INT' INTO result;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER;
+
+--
+-- get a md5 hash of an original value and then project it on a 0-to-1 scale
+-- MD5 signatures values have a uniform distribution
+--
+CREATE OR REPLACE FUNCTION anon.md5_project(
+  seed TEXT,
+  salt TEXT
+)
+RETURNS NUMERIC AS $$
+  -- we use only the 6 first characters of the md5 signature
+  -- and we divide by the max value : x'FFFFFF' = 16777215
+  SELECT  anon.hex_to_int(md5(seed||COALESCE(salt,''))::char(6)) / 16777215.0
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+--
+-- use a seed and a salt to get a deterministic position
+-- inside a linear sequence
+--
+CREATE OR REPLACE FUNCTION anon.project_oid(
+  seed TEXT,
+  salt TEXT,
+  seq REGCLASS
+)
+RETURNS INT AS $$
+  SELECT CAST( anon.md5_project(seed,salt)*currval(seq) AS INT)
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+
+CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT first_name
+  FROM anon.first_name
+  WHERE oid = anon.project_oid(seed,salt,'anon.first_name_oid_seq');
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+
+CREATE OR REPLACE FUNCTION anon.pseudo_last_name(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM anon.last_name
+  WHERE oid = anon.project_oid(seed,salt,'anon.last_name_oid_seq');
+$$
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
+
+CREATE OR REPLACE FUNCTION anon.pseudo_email(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT address
+  FROM anon.email
+  WHERE oid = anon.project_oid(seed,salt,'anon.email_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.pseudo_city(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM anon.city
+  WHERE oid = anon.project_oid(seed,salt,'anon.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.pseudo_region(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT subcountry
+  FROM anon.city
+  WHERE oid = anon.project_oid(seed,salt,'anon.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.pseudo_country(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT country
+  FROM anon.city
+  WHERE oid = anon.project_oid(seed,salt,'anon.city_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.pseudo_company(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT name
+  FROM anon.company
+  WHERE oid = anon.project_oid(seed,salt,'anon.company_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.pseudo_iban(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT id
+  FROM anon.iban
+  WHERE oid = anon.project_oid(seed,salt,'anon.iban_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.pseudo_siren(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT siren
+  FROM anon.siret
+  WHERE oid = anon.project_oid(seed,salt,'anon.siret_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.pseudo_siret(
+  seed TEXT,
+  salt TEXT DEFAULT NULL
+)
+RETURNS TEXT AS $$
+  SELECT siren||nic
+  FROM anon.siret
+  WHERE oid = anon.project_oid(seed,salt,'anon.siret_oid_seq');
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Partial Scrambling
@@ -727,7 +910,7 @@ LANGUAGE SQL VOLATILE;
 --
 -- partial('abcdefgh',1,'xxxx',3) will return 'axxxxfgh';
 --
-CREATE OR REPLACE FUNCTION @extschema@.partial(
+CREATE OR REPLACE FUNCTION anon.partial(
   ov TEXT,
   prefix INT,
   padding TEXT,
@@ -738,12 +921,12 @@ RETURNS TEXT AS $$
       || padding
       || substring(ov FROM (length(ov)-suffix+1) FOR suffix);
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 --
 -- email('daamien@gmail.com') will becomme 'da******@gm******.com'
 --
-CREATE OR REPLACE FUNCTION @extschema@.partial_email(
+CREATE OR REPLACE FUNCTION anon.partial_email(
   ov TEXT
 )
 RETURNS TEXT AS $$
@@ -759,7 +942,7 @@ RETURNS TEXT AS $$
       || regexp_replace(ov, '.*\.', '') -- com
   ;
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 
 -------------------------------------------------------------------------------
@@ -769,7 +952,7 @@ LANGUAGE SQL IMMUTABLE;
 -------------------------------------------------------------------------------
 
 -- List of all the masked columns
-CREATE OR REPLACE VIEW @extschema@.pg_masking_rules AS
+CREATE OR REPLACE VIEW anon.pg_masking_rules AS
 WITH const AS (
   SELECT
     '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT
@@ -838,14 +1021,14 @@ ORDER BY attrelid, attnum, priority DESC
 ;
 
 -- Compatibility with version 0.3 and earlier
-CREATE OR REPLACE VIEW @extschema@.pg_masks AS
-SELECT * FROM @extschema@.pg_masking_rules
+CREATE OR REPLACE VIEW anon.pg_masks AS
+SELECT * FROM anon.pg_masking_rules
 ;
 
 
 -- name of the source schema
 -- default value: 'public'
-CREATE OR REPLACE FUNCTION @extschema@.source_schema()
+CREATE OR REPLACE FUNCTION anon.source_schema()
 RETURNS TEXT AS
 $$
 WITH default_config(value) AS (
@@ -853,14 +1036,14 @@ WITH default_config(value) AS (
 )
 SELECT COALESCE(c.value, d.value)
 FROM default_config d
-LEFT JOIN @extschema@.config AS c ON (c.param = 'sourceschema')
+LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
 ;
 $$
-LANGUAGE SQL STABLE;
+LANGUAGE SQL STABLE SECURITY INVOKER;
 
 -- name of the masking schema
 -- default value: 'mask'
-CREATE OR REPLACE FUNCTION @extschema@.mask_schema()
+CREATE OR REPLACE FUNCTION anon.mask_schema()
 RETURNS TEXT AS
 $$
 WITH default_config(value) AS (
@@ -868,17 +1051,17 @@ WITH default_config(value) AS (
 )
 SELECT COALESCE(c.value, d.value)
 FROM default_config d
-LEFT JOIN @extschema@.config AS c ON (c.param = 'maskschema')
+LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
 ;
 $$
-LANGUAGE SQL STABLE;
+LANGUAGE SQL STABLE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- In-Place Anonymization
 -------------------------------------------------------------------------------
 
 -- Replace masked data in a column
-CREATE OR REPLACE FUNCTION @extschema@.anonymize_column(
+CREATE OR REPLACE FUNCTION anon.anonymize_column(
   tablename REGCLASS,
   colname NAME
 )
@@ -889,7 +1072,7 @@ DECLARE
   mf_is_a_faking_function BOOLEAN;
 BEGIN
   SELECT masking_filter INTO mf
-  FROM @extschema@.pg_masking_rules
+  FROM anon.pg_masking_rules
   WHERE attrelid = tablename::OID
   AND attname = colname;
 
@@ -902,7 +1085,7 @@ BEGIN
 
   SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
   IF mf_is_a_faking_function AND not anon.isloaded() THEN
-    RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT @extschema@.load()'' ';
+    RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT anon.load()'' ';
   END IF;
 
   RAISE DEBUG 'Anonymize %.% with %', tablename,colname, mf;
@@ -911,37 +1094,38 @@ BEGIN
   RETURN TRUE;
 END;
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 -- Replace masked data in a table
-CREATE OR REPLACE FUNCTION @extschema@.anonymize_table(tablename REGCLASS)
+CREATE OR REPLACE FUNCTION anon.anonymize_table(tablename REGCLASS)
 RETURNS BOOLEAN AS
 $func$
-  SELECT @extschema@.anonymize_column(tablename,attname)
-  FROM @extschema@.pg_masking_rules
+  -- bool_or is required to aggregate all tuples
+  -- otherwise only the first masking rule is applied
+  -- see issue #114
+  SELECT bool_or(anon.anonymize_column(tablename,attname))
+  FROM anon.pg_masking_rules
   WHERE attrelid::regclass=tablename;
 $func$
-LANGUAGE SQL VOLATILE;
-
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Walk through all masked columns and permanently apply the mask
-CREATE OR REPLACE FUNCTION @extschema@.anonymize_database()
+CREATE OR REPLACE FUNCTION anon.anonymize_database()
 RETURNS BOOLEAN AS
 $func$
-  SELECT   SUM(anon.anonymize_column(attrelid::REGCLASS,attname)::INT)
-         = COUNT(attrelid)
+  SELECT bool_or(anon.anonymize_column(attrelid::REGCLASS,attname))
   FROM anon.pg_masking_rules;
 $func$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Backward compatibility with version 0.2
-CREATE OR REPLACE FUNCTION @extschema@.static_substitution()
+CREATE OR REPLACE FUNCTION anon.static_substitution()
 RETURNS BOOLEAN AS
 $func$
-  SELECT @extschema@.anonymize_database();
+  SELECT anon.anonymize_database();
 $func$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Dynamic Masking
@@ -953,7 +1137,7 @@ LANGUAGE SQL VOLATILE;
 --   * tests/sql/hasmask.sql
 
 -- True if the role is masked
-CREATE OR REPLACE FUNCTION @extschema@.hasmask(
+CREATE OR REPLACE FUNCTION anon.hasmask(
   role REGROLE
 )
 RETURNS BOOLEAN AS
@@ -973,18 +1157,17 @@ FROM (
   SELECT FALSE as masked --
 ) AS m
 $$
-LANGUAGE SQL STABLE
-;
+LANGUAGE SQL STABLE SECURITY INVOKER;
 
 -- DEPRECATED : use directly `hasmask(oid::REGROLE)` instead
 -- Adds a `hasmask` column to the pg_roles catalog
-CREATE OR REPLACE VIEW @extschema@.pg_masked_roles AS
-SELECT r.*, @extschema@.hasmask(r.oid::REGROLE)
+CREATE OR REPLACE VIEW anon.pg_masked_roles AS
+SELECT r.*, anon.hasmask(r.oid::REGROLE)
 FROM pg_catalog.pg_roles r
 ;
 
 -- Display all columns of the relation with the masking function (if any)
-CREATE OR REPLACE FUNCTION @extschema@.mask_columns(
+CREATE OR REPLACE FUNCTION anon.mask_columns(
   source_relid OID
 )
 RETURNS TABLE (
@@ -998,7 +1181,7 @@ SELECT
   m.masking_filter,
   m.format_type
 FROM pg_attribute a
-LEFT JOIN  @extschema@.pg_masking_rules m
+LEFT JOIN  anon.pg_masking_rules m
         ON m.attrelid = a.attrelid
         AND m.attname = a.attname
 WHERE  a.attrelid = source_relid
@@ -1007,28 +1190,28 @@ AND    NOT a.attisdropped
 ORDER BY a.attnum
 ;
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
 -- We can't use the namespace oids because the mask schema may not be present
-CREATE OR REPLACE FUNCTION  @extschema@.mask_create()
+CREATE OR REPLACE FUNCTION  anon.mask_create()
 RETURNS SETOF VOID AS
 $$
 BEGIN
   -- Walk through all tables in the source schema
-  PERFORM @extschema@.mask_create_view(oid)
+  PERFORM anon.mask_create_view(oid)
   FROM pg_class
-  WHERE relnamespace=@extschema@.sourceschema()::regnamespace
+  WHERE relnamespace=anon.sourceschema()::regnamespace
   AND relkind = 'r' -- relations only
   ;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 -- get the "select filters" that will mask the real data of a table
-CREATE OR REPLACE FUNCTION @extschema@.mask_filters(
+CREATE OR REPLACE FUNCTION anon.mask_filters(
   relid OID
 )
 RETURNS TEXT AS
@@ -1040,7 +1223,7 @@ DECLARE
 BEGIN
     expression := '';
     comma := '';
-    FOR m IN SELECT * FROM @extschema@.mask_columns(relid)
+    FOR m IN SELECT * FROM anon.mask_columns(relid)
     LOOP
         expression := expression || comma;
         IF m.masking_filter IS NULL THEN
@@ -1060,42 +1243,42 @@ BEGIN
   RETURN expression;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Build a masked view for a table
-CREATE OR REPLACE FUNCTION @extschema@.mask_create_view(
+CREATE OR REPLACE FUNCTION anon.mask_create_view(
   relid OID
 )
 RETURNS BOOLEAN AS
 $$
 BEGIN
   EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
-                                  @extschema@.mask_schema(),
-                                  relid::REGCLASS,
-                                  @extschema@.mask_filters(relid),
+                                  anon.mask_schema(),
+                                  (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid),
+                                  anon.mask_filters(relid),
                                   relid::REGCLASS);
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Remove a masked view for a given table
-CREATE OR REPLACE FUNCTION @extschema@.mask_drop_view(
+CREATE OR REPLACE FUNCTION anon.mask_drop_view(
   relid OID
 )
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  EXECUTE format('DROP VIEW "%s".%s;', @extschema@.mask_schema(),
-                                         relid::REGCLASS
+  EXECUTE format('DROP VIEW "%s".%s;', anon.mask_schema(),
+                  (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid)
   );
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Activate the masking engine
-CREATE OR REPLACE FUNCTION @extschema@.start_dynamic_masking(
+CREATE OR REPLACE FUNCTION anon.start_dynamic_masking(
   sourceschema TEXT DEFAULT 'public',
   maskschema TEXT DEFAULT 'mask',
   autoload BOOLEAN DEFAULT TRUE
@@ -1106,7 +1289,7 @@ DECLARE
   r RECORD;
 BEGIN
   -- Load default config values
-  INSERT INTO @extschema@.config
+  INSERT INTO anon.config
   VALUES
   ('sourceschema','public'),
   ('maskschema', 'mask')
@@ -1114,83 +1297,83 @@ BEGIN
   ;
 
   -- Load faking data
-  SELECT @extschema@.isloaded() AS loaded INTO r;
+  SELECT anon.isloaded() AS loaded INTO r;
   IF NOT autoload THEN
     RAISE DEBUG 'Autoload is disabled.';
   ELSEIF r.loaded THEN
     RAISE DEBUG 'Anon data is already loaded.';
   ELSE
-    PERFORM @extschema@.load();
+    PERFORM anon.load();
   END IF;
 
   EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', maskschema);
-  EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''sourceschema'';', sourceschema);
-  EXECUTE format('UPDATE @extschema@.config SET value=''%s'' WHERE param=''maskschema'';', maskschema);
+  EXECUTE format('UPDATE anon.config SET value=''%s'' WHERE param=''sourceschema'';', sourceschema);
+  EXECUTE format('UPDATE anon.config SET value=''%s'' WHERE param=''maskschema'';', maskschema);
 
-  PERFORM @extschema@.mask_update();
+  PERFORM anon.mask_update();
 
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Backward compatibility with version 0.2
-CREATE OR REPLACE FUNCTION @extschema@.mask_init(
+CREATE OR REPLACE FUNCTION anon.mask_init(
   sourceschema TEXT DEFAULT 'public',
   maskschema TEXT DEFAULT 'mask',
   autoload BOOLEAN DEFAULT TRUE
 )
 RETURNS BOOLEAN AS
 $$
-SELECT @extschema@.start_dynamic_masking(sourceschema,maskschema,autoload);
+SELECT anon.start_dynamic_masking(sourceschema,maskschema,autoload);
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- this is opposite of start_dynamic_masking()
-CREATE OR REPLACE FUNCTION @extschema@.stop_dynamic_masking()
+CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  PERFORM @extschema@.mask_disable();
+  PERFORM anon.mask_disable();
 
   -- Walk through all tables in the source schema and drop the masking view
-  PERFORM @extschema@.mask_drop_view(oid)
+  PERFORM anon.mask_drop_view(oid)
   FROM pg_class
-  WHERE relnamespace=@extschema@.source_schema()::regnamespace
+  WHERE relnamespace=anon.source_schema()::regnamespace
   AND relkind = 'r' -- relations only
   ;
 
   -- Walk through all masked roles and remove their masl
-  PERFORM @extschema@.unmask_role(oid::REGROLE)
+  PERFORM anon.unmask_role(oid::REGROLE)
   FROM pg_catalog.pg_roles
-  WHERE @extschema@.hasmask(oid::REGROLE);
+  WHERE anon.hasmask(oid::REGROLE);
 
   -- Erase the config
-  DELETE FROM @extschema@.config WHERE param='sourceschema';
-  DELETE FROM @extschema@.config WHERE param='maskschema';
+  DELETE FROM anon.config WHERE param='sourceschema';
+  DELETE FROM anon.config WHERE param='maskschema';
 
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 
 -- This is run after all DDL query
-CREATE OR REPLACE FUNCTION @extschema@.mask_trigger()
+CREATE OR REPLACE FUNCTION anon.mask_trigger()
 RETURNS EVENT_TRIGGER AS
 $$
 -- SQL Functions cannot return EVENT_TRIGGER,
 -- we're forced to write a plpgsql function
 BEGIN
-  PERFORM @extschema@.mask_update();
+  PERFORM anon.mask_update();
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql SECURITY INVOKER;
 
 
 -- Mask a specific role
-CREATE OR REPLACE FUNCTION @extschema@.mask_role(
+CREATE OR REPLACE FUNCTION anon.mask_role(
   maskedrole REGROLE
 )
 RETURNS BOOLEAN AS
@@ -1199,22 +1382,22 @@ DECLARE
   sourceschema REGNAMESPACE;
   maskschema REGNAMESPACE;
 BEGIN
-  SELECT @extschema@.source_schema()::REGNAMESPACE INTO sourceschema;
-  SELECT @extschema@.mask_schema()::REGNAMESPACE INTO maskschema;
+  SELECT anon.source_schema()::REGNAMESPACE INTO sourceschema;
+  SELECT anon.mask_schema()::REGNAMESPACE INTO maskschema;
   RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
   EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
-  EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', '@extschema@', maskedrole);
-  EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', '@extschema@', maskedrole);
+  EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', 'anon', maskedrole);
+  EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', 'anon', maskedrole);
   EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', maskschema, maskedrole);
   EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', maskschema, maskedrole);
   EXECUTE format('ALTER ROLE %s SET search_path TO %s,%s;', maskedrole, maskschema,sourceschema);
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql SECURITY INVOKER;
 
 -- Remove (partially) the mask of a specific role
-CREATE OR REPLACE FUNCTION @extschema@.unmask_role(
+CREATE OR REPLACE FUNCTION anon.unmask_role(
   maskedrole REGROLE
 )
 RETURNS BOOLEAN AS
@@ -1229,80 +1412,80 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql SECURITY INVOKER;
 
 
 -- load the event trigger
-CREATE OR REPLACE FUNCTION @extschema@.mask_enable()
+CREATE OR REPLACE FUNCTION anon.mask_enable()
 RETURNS BOOLEAN AS
 $$
 BEGIN
   IF NOT EXISTS (
-    SELECT FROM pg_event_trigger WHERE evtname='@extschema@_mask_update'
+    SELECT FROM pg_event_trigger WHERE evtname='anon_mask_update'
   )
   THEN
-    CREATE EVENT TRIGGER @extschema@_mask_update ON ddl_command_end
-    EXECUTE PROCEDURE @extschema@.mask_trigger();
+    CREATE EVENT TRIGGER anon_mask_update ON ddl_command_end
+    EXECUTE PROCEDURE anon.mask_trigger();
   ELSE
-    RAISE DEBUG 'event trigger "@extschema@_mask_update" already exists: skipping';
+    RAISE DEBUG 'event trigger "anon_mask_update" already exists: skipping';
     RETURN FALSE;
   END IF;
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- unload the event trigger
-CREATE OR REPLACE FUNCTION @extschema@.mask_disable()
+CREATE OR REPLACE FUNCTION anon.mask_disable()
 RETURNS BOOLEAN AS
 $$
 BEGIN
   IF EXISTS (
-    SELECT FROM pg_event_trigger WHERE evtname='@extschema@_mask_update'
+    SELECT FROM pg_event_trigger WHERE evtname='anon_mask_update'
   )
   THEN
-    DROP EVENT TRIGGER IF EXISTS @extschema@_mask_update;
+    DROP EVENT TRIGGER IF EXISTS anon_mask_update;
   ELSE
-    RAISE DEBUG 'event trigger "@extschema@_mask_update" does not exist: skipping';
+    RAISE DEBUG 'event trigger "anon_mask_update" does not exist: skipping';
   RETURN FALSE;
   END IF;
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -- Rebuild the dynamic masking views and masked roles from scratch
-CREATE OR REPLACE FUNCTION @extschema@.mask_update()
+CREATE OR REPLACE FUNCTION anon.mask_update()
 RETURNS BOOLEAN AS
 $$
   -- This DDL EVENT TRIGGER will launch new DDL statements
   -- therefor we have disable the EVENT TRIGGER first
   -- in order to avoid an infinite triggering loop :-)
-  SELECT @extschema@.mask_disable();
+  SELECT anon.mask_disable();
 
   -- Walk through all tables in the source schema
   -- and build a dynamic masking view
-  SELECT @extschema@.mask_create_view(oid)
+  SELECT anon.mask_create_view(oid)
   FROM pg_class
-  WHERE relnamespace=@extschema@.source_schema()::regnamespace
+  WHERE relnamespace=anon.source_schema()::regnamespace
   AND relkind = 'r' -- relations only
   ;
 
   -- Walk through all masked roles and apply the restrictions
-  SELECT @extschema@.mask_role(oid::REGROLE)
+  SELECT anon.mask_role(oid::REGROLE)
   FROM pg_catalog.pg_roles
-  WHERE @extschema@.hasmask(oid::REGROLE);
+  WHERE anon.hasmask(oid::REGROLE);
 
   -- Restore the mighty DDL EVENT TRIGGER
-  SELECT @extschema@.mask_enable();
+  SELECT anon.mask_enable();
 $$
-LANGUAGE SQL VOLATILE;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- Anonymous Dumps
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION @extschema@.dump_ddl()
+CREATE OR REPLACE FUNCTION anon.dump_ddl()
 RETURNS TABLE (
     ddl TEXT
 ) AS
@@ -1315,8 +1498,8 @@ $$
       FROM pg_namespace
       WHERE nspname NOT LIKE 'pg_%'
       AND nspname NOT IN  ( 'information_schema' ,
-                            '@extschema@' ,
-                            @extschema@.mask_schema()
+                            'anon' ,
+                            anon.mask_schema()
                           )
     )
   -- drop [S]equences before [t]ables
@@ -1324,18 +1507,27 @@ $$
             oid::regclass
     ;
 $$
-LANGUAGE SQL;
+LANGUAGE SQL SECURITY INVOKER;
 
 -- generate the "COPY ... FROM STDIN" statement for a table
-CREATE OR REPLACE FUNCTION @extschema@.get_copy_statement(relid OID)
+CREATE OR REPLACE FUNCTION anon.get_copy_statement(relid OID)
 RETURNS TEXT AS
 $$
 DECLARE
+  empty_table BOOLEAN;
   copy_statement TEXT;
   val TEXT;
   rec RECORD;
 BEGIN
---  /!\ cannot use COPY TO STDOUT in PL/pgSQL
+-- Stop right now if the table is empty
+  EXECUTE format(E'SELECT true WHERE NOT EXISTS (SELECT 1 FROM %s);',
+                                                    relid::REGCLASS)
+  INTO empty_table;
+  IF empty_table THEN
+    RETURN '';
+  END IF;
+
+  --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
   copy_statement := format(E' COPY %s
                               FROM STDIN
                               CSV QUOTE AS ''"''
@@ -1355,33 +1547,33 @@ BEGIN
   RETURN copy_statement;
 END
 $$
-LANGUAGE plpgsql VOLATILE;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 -- export content of all the tables as COPY statements
-CREATE OR REPLACE FUNCTION @extschema@.dump_data()
+CREATE OR REPLACE FUNCTION anon.dump_data()
 RETURNS TABLE (
     data TEXT
 ) AS
 $$
-  SELECT @extschema@.get_copy_statement(relid)
+  SELECT anon.get_copy_statement(relid)
   FROM pg_stat_user_tables
-  WHERE schemaname NOT IN ( '@extschema@' , @extschema@.mask_schema() )
+  WHERE schemaname NOT IN ( 'anon' , anon.mask_schema() )
   ORDER BY  relid::regclass -- sort by name to force the dump order
 $$
-LANGUAGE SQL;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- export the database schema + anonymized data
-CREATE OR REPLACE FUNCTION @extschema@.dump()
+CREATE OR REPLACE FUNCTION anon.dump()
 RETURNS TABLE (
   dump TEXT
 ) AS
 $$
-    SELECT @extschema@.dump_ddl()
+    SELECT anon.dump_ddl()
     UNION ALL -- ALL is required to maintain the lines order as appended
-    SELECT @extschema@.dump_data()
+    SELECT anon.dump_data()
 $$
-LANGUAGE SQL;
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 
 
@@ -1393,7 +1585,7 @@ LANGUAGE SQL;
 --   * tests/sql/generalization.sql
 
 -- Transform an integer into a range of integer
-CREATE OR REPLACE FUNCTION @extschema@.generalize_int4range(
+CREATE OR REPLACE FUNCTION anon.generalize_int4range(
   val INTEGER,
   step INTEGER default 10
 )
@@ -1404,10 +1596,10 @@ SELECT int4range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- Transform a bigint into a range of bigint
-CREATE OR REPLACE FUNCTION @extschema@.generalize_int8range(
+CREATE OR REPLACE FUNCTION anon.generalize_int8range(
   val BIGINT,
   step BIGINT DEFAULT 10
 )
@@ -1418,17 +1610,17 @@ SELECT int8range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- Transform a numeric into a range of numeric
-CREATE OR REPLACE FUNCTION @extschema@.generalize_numrange(
+CREATE OR REPLACE FUNCTION anon.generalize_numrange(
   val NUMERIC,
   step INTEGER DEFAULT 10
 )
 RETURNS NUMRANGE
 AS $$
 WITH i AS (
-  SELECT @extschema@.generalize_int4range(val::INTEGER,step) as r
+  SELECT anon.generalize_int4range(val::INTEGER,step) as r
 )
 SELECT numrange(
     lower(i.r)::NUMERIC,
@@ -1437,13 +1629,13 @@ SELECT numrange(
 FROM i
 ;
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- Transform a timestamp with out timezone (ts) into a range of ts
 -- the `step` option can have the following values
 --        microseconds,milliseconds,second,minute,hour,day,week,
 --        month,year,decade,century,millennium
-CREATE OR REPLACE FUNCTION @extschema@.generalize_tsrange(
+CREATE OR REPLACE FUNCTION anon.generalize_tsrange(
   val TIMESTAMP WITHOUT TIME ZONE,
   step TEXT DEFAULT 'decade'
 )
@@ -1454,10 +1646,10 @@ SELECT tsrange(
     date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE + ('1 '|| step)::INTERVAL
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- tstzrange
-CREATE OR REPLACE FUNCTION @extschema@.generalize_tstzrange(
+CREATE OR REPLACE FUNCTION anon.generalize_tstzrange(
   val TIMESTAMP WITH TIME ZONE,
   step TEXT DEFAULT 'decade'
 )
@@ -1470,10 +1662,10 @@ SELECT tstzrange( d, d + ('1 '|| step)::INTERVAL )
 FROM lowerbound
 ;
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
 -- daterange — Range of date
-CREATE OR REPLACE FUNCTION @extschema@.generalize_daterange(
+CREATE OR REPLACE FUNCTION anon.generalize_daterange(
   val DATE,
   step TEXT DEFAULT 'decade'
 )
@@ -1484,7 +1676,8 @@ SELECT daterange(
     (date_trunc(step, val) + ('1 '|| step)::INTERVAL)::DATE
   );
 $$
-LANGUAGE SQL IMMUTABLE;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+
 -------------------------------------------------------------------------------
 -- Risk Evaluation
 -------------------------------------------------------------------------------
@@ -1495,7 +1688,7 @@ LANGUAGE SQL IMMUTABLE;
 -- This is an attempt to implement various anonymity assement methods.
 -- These functions should be used with care.
 
-CREATE OR REPLACE VIEW @extschema@.pg_identifiers AS
+CREATE OR REPLACE VIEW anon.pg_identifiers AS
 WITH const AS (
   SELECT
     '%(quasi|indirect) identifier%'::TEXT AS pattern_indirect_identifier
@@ -1522,7 +1715,7 @@ AND sl.provider = 'anon' -- this is hard-coded in anon.c
 
 
 -- see https://en.wikipedia.org/wiki/K-anonymity
-CREATE OR REPLACE FUNCTION  @extschema@.k_anonymity(
+CREATE OR REPLACE FUNCTION  anon.k_anonymity(
   relid REGCLASS
 )
 RETURNS INTEGER
@@ -1533,7 +1726,7 @@ DECLARE
 BEGIN
   SELECT string_agg(attname,',')
   INTO identifiers
-  FROM @extschema@.pg_identifiers
+  FROM anon.pg_identifiers
   WHERE relname::REGCLASS = relid;
 
   IF identifiers IS NULL THEN
@@ -1559,7 +1752,7 @@ BEGIN
   RETURN result;
 END
 $$
-LANGUAGE plpgsql IMMUTABLE;
+LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER;
 
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 

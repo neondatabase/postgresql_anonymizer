@@ -85,7 +85,7 @@ This will destroy the original data. Use with care.
 -# IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
 =# SECURITY LABEL FOR anon ON COLUMN customer.birth   
--# IS 'MASKED WITH FUNCTION anon.random_date_between(''01/01/1920''::DATE,now())';
+-# IS 'MASKED WITH FUNCTION anon.random_date_between(''1920-01-01''::DATE,now())';
 
 =# SECURITY LABEL FOR anon ON COLUMN customer.employer
 -# IS 'MASKED WITH FUNCTION anon.fake_company()';
@@ -211,25 +211,23 @@ It requires two extensions :
 Install
 -------------------------------------------------------------------------------
 
-1. Install the extension on the server with :
+_Step 1._ Install the extension on the server with :
 
 ```console
 sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 
-2. Add 'anon' in the `shared_preload_libraries` parameter of you `postgresql.conf` file. For example:
+_Step 2:_  Add the extension to the preload librairies and reload 
+the configuration:
 
+```sql
+ALTER SYSTEM SET session_preload_libraries = 'anon';
+SELECT pg_reload_conf();
 ```
-shared_preload_libraries = 'pg_stat_statements, anon'
-```
-
-3. Restart your instance. 
-
-
 
 You can also read the [INSTALL] section for detailed instructions 
-or if you want to deploy it on Amazon RDS or some other DBAAS service. 
+or if you want to deploy it on Amazon RDS or some other DBaaS provider. 
 
 
 
@@ -278,7 +276,7 @@ CREATE MATERIALIZED VIEW masked_customer AS
 SELECT
     id,
     anon.random_last_name() AS name,
-    anon.random_date_between('01/01/1920'::DATE,now()) AS birth,
+    anon.random_date_between('1920-01-01'::DATE,now()) AS birth,
     fk_last_order,
     store_id
 FROM customer;
