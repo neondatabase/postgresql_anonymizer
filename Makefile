@@ -29,7 +29,7 @@ DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
 REGRESS_TESTS = load destruction noise shuffle random faking pseudonymization partial
-REGRESS_TESTS+= anonymize dump restore
+REGRESS_TESTS+= anonymize dump pg_dump_anon restore
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= injection conflict_seclabel_vs_comment syntax_checks
