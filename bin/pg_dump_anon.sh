@@ -62,7 +62,7 @@ $PSQL $psql_connect_opt << EOSQL
   SELECT relid
   FROM pg_stat_user_tables
   WHERE schemaname NOT IN ( 'anon' , anon.mask_schema() )
-  ORDER BY  relid::regclass -- sort by name to force the dump order
+  ORDER BY  relid::REGCLASS::TEXT -- sort by name to force the dump order
 EOSQL
 }
 
@@ -86,11 +86,12 @@ fi
 
 ##
 ## pg_dump and psql have a lot of common parameters ( -h, -d, etc.) but they
-## also have similar parameters with different names (e.g. `pg_dump -f` and 
-## `psql -o` ). This wrapper script allows a subset of pg_dump's parameters 
-## and when needed, we transform the pg_dump options into the matching psql 
+## also have similar parameters with different names (e.g. `pg_dump -f` and
+## `psql -o` ). This wrapper script allows a subset of pg_dump's parameters
+## and when needed, we transform the pg_dump options into the matching psql
 ## options
 ##
+pg_dump_opt=$@ # backup args before parsing
 psql_connect_opt= # connections options
 psql_other_opt=   # other options (currently only -f is supported)
 
@@ -157,7 +158,10 @@ echo "--"
 echo
 
 ## Dump the DDL
-pg_dump --schema-only "$@"
+##
+## Security Labels are excluded, because we do not want the masking rules in
+## the anon dump !
+pg_dump --schema-only --no-security-labels --exclude-schema=anon $pg_dump_opt
 
 ## Dump the Masking Views instead of the real data
 list_user_tables | while read -a record ; do
