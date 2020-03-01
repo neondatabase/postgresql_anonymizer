@@ -164,6 +164,10 @@ $(STD_ARTEFACTS): anon.sql | _pgddl
 	echo "\copy anon.iban FROM 'data/default/iban.csv';\n" >> $@
 	echo "\copy anon.last_name FROM 'data/default/last_name.csv';\n" >> $@
 	echo "\copy anon.siret FROM 'data/default/siret.csv';\n" >> $@
+	echo "\copy anon.identifiers_category FROM 'data/default/identifiers_category.csv');" >> $@
+	echo "\copy anon.identifier FROM 'data/default/identifier_fr_FR.csv');" >> $@
+	echo "\copy anon.identifier FROM 'data/default/identifier_en_US.csv');" >> $@
+
 
 _pgddl: # fetch the pgddl extension
 	-git clone https://github.com/lacanoid/pgddl.git $@
