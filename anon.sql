@@ -23,6 +23,36 @@ SELECT pg_catalog.pg_extension_config_dump('anon.config','');
 COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
 
 
+-- name of the source schema
+-- default value: 'public'
+CREATE OR REPLACE FUNCTION anon.source_schema()
+RETURNS TEXT AS
+$$
+WITH default_config(value) AS (
+  VALUES ('public')
+)
+SELECT COALESCE(c.value, d.value)
+FROM default_config d
+LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
+;
+$$
+LANGUAGE SQL STABLE SECURITY INVOKER;
+
+-- name of the masking schema
+-- default value: 'mask'
+CREATE OR REPLACE FUNCTION anon.mask_schema()
+RETURNS TEXT AS
+$$
+WITH default_config(value) AS (
+  VALUES ('mask')
+)
+SELECT COALESCE(c.value, d.value)
+FROM default_config d
+LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
+;
+$$
+LANGUAGE SQL STABLE SECURITY INVOKER;
+
 
 
 -------------------------------------------------------------------------------
@@ -1025,36 +1055,6 @@ CREATE OR REPLACE VIEW anon.pg_masks AS
 SELECT * FROM anon.pg_masking_rules
 ;
 
-
--- name of the source schema
--- default value: 'public'
-CREATE OR REPLACE FUNCTION anon.source_schema()
-RETURNS TEXT AS
-$$
-WITH default_config(value) AS (
-  VALUES ('public')
-)
-SELECT COALESCE(c.value, d.value)
-FROM default_config d
-LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
-;
-$$
-LANGUAGE SQL STABLE SECURITY INVOKER;
-
--- name of the masking schema
--- default value: 'mask'
-CREATE OR REPLACE FUNCTION anon.mask_schema()
-RETURNS TEXT AS
-$$
-WITH default_config(value) AS (
-  VALUES ('mask')
-)
-SELECT COALESCE(c.value, d.value)
-FROM default_config d
-LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
-;
-$$
-LANGUAGE SQL STABLE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
 -- In-Place Anonymization
