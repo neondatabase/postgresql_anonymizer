@@ -3,6 +3,7 @@ _pgxn
 # unit tests
 results/*
 tests/results/*
+tests/tmp/*
 # vim
 *.swp
 *.swo
