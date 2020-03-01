@@ -22,24 +22,16 @@ CREATE TABLE vendor (
   phone_number TEXT,
   birth DATE
 );
-SELECT anon.detect();
-               detect               
-------------------------------------
- (customer,CreditCard,creditcard,t)
- (customer,CreditCard,creditcard,t)
- (vendor,Firstname,firstname,t)
- (customer,firstname,firstname,t)
- (customer,id,account_id,t)
-(5 rows)
+SELECT anon.detect() IS NOT NULL LIMIT 1;
+ ?column? 
+----------
+ t
+(1 row)
 
-SELECT * FROM anon.detect('fr_FR');
- table_name | column_name | identifiers_category | direct 
-------------+-------------+----------------------+--------
- customer   | CreditCard  | creditcard           | t
- customer   | CreditCard  | creditcard           | t
- vendor     | Firstname   | firstname            | t
- customer   | firstname   | firstname            | t
- customer   | id          | account_id           | t
-(5 rows)
+SELECT count(*) = 5  FROM anon.detect('fr_FR');
+ ?column? 
+----------
+ t
+(1 row)
 
 ROLLBACK;

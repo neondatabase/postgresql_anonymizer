@@ -24,9 +24,9 @@ CREATE TABLE vendor (
 );
 
 
-SELECT anon.detect();
+SELECT anon.detect() IS NOT NULL LIMIT 1;
 
-SELECT * FROM anon.detect('fr_FR');
+SELECT count(*) = 5  FROM anon.detect('fr_FR');
 
 
 ROLLBACK;
