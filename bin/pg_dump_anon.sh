@@ -11,7 +11,7 @@ usage()
 {
   echo "Usage: $(basename $0) [OPTION]... [DBNAME]"
   echo
-  echo "Connection options:"
+  echo "Options:"
   echo
   echo "-d, --dbname=DBNAME      database to dump"
   echo "-f, --file=FILENAME      output file"
@@ -58,7 +58,7 @@ print_copy_statement () {
 
 ## Return the relid of each user table
 list_user_tables() {
-$PSQL $psql_connect_opt << EOSQL
+$PSQL << EOSQL
   SELECT relid
   FROM pg_stat_user_tables
   WHERE schemaname NOT IN ( 'anon' , anon.mask_schema() )
@@ -69,20 +69,6 @@ EOSQL
 ##
 ## M A I N
 ##
-
-SHORT_OPTIONS=d:f:h:p:U:wW
-LONG_OPTIONS=dbname:,file:,host:,port:,username:,no-password,password,help
-
-## Checks options
-options=$(getopt -o $SHORT_OPTIONS --long $LONG_OPTIONS -- "$@" 2>/dev/null)
-if [ $? -ne 0 ]
-then
-  # rerun getopt to find which option is invalid
-  errmsg=$(getopt -o $SHORT_OPTIONS -l $LONG_OPTIONS -- "$@" 2>&1 1>&-)
-  # Strip getopt's prefix and augment with custom information.
-  echo -e "${errmsg#getopt: }\nTry '$0 --help for more information." 1>&2
-  exit
-fi
 
 ##
 ## pg_dump and psql have a lot of common parameters ( -h, -d, etc.) but they
@@ -132,9 +118,14 @@ while [ $# -gt 0 ]; do
         usage
         exit 0
         ;;
-    ?)
-        echo "Error: Invalid option was specified -$1"
+    -*|--*)
+        echo $0: Invalid option -- $1
+        echo Try "$0 --help" for more information.
         exit 1
+        ;;
+    *)
+        # this is DBNAME
+        psql_connect_opt+=" $1"
         ;;
     esac
     shift
