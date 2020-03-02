@@ -166,13 +166,13 @@ Anonymous Dumps
 
 Due to the core design of this extension, you cannot use `pg_dump` with a masked 
 user. If you want to export the entire database with the anonymized data, you 
-must use the `anon.dump()` function :
+must use the `pg_dump_anon` command line. For example
 
 ```console
-$ psql [...] -qtA -c 'SELECT anon.dump()' your_dabatase > dump.sql
+$ pg_dump_anon -h localhost -p 5432 -U bob bob_db > dump.sql
 ```
 
-NB: The `-qtA` flags are required.
+For more details, please read the [Anonymous Dumps] section.
 
 
 Warning
