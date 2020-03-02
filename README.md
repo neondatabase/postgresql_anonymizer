@@ -218,16 +218,15 @@ sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 
-_Step 2:_  Add the extension to the preload librairies and reload 
-the configuration:
+_Step 2:_  Load the extension in the database you want to anonymize
 
 ```sql
-ALTER SYSTEM SET session_preload_libraries = 'anon';
-SELECT pg_reload_conf();
+ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-You can also read the [INSTALL] section for detailed instructions 
-or if you want to deploy it on Amazon RDS or some other DBaaS provider. 
+There are other ways to install and load the extension. You can read the [INSTALL] 
+section for detailed instructions or if you want to deploy it on Amazon RDS or 
+some other DBaaS provider. 
 
 
 
