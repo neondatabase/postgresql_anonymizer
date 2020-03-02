@@ -1,6 +1,28 @@
 INSTALL
 ===============================================================================
 
+The installation process is composed of 2 basic steps: 
+
+1. First, install the extension on the PostgreSQL instance
+2. Then, load the extension in the instance
+
+There are multiple ways to install the extension :
+
+* [Install on RedHat / CentOS](#install-on-redhat-centos)
+* [Install with PGXN](#install-with-pgxn)
+* [Install from source](#install-from-source)
+* [Install in the cloud](#install-in-the-cloudInstall in the cloud)
+* [Install with docker](#install-with-docker)
+* [Install as a block box](#install-as-a-black-boxInstall as a "Black Box")
+* [Install on MacOS](#install-on-macos)
+
+In the examples below, we load the extension using `session_preload_librairies` 
+but there are also multiple ways to load it. See [Load the extension]
+for more details.
+
+[Load the extension]: #load-the-extension
+
+
 Install on RedHat / CentOS
 ------------------------------------------------------------------------------
 
@@ -25,14 +47,13 @@ $ sudo yum install postgresql_anonymizer12
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add the extension to the preload librairies and reload 
-the configuration:
+_Step 2:_  Add the extension to the preloaded librairies of your database
 
 ```sql
-ALTER SYSTEM SET session_preload_libraries = 'anon';
-SELECT pg_reload_conf();
+ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
+All new connections to the database can now use the extension.
 
 
 Install With [PGXN](https://pgxn.org/) :
@@ -49,13 +70,14 @@ $ sudo pgxn install postgresql_anonymizer
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add the extension to the preload librairies and reload 
-the configuration:
+_Step 2:_  Add the extension to the preloaded librairies of your database
 
 ```sql
-ALTER SYSTEM SET session_preload_libraries = 'anon';
-SELECT pg_reload_conf();
+ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
+
+All new connections to the database can now use the extension.
+
 
 **Additional notes:**
 
@@ -83,13 +105,13 @@ $ make extension
 $ sudo make install
 ```
 
-_Step 2:_  Add the extension to the preload librairies and reload 
-the configuration:
+_Step 2:_  Add the extension to the preloaded librairies of your database
 
 ```sql
-ALTER SYSTEM SET session_preload_libraries = 'anon';
-SELECT pg_reload_conf();
-``` 
+ALTER DATABASE foo SET session_preload_libraries = 'anon';
+```
+
+All new connections to the database can now use the extension.
 
 
 Install in the cloud
@@ -229,20 +251,33 @@ $ make install
 ```
 
 
-Additionnal notes
+Load the extension
 ------------------------------------------------------------------------------
 
+Here's some additional notes about how you can load the extension:
 
-* You can load the extension with the `shared_preload_libraries` parameter.
-  If you do so, you have to restart the PostgreSQL instance.
-
-* You can load the extension exclusively into a specific database like this: 
-    ```sql
-    ALTER DATABASE mydatabase SET session_preload_libraries='anon'
-    ```
-  It has several benefits:  First, it will be dumped by `pg_dump` with the`-C` 
-  option, so the database dump will be self efficient. Second, it is propagated 
-  to a standby instance by streaming replication. Which means you can use the 
-  anonymization functions on a read-only clone of the database (provided the 
-  extension is installed on the standby instance)
+1. You can load the extension exclusively into a specific database like this: 
+   ```sql
+   ALTER DATABASE mydatabase SET session_preload_libraries='anon'
+   ```
+   It has several benefits:  First, it will be dumped by `pg_dump` with the`-C` 
+   option, so the database dump will be self efficient. Second, it is propagated 
+   to a standby instance by streaming replication. Which means you can use the 
+   anonymization functions on a read-only clone of the database (provided the 
+   extension is installed on the standby instance)
   
+2. You can load the extension with the `shared_preload_libraries` parameter.
+   This way, the extension will be available to each database of the instance.
+   If you do so, you have to restart the PostgreSQL instance.
+
+3. For a one-time usage, You can the [LOAD] command
+   ```sql
+   LOAD '/usr/lib/postgresql/12/lib/anon.so';
+   ```
+
+You can read the [Shared Library Preloading] section of the PostgreSQL documentation
+for more details.
+
+[LOAD]: https://www.postgresql.org/docs/current/sql-load.html
+[Shared Library Preloading]:https://www.postgresql.org/docs/current/runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD
+
