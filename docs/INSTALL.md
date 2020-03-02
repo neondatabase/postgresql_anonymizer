@@ -8,18 +8,25 @@ The installation process is composed of 2 basic steps:
 
 There are multiple ways to install the extension :
 
-* [Install on RedHat / CentOS](#install-on-redhat-centos)
-* [Install with PGXN](#install-with-pgxn)
-* [Install from source](#install-from-source)
-* [Install in the cloud](#install-in-the-cloudInstall in the cloud)
-* [Install with docker](#install-with-docker)
-* [Install as a block box](#install-as-a-black-boxInstall as a "Black Box")
-* [Install on MacOS](#install-on-macos)
+* [Install on RedHat / CentOS]
+* [Install with PGXN]
+* [Install from source]
+* [Install in the cloud]
+* [Install with docker]
+* [Install as a block box]
+* [Install on MacOS]
 
 In the examples below, we load the extension using `session_preload_librairies` 
 but there are also multiple ways to load it. See [Load the extension]
 for more details.
 
+[Install on RedHat / CentOS]: #install-on-redhat-centos
+[Install with PGXN]: #install-with-pgxn
+[Install from source]: #install-from-source
+[Install in the cloud]: #install-in-the-cloud
+[Install with docker]: #install-with-docker
+[Install as a block box]: #install-as-a-black-box
+[Install on MacOS]: #install-on-macos
 [Load the extension]: #load-the-extension
 
 
@@ -47,10 +54,18 @@ $ sudo yum install postgresql_anonymizer12
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add the extension to the preloaded librairies of your database
+_Step 2:_  Add the extension to the preloaded librairies of your database.
+(If you already loading extensions that way, just add it the list)
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
+```
+
+_Step 3:_  Declare the extension and load the anonymization data
+
+```sql
+CREATE EXTENSION anon CASCADE;
+SELECT anon.load();
 ```
 
 All new connections to the database can now use the extension.
@@ -70,10 +85,18 @@ $ sudo pgxn install postgresql_anonymizer
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add the extension to the preloaded librairies of your database
+_Step 2:_  Add the extension to the preloaded librairies of your database.
+(If you already loading extensions that way, just add it the list)
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
+```
+
+_Step 3:_  Declare the extension and load the anonymization data
+
+```sql
+CREATE EXTENSION anon CASCADE;
+SELECT anon.load();
 ```
 
 All new connections to the database can now use the extension.
@@ -105,10 +128,18 @@ $ make extension
 $ sudo make install
 ```
 
-_Step 2:_  Add the extension to the preloaded librairies of your database
+_Step 2:_  Add the extension to the preloaded librairies of your database.
+(If you already loading extensions that way, just add it the list)
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
+```
+
+_Step 3:_  Declare the extension and load the anonymization data
+
+```sql
+CREATE EXTENSION anon CASCADE;
+SELECT anon.load();
 ```
 
 All new connections to the database can now use the extension.
@@ -143,6 +174,14 @@ of security labels.
 See [Declaring Rules with COMMENTs] for more details.
 
 [Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments 
+
+
+Now declare the extension and load the anonymization data
+
+```sql
+CREATE EXTENSION anon CASCADE;
+SELECT anon.load();
+```
 
 When you activate the masking engine, you need also to disable `autoload`:
 
