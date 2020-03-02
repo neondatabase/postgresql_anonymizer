@@ -291,10 +291,11 @@ CREATE TABLE anon.identifier(
   attname TEXT,
   fk_identifiers_category TEXT,
   PRIMARY KEY(attname,lang),
-  FOREIGN KEY (fk_identifiers_category) REFERENCES identifiers_category(name)
+  FOREIGN KEY (fk_identifiers_category)
+    REFERENCES anon.identifiers_category(name)
 );
 
-COMMENT ON TABLE anon.config
+COMMENT ON TABLE anon.identifier
 IS 'Dictionnary of common identifiers field names';
 
 CREATE OR REPLACE FUNCTION anon.detect(
