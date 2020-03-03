@@ -1,4 +1,5 @@
 CREATE DATABASE contrib_regression_test_restore;
+ERROR:  database "contrib_regression_test_restore" already exists
 \! psql contrib_regression_test_restore -c 'CREATE EXTENSION anon CASCADE;'
 ERROR:  extension "anon" already exists
 \! psql contrib_regression_test_restore -c 'SELECT anon.start_dynamic_masking();'
