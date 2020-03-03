@@ -1494,6 +1494,10 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER;
 -- Anonymous Dumps
 -------------------------------------------------------------------------------
 
+-- WARNING : this entire section is deprecated ! It kept for backward
+-- compatibility and will probably be remove before version 1.0 is released
+
+
 CREATE OR REPLACE FUNCTION anon.dump_ddl()
 RETURNS TABLE (
     ddl TEXT
@@ -1577,12 +1581,18 @@ CREATE OR REPLACE FUNCTION anon.dump()
 RETURNS TABLE (
   dump TEXT
 ) AS
-$$
+$func$
+BEGIN
+  RAISE NOTICE 'This function is deprecated !'
+    USING HINT = 'Use the pg_dump_anon command line instead.';
+
+  RETURN QUERY
     SELECT anon.dump_ddl()
     UNION ALL -- ALL is required to maintain the lines order as appended
-    SELECT anon.dump_data()
-$$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+    SELECT anon.dump_data();
+END;
+$func$
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 
