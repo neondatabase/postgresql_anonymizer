@@ -299,7 +299,7 @@ COMMENT ON TABLE anon.identifier
 IS 'Dictionnary of common identifiers field names';
 
 CREATE OR REPLACE FUNCTION anon.detect(
-  lang TEXT DEFAULT 'en_US'
+  dict_lang TEXT DEFAULT 'en_US'
 )
 RETURNS TABLE (
   table_name REGCLASS,
@@ -320,7 +320,7 @@ JOIN anon.identifiers_category ic
   ON fn.fk_identifiers_category = ic.name
 JOIN pg_catalog.pg_class c
   ON c.oid = a.attrelid
-WHERE fn.lang = lang
+WHERE fn.lang = dict_lang
   AND c.relnamespace IN ( -- exclude the extension tables and the catalog
         SELECT oid
         FROM pg_namespace
