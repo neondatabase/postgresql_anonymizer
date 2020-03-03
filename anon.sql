@@ -307,8 +307,14 @@ RETURNS TABLE (
   identifiers_category TEXT,
   direct BOOLEAN
 )
-AS $$
-SELECT
+AS $func$
+BEGIN
+  IF not anon.isloaded() THEN
+    RAISE NOTICE 'The dictionnaries are not loaded.'
+      USING HINT = 'You probably need to run ''SELECT anon.load()'' ';
+  END IF;
+
+RETURN QUERY SELECT
   a.attrelid::regclass,
   a.attname,
   ic.name,
@@ -331,8 +337,9 @@ WHERE fn.lang = dict_lang
                             )
       )
 ;
-$$
-LANGUAGE SQL IMMUTABLE;
+END;
+$func$
+LANGUAGE plpgsql IMMUTABLE;
 
 
 -------------------------------------------------------------------------------
@@ -1086,7 +1093,8 @@ BEGIN
 
   SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
   IF mf_is_a_faking_function AND not anon.isloaded() THEN
-    RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT anon.load()'' ';
+    RAISE NOTICE 'The faking data is not loaded.'
+      USING HINT = 'You probably need to run ''SELECT anon.load()'' ';
   END IF;
 
   RAISE DEBUG 'Anonymize %.% with %', tablename,colname, mf;
