@@ -16,7 +16,8 @@ SECURITY LABEL FOR anon ON COLUMN employee.phone
 IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 -- Should return a NOTICE but anonymize data anyway
 SELECT anon.anonymize_column('employee','lastname');
-NOTICE:  The faking data is not loaded. You probably need to run 'SELECT anon.load()' 
+NOTICE:  The faking data is not loaded.
+HINT:  You probably need to run 'SELECT anon.load()' 
  anonymize_column 
 ------------------
  t
