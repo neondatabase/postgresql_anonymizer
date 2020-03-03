@@ -1,4 +1,150 @@
 
+PostgreSQL Anonymizer 0.6: Pseudonymization and Improved Anonymous Exports 
+================================================================================
+
+Eymoutiers, France, Mars 5, 2020
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally 
+identifiable information (PII) or commercially sensitive data from a PostgreSQL 
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking], 
+[In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of 
+[Masking Functions]: Substitution, Randomization, Faking, Pseudonymization, 
+Partial Scrambling, Shuffling, Noise Addition and Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[In-Place Anonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/in_place_anonymization/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+Pseudonymization
+--------------------------------------------------------------------------------
+
+[Pseudonymization] functions are similar to the faking functions in the sense 
+that they generate realistic values. The main difference is that pseudonymization 
+is deterministic : the functions will always return the same fake value based on 
+a seed and an optional salt. 
+
+    # SELECT anon.pseudo_email('Alice','salt123');
+       pseudo_email
+    -------------------
+     fcadell56@ucoz.ru                                                                                                                                                                                                       
+    # SELECT anon.pseudo_email('Alice','salt123');
+       pseudo_email
+    -------------------
+     fcadell56@ucoz.ru                       
+                                                                                                                                                                                                                                                                                                                                                                      
+**WARNING** : Pseudonymization is often confused with anonymization but in fact 
+they serve 2 different purposes. With pseudonymization, the real data can be 
+rebuilt using the pseudo data and the masking rule. If an attacker
+gets access to these elements, he or she can easily re-identify some people 
+using `brute force` or `dictionnary` attacks. Therefore, you should protect any 
+pseudonymized data with the same level of security that the original dataset. 
+The GDPR makes it very clear that personal data which have undergone 
+pseudonymization are still considered to be personal information.
+
+[Pseudonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/#pseudonymization
+
+
+
+Improved Anonymous Exports
+--------------------------------------------------------------------------------
+
+The `anon.dump()` function was slow and unpractical. It is now deprecated and 
+replace by a tool named `pg_dump_anon` that you can use like the regular `pg_dump` 
+command:
+
+    $ pg_dump_anon -h localhost -U bob mydb > anonymous_dump.sql
+
+It uses the same connections parameters that `pg_dump`. The PostgreSQL 
+environement variables ($PGHOST, PGUSER, etc.)  and `.pgpass` are supported. 
+However the `plain` format is the only supported format. The other formats 
+(`custom`, `dir` and `tar`) are not supported.
+
+
+Detecting Hidden Identifiers
+--------------------------------------------------------------------------------
+
+This extension makes it very easy to declare masking rules. But of course when 
+you're creating an anonymization startegy, the hard part is to scan the database 
+model to find which columns contains direct and indirect identifiers and then 
+decide how these identifiers should be masked.
+
+We now provide a `detect()` function that will search for common 
+identifiers names based on a dictionnary. For now, 2 dictionnaries are 
+available : English ('en_US') and French ('fr_FR'). By the default the
+English dictionnary is used:
+
+
+    # SELECT anon.detect('en_US');
+     table_name |  column_name   | identifiers_category | direct
+    ------------+----------------+----------------------+--------
+     customer   | CreditCard     | creditcard           | t
+     customer   | id             | account_id           | t 
+     vendor     | Firstname      | firstname            | t
+
+The identifier categories are based on the [HIPAA classification].
+
+[HIPAA classification]: https://www.luc.edu/its/aboutits/itspoliciesguidelines/hipaainformation/18hipaaidentifiers/
+
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 9.6 and later.
+
+On Red Hat / CentOS systems, you can install it from the 
+[official PostgreSQL RPM repository]:
+
+
+    $ yum install postgresql_anonymizer12
+
+
+Then add 'anon' in the `shared_preload_libraries` parameter of your 
+`postgresql.conf` file. And restart your instance. 
+
+For other systems, check out the [install] documentation :
+
+https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+> **WARNING:** The project is at an early stage of development and should be 
+> used carefully.
+
+[official PostgreSQL RPM repository]: https://yum.postgresql.org/
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+Thanks 
+--------------------------------------------------------------------------------
+
+
+This release includes code and ideas from Sebastien Delobel, Sam Buckingham, 
+Thomas Clark, Joe Auty and Olleg Samoylov.  Many thanks to them !
+
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly 
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and 
+ideas ! Let us know what you think of this tool, how it fits your needs and 
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+
+
+--------------------------------------------------------------------------------
+
+
 PostgreSQL Anonymizer 0.5: Generalization and k-anonymity
 ================================================================================
 

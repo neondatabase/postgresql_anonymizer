@@ -1,12 +1,16 @@
 CHANGELOG
 ===============================================================================
 
-2019FIXME : 0.6.0 - WORK IN PROGRESS
+20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps 
 -------------------------------------------------------------------------------
+
+_Dependencies:__
+  - tms_system_rows
+  - ddlx 
 
 * [doc] Typos, grammar (Nikolay Samokhvalov)
 * [doc] make help
-* [security] declare explicitly all functions as SECURITY INVOKER
+* [security] declare explicitly all function as `SECURITY INVOKER`
 * [doc] typos (Sebastien Delobel)
 * [docker] improve the "black box" method (Sam Buckingham)
 * [dump] Fix #112 : invalid command \."
@@ -17,7 +21,9 @@ CHANGELOG
 * [dump] anon.dump() is not deprecated
 * [dump] introducing `pg_dump_anon` command line tool
 * [pseudo] introducing pseudonymization functions
-* [security] declare explicitly all function as `SECURITY INVOKER`
+* [doc] clean up, typos and reorg
+* [detection] introducing the identifiers detection function
+
 
 20191106 : 0.5.0 - Generalization and k-anonymity
 -------------------------------------------------------------------------------
