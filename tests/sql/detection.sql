@@ -1,7 +1,12 @@
 
 BEGIN;
 
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+DROP EXTENSION IF EXISTS anon CASCADE;
+CREATE EXTENSION anon CASCADE;
+
+
+-- This should RAISE NOTICE
+SELECT anon.detect();
 
 -- INIT
 
@@ -23,10 +28,22 @@ CREATE TABLE vendor (
   birth DATE
 );
 
+CREATE TABLE vendeur (
+  identifiant INTEGER UNIQUE,
+  "Prenom" TEXT,
+  nom TEXT,
+  telephone TEXT,
+  date_naissance DATE
+);
+
 
 SELECT anon.detect() IS NOT NULL LIMIT 1;
 
-SELECT count(*) = 5  FROM anon.detect('fr_FR');
+SELECT count(*) = 6  FROM anon.detect('fr_FR');
+
+SELECT count(*) = 3  FROM anon.detect('en_US');
+
+SELECT count(*) = 0  FROM anon.detect('fnkgfdlg,sdkf,vkvsld');
 
 
 ROLLBACK;
