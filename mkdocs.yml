@@ -14,6 +14,7 @@ nav:
   - 'Dynamic Masking': 'dynamic_masking.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
   - 'Generalization': 'generalization.md'
+  - 'Detection': 'dectection.md'
   - 'Concepts': 'concepts.md'
   - 'Upgrade': 'UPGRADE.md'
   - 'Security': 'SECURITY.md'

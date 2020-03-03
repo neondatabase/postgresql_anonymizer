@@ -9,9 +9,9 @@ Anonymization & Data Masking for PostgreSQL
 [personally identifiable information] (PII) or commercially sensitive data from
 a PostgreSQL database.
 
-The projet is aiming toward a **declarative approach** of anonymization. This
-means we're trying to extend PostgreSQL Data Definition Language (DDL) in
-order to specify the anonymization strategy inside the table definition itself.
+The projet has a **declarative approach** of anonymization. This means you can 
+[declare the masking rules] using the PostgreSQL Data Definition Language (DDL) 
+and specify your anonymization strategy inside the table definition itself.
 
 Once the maskings rules are defined, you can access the anonymized data in 3  
 different ways :
@@ -24,11 +24,15 @@ In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shufflin, noise or even your own custom function !
 
 Beyond masking, it is also possible to use [Generalization] and [k-anonymity] 
-functions, which are perfect for analytics.
+functions, which are perfect for analytics data.
+
+Finally the extension offers a panel of [detection] functions that will try to 
+guess which columns needs to be anonymized.
 
 [INSTALL.md]: INSTALL/
 [Concepts]: concepts/
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
+[declare the masking rules]: declare_masking_rules/
 
 [Anonymous Dumps]: anonymous_dumps/
 [In-Place Anonymization]: in_place_anonymization/

@@ -23,6 +23,36 @@ SELECT pg_catalog.pg_extension_config_dump('anon.config','');
 COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
 
 
+-- name of the source schema
+-- default value: 'public'
+CREATE OR REPLACE FUNCTION anon.source_schema()
+RETURNS TEXT AS
+$$
+WITH default_config(value) AS (
+  VALUES ('public')
+)
+SELECT COALESCE(c.value, d.value)
+FROM default_config d
+LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
+;
+$$
+LANGUAGE SQL STABLE SECURITY INVOKER;
+
+-- name of the masking schema
+-- default value: 'mask'
+CREATE OR REPLACE FUNCTION anon.mask_schema()
+RETURNS TEXT AS
+$$
+WITH default_config(value) AS (
+  VALUES ('mask')
+)
+SELECT COALESCE(c.value, d.value)
+FROM default_config d
+LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
+;
+$$
+LANGUAGE SQL STABLE SECURITY INVOKER;
+
 
 
 -------------------------------------------------------------------------------
@@ -239,6 +269,80 @@ SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum','');
 
 
 -------------------------------------------------------------------------------
+-- Discovery / Scanning
+-------------------------------------------------------------------------------
+
+-- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
+
+CREATE TABLE anon.identifiers_category(
+  id INTEGER,
+  name TEXT,
+  direct_identifier BOOLEAN,
+  anon_function TEXT,
+  PRIMARY KEY(name)
+);
+
+COMMENT ON TABLE anon.identifiers_category
+IS 'Generic identifiers categories based the HIPAA classification';
+
+
+CREATE TABLE anon.identifier(
+  lang TEXT,
+  attname TEXT,
+  fk_identifiers_category TEXT,
+  PRIMARY KEY(attname,lang),
+  FOREIGN KEY (fk_identifiers_category)
+    REFERENCES anon.identifiers_category(name)
+);
+
+COMMENT ON TABLE anon.identifier
+IS 'Dictionnary of common identifiers field names';
+
+CREATE OR REPLACE FUNCTION anon.detect(
+  dict_lang TEXT DEFAULT 'en_US'
+)
+RETURNS TABLE (
+  table_name REGCLASS,
+  column_name NAME,
+  identifiers_category TEXT,
+  direct BOOLEAN
+)
+AS $func$
+BEGIN
+  IF not anon.isloaded() THEN
+    RAISE NOTICE 'The dictionnaries are not loaded.'
+      USING HINT = 'You probably need to run ''SELECT anon.load()'' ';
+  END IF;
+
+RETURN QUERY SELECT
+  a.attrelid::regclass,
+  a.attname,
+  ic.name,
+  ic.direct_identifier
+FROM pg_catalog.pg_attribute a
+JOIN anon.identifier fn
+  ON lower(a.attname) = fn.attname
+JOIN anon.identifiers_category ic
+  ON fn.fk_identifiers_category = ic.name
+JOIN pg_catalog.pg_class c
+  ON c.oid = a.attrelid
+WHERE fn.lang = dict_lang
+  AND c.relnamespace IN ( -- exclude the extension tables and the catalog
+        SELECT oid
+        FROM pg_namespace
+        WHERE nspname NOT LIKE 'pg_%'
+        AND nspname NOT IN  ( 'information_schema',
+                              'anon',
+                              anon.mask_schema()
+                            )
+      )
+;
+END;
+$func$
+LANGUAGE plpgsql IMMUTABLE;
+
+
+-------------------------------------------------------------------------------
 -- Functions : LOAD / UNLOAD
 -------------------------------------------------------------------------------
 
@@ -269,6 +373,11 @@ BEGIN
     RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath;
     RETURN FALSE;
   END IF;
+
+  -- Identifiers dictionnaries
+  EXECUTE 'COPY anon.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
+  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_fr_FR.csv');
+  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_en_US.csv');
 
   -- ADD NEW TABLE HERE
   EXECUTE 'COPY anon.city(name,country,subcountry,geonameid) FROM '
@@ -955,36 +1064,6 @@ SELECT * FROM anon.pg_masking_rules
 ;
 
 
--- name of the source schema
--- default value: 'public'
-CREATE OR REPLACE FUNCTION anon.source_schema()
-RETURNS TEXT AS
-$$
-WITH default_config(value) AS (
-  VALUES ('public')
-)
-SELECT COALESCE(c.value, d.value)
-FROM default_config d
-LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
-;
-$$
-LANGUAGE SQL STABLE SECURITY INVOKER;
-
--- name of the masking schema
--- default value: 'mask'
-CREATE OR REPLACE FUNCTION anon.mask_schema()
-RETURNS TEXT AS
-$$
-WITH default_config(value) AS (
-  VALUES ('mask')
-)
-SELECT COALESCE(c.value, d.value)
-FROM default_config d
-LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
-;
-$$
-LANGUAGE SQL STABLE SECURITY INVOKER;
-
 -------------------------------------------------------------------------------
 -- In-Place Anonymization
 -------------------------------------------------------------------------------
@@ -1014,7 +1093,8 @@ BEGIN
 
   SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
   IF mf_is_a_faking_function AND not anon.isloaded() THEN
-    RAISE NOTICE 'The faking data is not loaded. You probably need to run ''SELECT anon.load()'' ';
+    RAISE NOTICE 'The faking data is not loaded.'
+      USING HINT = 'You probably need to run ''SELECT anon.load()'' ';
   END IF;
 
   RAISE DEBUG 'Anonymize %.% with %', tablename,colname, mf;
@@ -1414,6 +1494,10 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER;
 -- Anonymous Dumps
 -------------------------------------------------------------------------------
 
+-- WARNING : this entire section is deprecated ! It kept for backward
+-- compatibility and will probably be remove before version 1.0 is released
+
+
 CREATE OR REPLACE FUNCTION anon.dump_ddl()
 RETURNS TABLE (
     ddl TEXT
@@ -1497,12 +1581,18 @@ CREATE OR REPLACE FUNCTION anon.dump()
 RETURNS TABLE (
   dump TEXT
 ) AS
-$$
+$func$
+BEGIN
+  RAISE NOTICE 'This function is deprecated !'
+    USING HINT = 'Use the pg_dump_anon command line instead.';
+
+  RETURN QUERY
     SELECT anon.dump_ddl()
     UNION ALL -- ALL is required to maintain the lines order as appended
-    SELECT anon.dump_data()
-$$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+    SELECT anon.dump_data();
+END;
+$func$
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 
 
@@ -1606,40 +1696,6 @@ SELECT daterange(
   );
 $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
-
--------------------------------------------------------------------------------
--- Discovery / Scanning
--------------------------------------------------------------------------------
-
--- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
-
-CREATE TABLE anon.suggest(
-    attname TEXT,
-    suggested_mask TEXT
-);
-
-INSERT INTO anon.suggest
-VALUES
-('firstname','random_first_name()'),
-('first_name','random_first_name()'),
-('given_name','random_first_name()'),
-('prenom','random_first_name()'),
-('creditcard','FIXME'),
-('credit_card','FIXME'),
-('CB','FIXME'),
-('carte_bancaire','FIXME'),
-('cartebancaire','FIXME')
-;
-
-CREATE OR REPLACE VIEW anon.scan AS
-SELECT
-  a.attrelid,
-  a.attname,
-  s.suggested_mask,
-  pg_catalog.col_description(a.attrelid, a.attnum)
-FROM pg_catalog.pg_attribute a
-JOIN anon.suggest s ON  lower(a.attname) = s.attname
-;
 
 -------------------------------------------------------------------------------
 -- Risk Evaluation
