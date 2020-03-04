@@ -16,7 +16,8 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
-* Thomas Clark (@cthomaspdx ) : Pseudonymization
+* Pierre-Henri Dubois Amy (@theodor_lobster) : Proof-reading, GIS 
+* Thomas Clark (@cthomaspdx) : Pseudonymization
 * Joe Auty (@joeauty) : Issue #114
 * Bernie Caessens (@bcaessens) : Feedback on the black box method
 * Sam Buckingham (@sam.buckingham) : Feedback on the black box method

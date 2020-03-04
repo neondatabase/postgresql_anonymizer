@@ -39,7 +39,7 @@ a seed and an optional salt.
 they serve 2 different purposes. With pseudonymization, the real data can be 
 rebuilt using the pseudo data and the masking rule. If an attacker
 gets access to these elements, he or she can easily re-identify some people 
-using `brute force` or `dictionnary` attacks. Therefore, you should protect any 
+using `brute force` or `dictionary` attacks. Therefore, you should protect any 
 pseudonymized data with the same level of security that the original dataset. 
 The GDPR makes it very clear that personal data which have undergone 
 pseudonymization are still considered to be personal information.
@@ -58,7 +58,7 @@ command:
     $ pg_dump_anon -h localhost -U bob mydb > anonymous_dump.sql
 
 It uses the same connections parameters that `pg_dump`. The PostgreSQL 
-environement variables ($PGHOST, PGUSER, etc.)  and `.pgpass` are supported. 
+environment variables ($PGHOST, PGUSER, etc.)  and `.pgpass` are supported. 
 However the `plain` format is the only supported format. The other formats 
 (`custom`, `dir` and `tar`) are not supported.
 
@@ -67,14 +67,13 @@ Detecting Hidden Identifiers
 --------------------------------------------------------------------------------
 
 This extension makes it very easy to declare masking rules. But of course when 
-you're creating an anonymization startegy, the hard part is to scan the database 
+you're creating an anonymization strategy, the hard part is to scan the database 
 model to find which columns contains direct and indirect identifiers and then 
 decide how these identifiers should be masked.
 
-We now provide a `detect()` function that will search for common 
-identifiers names based on a dictionnary. For now, 2 dictionnaries are 
-available : English ('en_US') and French ('fr_FR'). By the default the
-English dictionnary is used:
+We now provide a `detect()` function that will search for common identifiers 
+names based on a dictionary. For now, 2 dictionaries are available: English 
+('en_US') and French ('fr_FR'). By default the English dictionary is used:
 
 
     # SELECT anon.detect('en_US');
@@ -118,8 +117,10 @@ Thanks
 --------------------------------------------------------------------------------
 
 
-This release includes code and ideas from Sebastien Delobel, Sam Buckingham, 
-Thomas Clark, Joe Auty and Olleg Samoylov.  Many thanks to them !
+This release includes code, bugfixes and ideas from Sebastien Delobel, Sam 
+Buckingham, Thomas Clark, Joe Auty, Pierre-Henri Dubois Amy and Olleg Samoylov.  
+
+Many thanks to them !
 
 
 How to contribute

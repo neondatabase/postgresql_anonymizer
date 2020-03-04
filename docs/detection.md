@@ -7,14 +7,13 @@ As we've seen previously, this extension makes it very easy to [declare the mask
 
 [declare masking rules]: declare_masking_rules/
 
-But of course when you're creating an anonymization startegy, the hard part is 
+But of course when you're creating an anonymization strategy, the hard part is 
 to scan the database model to find which columns contains direct and indirect 
 identifiers and then decide how these identifiers should be masked.
 
-The extension provides a `detect()` function that will search for common 
-identifiers names based on dictionnary. For now, 2 dictionnaries are 
-available : english ('en_US') and frenc ('fr_FR'). By the default the
-english dictionnary is used:
+The extension provides a `detect()` function that will search for common identifiers 
+names based on dictionary. For now, 2 dictionaries are available : english ('en_US') 
+and french ('fr_FR'). By default the english dictionary is used:
 
 ```sql
 # SELECT anon.detect('en_US');
