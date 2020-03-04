@@ -37,6 +37,59 @@ In any case, let us know how we can help you moving forward
 [issue board]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
 
 
+Forking, mirroring and Rebasing
+-------------------------------------------------------------------------------
+
+To contribute code to this projet, you can simply create you own fork. 
+
+Over time, the main repository ( let's call it `upstream`) will evolve and your 
+own repository (let's call it  `origin`) will miss the latest commits. Here's 
+a few hints on how to handle this
+
+### Connect your repo to the upstream 
+
+Add a new remote to your local repo:
+
+```bash
+git remote add upstream https://gitlab.com/dalibo/postgresql_anonymizer.git 
+```
+
+### Keep your master branch up to date
+
+At any time, you can mirror your personal repo like this:
+
+```bash
+# switch to the master branch
+git checkout master
+# download the latest commit from the main repo
+git fetch upstream
+# apply the latest commits
+git rebase upstream/master
+# push the changes to your personal repo
+git push origin
+```
+
+### Rebase a branch
+
+When working on a Merge Requests (`MR`) that takes a long time, it can happen 
+that your local branch (let's call it `foo`) is out of sync. Here's how you
+can apply the lastest: 
+
+
+```bash
+# switch to your working branch branch
+git checkout foo
+# download the latest commit from the main repo
+git fetch upstream
+# apply the latest commits
+git rebase upstream/master
+# push the changes to your personal repo
+git push origin --force-with-lease
+```
+
+
+
+
 Adding new functions
 -------------------------------------------------------------------------------
 
@@ -53,19 +106,19 @@ and docker-compose !
 
 First launch a container with :
 
-```console
+```bash
 make docker_init
 ```
 
 Then you can enter inside the container :
 
-```console
+```bash
 make docker_bash
 ```
 
 Once inside the container, you can do the classic operations :
 
-```console
+```bash
 make
 make install
 make installcheck
