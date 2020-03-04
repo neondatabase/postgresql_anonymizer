@@ -3,14 +3,23 @@ Various Masking Strategies
 
 The extension provides functions to implement 8 main anonymization strategies:
 
-* [Destruction](#destruction)
-* [Adding Noise](#adding-noise)
-* [Shuffling](#shuffling)
-* [Randomization](#randomization)
-* [Faking](#faking)
-* [Pseudonymization](#pseudonymization)
-* [Partial scrambling](#partial-scrambling)
-* [Generalization](#generalization)
+* [Destruction]
+* [Adding Noise]
+* [Shuffling]
+* [Randomization]
+* [Faking]
+* [Pseudonymization]
+* [Partial scrambling]
+* [Generalization]
+
+[Destruction]: #destruction
+[Adding Noise]: #adding-noise
+[Shuffling]: #shuffling
+[Randomization]: #randomization
+[Faking]: #faking
+[Pseudonymization]: #pseudonymization
+[Partial scrambling]: #partial-scrambling
+[Generalization]: #generalization
 
 Depending on your data, you may need to use different strategies on different
 columns :
@@ -47,10 +56,10 @@ This is also called **Variance**. The idea is to "shift" dates and numeric
 values. For example, by applying a +/- 10% variance to a salary column, the
 dataset will remain meaningful.
 
-* anon.add_noise_on_numeric_column(table, column,ratio) if ratio = 0.33, all
+* `anon.add_noise_on_numeric_column(table, column,ratio)` if ratio = 0.33, all
   values of the column will be randomly shifted with a ratio of +/- 33%
 
-* anon.add_noise_on_datetime_column(table, column,interval) if interval = '2 days',
+* `anon.add_noise_on_datetime_column(table, column,interval)` if interval = '2 days',
   all values of the column will be randomly shifted by +/- 2 days
 
 
@@ -59,7 +68,7 @@ Shuffling
 
  **Shuffling** mixes values within the same columns.
 
-* anon.shuffle_column(shuffle_table, shuffle_column, primary_key) will rearrange
+* `anon.shuffle_column(shuffle_table, shuffle_column, primary_key)` will rearrange
   all values in a given column. You need to provide a primary key of the table.
   This is usefull for foreign keys because referential integrity will be kept.
 
@@ -70,12 +79,12 @@ Randomization
 The extension provides a large choice of function to generate purely random 
 data :
 
-* anon.random_date() returns a date
-* anon.random_date_between(d1,d2) returns a date between `d1` and `d2`
-* anon.random_int_between(i1,i2) returns an integer between `i1` and `i2`
-* anon.random_string(n) returns a TEXT value containing `n` letters
-* anon.random_zip() returns a 5-digit code
-* anon.random_phone(p) return a 8-digit phone with `p` as a prefix
+* `anon.random_date()` returns a date
+* `anon.random_date_between(d1,d2)` returns a date between `d1` and `d2`
+* `anon.random_int_between(i1,i2)` returns an integer between `i1` and `i2`
+* `anon.random_string(n)` returns a TEXT value containing `n` letters
+* `anon.random_zip()` returns a 5-digit code
+* `anon.random_phone(p)` returns a 8-digit phone with `p` as a prefix
 
 
 
@@ -99,18 +108,18 @@ custom CSV files with `load('/path/to/custom_cvs_files/')`
 
 Once the fake data is loaded you have access to 12 faking functions:
 
-* anon.fake_first_name() returns a generic first name
-* anon.fake_last_name() returns a generic last name
-* anon.fake_email() returns a valid email address
-* anon.fake_city() returns an existing city
-* anon.fake_city_in_country(c) returns a city in country `c`
-* anon.fake_region() returns an existing region
-* anon.fake_region_in_country(c) returns a region in country `c`
-* anon.fake_country() returns a country
-* anon.fake_company() returns a generic company name
-* anon.fake_iban() returns a valid IBAN
-* anon.fake_siret() returns a valid SIRET
-* anon.fake_siren() returns a valid SIREN
+* `anon.fake_first_name()` returns a generic first name
+* `anon.fake_last_name()` returns a generic last name
+* `anon.fake_email()` returns a valid email address
+* `anon.fake_city()` returns an existing city
+* `anon.fake_city_in_country(c)` returns a city in country `c`
+* `anon.fake_region()` returns an existing region
+* `anon.fake_region_in_country(c)` returns a region in country `c`
+* `anon.fake_country()` returns a country
+* `anon.fake_company()` returns a generic company name
+* `anon.fake_iban()` returns a valid IBAN
+* `anon.fake_siret()` returns a valid SIRET
+* `anon.fake_siren()` returns a valid SIREN
 
 For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 
@@ -140,16 +149,16 @@ SELECT anon.load();
 
 Once the fake data is loaded you have access to 10 pseudo functions:
 
-* anon.pseudo_first_name('seed','salt') returns a generic first name
-* anon.pseudo_last_name('seed','salt') returns a generic last name
-* anon.pseudo_email('seed','salt') returns a valid email address
-* anon.pseudo_city('seed','salt') returns an existing city
-* anon.pseudo_region('seed','salt') returns an existing region
-* anon.pseudo_country('seed','salt') returns a country
-* anon.pseudo_company('seed','salt') returns a generic company name
-* anon.pseudo_iban('seed','salt') returns a valid IBAN
-* anon.pseudo_siret('seed','salt') returns a valid SIRET
-* anon.pseudo_siren('seed','salt') returns a valid SIREN
+* `anon.pseudo_first_name('seed','salt')` returns a generic first name
+* `anon.pseudo_last_name('seed','salt')` returns a generic last name
+* `anon.pseudo_email('seed','salt')` returns a valid email address
+* `anon.pseudo_city('seed','salt')` returns an existing city
+* `anon.pseudo_region('seed','salt')` returns an existing region
+* `anon.pseudo_country('seed','salt')` returns a country
+* `anon.pseudo_company('seed','salt')` returns a generic company name
+* `anon.pseudo_iban('seed','salt')` returns a valid IBAN
+* `anon.pseudo_siret('seed','salt')` returns a valid SIRET
+* `anon.pseudo_siren('seed','salt')` returns a valid SIREN
 
 The second argument is optional. You can call each function with only the 
 seed like this `anon.pseudo_city('bob')`. The salt is here to increase 
@@ -189,8 +198,8 @@ For instance : a credit card number can be replaced by '40XX XXXX XXXX XX96'.
 
 2 functions are available:
 
-* anon.partial('abcdefgh',1,'xxxx',3) will return 'axxxxfgh';
-* anon.email('daamien@gmail.com') will becomme 'da******@gm******.com'
+* `anon.partial('abcdefgh',1,'xxxx',3)` will return 'axxxxfgh';
+* `anon.email('daamien@gmail.com')` will becomme 'da******@gm******.com'
 
 
 Generalization 
@@ -265,39 +274,24 @@ For numeric values, 3 functions are available
 * `generalize_int8range(value, step)`
 * `generalize_numrange(value, step)`
 
-`value` is the data the will be generalized, `step` is the size of each range.
-
-
-
+...where `value` is the data the will be generalized, `step` is the size of each range.
 
 
 [RANGE]: https://www.postgresql.org/docs/current/rangetypes.html
+
 
 Write your own Masks !
 ------------------------------------------------------------------------------
 
 You can also use you own functions as a mask. The function must either be
 destructive (like [Partial Scrambling]) or insert some randomness in the dataset
-(like [faking]).
+(like [Faking]).
 
 For instance, if you wrote a function `foo()`, you can apply it like this:
 
 ```sql
-COMMENT ON COLUMN player.score IS 'MASKED WITH FUNCTION foo()';
+SECURITY LABEL FOR anon ON COLUMN player.score IS 'MASKED WITH FUNCTION foo()';
 ```
 
 
-Data Types Conversion
-------------------------------------------------------------------------------
-
-The faking functions will return values in `TEXT` data types. The random
-functions will return `TEXT`, `INTEGER` or `TIMESTAMP WITH TIMEZONE`.
-
-If the column you want to mask is in another data type (for instance `VARCHAR(30)`,
-then you need to add an explicit cast directly in the `COMMENT` declaration,
-like this:
-
-```sql
-=# COMMENT ON COLUMN clients.family_name
--# IS 'MASKED WITH FUNCTION anon.fake_last_name()::VARCHAR(30)';
 ```

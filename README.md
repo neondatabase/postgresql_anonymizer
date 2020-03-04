@@ -166,13 +166,13 @@ Anonymous Dumps
 
 Due to the core design of this extension, you cannot use `pg_dump` with a masked 
 user. If you want to export the entire database with the anonymized data, you 
-must use the `anon.dump()` function :
+must use the `pg_dump_anon` command line. For example
 
 ```console
-$ psql [...] -qtA -c 'SELECT anon.dump()' your_dabatase > dump.sql
+$ pg_dump_anon -h localhost -p 5432 -U bob bob_db > dump.sql
 ```
 
-NB: The `-qtA` flags are required.
+For more details, please read the [Anonymous Dumps] section.
 
 
 Warning
@@ -218,16 +218,15 @@ sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 
-_Step 2:_  Add the extension to the preload librairies and reload 
-the configuration:
+_Step 2:_  Load the extension in the database you want to anonymize
 
 ```sql
-ALTER SYSTEM SET session_preload_libraries = 'anon';
-SELECT pg_reload_conf();
+ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-You can also read the [INSTALL] section for detailed instructions 
-or if you want to deploy it on Amazon RDS or some other DBaaS provider. 
+There are other ways to install and load the extension. You can read the [INSTALL] 
+section for detailed instructions or if you want to deploy it on Amazon RDS or 
+some other DBaaS provider. 
 
 
 

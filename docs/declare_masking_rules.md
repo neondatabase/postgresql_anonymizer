@@ -17,10 +17,6 @@ The data masking rules are declared simply by using [security labels]:
 <!-- demo/declare_masking_rules.sql -->
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-
-SELECT anon.load();
-
 CREATE TABLE player( id SERIAL, name TEXT, points INT);
 
 INSERT INTO player VALUES  
@@ -58,34 +54,12 @@ This is useful especially if you can't modify the instance confiraguration and
 load the extension with `session_preload_libraries`. In this situation, the 
 security labels won't work and you have to declare rules with comments.
 
+If your columns already have comments, simply append the `MASKED WITH FUNCTION` 
+statement at the end of the comment.
+
 See also [Install in the Cloud].
 
 [Install in the Cloud]: INSTALL.md#install-in-the-cloud 
 
-Data Type Conversion
-------------------------------------------------------------------------------
 
-The various masking functions will return a certain data types. For instance:
-
-* the faking functions (e.g.`fake_email()`) will return values in `TEXT` data 
-  types
-* the random functions will return `TEXT`, `INTEGER` 
-   or `TIMESTAMP WITH TIMEZONE`
-* etc.
-
-If the column you want to mask is in another data type (for instance 
-`VARCHAR(30)`) then you need to add an explicit cast directly in the masking 
-rule declaration, like this:
-
-```sql
-=# SECURITY LABEL FOR anon ON COLUMN clients.family_name 
--# IS 'MASKED WITH FUNCTION anon.fake_last_name()::VARCHAR(30)';
-```
-
-
-Limitations
-------------------------------------------------------------------------------
-
-If your columns already have comments, simply append the `MASKED WITH FUNCTION` 
-statement at the end of the comment.
 
