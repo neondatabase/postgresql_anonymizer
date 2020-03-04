@@ -16,7 +16,8 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
-* Pierre-Henri Dubois Amy (@theodor_lobster) : Proof-reading, GIS 
+* Christophe Courtois (@Krysztophe) : Proofreading
+* Pierre-Henri Dubois Amy (@theodor_lobster) : Proofreading, GIS 
 * Thomas Clark (@cthomaspdx) : Pseudonymization
 * Joe Auty (@joeauty) : Issue #114
 * Bernie Caessens (@bcaessens) : Feedback on the black box method
