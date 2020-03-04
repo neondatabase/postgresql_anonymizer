@@ -9,6 +9,8 @@ Publishing a new Release
 
 * [ ] Write the announcement in [NEWS.md]
 
+* [ ]  Rebuild the docker image and upload it
+
 * [ ] Upload the zipball to PGXN
 
 * [ ] Check the PGXN install process

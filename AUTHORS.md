@@ -16,11 +16,17 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
-* Sebastien Delobel (@sdelobel) : typo
+* Christophe Courtois (@Krysztophe) : Proofreading
+* Pierre-Henri Dubois Amy (@theodor_lobster) : Proofreading, GIS 
+* Thomas Clark (@cthomaspdx) : Pseudonymization
+* Joe Auty (@joeauty) : Issue #114
+* Bernie Caessens (@bcaessens) : Feedback on the black box method
+* Sam Buckingham (@sam.buckingham) : Feedback on the black box method
+* Sebastien Delobel (@sdelobel) : Typos
 * Nikolay Samokhvalov (@NikolayS) : Documentation
 * Travis Miller (@travismiller) : MacOS support
 * Jan Birk (@jabi27) : Install on Ubuntu
-* Olleg Samoylov (@Splarv) : Issue #87
+* Olleg Samoylov (@Splarv) : Issue #87, Bug fixes, Documentation 
 * Damien Cazeils (www.damiencazeils.com) : Logo
 * Ioseph Kim (@i0seph) : Documentation 
 * Matiss Zarkevics (@leovingi) : Tests on Amazon RDS
