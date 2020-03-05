@@ -19,17 +19,32 @@ $ pg_dump_anon -h localhost -U bob mydb > anonymous_dump.sql
 It uses the same connections parameters that `pg_dump` :
 
 ```bash
-$ bin/pg_dump_anon.sh --help
-Usage: pg_dump_anon.sh [OPTION]... [DBNAME]
+$ pg_dump_anon --help
+
+Usage: pg_dump_anon [OPTION]... [DBNAME]
+
+General options:
+  -f, --file=FILENAME           output file
+  --help                        display this message
+
+Options controlling the output content:
+  -n, --schema=PATTERN          dump the specified schema(s) only
+  -N, --exclude-schema=PATTERN  do NOT dump the specified schema(s)
+  -t, --table=PATTERN           dump the specified table(s) only
+  -T, --exclude-table=PATTERN   do NOT dump the specified table(s)
+  --exclude-table-data=PATTERN  do NOT dump data for the specified table(s)
+
 Connection options:
--d, --dbname=DBNAME      database to dump
--f, --file=FILENAME      output file
--h, --host=HOSTNAME      database server host or socket directory
--p, --port=PORT          database server port number
--U, --username=NAME      connect as specified database user
--w, --no-password        never prompt for password
--W, --password           force password prompt (should happen automatically)
---help                   display this message
+  -d, --dbname=DBNAME           database to dump
+  -h, --host=HOSTNAME           database server host or socket directory
+  -p, --port=PORT               database server port number
+  -U, --username=NAME           connect as specified database user
+  -w, --no-password             never prompt for password
+  -W, --password                force password prompt (should happen automatically)
+
+If no database name is supplied, then the PGDATABASE environment
+variable value is used.
+
 ```
 
 
