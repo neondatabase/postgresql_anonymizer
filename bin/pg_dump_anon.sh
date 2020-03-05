@@ -9,18 +9,32 @@
 
 usage()
 {
-  echo "Usage: $(basename $0) [OPTION]... [DBNAME]"
-  echo
-  echo "Options:"
-  echo
-  echo "-d, --dbname=DBNAME      database to dump"
-  echo "-f, --file=FILENAME      output file"
-  echo "-h, --host=HOSTNAME      database server host or socket directory"
-  echo "-p, --port=PORT          database server port number"
-  echo "-U, --username=NAME      connect as specified database user"
-  echo "-w, --no-password        never prompt for password"
-  echo "-W, --password           force password prompt (should happen automatically)"
-  echo "--help                   display this message"
+cat << END
+Usage: $(basename $0) [OPTION]... [DBNAME]
+
+General options:
+  -f, --file=FILENAME           output file
+  --help                        display this message
+
+Options controlling the output content:
+  -n, --schema=PATTERN          dump the specified schema(s) only
+  -N, --exclude-schema=PATTERN  do NOT dump the specified schema(s)
+  -t, --table=PATTERN           dump the specified table(s) only
+  -T, --exclude-table=PATTERN   do NOT dump the specified table(s)
+  --exclude-table-data=PATTERN  do NOT dump data for the specified table(s)
+
+Connection options:
+  -d, --dbname=DBNAME           database to dump
+  -h, --host=HOSTNAME           database server host or socket directory
+  -p, --port=PORT               database server port number
+  -U, --username=NAME           connect as specified database user
+  -w, --no-password             never prompt for password
+  -W, --password                force password prompt (should happen automatically)
+
+If no database name is supplied, then the PGDATABASE environment
+variable value is used.
+
+END
 }
 
 ## Return the version of the anon extension
@@ -30,40 +44,27 @@ $PSQL << EOSQL
 EOSQL
 }
 
-## Return the table name based on the relid
-get_table_name() {
+## Return the masking schema
+get_mask_schema() {
 $PSQL << EOSQL
-  SET search_path = '';
-  SELECT $1::REGCLASS;
+  SELECT anon.mask_schema();
 EOSQL
 }
 
-## Return the masking filters based on the relid
+## Return the masking filters based on the table name
 get_mask_filters() {
 $PSQL << EOSQL
-  SELECT anon.mask_filters($1);
+  SELECT anon.mask_filters('$1'::REGCLASS);
 EOSQL
 }
 
-
-## generate the "COPY ... FROM STDIN" statement for a given table
-print_copy_statement () {
-  table_name=$(get_table_name $1)
-  filters=$(get_mask_filters $1)
-  echo COPY $table_name FROM STDIN WITH CSV';'
-  $PSQL_OUTPUT -c "\copy (SELECT $filters FROM $table_name) TO STDOUT WITH CSV"
-  echo \\.
-  echo
-}
-
-## Return the relid of each user table
-list_user_tables() {
-$PSQL << EOSQL
-  SELECT relid
-  FROM pg_stat_user_tables
-  WHERE schemaname NOT IN ( 'anon' , anon.mask_schema() )
-  ORDER BY  relid::REGCLASS::TEXT -- sort by name to force the dump order
-EOSQL
+## There's no clean way to exclude an extension from a dump
+## This is a pragmatic approach
+filter_out_extension(){
+grep -v -E "^-- Name: $1;" |
+grep -v -E "^CREATE EXTENSION IF NOT EXISTS $1" |
+grep -v -E "^-- Name: EXTENSION $1" |
+grep -v -E "^COMMENT ON EXTENSION $1"
 }
 
 ##
@@ -77,30 +78,43 @@ EOSQL
 ## and when needed, we transform the pg_dump options into the matching psql
 ## options
 ##
-pg_dump_opt=$@ # backup args before parsing
-psql_connect_opt= # connections options
-psql_other_opt=   # other options (currently only -f is supported)
+pg_dump_opt=$@        # backup args before parsing
+psql_connect_opt=     # connections options
+psql_output_opt=      # print options (currently only -f is supported)
+exclude_table_data=   # dump the ddl, but ignore the data
 
 while [ $# -gt 0 ]; do
     case "$1" in
     -d|--dbname)
-        psql_connect_opt+=" $1"
+        psql_connect_op+=" $1"
         shift
         psql_connect_opt+=" $1"
         ;;
-    -f|--file)
-        psql_other_opt+=" --output"
+    --dbname=*)
+        psql_connect_opt+=" $1"
+        ;;
+    -f|--file)  # `pg_dump -f foo.sql` becomes `psql -o foo.sql`
+        psql_output_opt+=" -o"
         shift
-        psql_other_opt+=" $1"
+        psql_output_opt+=" $1"
+        ;;
+    --file=*) # `pg_dump -file=foo.sql` becomes `psql --output=foo.sql`
+        psql_output_opt+=" $(echo $1| sed s/--file=/--output=/)"
         ;;
     -h|--host)
         psql_connect_opt+=" $1"
         shift
         psql_connect_opt+=" $1"
         ;;
-    -p|--port)
+    --host=*)
         psql_connect_opt+=" $1"
         shift
+        psql_connect_opt+=" $1"
+        ;;
+    -p|--port)
+        psql_connect_opt+=" $1"
+        ;;
+    --port=*)
         psql_connect_opt+=" $1"
         ;;
     -U|--username)
@@ -108,11 +122,45 @@ while [ $# -gt 0 ]; do
         shift
         psql_connect_opt+=" $1"
         ;;
+    --username=*)
+        psql_connect_opt+=" $1"
+        ;;
     -w|--no-password)
         psql_connect_opt+=" $1"
         ;;
     -W|--password)
         psql_connect_opt+=" $1"
+        ;;
+    -n|--schema)
+        # ignore the option for psql
+        shift
+        ;;
+    --schema=*)
+        # ignore the option for psql
+        ;;
+    -N|--exclude-schema)
+        # ignore the option for psql
+        shift
+        ;;
+    --exclude-schema=*)
+        # ignore the option for psql
+        ;;
+    -t)
+        # ignore the option for psql
+        shift
+        ;;
+    --table=*)
+        # ignore the option for psql
+        ;;
+    -T|--exclude-table)
+        # ignore the option for psql
+        shift
+        ;;
+    --exclude-table=*)
+        # ignore the option for psql
+        ;;
+    --exclude-table-data=*)
+        exclude_table_data+=" $1"
         ;;
     --help)
         usage
@@ -132,7 +180,7 @@ while [ $# -gt 0 ]; do
 done
 
 PSQL="psql $psql_connect_opt --quiet --tuples-only --no-align"
-PSQL_OUTPUT="$PSQL $psql_other_opt"
+PSQL_PRINT="$PSQL $psql_output_opt"
 
 ## Stop if the extension is not installed in the database
 version=$(get_anon_version)
@@ -148,14 +196,39 @@ echo "-- Dump generated by PostgreSQL Anonymizer $version."
 echo "--"
 echo
 
+
+##
 ## Dump the DDL
 ##
-## Security Labels are excluded, because we do not want the masking rules in
-## the anon dump !
-pg_dump --schema-only --no-security-labels --exclude-schema=anon $pg_dump_opt
+## We need to remove
+##  - Security Labels (masking rules are confidential)
+##  - The schemas installed by the anon extension
+##  - the anon extension and its dependencies
+##
+##
+exclude_anon_schemas="--exclude-schema=anon --exclude-schema=$(get_mask_schema)"
+DUMP="pg_dump --schema-only --no-security-labels $exclude_anon_schemas $pg_dump_opt"
 
-## Dump the Masking Views instead of the real data
-list_user_tables | while read -a record ; do
-  print_copy_statement ${record[0]}
+$DUMP | filter_out_extension ddlx | filter_out_extension anon | filter_out_extension tsm_system_rows
+
+##
+## We're launching the pg_dump again to get the list of the tables that were
+## dumped. Only this time we add extra parameters like --exclude-table-data
+##
+exclude_table=$(echo $exclude_table_data | sed s/--exclude-table-data=/--exclude-table=/)
+dumped_tables=`$DUMP $exclude_table |awk '/^CREATE TABLE /{ print $3 }'`
+
+##
+## For each dumped table, we export the data form the Masking View
+## instead of the real data
+##
+for t in $dumped_tables
+do
+  filters=$(get_mask_filters $t)
+  ## generate the "COPY ... FROM STDIN" statement for a given table
+  echo COPY $t FROM STDIN WITH CSV';'
+  $PSQL_PRINT -c "\copy (SELECT $filters FROM $t) TO STDOUT WITH CSV"
+  echo \\.
+  echo
 done
 
