@@ -23,6 +23,8 @@ _Dependencies:__
 * [pseudo] introducing pseudonymization functions
 * [doc] clean up, typos and reorg
 * [detection] introducing the identifiers detection function
+* [dump] Allow only partial database dump - Or ignoring specific tables
+
 
 
 20191106 : 0.5.0 - Generalization and k-anonymity
