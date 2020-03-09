@@ -1,10 +1,18 @@
 CHANGELOG
 ===============================================================================
 
+2020FIXME : 0.7.0 - WORK IN PROGRESS 
+-------------------------------------------------------------------------------
+
+__Dependencies:__
+  - tms_system_rows
+  - ddlx 
+
+
 20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps 
 -------------------------------------------------------------------------------
 
-_Dependencies:__
+__Dependencies:__
   - tms_system_rows
   - ddlx 
 
