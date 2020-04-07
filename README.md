@@ -197,15 +197,11 @@ See the [Developement Notes] for more details.
 
 [Developement Notes]: https://postgresql-anonymizer.readthedocs.io/en/latest/NOTES/
 
-It requires two extensions :
-
-* [tsm_system_rows] which is delivered by the `postgresql-contrib` package of 
-  the main linux distributions
-
-* [ddlx] a very cool DDL extrator
+It requires an extension called [tsm_system_rows] which is delivered by 
+the `postgresql-contrib` package of the main linux distributions.
 
 [tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
-[ddlx]: https://github.com/lacanoid/pgddl
+
 
 
 Install
@@ -214,7 +210,6 @@ Install
 _Step 1._ Install the extension on the server with :
 
 ```console
-sudo pgxn install ddlx
 sudo pgxn install postgresql_anonymizer
 ```
 

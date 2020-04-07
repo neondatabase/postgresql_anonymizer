@@ -5,7 +5,6 @@
 --
 -- Dependencies :
 --  * tms_system_rows (should be available with all distributions of postgres)
---  * ddlx ( https://github.com/lacanoid/pgddl )
 --
 
 -------------------------------------------------------------------------------
@@ -1503,22 +1502,7 @@ RETURNS TABLE (
     ddl TEXT
 ) AS
 $$
-    SELECT ddlx_create(oid)
-    FROM pg_class
-    WHERE relkind != 't' -- exclude the TOAST objeema@.mask_rolests
-    AND relnamespace IN (
-      SELECT oid
-      FROM pg_namespace
-      WHERE nspname NOT LIKE 'pg_%'
-      AND nspname NOT IN  ( 'information_schema' ,
-                            'anon' ,
-                            anon.mask_schema()
-                          )
-    )
-  -- drop [S]equences before [t]ables
-  ORDER BY  array_position(ARRAY['S','t'], relkind::TEXT),
-            oid::regclass
-    ;
+    SELECT('anon.dump_dll() is not deprecated. Please use pg_dump_anon instead');
 $$
 LANGUAGE SQL SECURITY INVOKER;
 
