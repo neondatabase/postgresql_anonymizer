@@ -170,18 +170,9 @@ $ psql ..... -f anon_standalone_PG11.sql
 _NB_ : Replace `PG11` with the version of Postgres offered by your DBaaS operator.
 
 In this situation, you will have to declare the masking rules with `COMMENT` instead 
-of security labels. 
-See [Declaring Rules with COMMENTs] for more details.
+of security labels. See [Declaring Rules with COMMENTs] for more details.
 
 [Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments 
-
-
-Now declare the extension and load the anonymization data
-
-```sql
-CREATE EXTENSION anon CASCADE;
-SELECT anon.load();
-```
 
 When you activate the masking engine, you need also to disable `autoload`:
 
