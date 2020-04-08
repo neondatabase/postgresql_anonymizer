@@ -1,4 +1,4 @@
-
+-- We're testing that the anon extension can be dumped and restored properly
 
 CREATE DATABASE contrib_regression_test_restore;
 

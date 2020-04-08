@@ -3,9 +3,10 @@ DROP EXTENSION IF EXISTS anon CASCADE;
 NOTICE:  extension "anon" does not exist, skipping
 CREATE EXTENSION anon CASCADE;
 NOTICE:  installing required extension "tsm_system_rows"
-NOTICE:  installing required extension "ddlx"
 -- This should RAISE NOTICE
 SELECT anon.detect();
+NOTICE:  The dictionnaries are not loaded.
+HINT:  You probably need to run 'SELECT anon.load()' 
  detect 
 --------
 (0 rows)
