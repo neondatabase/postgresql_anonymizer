@@ -6,7 +6,6 @@ CHANGELOG
 
 __Dependencies:__
   - tms_system_rows
-  - ddlx 
 
 
 20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps 

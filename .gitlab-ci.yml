@@ -150,9 +150,9 @@ standalone12:
     - echo "disable the before_script"
   script:
     - apt-get update && apt-get install -y make git postgresql-server-dev-all
-    - make anon_standalone_PG12.sql
+    - make anon_standalone.sql
     - export PGPASSWORD=$POSTGRES_PASSWORD
-    - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone_PG12.sql
+    - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone.sql
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c 'SELECT anon.fake_city() IS NOT NULL'
 
 standalone11:
@@ -163,9 +163,9 @@ standalone11:
     - echo "disable the before_script"
   script:
     - apt-get update && apt-get install -y make git postgresql-server-dev-all
-    - make anon_standalone_PG11.sql
+    - make anon_standalone.sql
     - export PGPASSWORD=$POSTGRES_PASSWORD
-    - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone_PG11.sql
+    - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone.sql
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c 'SELECT anon.fake_city() IS NOT NULL'
 
 

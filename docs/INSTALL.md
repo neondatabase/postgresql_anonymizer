@@ -79,7 +79,6 @@ _Step 1:_  Install the extension on the server with:
 
 ```console
 $ sudo apt install pgxnclient postgresql-server-dev-12 
-$ sudo pgxn install ddlx
 $ sudo pgxn install postgresql_anonymizer
 ```
 
@@ -163,11 +162,9 @@ Here's a few steps to try it out:
 
 ```console
 $ git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
-$ make standalone
-$ psql ..... -f anon_standalone_PG11.sql
+$ make anon_standalone.sql
+$ psql ..... -f anon_standalone.sql
 ```
-
-_NB_ : Replace `PG11` with the version of Postgres offered by your DBaaS operator.
 
 In this situation, you will have to declare the masking rules with `COMMENT` instead 
 of security labels. See [Declaring Rules with COMMENTs] for more details.

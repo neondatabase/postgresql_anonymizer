@@ -22,4 +22,5 @@ _pgddl/
 anon/*
 anon_*/
 anon*.zip
+anon_standalone.sql
 anon_standalone_PG*

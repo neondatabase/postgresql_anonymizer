@@ -30,7 +30,7 @@ DATA = anon/*
 #PG_TEST_EXTRA ?= ""
 REGRESS_TESTS = load detection
 REGRESS_TESTS+= destruction noise shuffle random faking pseudonymization partial
-REGRESS_TESTS+= anonymize dump pg_dump_anon restore
+REGRESS_TESTS+= anonymize pg_dump_anon restore
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= injection conflict_seclabel_vs_comment syntax_checks
@@ -139,21 +139,11 @@ tests/expected/unit.out:
 ## S T A N D A L O N E
 ##
 
-STD_ARTEFACTS=anon_standalone_PG96.sql
-STD_ARTEFACTS+=anon_standalone_PG10.sql
-STD_ARTEFACTS+=anon_standalone_PG11.sql
-STD_ARTEFACTS+=anon_standalone_PG12.sql
+.PHONY: standalone
+standalone: anon_standalone.sql #: build the standalone script
 
-anon_standalone_PG96.sql: VERSION = 9.6.0
-anon_standalone_PG10.sql: VERSION = 10.0
-anon_standalone_PG11.sql: VERSION = 11.0
-anon_standalone_PG12.sql: VERSION = 12.0
-
-standalone: $(STD_ARTEFACTS) # build the standalone scripts
-
-$(STD_ARTEFACTS): anon.sql | _pgddl
+anon_standalone.sql: anon.sql
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
-	VERSION=$(VERSION) _pgddl/bin/pgsqlpp _pgddl/ddlx.sql >> $@
 	echo 'CREATE SCHEMA anon;\n' >> $@
 	sed 's/@extschema@/anon/g' anon.sql >> $@
 	$(SEDI) 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
@@ -169,12 +159,9 @@ $(STD_ARTEFACTS): anon.sql | _pgddl
 	echo "\\\\copy anon.identifier FROM 'data/default/identifier_fr_FR.csv';\n" >> $@
 	echo "\\\\copy anon.identifier FROM 'data/default/identifier_en_US.csv';\n" >> $@
 
-_pgddl: # fetch the pgddl extension
-	-git clone https://github.com/lacanoid/pgddl.git $@
-
 clean_standalone:
-	rm -fr $(STD_ARTEFACTS)
-	rm -fr _pgddl
+	rm -fr anon_standalone.sql
+
 
 ##
 ## L O A D
