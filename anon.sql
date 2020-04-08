@@ -1502,7 +1502,7 @@ RETURNS TABLE (
     ddl TEXT
 ) AS
 $$
-    SELECT E'anon.dump_dll() is deprecated. Please use pg_dump_anon instead.';
+    SELECT E'anon.dump_dll() is deprecated. Please use pg_dump_anon instead.'::TEXT
 $$
 LANGUAGE SQL SECURITY INVOKER;
 
