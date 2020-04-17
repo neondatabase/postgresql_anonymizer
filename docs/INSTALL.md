@@ -171,11 +171,34 @@ of security labels. See [Declaring Rules with COMMENTs] for more details.
 
 [Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments 
 
-When you activate the masking engine, you need also to disable `autoload`:
+### Special Notes about Dynamic Masking and DBaaS providers
+
+Here's a few remarks on how to make the [Dynamic Masking] work on a cloud 
+PostgreSQL service :
+
+
+First, when you activate the masking engine, you need also to disable `autoload`
+(because the data was already loaded by the `anon_standalone.sql` script):
 
 ```sql
 SELECT anon.start_dynamic_masking( autoload := FALSE );
 ```
+
+Second, the [Dynamic Masking] engine will put [Event Triggers] on the tables. 
+In order to do that, you must be allowed to create event triggers, which means 
+either being a superuser or having a role with similar privileges.
+
+Creating [Event Triggers] may or may be not be supported by your cloud 
+operator. For instance, [Amazon RDS supports event triggers] since version 9.4
+while [Alibaba Cloud does not allow them]. You should refer to your provider's
+documentation or its customer service to check if this feature is available.
+
+
+[Dynamic Masking]: dynamic_masking.md
+[Event Triggers]: https://www.postgresql.org/docs/current/event-triggers.html
+[Amazon RDS supports event triggers]: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.EventTriggers
+[Alibaba Cloud does not allow them]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/126
+
 
 
 Install with Docker
