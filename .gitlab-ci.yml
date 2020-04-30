@@ -207,11 +207,37 @@ pgxn:
 
 test_pgxn:
   stage: deploy
+  before_script:
+    - echo "disable the before_script"
   script:
     - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
     - pgxn install postgresql_anonymizer
   when: manual
 
+# test install 
+test_pgxn_ubuntu_pg95:
+  stage: deploy
+  image: ubuntu:bionic
+  before_script:
+    - echo "disable the before_script"
+  script:
+    - apt-get update && apt-get install -y make gcc postgresql-common pgxnclient gnupg ca-cacert
+    - yes '' | sh /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh bionic
+    - apt-get install -y postgres-9.5 postgres-9.5-contrib postgresql-server-dev-9.5
+    - export PGDATA=/var/lib/postgresql/data
+    - export PGUSER=postgres
+    - su postgres -c /usr/lib/postgresql/9.5/bin/initdb
+    - su postgres -c "/usr/lib/postgresql/9.5/bin/pg_ctl start" &
+    - pg_config --sharedir
+    - pgxn install --pg_config /usr/lib/postgresql/9.5/bin/pg_config ddlx
+    - pgxn install --pg_config /usr/lib/postgresql/9.5/bin/pg_config postgresql_anonymizer
+    - psql -c "CREATE EXTENSION ddlx;"
+    - psql -c "CREATE EXTENSION tsm_system_rows;"
+    - psql -c "CREATE TEMPORARY TABLE pg_config AS SELECT 'SHAREDIR'::TEXT AS name, '/usr/share/postgresql/9.5'::TEXT AS setting;CREATE EXTENSION anon;"
+    - psql -c "ALTER DATABASE postgres SET session_preload_libraries='anon'"
+    - psql -c "SELECT anon.load();"
+  when: manual
+  
 test_yum_centos7_pg12:
   stage: deploy
   image: centos:7
