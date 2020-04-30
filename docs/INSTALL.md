@@ -306,24 +306,43 @@ Load the extension
 
 Here's some additional notes about how you can load the extension:
 
-1. You can load the extension exclusively into a specific database like this: 
-   ```sql
-   ALTER DATABASE mydatabase SET session_preload_libraries='anon'
-   ```
-   It has several benefits:  First, it will be dumped by `pg_dump` with the`-C` 
-   option, so the database dump will be self efficient. Second, it is propagated 
-   to a standby instance by streaming replication. Which means you can use the 
-   anonymization functions on a read-only clone of the database (provided the 
-   extension is installed on the standby instance)
-  
-2. You can load the extension with the `shared_preload_libraries` parameter.
-   This way, the extension will be available to each database of the instance.
-   If you do so, you have to restart the PostgreSQL instance.
+### 1- Load only for one database
 
-3. For a one-time usage, You can the [LOAD] command
-   ```sql
-   LOAD '/usr/lib/postgresql/12/lib/anon.so';
-   ```
+You can load the extension exclusively into a specific database like this: 
+
+```sql
+ALTER DATABASE mydatabase SET session_preload_libraries='anon'
+```
+
+Then quit your current session and open a new one.
+
+It has several benefits:  
+
+* First, it will be dumped by `pg_dump` with the`-C` option, so the database 
+  dump will be self efficient. 
+  
+* Second, it is propagated to a standby instance by streaming replication. 
+  Which means you can use the anonymization functions on a read-only clone 
+  of the database (provided the extension is installed on the standby instance)
+  
+### 2- Load for the instance
+
+You can load the extension with the `shared_preload_libraries` parameter.
+
+```sql
+ALTER SYSTEM SET shared_preload_libraries = 'anon'"
+```
+
+Then restart the PostgreSQL instance.
+
+
+### 3- Load on the fly
+
+For a one-time usage, You can the [LOAD] command
+
+```sql
+LOAD '/usr/lib/postgresql/12/lib/anon.so';
+```
 
 You can read the [Shared Library Preloading] section of the PostgreSQL documentation
 for more details.
