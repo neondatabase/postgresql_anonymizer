@@ -62,6 +62,16 @@ dataset will remain meaningful.
 * `anon.add_noise_on_datetime_column(table, column,interval)` if interval = '2 days',
   all values of the column will be randomly shifted by +/- 2 days
 
+There are also some functions that add noise on the fly:
+
+* `anon.add_noise_to_numeric(column,ratio)` column may be INT, BIGINT or FLOAT right now
+
+* `anon.add_noise_to_date(column,interval)` 
+  a random interval of +/- interval will be added to the DATE column
+
+* `anon.add_noise_to_timestamp(column,interval)` 
+  a random interval of +/- interval will be added to the timestamp (with or without tz) column
+
 
 Shuffling
 ------------------------------------------------------------------------------

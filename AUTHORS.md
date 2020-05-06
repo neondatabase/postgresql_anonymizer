@@ -35,4 +35,4 @@ Contributors
 * Tim (@roconda) : Documentation
 * Michał Lipka (@michallipka) : Tests and typos
 * Thibaut Madeleine (@madtibo) : original idea :-)
-
+* Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
