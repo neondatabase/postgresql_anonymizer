@@ -91,8 +91,8 @@ while [ $# -gt 0 ]; do
         shift
         psql_output_opt+=" $1"
         ;;
-    --file=*) # `pg_dump -file=foo.sql` becomes `psql --output=foo.sql`
-        psql_output_opt+=" $(echo $1| sed s/--file=/--output=/)"
+    --file=*) # `pg_dump -file=foo.sql` becomes `psql --output=foo.sq
+        psql_output_opt+=" ${1//--file=/--output=}"
         ;;
     -h|--host)
         psql_connect_opt+=" $1"
@@ -208,7 +208,7 @@ $DUMP | filter_out_extension ddlx | filter_out_extension anon | filter_out_exten
 ## We're launching the pg_dump again to get the list of the tables that were
 ## dumped. Only this time we add extra parameters like --exclude-table-data
 ##
-exclude_table=$(echo $exclude_table_data | sed s/--exclude-table-data=/--exclude-table=/)
+exclude_table=${exclude_table_data//--exclude-table-data=/--exclude-table=}
 dumped_tables=`$DUMP $exclude_table |awk '/^CREATE TABLE /{ print $3 }'`
 
 ##
