@@ -1,4 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "tsm_system_rows"
 -- test data
  
 CREATE TABLE test_shuffle (

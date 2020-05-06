@@ -171,7 +171,7 @@ CREATE OR REPLACE FUNCTION anon.noise(
 )
  RETURNS DATE
 AS $func$
-SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range))::DATE
+SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::DATE
 $func$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
