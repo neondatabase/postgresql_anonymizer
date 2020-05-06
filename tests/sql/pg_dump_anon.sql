@@ -122,6 +122,12 @@ DROP SCHEMA "FoO" CASCADE;
 \! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
 
 
+-- A6. Dump a third file, this time with the `--file` option
+\! pg_dump_anon -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
+
+-- A7. Check that dump files are identical
+\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
+
 --
 -- B. Exclude some schemas
 -- All this tests should not return anything
