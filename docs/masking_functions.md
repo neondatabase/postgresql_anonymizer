@@ -92,6 +92,7 @@ data :
 * `anon.random_date()` returns a date
 * `anon.random_date_between(d1,d2)` returns a date between `d1` and `d2`
 * `anon.random_int_between(i1,i2)` returns an integer between `i1` and `i2`
+* `anon.random_bigint_between(b1,b2)` returns a bigint between `b1` and `b2`
 * `anon.random_string(n)` returns a TEXT value containing `n` letters
 * `anon.random_zip()` returns a 5-digit code
 * `anon.random_phone(p)` returns a 8-digit phone with `p` as a prefix
