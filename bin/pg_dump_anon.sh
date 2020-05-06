@@ -221,6 +221,7 @@ do
   ## generate the "COPY ... FROM STDIN" statement for a given table
   echo COPY $t FROM STDIN WITH CSV';'
   $PSQL_PRINT -c "\copy (SELECT $filters FROM $t) TO STDOUT WITH CSV"
+  [ $? -ne 0 ] && echo "... during export of $t" >&2
   echo \\.
   echo
 done
