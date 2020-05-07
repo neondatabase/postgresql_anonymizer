@@ -56,22 +56,35 @@ This is also called **Variance**. The idea is to "shift" dates and numeric
 values. For example, by applying a +/- 10% variance to a salary column, the
 dataset will remain meaningful.
 
+* `anon.noise(original_value,ratio)` where original_value can be an `integer`,
+  a `bigint` or a `double precision`. If the ratio is 0.33, the return value
+  will be the original value randomly shifted with a ratio of +/- 33%
+
+* `anon.noise(original_value, interval)` where original_value can be a date or a
+  timestamp. If interval = '2 days', the return value will be the original value
+  randomly shifted by +/- 2 days
+
+
+There are also some functions that can add noise on an entire column:
+
 * `anon.add_noise_on_numeric_column(table, column,ratio)` if ratio = 0.33, all
   values of the column will be randomly shifted with a ratio of +/- 33%
 
 * `anon.add_noise_on_datetime_column(table, column,interval)` if interval = '2 days',
   all values of the column will be randomly shifted by +/- 2 days
 
-There are also some functions that add noise on the fly:
 
-* `anon.add_noise_to_numeric(column,ratio)` column may be INT, BIGINT or FLOAT right now
+**WARNING** : The noise() masking functions are vulnerable to a form of
+repeat attack, especially with [Dynamic Masking]. A masked user can guess the
+an original value by resquesting the masked value multiple times and then simply
+use the `AVG()` function to get a close approximation. ( See
+`demo/noise_reduction_attack.sql` for more details). In a nutshell, these
+functions are best fitted for [Anonymous Dumps] and [In-Place Anonymization].
+They should be avoided when using [Dynamic Masking].
 
-* `anon.add_noise_to_date(column,interval)` 
-  a random interval of +/- interval will be added to the DATE column
-
-* `anon.add_noise_to_timestamp(column,interval)` 
-  a random interval of +/- interval will be added to the timestamp (with or without tz) column
-
+[Anonymous Dumps]: anonymous_dumps/
+[In-Place Anonymization]: in_place_anonymization/
+[Dynamic Masking]: dynamic_masking/
 
 Shuffling
 ------------------------------------------------------------------------------
@@ -86,7 +99,7 @@ Shuffling
 Randomization
 ------------------------------------------------------------------------------
 
-The extension provides a large choice of function to generate purely random 
+The extension provides a large choice of function to generate purely random
 data :
 
 * `anon.random_date()` returns a date
@@ -146,10 +159,10 @@ For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 Pseudonymization
 ------------------------------------------------------------------------------
 
-Pseudonymization is similar to [Faking] in the sense that it generates 
-realistic values. The main difference is that the pseudonymization is 
-deterministic : the functions always will return the same fake value based 
-on a seed and an optional salt. 
+Pseudonymization is similar to [Faking] in the sense that it generates
+realistic values. The main difference is that the pseudonymization is
+deterministic : the functions always will return the same fake value based
+on a seed and an optional salt.
 
 In order to use the faking functions, you have to `load()` the extension
 in your database first:
@@ -171,12 +184,12 @@ Once the fake data is loaded you have access to 10 pseudo functions:
 * `anon.pseudo_siret('seed','salt')` returns a valid SIRET
 * `anon.pseudo_siren('seed','salt')` returns a valid SIREN
 
-The second argument is optional. You can call each function with only the 
-seed like this `anon.pseudo_city('bob')`. The salt is here to increase 
+The second argument is optional. You can call each function with only the
+seed like this `anon.pseudo_city('bob')`. The salt is here to increase
 complexity and avoid dictionnary and brute force attacks (see warning below).
 
 The seed can be any information related to the subjet. For instance, we can
-consistenty generate the same fake email address for a given person by using 
+consistenty generate the same fake email address for a given person by using
 her login as the seed :
 
 ```sql
@@ -185,17 +198,17 @@ SECURITY LABEL FOR anon
   IS 'MASKED WITH FUNCTION anon.pseudo_email(users.login) ';
 ```
 
-**WARNING** : Pseudonymization is often confused with anonymization but in fact 
-they serve 2 different purposes. With pseudonymization, the real data can be 
+**WARNING** : Pseudonymization is often confused with anonymization but in fact
+they serve 2 different purposes. With pseudonymization, the real data can be
 rebuild using the pseudo data, the masking rules and the seed. If an attacker
-gets access to these 3 elements, he/she can easily re-identify some people 
-using `brute force` or `dictionnary` attacks. Therefore, you should protect any 
-pseudonymized data and your seeds with the same level of security that the original 
-dataset. The GDPR makes it very clear that personal data which have undergone 
+gets access to these 3 elements, he/she can easily re-identify some people
+using `brute force` or `dictionnary` attacks. Therefore, you should protect any
+pseudonymized data and your seeds with the same level of security that the original
+dataset. The GDPR makes it very clear that personal data which have undergone
 pseudonymization are still considered to be personnal information (see [Recital 26])
 
-In a nutshell: pseudonymization may be usefull in some use cases. But if your 
-goal is to escape from GDPR or similar data regulation, it is clearly a bad solution. 
+In a nutshell: pseudonymization may be usefull in some use cases. But if your
+goal is to escape from GDPR or similar data regulation, it is clearly a bad solution.
 
 
 [Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
@@ -213,41 +226,41 @@ For instance : a credit card number can be replaced by '40XX XXXX XXXX XX96'.
 * `anon.email('daamien@gmail.com')` will becomme 'da******@gm******.com'
 
 
-Generalization 
+Generalization
 -------------------------------------------------------------------------------
 
-Genelization is the principle of replace the original value by a range 
+Genelization is the principle of replace the original value by a range
 containing this values. For instance, instead of saying 'Paul is 42 years old',
 you would can say 'Paul is between 40 and 50 years old.
 
-> The generalization functions are a data type transformation. Therefore it is 
-> not possible to use them with the dynamic masking engine. Hower they are 
-> useful to create anonymized views. See example below 
+> The generalization functions are a data type transformation. Therefore it is
+> not possible to use them with the dynamic masking engine. Hower they are
+> useful to create anonymized views. See example below
 
 Let's imagine a table containing health information
 
 ```sql
 SELECT * FROM patient;
- id |   name   |  zipcode |   birth    |    disease    
+ id |   name   |  zipcode |   birth    |    disease
 ----+----------+----------+------------+---------------
-  1 | Alice    |    47678 | 1979-12-29 | Heart Disease 
-  2 | Bob      |    47678 | 1959-03-22 | Heart Disease 
-  3 | Caroline |    47678 | 1988-07-22 | Heart Disease 
-  4 | David    |    47905 | 1997-03-04 | Flu           
-  5 | Eleanor  |    47909 | 1999-12-15 | Heart Disease 
-  6 | Frank    |    47906 | 1968-07-04 | Cancer        
-  7 | Geri     |    47605 | 1977-10-30 | Heart Disease 
-  8 | Harry    |    47673 | 1978-06-13 | Cancer        
-  9 | Ingrid   |    47607 | 1991-12-12 | Cancer       
+  1 | Alice    |    47678 | 1979-12-29 | Heart Disease
+  2 | Bob      |    47678 | 1959-03-22 | Heart Disease
+  3 | Caroline |    47678 | 1988-07-22 | Heart Disease
+  4 | David    |    47905 | 1997-03-04 | Flu
+  5 | Eleanor  |    47909 | 1999-12-15 | Heart Disease
+  6 | Frank    |    47906 | 1968-07-04 | Cancer
+  7 | Geri     |    47605 | 1977-10-30 | Heart Disease
+  8 | Harry    |    47673 | 1978-06-13 | Cancer
+  9 | Ingrid   |    47607 | 1991-12-12 | Cancer
 ```
 
-We can build a view upon this table to suppress some colums ( `SSN` 
+We can build a view upon this table to suppress some colums ( `SSN`
 and `name` ) and generalize the zipcode and the birth date like
 this:
 
 ```sql
 CREATE VIEW anonymized_patient AS
-SELECT 
+SELECT
     'REDACTED' AS name,
     anon.generalize_int4range(zipcode,100) AS zipcode,
     anon.generalize_tsrange(birth,'decade') AS birth
@@ -259,12 +272,12 @@ The anonymized table now look like that:
 
 ```sql
 SELECT * FROM anonymized_patient;
- lastname |   zipcode     |           birth             |    disease    
+ lastname |   zipcode     |           birth             |    disease
 ----------+---------------+-----------------------------+---------------
  REDACTED | [47600,47700) | ["1970-01-01","1980-01-01") | Heart Disease
  REDACTED | [47600,47700) | ["1950-01-01","1960-01-01") | Heart Disease
  REDACTED | [47600,47700) | ["1980-01-01","1990-01-01") | Heart Disease
- REDACTED | [47900,48000) | ["1990-01-01","2000-01-01") | Flu  
+ REDACTED | [47900,48000) | ["1990-01-01","2000-01-01") | Flu
  REDACTED | [47900,48000) | ["1990-01-01","2000-01-01") | Heart Disease
  REDACTED | [47900,48000) | ["1960-01-01","1970-01-01") | Cancer
  REDACTED | [47600,47700) | ["1970-01-01","1980-01-01") | Heart Disease
@@ -273,13 +286,13 @@ SELECT * FROM anonymized_patient;
 ```
 
 
-The generalized values are still useful for statistics because they remain 
+The generalized values are still useful for statistics because they remain
 true but they are less accurante therefore reduce the risk of re-identification.
 
-PostgreSQL offers several [RANGE] data types which are perfect for dates and 
-numeric values. 
+PostgreSQL offers several [RANGE] data types which are perfect for dates and
+numeric values.
 
-For numeric values, 3 functions are available 
+For numeric values, 3 functions are available
 
 * `generalize_int4range(value, step)`
 * `generalize_int8range(value, step)`
