@@ -37,11 +37,23 @@ variable value is used.
 END
 }
 
+does_anon_version_exists() {
+$PSQL << EOSQL
+  SELECT EXISTS(SELECT NULL FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid 
+        WHERE proname = 'version' AND nspname='anon');
+EOSQL
+}
+
 ## Return the version of the anon extension
 get_anon_version() {
+FCT_EXISTS=$(does_anon_version_exists)
+echo $FCT_EXISTS
+if [ $FCT_EXISTS == "t" ]
+then
 $PSQL << EOSQL
-  SELECT extversion FROM pg_catalog.pg_extension WHERE extname='anon';
+  SELECT anon.version();
 EOSQL
+fi
 }
 
 ## Return the masking schema
