@@ -16,6 +16,7 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
+* Yann ROBIN (@me.show) : version() function and DBAAS install
 * Christophe Courtois (@Krysztophe) : Proofreading
 * Pierre-Henri Dubois Amy (@theodor_lobster) : Proofreading, GIS 
 * Thomas Clark (@cthomaspdx) : Pseudonymization
