@@ -37,13 +37,6 @@ variable value is used.
 END
 }
 
-## Return the version of the anon extension
-get_anon_version() {
-$PSQL << EOSQL
-  SELECT extversion FROM pg_catalog.pg_extension WHERE extname='anon';
-EOSQL
-}
-
 ## Return the masking schema
 get_mask_schema() {
 $PSQL << EOSQL
@@ -183,7 +176,7 @@ PSQL="psql $psql_connect_opt --quiet --tuples-only --no-align"
 PSQL_PRINT="$PSQL $psql_output_opt"
 
 ## Stop if the extension is not installed in the database
-version=$(get_anon_version)
+version=$( $PSQL -c 'SELECT anon.version();' )
 if [ -z "$version" ]
 then
   echo 'ERROR: Anon extension is not installed in this database.'

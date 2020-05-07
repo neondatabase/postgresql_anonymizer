@@ -21,6 +21,12 @@ SELECT pg_catalog.pg_extension_config_dump('anon.config','');
 
 COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
 
+CREATE OR REPLACE FUNCTION anon.version()
+RETURNS TEXT AS
+$$
+SELECT '0.7'::text AS version
+$$
+LANGUAGE SQL;
 
 -- name of the source schema
 -- default value: 'public'
