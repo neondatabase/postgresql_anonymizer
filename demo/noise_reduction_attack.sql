@@ -1,7 +1,7 @@
 --
 -- This is a basic example of a repeat attacks against the noise() masking
 -- functions when they're used with dynamic masking.. We will demonstrate how
--- a masked role can guess a real data using only the masking views
+-- a masked role can guess a real data using only the masking view
 --
 
 -- STEP 1 : Activate the masking engine
@@ -23,13 +23,27 @@ SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH VALUE $$CONFIDENTIAL$$ ';
 
 SECURITY LABEL FOR anon ON COLUMN people.age
-IS 'MASKED WITH FUNCTION anon.noise(age, 0.33 )';
+IS 'MASKED WITH FUNCTION anon.noise(age, 0.33)';
 
--- STEP 5: Connect with the masked user
+-- STEP 5: Now let's connect with the masked user
 
--- when attacker ask for the age of person #157, he gets a "noised" value
-\! psql demo -U attacker -c 'SELECT age FROM people WHERE id = 157'
+\connect - attacker
 
--- now let's do this 10000 times and get the average
-\! psql demo -U attacker -c 'SELECT  avg(age) FROM people, generate_series(1,10000) WHERE id = 157;'
+-- When attacker asks for the age of person #157, he/she gets a "noised" value
+SELECT age FROM people WHERE id = 157
 
+-- Now let's do this 10000 times and get the average
+DO
+$$
+DECLARE
+  v iNT;
+  a int[];
+BEGIN
+  FOR i in 1..10000
+  LOOP
+    SELECT age into v FROM people WHERE id=157;
+    a:=array_append(a,v);
+  END LOOP;
+  SELECT avg(u) into v FROM unnest(a) u;
+  RAISE NOTICE 'Age of Person 157: %', v; END
+$$;
