@@ -9,6 +9,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 * [Randomization]
 * [Faking]
 * [Pseudonymization]
+* [Generic Hashing]
 * [Partial scrambling]
 * [Generalization]
 
@@ -18,6 +19,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Randomization]: #randomization
 [Faking]: #faking
 [Pseudonymization]: #pseudonymization
+[Generic Hashing]: #generic-hashing 
 [Partial scrambling]: #partial-scrambling
 [Generalization]: #generalization
 
@@ -212,6 +214,69 @@ goal is to escape from GDPR or similar data regulation, it is clearly a bad solu
 
 
 [Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
+
+Generic hashing
+-------------------------------------------------------------------------------
+
+Sometimes, a hash of the initial data is necessary, e.g. if a primary/foreign 
+key pair contains actual information (think customer number containing a birth 
+date or something similar).
+
+Hashing such columns (while maintaining the general appearance) allows to keep 
+referential integrity intact even for relatively unusual source data.
+
+There's one convenience function (the result can also be achieved by setting 
+the included steps as MASKED BY function):
+
+* `hash_text(value, offset, prefix, suffix)` : This function will return a 
+  (random if you don't provide the "offs" offset) substring of the SHA-512 hash 
+  of the input string, if provided padded by prefix and suffix, cut to the 
+  length of the original input.
+
+The input should not exceed 128 characters (which is the length of a 
+hex-encoded SHA-512 hash)!
+
+When no prefix and offset is given, this can serve as a (pseudo-)random string generator:
+
+```sql
+select anon.hash_text('0123456789abcdefg') from generate_series(1,5);
+     hash_text
+-------------------
+ 98d229a29aa6fc0b8
+ 44a98d229a29aa6fc
+ d229a29aa6fc0b84b
+ 3e13ba244a98d229a
+ 98d229a29aa6fc0b8
+```
+
+It is more useful for e.g. customer IDs of the form "cust00123456".
+
+```sql
+select anon.hash_text('cust00123456',prefix:='cust') from generate_series(1,5);
+ hash_text
+--------------
+ cust9036bf95
+ cust343f6beb
+ cust3f6beb23
+ cust5929fbdf
+ custebfdd260
+```
+
+When "offs" (offset, actually the first character of the hash that is used) 
+is provided, the output is immutable and can thus be used to retain 
+referential integrity:
+
+```sql
+select anon.hash_text('cust00123456',2,prefix:='cust') 
+from generate_series(1,5);
+  hash_text
+--------------
+ cust13b7cbca
+ cust13b7cbca
+ cust13b7cbca
+ cust13b7cbca
+ cust13b7cbca
+```
 
 
 Partial Scrambling

@@ -1024,6 +1024,43 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
+---
+--- generic text / "number" hashing
+---
+CREATE OR REPLACE FUNCTION anon.hash_text(
+  value TEXT,
+  offs INTEGER DEFAULT NULL::INTEGER,
+  prefix TEXT DEFAULT ''::text,
+  suffix text DEFAULT ''::text
+)
+ RETURNS TEXT AS $$
+--- This function will return a (random if you don't provide the "offs" offset)
+--- substring of the SHA-512 hash of the input string,
+--- if provided padded by prefix and suffix,
+--- cut to the length of the original input.
+--- Useful for e.g. customer IDs of the form "cust00123456".
+---
+--- When "offs" is given, the output is immutable and can thus be used to retain
+--- referential integrity.
+---
+--- With only "value", provides a pretty much random string of the same length.
+
+SELECT concat(
+  prefix,
+  substring(
+    encode(sha512(sha512(sha512(value::bytea))), 'hex'),
+    COALESCE(
+      offs % 128 + 1,
+      (random() * (128 - length(value)) + 1)::int
+    ),
+    length(value) - length(prefix) - length(suffix)
+  ),
+  suffix
+);
+$$
+LANGUAGE SQL SECURITY INVOKER;
+
+
 -------------------------------------------------------------------------------
 -- Partial Scrambling
 -------------------------------------------------------------------------------
