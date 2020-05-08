@@ -74,9 +74,9 @@ There are also some functions that can add noise on an entire column:
   all values of the column will be randomly shifted by +/- 2 days
 
 
-**WARNING** : The noise() masking functions are vulnerable to a form of
-repeat attack, especially with [Dynamic Masking]. A masked user can guess the
-an original value by resquesting the masked value multiple times and then simply
+**WARNING** : The `noise()` masking functions are vulnerable to a form of
+repeat attack, especially with [Dynamic Masking]. A masked user can guess
+an original value by resquesting its masked value multiple times and then simply
 use the `AVG()` function to get a close approximation. ( See
 `demo/noise_reduction_attack.sql` for more details). In a nutshell, these
 functions are best fitted for [Anonymous Dumps] and [In-Place Anonymization].
