@@ -12,6 +12,7 @@ tests/tmp/*
 *.diffs
 _dump1.sql
 _dump2.sql
+_blackbox_*
 contrib_regression_test_restore.pgsql
 # C objects
 *.bc
