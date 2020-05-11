@@ -40,4 +40,3 @@ SELECT pg_typeof(anon.random_phone()) = 'TEXT'::REGTYPE;
 DROP EXTENSION anon CASCADE;
 
 ROLLBACK;
-

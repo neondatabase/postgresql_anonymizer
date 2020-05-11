@@ -16,6 +16,7 @@ Maintainer
 Contributors
 -------------------------------------------------------------------------------
 
+* Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
 * Yann ROBIN (@me.show) : version() function and DBAAS install
 * Christophe Courtois (@Krysztophe) : Proofreading
 * Pierre-Henri Dubois Amy (@theodor_lobster) : Proofreading, GIS 
@@ -35,4 +36,3 @@ Contributors
 * Tim (@roconda) : Documentation
 * Michał Lipka (@michallipka) : Tests and typos
 * Thibaut Madeleine (@madtibo) : original idea :-)
-* Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
