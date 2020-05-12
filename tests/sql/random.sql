@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.load();
@@ -13,7 +15,6 @@ SELECT pg_typeof(anon.random_zip()) = 'TEXT'::REGTYPE;
 -- string
 
 SELECT pg_typeof(anon.random_string(1)) = 'TEXT'::REGTYPE;
---SELECT anon_string(123456789);
 
 
 -- Date
@@ -23,6 +24,12 @@ SELECT pg_typeof(anon.random_date()) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
 
 -- Integer
 SELECT pg_typeof(anon.random_int_between(1,3)) = 'INTEGER'::REGTYPE;
+SELECT ROUND(AVG(anon.random_int_between(1,3))) = 2
+FROM generate_series(1,100);
+
+SELECT pg_typeof(anon.random_bigint_between(1,3)) = 'BIGINT'::REGTYPE;
+SELECT ROUND(AVG(anon.random_bigint_between(2147483648,2147483650))) = 2147483649
+FROM generate_series(1,100);
 
 
 -- Phone
@@ -31,3 +38,5 @@ SELECT anon.random_phone(NULL) IS NULL;
 SELECT pg_typeof(anon.random_phone()) = 'TEXT'::REGTYPE;
 
 DROP EXTENSION anon CASCADE;
+
+ROLLBACK;

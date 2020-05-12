@@ -132,6 +132,70 @@ $func$
 LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
+-- "on the fly" noise
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION anon.noise(
+  noise_value BIGINT,
+  ratio DOUBLE PRECISION
+)
+ RETURNS BIGINT
+AS $func$
+SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::BIGINT
+$func$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.noise(
+  noise_value INTEGER,
+  ratio DOUBLE PRECISION
+)
+ RETURNS INTEGER
+AS $func$
+SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::INTEGER
+$func$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.noise(
+  noise_value DOUBLE PRECISION,
+  ratio DOUBLE PRECISION
+)
+ RETURNS DOUBLE PRECISION
+AS $func$
+SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::FLOAT
+$func$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.noise(
+  noise_value DATE,
+  noise_range INTERVAL
+)
+ RETURNS DATE
+AS $func$
+SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::DATE
+$func$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.noise(
+  noise_value TIMESTAMP WITHOUT TIME ZONE,
+  noise_range INTERVAL
+)
+ RETURNS TIMESTAMP WITHOUT TIME ZONE
+AS $func$
+SELECT noise_value + (2.0 * random() - 1.0) * noise_range
+$func$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.noise(
+  noise_value TIMESTAMP WITH TIME ZONE,
+  noise_range INTERVAL
+)
+ RETURNS TIMESTAMP WITH TIME ZONE
+AS $func$
+SELECT noise_value + (2.0 * random() - 1.0) * noise_range
+$func$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+-------------------------------------------------------------------------------
 -- Shuffle
 -------------------------------------------------------------------------------
 
@@ -530,6 +594,15 @@ CREATE OR REPLACE FUNCTION anon.random_int_between(
 )
 RETURNS INTEGER AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+CREATE OR REPLACE FUNCTION anon.random_bigint_between(
+  int_start BIGINT,
+  int_stop BIGINT
+)
+RETURNS BIGINT AS $$
+    SELECT CAST ( random()*(int_stop-int_start)+int_start AS BIGINT );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
