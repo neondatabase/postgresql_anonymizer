@@ -427,6 +427,11 @@ DECLARE
   datapath_regexp  TEXT;
   datapath_check TEXT;
 BEGIN
+  IF anon.isloaded() THEN
+    RAISE NOTICE 'The anon extension is already loaded.';
+    RETURN TRUE;
+  END IF;
+
   -- This check does not work with PG10 and below
   -- because absolute paths are not allowed
   --SELECT * INTO  datapath_check
