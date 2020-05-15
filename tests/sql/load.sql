@@ -5,10 +5,13 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.isloaded() IS FALSE;
 
 -- returns a WARNING and FALSE
-SELECT anon.load('./does/not/exists/cd2ks3s/') IS FALSE; 
+SELECT anon.load('./does/not/exists/cd2ks3s/') IS FALSE;
 
-SELECT anon.isloaded() IS FALSE; 
+SELECT anon.isloaded() IS FALSE;
 
+SELECT anon.load();
+
+-- Returns a NOTICE and TRUE
 SELECT anon.load();
 
 SELECT anon.isloaded() IS TRUE;
