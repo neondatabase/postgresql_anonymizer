@@ -66,32 +66,24 @@ $func$
   LANGUAGE SQL
   IMMUTABLE
   STRICT
-  LEAKPROOF
   SECURITY INVOKER
 ;
 REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
 
-CREATE OR REPLACE FUNCTION anon.hash_with_salt(
+CREATE OR REPLACE FUNCTION anon.digest(
   seed TEXT,
-  salt TEXT DEFAULT '',
-  algorithm anon.hash_algorithm DEFAULT 'sha512'
+  salt TEXT,
+  algorithm anon.hash_algorithm
 )
 RETURNS TEXT AS $$
-  SELECT
-    CASE algorithm
-      WHEN 'md5'    THEN md5(seed||salt)
-      WHEN 'sha224' THEN encode(sha224((seed||salt)::BYTEA),'hex')
-      WHEN 'sha256' THEN encode(sha256((seed||salt)::BYTEA),'hex')
-      WHEN 'sha384' THEN encode(sha384((seed||salt)::BYTEA),'hex')
-      WHEN 'sha512' THEN encode(sha512((seed||salt)::BYTEA),'hex')
-      ELSE encode(sha512((seed||salt)::BYTEA),'hex')
-    END;
+  -- https://www.postgresql.org/docs/current/pgcrypto.html
+  SELECT encode(public.digest(concat(seed,salt),algorithm::TEXT),'hex');
 $$
   LANGUAGE SQL
   IMMUTABLE
-  SECURITY INVOKER
   RETURNS NULL ON NULL INPUT
-  LEAKPROOF
+  SECURITY DEFINER
+  SET search_path = pg_catalog,pg_temp
 ;
 
 CREATE OR REPLACE FUNCTION anon.hash(
@@ -99,16 +91,12 @@ CREATE OR REPLACE FUNCTION anon.hash(
   algorithm anon.hash_algorithm DEFAULT 'sha512'
 )
 RETURNS TEXT AS $$
-  SELECT anon.hash_with_salt(
-    seed,
-    anon.get_secret_salt(),
-    algorithm
-  );
+  -- https://www.postgresql.org/docs/current/pgcrypto.html
+  SELECT anon.digest(seed,anon.get_secret_salt(),algorithm);
 $$
   LANGUAGE SQL
   IMMUTABLE
   RETURNS NULL ON NULL INPUT
-  LEAKPROOF
   SECURITY DEFINER
   SET search_path = pg_catalog,pg_temp
 ;
@@ -117,7 +105,6 @@ $$
 
 REVOKE CREATE ON SCHEMA anon FROM PUBLIC;
 
-REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
 REVOKE ALL ON TABLE anon.secret FROM PUBLIC;
 
 
@@ -738,17 +725,12 @@ CREATE OR REPLACE FUNCTION anon.random_hash(
   algorithm anon.hash_algorithm DEFAULT 'sha512'
 )
 RETURNS TEXT AS $$
-  SELECT anon.hash_with_salt(
-    seed,
-    anon.random_string(42),
-    algorithm
-  );
+  SELECT anon.digest(seed,anon.random_string(6),algorithm);
 $$
   LANGUAGE SQL
   VOLATILE
   SECURITY INVOKER
   RETURNS NULL ON NULL INPUT
-  LEAKPROOF
 ;
 
 -------------------------------------------------------------------------------
@@ -1013,20 +995,8 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER;
 
 --
--- get a md5 hash of an original value and then project it on a 0-to-1 scale
--- MD5 signatures values have a uniform distribution
+-- Return a deterministic value inside a range of OID for a given seed+salt
 --
-CREATE OR REPLACE FUNCTION anon.md5_project(
-  seed TEXT,
-  salt TEXT DEFAULT ''
-)
-RETURNS NUMERIC AS $$
-  -- we use only the 6 first characters of the md5 signature
-  -- and we divide by the max value : x'FFFFFF' = 16777215
-  SELECT  anon.hex_to_int(md5(seed||salt)::char(6)) / 16777215.0
-$$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
-
 CREATE OR REPLACE FUNCTION anon.projection_to_oid(
   seed TEXT,
   salt TEXT,
@@ -1034,12 +1004,23 @@ CREATE OR REPLACE FUNCTION anon.projection_to_oid(
 )
 RETURNS INT AS $$
   --
--- get a md5 hash of an original value and then project it on a 0-to-1 scale
--- MD5 signatures values have a uniform distribution
---
-  SELECT CAST( anon.md5_project(seed,salt)*last_oid AS INT)
+  -- get a md5 hash of the seed and then project it on a 0-to-1 scale
+  -- then multiply by the latest oid
+  -- which give a deterministic oid inside the range
+  --
+  -- This works because MD5 signatures values have a uniform distribution
+  --
+  SELECT CAST(
+    -- we use only the 6 first characters of the md5 signature
+    -- and we divide by the max value : x'FFFFFF' = 16777215
+    last_oid * anon.hex_to_int(md5(seed||salt)::char(6)) / 16777215.0
+  AS INT )
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+  LANGUAGE SQL
+  IMMUTABLE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
   seed TEXT,
