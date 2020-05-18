@@ -31,42 +31,23 @@ SELECT anon.hex_to_int('ffffff') = 16777215;
  t
 (1 row)
 
--- md5_project
-SELECT anon.md5_project(NULL,NULL) IS NULL;
+-- projection_to_oid
+SELECT anon.projection_to_oid(NULL,NULL,NULL) IS NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT anon.md5_project('abcdefgh',NULL) = 0.90961080250804439235;
+SELECT anon.projection_to_oid('abcdefgh','', 10000) = 9096;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT anon.md5_project('xxxxxxxx','yyyyy') = 0.97840040793421315755;
+SELECT anon.projection_to_oid('xxxxxxxx','yyyyy', 10000) = 9784;
  ?column? 
 ----------
  t
-(1 row)
-
--- project_oid
-SELECT anon.project_oid(NULL,NULL,NULL) IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.project_oid('abcdefgh',NULL, 'anon.email_oid_seq') = 7277;
- ?column? 
-----------
- f
-(1 row)
-
-SELECT anon.project_oid('xxxxxxxx','yyyyy', 'anon.email_oid_seq') = 7827;
- ?column? 
-----------
- f
 (1 row)
 
 -- First Name
@@ -182,6 +163,19 @@ SELECT  anon.pseudo_iban(NULL) IS NULL;
 (1 row)
 
 SELECT  anon.pseudo_iban('bob','x') = anon.pseudo_iban('bob','x');
+ ?column? 
+----------
+ t
+(1 row)
+
+-- Use a predefined secret salt
+SELECT anon.set_secret_salt('a_VeRy_SeCReT_SaLT');
+  set_secret_salt   
+--------------------
+ a_VeRy_SeCReT_SaLT
+(1 row)
+
+SELECT  anon.pseudo_last_name('bob') = 'Tribley';
  ?column? 
 ----------
  t

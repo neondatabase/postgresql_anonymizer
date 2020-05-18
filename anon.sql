@@ -7,6 +7,15 @@
 --  * tms_system_rows (should be available with all distributions of postgres)
 --
 
+
+-------------------------------------------------------------------------------
+-- Types
+-------------------------------------------------------------------------------
+
+-- https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER
+CREATE TYPE anon.hash_algorithm
+AS ENUM('md5','sha224','sha256','sha384','sha512');
+
 -------------------------------------------------------------------------------
 -- Config
 -------------------------------------------------------------------------------
@@ -21,12 +30,105 @@ SELECT pg_catalog.pg_extension_config_dump('anon.config','');
 
 COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
 
+DROP TABLE IF EXISTS anon.secret;
+CREATE TABLE anon.secret (
+    param TEXT UNIQUE NOT NULL,
+    value TEXT
+);
+REVOKE ALL ON anon.secret FROM public;
+
+SELECT pg_catalog.pg_extension_config_dump('anon.secret','');
+
+CREATE OR REPLACE FUNCTION anon.set_secret_salt(v TEXT)
+RETURNS TEXT AS $$
+  INSERT INTO anon.secret(param,value)
+  VALUES('salt',v)
+  ON CONFLICT (param)
+  DO
+    UPDATE
+    SET value=v
+    WHERE EXCLUDED.param = 'salt'
+  RETURNING value
+$$
+  LANGUAGE SQL
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+;
+REVOKE EXECUTE ON FUNCTION anon.set_secret_salt(TEXT)  FROM PUBLIC;
+
+CREATE OR REPLACE FUNCTION anon.get_secret_salt()
+RETURNS TEXT AS
+$func$
+  SELECT value
+  FROM anon.secret
+  WHERE param = 'salt'
+$func$
+  LANGUAGE SQL
+  IMMUTABLE
+  STRICT
+  LEAKPROOF
+  SECURITY INVOKER
+;
+REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
+
+CREATE OR REPLACE FUNCTION anon.hash_with_salt(
+  seed TEXT,
+  salt TEXT DEFAULT '',
+  algorithm anon.hash_algorithm DEFAULT 'sha512'
+)
+RETURNS TEXT AS $$
+  SELECT
+    CASE algorithm
+      WHEN 'md5'    THEN md5(seed||salt)
+      WHEN 'sha224' THEN encode(sha224((seed||salt)::BYTEA),'hex')
+      WHEN 'sha256' THEN encode(sha256((seed||salt)::BYTEA),'hex')
+      WHEN 'sha384' THEN encode(sha384((seed||salt)::BYTEA),'hex')
+      WHEN 'sha512' THEN encode(sha512((seed||salt)::BYTEA),'hex')
+      ELSE encode(sha512((seed||salt)::BYTEA),'hex')
+    END;
+$$
+  LANGUAGE SQL
+  IMMUTABLE
+  SECURITY INVOKER
+  RETURNS NULL ON NULL INPUT
+  LEAKPROOF
+;
+
+CREATE OR REPLACE FUNCTION anon.hash(
+  seed TEXT,
+  algorithm anon.hash_algorithm DEFAULT 'sha512'
+)
+RETURNS TEXT AS $$
+  SELECT anon.hash_with_salt(
+    seed,
+    anon.get_secret_salt(),
+    algorithm
+  );
+$$
+  LANGUAGE SQL
+  IMMUTABLE
+  RETURNS NULL ON NULL INPUT
+  LEAKPROOF
+  SECURITY DEFINER
+  SET search_path = pg_catalog,pg_temp
+;
+
+-- https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
+
+REVOKE CREATE ON SCHEMA anon FROM PUBLIC;
+
+REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
+REVOKE ALL ON TABLE anon.secret FROM PUBLIC;
+
+
 CREATE OR REPLACE FUNCTION anon.version()
 RETURNS TEXT AS
-$$
-SELECT '0.7'::text AS version
-$$
-LANGUAGE SQL;
+$func$
+  SELECT '0.7'::text AS version
+$func$
+  LANGUAGE SQL
+  SECURITY INVOKER
+;
 
 -- name of the source schema
 -- default value: 'public'
@@ -498,7 +600,13 @@ AS $$
         FROM pg_config
         WHERE name = 'SHAREDIR'
     )
-    SELECT anon.load(conf.sharedir || '/extension/anon/')
+    SELECT
+      anon.load(conf.sharedir || '/extension/anon/'),
+      -- if the secret salt is NULL, generate a random salt
+      COALESCE(
+          anon.get_secret_salt(),
+          anon.set_secret_salt(md5(random()::TEXT))
+      )
     FROM conf;
     SELECT TRUE;
 $$
@@ -534,6 +642,7 @@ RETURNS BOOLEAN AS $$
     TRUNCATE anon.last_name;
     TRUNCATE anon.siret;
     TRUNCATE anon.lorem_ipsum;
+    TRUNCATE anon.secret;
     -- ADD NEW TABLE HERE
     SELECT TRUE;
 $$
@@ -620,6 +729,27 @@ RETURNS TEXT AS $$
           AS "phone";
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+--
+-- hashing a seed with a random salt
+--
+CREATE OR REPLACE FUNCTION anon.random_hash(
+  seed TEXT,
+  algorithm anon.hash_algorithm DEFAULT 'sha512'
+)
+RETURNS TEXT AS $$
+  SELECT anon.hash_with_salt(
+    seed,
+    anon.random_string(42),
+    algorithm
+  );
+$$
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  RETURNS NULL ON NULL INPUT
+  LEAKPROOF
+;
 
 -------------------------------------------------------------------------------
 -- FAKE data
@@ -888,29 +1018,28 @@ $$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER;
 --
 CREATE OR REPLACE FUNCTION anon.md5_project(
   seed TEXT,
-  salt TEXT
+  salt TEXT DEFAULT ''
 )
 RETURNS NUMERIC AS $$
   -- we use only the 6 first characters of the md5 signature
   -- and we divide by the max value : x'FFFFFF' = 16777215
-  SELECT  anon.hex_to_int(md5(seed||COALESCE(salt,''))::char(6)) / 16777215.0
+  SELECT  anon.hex_to_int(md5(seed||salt)::char(6)) / 16777215.0
 $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
 
---
--- use a seed and a salt to get a deterministic position
--- inside a linear sequence
---
-CREATE OR REPLACE FUNCTION anon.project_oid(
+CREATE OR REPLACE FUNCTION anon.projection_to_oid(
   seed TEXT,
   salt TEXT,
-  seq REGCLASS
+  last_oid BIGINT
 )
 RETURNS INT AS $$
-  SELECT CAST( anon.md5_project(seed,salt)*currval(seq) AS INT)
+  --
+-- get a md5 hash of an original value and then project it on a 0-to-1 scale
+-- MD5 signatures values have a uniform distribution
+--
+  SELECT CAST( anon.md5_project(seed,salt)*last_oid AS INT)
 $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
-
 
 CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
   seed TEXT,
@@ -919,10 +1048,17 @@ CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
 RETURNS TEXT AS $$
   SELECT first_name
   FROM anon.first_name
-  WHERE oid = anon.project_oid(seed,salt,'anon.first_name_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.first_name_oid_seq)
+  );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
-
+  LANGUAGE SQL
+  IMMUTABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog,pg_temp
+;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_last_name(
   seed TEXT,
@@ -931,9 +1067,17 @@ CREATE OR REPLACE FUNCTION anon.pseudo_last_name(
 RETURNS TEXT AS $$
   SELECT name
   FROM anon.last_name
-  WHERE oid = anon.project_oid(seed,salt,'anon.last_name_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.last_name_oid_seq)
+  );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+  LANGUAGE SQL
+  IMMUTABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog,pg_temp
+;
 
 
 CREATE OR REPLACE FUNCTION anon.pseudo_email(
@@ -943,7 +1087,11 @@ CREATE OR REPLACE FUNCTION anon.pseudo_email(
 RETURNS TEXT AS $$
   SELECT address
   FROM anon.email
-  WHERE oid = anon.project_oid(seed,salt,'anon.email_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.email_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
@@ -954,7 +1102,11 @@ CREATE OR REPLACE FUNCTION anon.pseudo_city(
 RETURNS TEXT AS $$
   SELECT name
   FROM anon.city
-  WHERE oid = anon.project_oid(seed,salt,'anon.city_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.city_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
@@ -965,7 +1117,11 @@ CREATE OR REPLACE FUNCTION anon.pseudo_region(
 RETURNS TEXT AS $$
   SELECT subcountry
   FROM anon.city
-  WHERE oid = anon.project_oid(seed,salt,'anon.city_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.city_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
@@ -976,7 +1132,11 @@ CREATE OR REPLACE FUNCTION anon.pseudo_country(
 RETURNS TEXT AS $$
   SELECT country
   FROM anon.city
-  WHERE oid = anon.project_oid(seed,salt,'anon.city_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.city_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
@@ -987,7 +1147,11 @@ CREATE OR REPLACE FUNCTION anon.pseudo_company(
 RETURNS TEXT AS $$
   SELECT name
   FROM anon.company
-  WHERE oid = anon.project_oid(seed,salt,'anon.company_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.company_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
@@ -998,7 +1162,11 @@ CREATE OR REPLACE FUNCTION anon.pseudo_iban(
 RETURNS TEXT AS $$
   SELECT id
   FROM anon.iban
-  WHERE oid = anon.project_oid(seed,salt,'anon.iban_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.iban_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
@@ -1009,7 +1177,11 @@ CREATE OR REPLACE FUNCTION anon.pseudo_siren(
 RETURNS TEXT AS $$
   SELECT siren
   FROM anon.siret
-  WHERE oid = anon.project_oid(seed,salt,'anon.siret_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.siret_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
@@ -1020,13 +1192,27 @@ CREATE OR REPLACE FUNCTION anon.pseudo_siret(
 RETURNS TEXT AS $$
   SELECT siren||nic
   FROM anon.siret
-  WHERE oid = anon.project_oid(seed,salt,'anon.siret_oid_seq');
+  WHERE oid = anon.projection_to_oid(
+    seed,
+    COALESCE(salt,anon.get_secret_salt()),
+    (SELECT last_value FROM anon.siret_oid_seq)
+  );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
----
---- generic text / "number" hashing
----
+-------------------------------------------------------------------------------
+--- Generic hashing
+-------------------------------------------------------------------------------
+
+-- Add tests in tests/sql/hash.sql
+
+-- anon.get_secret_salt()
+-- anon.set_secret_salt()
+-- anon.generate_secret_salt()
+
+-- anon.random_hash()
+
+--
 CREATE OR REPLACE FUNCTION anon.hash_text(
   value TEXT,
   offs INTEGER DEFAULT NULL::INTEGER,
@@ -1048,7 +1234,13 @@ CREATE OR REPLACE FUNCTION anon.hash_text(
 SELECT concat(
   prefix,
   substring(
-    encode(sha512(sha512(sha512(value::bytea))), 'hex'),
+    encode(
+      sha512(
+        sha512(
+          sha512(value::bytea)
+        )
+      )
+    , 'hex'),
     COALESCE(
       offs % 128 + 1,
       (random() * (128 - length(value)) + 1)::int
@@ -1514,11 +1706,16 @@ BEGIN
   SELECT anon.source_schema()::REGNAMESPACE INTO sourceschema;
   SELECT anon.mask_schema()::REGNAMESPACE INTO maskschema;
   RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
+  -- The masked role cannot read the authentic data in the source schema
   EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
-  EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', 'anon', maskedrole);
-  EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', 'anon', maskedrole);
+  -- The masked role can use the anon schema (except the secrets)
+  EXECUTE format('GRANT USAGE ON SCHEMA anon TO %s', maskedrole);
+  EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA anon TO %s', maskedrole);
+  EXECUTE format('REVOKE ALL ON TABLE anon.secret FROM %s',  maskedrole);
+  -- The masked role can use the masking schema
   EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', maskschema, maskedrole);
   EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', maskschema, maskedrole);
+  -- This is how we "trick" the masked role
   EXECUTE format('ALTER ROLE %s SET search_path TO %s,%s;', maskedrole, maskschema,sourceschema);
   RETURN TRUE;
 END
