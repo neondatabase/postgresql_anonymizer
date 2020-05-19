@@ -186,9 +186,11 @@ Once the fake data is loaded you have access to 10 pseudo functions:
 * `anon.pseudo_siret('seed','salt')` returns a valid SIRET
 * `anon.pseudo_siren('seed','salt')` returns a valid SIREN
 
-The second argument is optional. You can call each function with only the
-seed like this `anon.pseudo_city('bob')`. The salt is here to increase
+The second argument ("salt") is optional. You can call each function with 
+only the seed like this `anon.pseudo_city('bob')`. The salt is here to increase
 complexity and avoid dictionnary and brute force attacks (see warning below).
+If a salt is not given, a random secret salt is used instead 
+(see the [Generic Hashing] section for more details)
 
 The seed can be any information related to the subjet. For instance, we can
 consistenty generate the same fake email address for a given person by using
@@ -218,65 +220,67 @@ goal is to escape from GDPR or similar data regulation, it is clearly a bad solu
 Generic hashing
 -------------------------------------------------------------------------------
 
-Sometimes, a hash of the initial data is necessary, e.g. if a primary/foreign 
-key pair contains actual information (think customer number containing a birth 
+In theory, hashing is not a valid anonymization technique, however in practice 
+it is sometimes necessary to generate a determinist hash of the original data.
+
+For instance, when a pair of  primary key / foreign key is a "natural key", 
+it may contain actual information ( like a customer number containing a birth 
 date or something similar).
 
-Hashing such columns (while maintaining the general appearance) allows to keep 
-referential integrity intact even for relatively unusual source data.
+Hashing such columns allows to keep referential integrity intact even for 
+relatively unusual source data. Therefore, the 
 
-There's one convenience function (the result can also be achieved by setting 
-the included steps as MASKED BY function):
+* `anon.hash(value)`  will return a text hash of the value using a secret salt
+  and a secret hash algorithm (see below)
 
-* `hash_text(value, offset, prefix, suffix)` : This function will return a 
-  (random if you don't provide the "offs" offset) substring of the SHA-512 hash 
-  of the input string, if provided padded by prefix and suffix, cut to the 
-  length of the original input.
+* `anon.digest(value,salt,algorithm)` lets choose a salt and the hash algorithm
+  you want to use
 
-The input should not exceed 128 characters (which is the length of a 
-hex-encoded SHA-512 hash)!
+By default a random secret salt is generated when the extension is initialiazed 
+anf the default hash algortihm is `sha512`. You can change for the entire 
+database with to functions
 
-When no prefix and offset is given, this can serve as a (pseudo-)random string generator:
+* `anon.set_secret_salt(value)` to define you own salt
+* `anon.set_secret_algorithm(value)` to select another hash functuon. 
+  Possible values are: md5, sha1, sha224, sha256, sha384 or sha512
 
-```sql
-select anon.hash_text('0123456789abcdefg') from generate_series(1,5);
-     hash_text
--------------------
- 98d229a29aa6fc0b8
- 44a98d229a29aa6fc
- d229a29aa6fc0b84b
- 3e13ba244a98d229a
- 98d229a29aa6fc0b8
-```
+Keep in mind that hashing is a form a [Pseudonymization]. This means that the 
+real data can be rebuilt using the hashed value and the masking function. If an 
+attacker gets access to these elements, he or she can easily re-identify 
+some persons using `brute force` or `dictionary` attacks. Therefore, **the 
+salt and the algorithm used to hash the data must be protected with the 
+same level of security that the original dataset.** 
 
-It is more useful for e.g. customer IDs of the form "cust00123456".
+In a nutshell, we recommend that you use the `anon.hash()` function rather than
+`anon.digest()` because the salt will not appear clearly in the masking rule.
 
-```sql
-select anon.hash_text('cust00123456',prefix:='cust') from generate_series(1,5);
- hash_text
---------------
- cust9036bf95
- cust343f6beb
- cust3f6beb23
- cust5929fbdf
- custebfdd260
-```
-
-When "offs" (offset, actually the first character of the hash that is used) 
-is provided, the output is immutable and can thus be used to retain 
-referential integrity:
+Furthermore: in practice the hash function will return a long string of caracter
+like this:
 
 ```sql
-select anon.hash_text('cust00123456',2,prefix:='cust') 
-from generate_series(1,5);
-  hash_text
---------------
- cust13b7cbca
- cust13b7cbca
- cust13b7cbca
- cust13b7cbca
- cust13b7cbca
+SELECT anon.hash('bob'); 
+                                  hash
+----------------------------------------------------------------------------------------------------------------------------------
+95b6accef02c5a725a8c9abf19ab5575f99ca3d9997984181e4b3f81d96cbca4d0977d694ac490350e01d0d213639909987ef52de8e44d6258d536c55e427397 
 ```
+
+For some columns, this may be too long and you may have to cut some parts the 
+hash in order to fit into the columm. For instance, if you have a foreign key 
+based on a phone number and the column is a VARCHAR(12) you can transform the 
+data like this:
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN people.phone_number
+IS 'MASKED WITH FUNCTION left(anon.hash(phone_number),12)';
+
+SECURITY LABEL FOR anon ON COLUMN call_history.fk_phone_number
+IS 'MASKED WITH FUNCTION left(anon.hash(fk_phone_number),12)';
+```
+
+Of course, cutting the hash value to 12 characters will increase the risk 
+of "collision" ( 2 different values having the same fake hash). In such
+case, it's up to you to evaluate this risk.
+
 
 
 Partial Scrambling
