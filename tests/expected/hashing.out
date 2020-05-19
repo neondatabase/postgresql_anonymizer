@@ -126,10 +126,16 @@ SELECT anon.mask_update();
 (2 rows)
 
 -- Jimmy tries to find the salt :-)
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM anon.secret'
-ERROR:  permission denied for table secret
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_secret_salt();'
 ERROR:  permission denied for function get_secret_salt
+-- Jimmy cant read the secrets
+--
+-- Here we use a trick to catch to output because the error message is different
+-- between versions of PostgreSQL...
+-- see tests/sql/masking.sql for more details
+--
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM anon.secret' 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+ERROR:  permission denied
 -- STOP
 SELECT anon.stop_dynamic_masking();
 NOTICE:  The previous priviledges of 'jimmy_mcnulty' are not restored. You need to grant them manually.

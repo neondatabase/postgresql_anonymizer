@@ -76,8 +76,17 @@ SELECT anon.mask_update();
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
 
 -- Jimmy tries to find the salt :-)
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM anon.secret'
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_secret_salt();'
+
+
+-- Jimmy cant read the secrets
+--
+-- Here we use a trick to catch to output because the error message is different
+-- between versions of PostgreSQL...
+-- see tests/sql/masking.sql for more details
+--
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM anon.secret' 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+
 
 
 
