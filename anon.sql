@@ -5,16 +5,16 @@
 --
 -- Dependencies :
 --  * tms_system_rows (should be available with all distributions of postgres)
---
+--  * pgcrypto ( because PG10 does not include hashing functions )
 
 
 -------------------------------------------------------------------------------
 -- Types
 -------------------------------------------------------------------------------
 
--- https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER
+-- https://www.postgresql.org/docs/9.6/pgcrypto.html
 CREATE TYPE anon.hash_algorithm
-AS ENUM('md5','sha224','sha256','sha384','sha512');
+AS ENUM('md5','sha1' 'sha224','sha256','sha384','sha512');
 
 -------------------------------------------------------------------------------
 -- Config
@@ -70,38 +70,7 @@ $func$
 ;
 REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
 
-CREATE OR REPLACE FUNCTION anon.digest(
-  seed TEXT,
-  salt TEXT,
-  algorithm anon.hash_algorithm
-)
-RETURNS TEXT AS $$
-  -- https://www.postgresql.org/docs/current/pgcrypto.html
-  SELECT encode(public.digest(concat(seed,salt),algorithm::TEXT),'hex');
-$$
-  LANGUAGE SQL
-  IMMUTABLE
-  RETURNS NULL ON NULL INPUT
-  SECURITY DEFINER
-  SET search_path = pg_catalog,pg_temp
-;
 
-CREATE OR REPLACE FUNCTION anon.hash(
-  seed TEXT,
-  algorithm anon.hash_algorithm DEFAULT 'sha512'
-)
-RETURNS TEXT AS $$
-  -- https://www.postgresql.org/docs/current/pgcrypto.html
-  SELECT anon.digest(seed,anon.get_secret_salt(),algorithm);
-$$
-  LANGUAGE SQL
-  IMMUTABLE
-  RETURNS NULL ON NULL INPUT
-  SECURITY DEFINER
-  SET search_path = pg_catalog,pg_temp
-;
-
--- https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
 
 REVOKE CREATE ON SCHEMA anon FROM PUBLIC;
 
@@ -634,6 +603,45 @@ RETURNS BOOLEAN AS $$
     SELECT TRUE;
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
+
+-------------------------------------------------------------------------------
+--- Generic hashing
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION anon.digest(
+  seed TEXT,
+  salt TEXT,
+  algorithm anon.hash_algorithm
+)
+RETURNS TEXT AS $$
+  -- https://www.postgresql.org/docs/current/pgcrypto.html
+  SELECT encode(digest(concat(seed,salt),algorithm::TEXT),'hex');
+$$
+  LANGUAGE SQL
+  IMMUTABLE
+  RETURNS NULL ON NULL INPUT
+--  SECURITY DEFINER
+--  SET search_path = pg_catalog,pg_temp
+;
+
+-- FIXME beware of SECURITY DEFINER + search_path tricks!
+
+CREATE OR REPLACE FUNCTION anon.hash(
+  seed TEXT,
+  algorithm anon.hash_algorithm DEFAULT 'sha512'
+)
+RETURNS TEXT AS $$
+  -- https://www.postgresql.org/docs/current/pgcrypto.html
+  SELECT anon.digest(seed,anon.get_secret_salt(),algorithm);
+$$
+  LANGUAGE SQL
+  IMMUTABLE
+  RETURNS NULL ON NULL INPUT
+  SECURITY DEFINER
+--  SET search_path = pg_catalog,pg_temp
+;
+
+-- https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
 
 -------------------------------------------------------------------------------
 -- Random Generic Data
@@ -1181,57 +1189,7 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
--------------------------------------------------------------------------------
---- Generic hashing
--------------------------------------------------------------------------------
 
--- Add tests in tests/sql/hash.sql
-
--- anon.get_secret_salt()
--- anon.set_secret_salt()
--- anon.generate_secret_salt()
-
--- anon.random_hash()
-
---
-CREATE OR REPLACE FUNCTION anon.hash_text(
-  value TEXT,
-  offs INTEGER DEFAULT NULL::INTEGER,
-  prefix TEXT DEFAULT ''::text,
-  suffix text DEFAULT ''::text
-)
- RETURNS TEXT AS $$
---- This function will return a (random if you don't provide the "offs" offset)
---- substring of the SHA-512 hash of the input string,
---- if provided padded by prefix and suffix,
---- cut to the length of the original input.
---- Useful for e.g. customer IDs of the form "cust00123456".
----
---- When "offs" is given, the output is immutable and can thus be used to retain
---- referential integrity.
----
---- With only "value", provides a pretty much random string of the same length.
-
-SELECT concat(
-  prefix,
-  substring(
-    encode(
-      sha512(
-        sha512(
-          sha512(value::bytea)
-        )
-      )
-    , 'hex'),
-    COALESCE(
-      offs % 128 + 1,
-      (random() * (128 - length(value)) + 1)::int
-    ),
-    length(value) - length(prefix) - length(suffix)
-  ),
-  suffix
-);
-$$
-LANGUAGE SQL SECURITY INVOKER;
 
 
 -------------------------------------------------------------------------------

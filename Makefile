@@ -162,6 +162,7 @@ standalone: anon_standalone.sql #: build the standalone script
 
 anon_standalone.sql: anon.sql
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
+	echo 'CREATE EXTENSION IF NOT EXISTS pgcrypto;\n' > $@
 	echo 'CREATE SCHEMA anon;\n' >> $@
 	sed 's/@extschema@/anon/g' anon.sql >> $@
 	$(SEDI) 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
