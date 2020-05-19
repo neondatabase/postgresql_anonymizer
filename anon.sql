@@ -14,7 +14,7 @@
 
 -- https://www.postgresql.org/docs/9.6/pgcrypto.html
 CREATE TYPE anon.hash_algorithm
-AS ENUM('md5','sha1' 'sha224','sha256','sha384','sha512');
+AS ENUM('md5','sha1','sha224','sha256','sha384','sha512');
 
 -------------------------------------------------------------------------------
 -- Config
