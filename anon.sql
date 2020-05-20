@@ -7,15 +7,6 @@
 --  * tms_system_rows (should be available with all distributions of postgres)
 --  * pgcrypto ( because PG10 does not include hashing functions )
 
-
--------------------------------------------------------------------------------
--- Types
--------------------------------------------------------------------------------
-
--- https://www.postgresql.org/docs/9.6/pgcrypto.html
-CREATE TYPE anon.hash_algorithm
-AS ENUM('md5','sha1','sha224','sha256','sha384','sha512');
-
 -------------------------------------------------------------------------------
 -- Config
 -------------------------------------------------------------------------------
@@ -30,17 +21,25 @@ SELECT pg_catalog.pg_extension_config_dump('anon.config','');
 
 COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
 
+-- We also use a secret table to store the hash seed and algorithm
 DROP TABLE IF EXISTS anon.secret;
 CREATE TABLE anon.secret (
     param TEXT UNIQUE NOT NULL,
     value TEXT
 );
-REVOKE ALL ON anon.secret FROM public;
+REVOKE ALL ON TABLE anon.secret FROM PUBLIC;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.secret','');
 
+COMMENT ON TABLE anon.config IS 'Hashing secrets';
+
+--
+-- We use access methods to read/write the content of the `secret` table
+-- The `get_secret_xxx()` function can be used with the security definer option
+--
 CREATE OR REPLACE FUNCTION anon.set_secret_salt(v TEXT)
-RETURNS TEXT AS $$
+RETURNS TEXT AS
+$$
   INSERT INTO anon.secret(param,value)
   VALUES('salt',v)
   ON CONFLICT (param)
@@ -58,11 +57,11 @@ REVOKE EXECUTE ON FUNCTION anon.set_secret_salt(TEXT)  FROM PUBLIC;
 
 CREATE OR REPLACE FUNCTION anon.get_secret_salt()
 RETURNS TEXT AS
-$func$
+$$
   SELECT value
   FROM anon.secret
   WHERE param = 'salt'
-$func$
+$$
   LANGUAGE SQL
   IMMUTABLE
   STRICT
@@ -70,11 +69,38 @@ $func$
 ;
 REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
 
+CREATE OR REPLACE FUNCTION anon.set_secret_algorithm(v TEXT)
+RETURNS TEXT AS
+$$
+  INSERT INTO anon.secret(param,value)
+  VALUES('algorithm',v)
+  ON CONFLICT (param)
+  DO
+    UPDATE
+    SET value=v
+    WHERE EXCLUDED.param = 'algorithm'
+  RETURNING value
+$$
+  LANGUAGE SQL
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+;
+REVOKE EXECUTE ON FUNCTION anon.set_secret_algorithm(TEXT)  FROM PUBLIC;
 
+CREATE OR REPLACE FUNCTION anon.get_secret_algorithm()
+RETURNS TEXT AS
+$$
+  SELECT value
+  FROM anon.secret
+  WHERE param = 'algorithm'
+$$
+  LANGUAGE SQL
+  IMMUTABLE
+  STRICT
+  SECURITY INVOKER
+;
+REVOKE EXECUTE ON FUNCTION anon.get_secret_algorithm()  FROM PUBLIC;
 
-REVOKE CREATE ON SCHEMA anon FROM PUBLIC;
-
-REVOKE ALL ON TABLE anon.secret FROM PUBLIC;
 
 
 CREATE OR REPLACE FUNCTION anon.version()
@@ -562,6 +588,11 @@ AS $$
       COALESCE(
           anon.get_secret_salt(),
           anon.set_secret_salt(md5(random()::TEXT))
+      ),
+      -- if the secret hash algo is NULL, we use sha512 by default
+      COALESCE(
+          anon.get_secret_algorithm(),
+          anon.set_secret_algorithm('sha512')
       )
     FROM conf;
     SELECT TRUE;
@@ -608,31 +639,34 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER;
 --- Generic hashing
 -------------------------------------------------------------------------------
 
+-- This is a wrapper around the pgcrypto digest function
+-- Standard algorithms are md5, sha1, sha224, sha256, sha384 and sha512.
+-- https://www.postgresql.org/docs/current/pgcrypto.html
 CREATE OR REPLACE FUNCTION anon.digest(
   seed TEXT,
   salt TEXT,
-  algorithm anon.hash_algorithm
+  algorithm TEXT
 )
 RETURNS TEXT AS $$
-  -- https://www.postgresql.org/docs/current/pgcrypto.html
-  SELECT encode(digest(concat(seed,salt),algorithm::TEXT),'hex');
+  SELECT encode(digest(concat(seed,salt),algorithm),'hex');
 $$
   LANGUAGE SQL
   IMMUTABLE
   RETURNS NULL ON NULL INPUT
---  SECURITY DEFINER
---  SET search_path = pg_catalog,pg_temp
+  SECURITY INVOKER
 ;
 
--- FIXME beware of SECURITY DEFINER + search_path tricks!
 
 CREATE OR REPLACE FUNCTION anon.hash(
-  seed TEXT,
-  algorithm anon.hash_algorithm DEFAULT 'sha512'
+  seed TEXT
 )
 RETURNS TEXT AS $$
   -- https://www.postgresql.org/docs/current/pgcrypto.html
-  SELECT anon.digest(seed,anon.get_secret_salt(),algorithm);
+  SELECT anon.digest(
+    seed,
+    anon.get_secret_salt(),
+    anon.get_secret_algorithm()
+  );
 $$
   LANGUAGE SQL
   IMMUTABLE
@@ -640,7 +674,7 @@ $$
   SECURITY DEFINER
 --  SET search_path = pg_catalog,pg_temp
 ;
-
+-- FIXME : conflict between search_path and public.digest
 -- https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
 
 -------------------------------------------------------------------------------
@@ -729,15 +763,19 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER;
 -- hashing a seed with a random salt
 --
 CREATE OR REPLACE FUNCTION anon.random_hash(
-  seed TEXT,
-  algorithm anon.hash_algorithm DEFAULT 'sha512'
+  seed TEXT
 )
-RETURNS TEXT AS $$
-  SELECT anon.digest(seed,anon.random_string(6),algorithm);
+RETURNS TEXT AS
+$$
+  SELECT anon.digest(
+    seed,
+    anon.random_string(6),
+    anon.get_secret_algorithm()
+  );
 $$
   LANGUAGE SQL
   VOLATILE
-  SECURITY INVOKER
+  SECURITY DEFINER -- FIXME: set search_path
   RETURNS NULL ON NULL INPUT
 ;
 
