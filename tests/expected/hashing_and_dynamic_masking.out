@@ -1,0 +1,94 @@
+-- This test cannot be run in a single transcation
+-- This test must be run on a database named 'contrib_regression'
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+-- Dynamic masking
+SELECT anon.start_dynamic_masking();
+ start_dynamic_masking 
+-----------------------
+ t
+(1 row)
+
+SELECT anon.set_secret_salt('x');
+ set_secret_salt 
+-----------------
+ x
+(1 row)
+
+CREATE TABLE phone (
+  phone_owner  TEXT,
+  phone_number TEXT
+);
+INSERT INTO phone VALUES
+('Omar Little','410-719-9009'),
+('Russell Bell','410-617-7308'),
+('Avon Barksdale','410-385-2983');
+CREATE TABLE phonecall (
+  call_id INT,
+  call_sender TEXT,
+  call_receiver TEXT,
+  call_start_time TIMESTAMP WITH TIME ZONE,
+  call_end_time TIMESTAMP WITH TIME ZONE
+);
+INSERT INTO phonecall VALUES
+(834,'410-617-7308','410-385-2983','2004-05-17 09:41:01.859137+00','2004-05-17 09:44:24.119237+00'),
+(835,'410-385-2983','410-719-9009','2004-05-17 11:22:51.859137+00','2004-05-17 11:34:18.119237+00');
+SECURITY LABEL FOR anon ON COLUMN phone.phone_owner
+IS 'MASKED WITH FUNCTION concat(anon.pseudo_first_name(phone_owner),$$ $$,anon.pseudo_last_name(phone_owner))';
+SECURITY LABEL FOR anon ON COLUMN phone.phone_number
+IS 'MASKED WITH FUNCTION anon.hash(phone_number)';
+SECURITY LABEL FOR anon ON COLUMN phonecall.call_sender
+IS 'MASKED WITH FUNCTION anon.hash(call_sender)';
+SECURITY LABEL FOR anon ON COLUMN phonecall.call_receiver
+IS 'MASKED WITH FUNCTION anon.hash(call_receiver)';
+-- ROLE
+CREATE ROLE jimmy_mcnulty LOGIN;
+SECURITY LABEL FOR anon ON ROLE jimmy_mcnulty IS 'MASKED';
+SELECT anon.mask_update();
+ mask_update 
+-------------
+ t
+(1 row)
+
+-- Jimmy reads the phone book
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM phone'
+   phone_owner   |                                                           phone_number                                                           
+-----------------+----------------------------------------------------------------------------------------------------------------------------------
+ ofélia Pomales  | 5a82e2a98ee0e9741ae1d9fa1e602caf8ac2544539c13d1fed5415bb82f52dc546a0a94eb3d9309628b20c79f9b20392b5735b18d9c452806e7999235e40509b
+ bronwen Campise | c7c0bf1d9098960e9880f2358645a67e959842de0fea31c0a36876ca119ffc6a159ed22d698c36809ec71863205d4785ea2a2c06144c48d1286c1bb35ef3fea7
+ beate Brandau   | 5f8f9852f9b7a0d344b231350a97e14ca78d30242085c2791001b78a0db7ac1650ba02f356baed620c1750060812cbb724df47da3eabd8c79650bbf1ad627483
+(3 rows)
+
+-- Jimmy joins table to get the call history
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
+      from       |       to       |           call_start_time           
+-----------------+----------------+-------------------------------------
+ beate Brandau   | ofélia Pomales | Mon May 17 04:22:51.859137 2004 PDT
+ bronwen Campise | beate Brandau  | Mon May 17 02:41:01.859137 2004 PDT
+(2 rows)
+
+-- Jimmy tries to find the salt :-)
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_secret_salt();'
+ERROR:  permission denied for function get_secret_salt
+-- Jimmy cant read the secrets
+--
+-- Here we use a trick to catch to output because the error message is different
+-- between versions of PostgreSQL...
+-- see tests/sql/masking.sql for more details
+--
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM anon.secret' 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+ERROR:  permission denied
+-- STOP
+SELECT anon.stop_dynamic_masking();
+NOTICE:  The previous priviledges of 'jimmy_mcnulty' are not restored. You need to grant them manually.
+ stop_dynamic_masking 
+----------------------
+ t
+(1 row)
+
+--  CLEAN
+DROP TABLE phonecall CASCADE;
+DROP TABLE phone CASCADE;
+DROP EXTENSION anon CASCADE;
+REASSIGN OWNED BY jimmy_mcnulty TO postgres;
+DROP OWNED BY jimmy_mcnulty CASCADE;
+DROP ROLE jimmy_mcnulty;
