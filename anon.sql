@@ -7,6 +7,29 @@
 --  * tms_system_rows (should be available with all distributions of postgres)
 --  * pgcrypto ( because PG10 does not include hashing functions )
 
+
+--------------------------------------------------------------------------------
+-- Security First
+--------------------------------------------------------------------------------
+
+-- Untrusted users cannot write inside the anon schema
+REVOKE ALL ON SCHEMA anon FROM PUBLIC;
+REVOKE ALL ON ALL TABLES IN SCHEMA anon FROM PUBLIC;
+
+--
+-- This extension will create views based on masking functions. These functions
+-- will be run as with priviledges of the owners of the views. This is prone
+-- to search_path attacks: an untrusted user may be able to overide some
+-- functions and gain superuser priviledges.
+--
+-- Therefore all functions should be defined with `SET search_path=''` even if
+-- they are not SECURITY DEFINER.
+--
+-- More about this:
+-- https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
+-- https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
+--
+
 -------------------------------------------------------------------------------
 -- Config
 -------------------------------------------------------------------------------
@@ -52,6 +75,7 @@ $$
   LANGUAGE SQL
   RETURNS NULL ON NULL INPUT
   SECURITY INVOKER
+  SET search_path=''
 ;
 REVOKE EXECUTE ON FUNCTION anon.set_secret_salt(TEXT)  FROM PUBLIC;
 
@@ -66,6 +90,7 @@ $$
   IMMUTABLE
   STRICT
   SECURITY INVOKER
+  SET search_path=''
 ;
 REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
 
@@ -84,6 +109,7 @@ $$
   LANGUAGE SQL
   RETURNS NULL ON NULL INPUT
   SECURITY INVOKER
+  SET search_path=''
 ;
 REVOKE EXECUTE ON FUNCTION anon.set_secret_algorithm(TEXT)  FROM PUBLIC;
 
@@ -98,6 +124,7 @@ $$
   IMMUTABLE
   STRICT
   SECURITY INVOKER
+  SET search_path=''
 ;
 REVOKE EXECUTE ON FUNCTION anon.get_secret_algorithm()  FROM PUBLIC;
 
@@ -110,6 +137,7 @@ $func$
 $func$
   LANGUAGE SQL
   SECURITY INVOKER
+  SET search_path=''
 ;
 
 -- name of the source schema
@@ -125,7 +153,7 @@ FROM default_config d
 LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
 ;
 $$
-LANGUAGE SQL STABLE SECURITY INVOKER;
+LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
 
 -- name of the masking schema
 -- default value: 'mask'
@@ -140,7 +168,7 @@ FROM default_config d
 LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
 ;
 $$
-LANGUAGE SQL STABLE SECURITY INVOKER;
+LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
 
 
 
@@ -179,7 +207,7 @@ BEGIN
 RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.add_noise_on_datetime_column(
   noise_table regclass,
@@ -213,7 +241,7 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -------------------------------------------------------------------------------
 -- "on the fly" noise
@@ -227,7 +255,7 @@ CREATE OR REPLACE FUNCTION anon.noise(
 AS $func$
 SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::BIGINT
 $func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.noise(
   noise_value INTEGER,
@@ -237,7 +265,7 @@ CREATE OR REPLACE FUNCTION anon.noise(
 AS $func$
 SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::INTEGER
 $func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.noise(
   noise_value DOUBLE PRECISION,
@@ -247,7 +275,7 @@ CREATE OR REPLACE FUNCTION anon.noise(
 AS $func$
 SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::FLOAT
 $func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.noise(
   noise_value DATE,
@@ -257,7 +285,7 @@ CREATE OR REPLACE FUNCTION anon.noise(
 AS $func$
 SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::DATE
 $func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.noise(
   noise_value TIMESTAMP WITHOUT TIME ZONE,
@@ -267,7 +295,7 @@ CREATE OR REPLACE FUNCTION anon.noise(
 AS $func$
 SELECT noise_value + (2.0 * random() - 1.0) * noise_range
 $func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.noise(
   noise_value TIMESTAMP WITH TIME ZONE,
@@ -277,7 +305,7 @@ CREATE OR REPLACE FUNCTION anon.noise(
 AS $func$
 SELECT noise_value + (2.0 * random() - 1.0) * noise_range
 $func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -------------------------------------------------------------------------------
 -- Shuffle
@@ -339,7 +367,7 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -------------------------------------------------------------------------------
 -- Fake Data
@@ -570,7 +598,7 @@ BEGIN
     RETURN FALSE;
 END;
 $func$
-LANGUAGE PLPGSQL VOLATILE SECURITY INVOKER;
+LANGUAGE PLPGSQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- If no path given, use the default data
 CREATE OR REPLACE FUNCTION anon.load()
@@ -597,7 +625,7 @@ AS $$
     FROM conf;
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- True, the fake data is already here
 CREATE OR REPLACE FUNCTION anon.isloaded()
@@ -616,7 +644,7 @@ AS $$
      LIMIT 1
   ) t
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- remove all fake data
 CREATE OR REPLACE FUNCTION anon.unload()
@@ -633,11 +661,17 @@ RETURNS BOOLEAN AS $$
     -- ADD NEW TABLE HERE
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -------------------------------------------------------------------------------
 --- Generic hashing
 -------------------------------------------------------------------------------
+
+-- https://github.com/postgres/postgres/blob/master/contrib/pgcrypto/pgcrypto--1.3.sql#L6
+CREATE OR REPLACE FUNCTION anon.pgcrypto_digest(text, text)
+RETURNS bytea
+AS '$libdir/pgcrypto', 'pg_digest'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- This is a wrapper around the pgcrypto digest function
 -- Standard algorithms are md5, sha1, sha224, sha256, sha384 and sha512.
@@ -647,13 +681,15 @@ CREATE OR REPLACE FUNCTION anon.digest(
   salt TEXT,
   algorithm TEXT
 )
-RETURNS TEXT AS $$
-  SELECT encode(digest(concat(seed,salt),algorithm),'hex');
+RETURNS TEXT AS
+$$
+  SELECT encode(anon.pgcrypto_digest(concat(seed,salt),algorithm),'hex');
 $$
   LANGUAGE SQL
   IMMUTABLE
   RETURNS NULL ON NULL INPUT
   SECURITY INVOKER
+  SET search_path=''
 ;
 
 
@@ -661,7 +697,6 @@ CREATE OR REPLACE FUNCTION anon.hash(
   seed TEXT
 )
 RETURNS TEXT AS $$
-  -- https://www.postgresql.org/docs/current/pgcrypto.html
   SELECT anon.digest(
     seed,
     anon.get_secret_salt(),
@@ -669,12 +704,11 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  IMMUTABLE
+  STABLE
   RETURNS NULL ON NULL INPUT
   SECURITY DEFINER
---  SET search_path = pg_catalog,pg_temp
+  SET search_path = ''
 ;
--- FIXME : conflict between search_path and public.digest
 -- https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
 
 -------------------------------------------------------------------------------
@@ -695,7 +729,7 @@ AS $$
     ),''
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Zip code
 CREATE OR REPLACE FUNCTION anon.random_zip()
@@ -708,7 +742,7 @@ AS $$
             ),''
           );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 
 -- date
@@ -720,13 +754,13 @@ CREATE OR REPLACE FUNCTION anon.random_date_between(
 RETURNS timestamp WITH TIME ZONE AS $$
     SELECT (random()*(date_end-date_start))::interval+date_start;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION random_date()
 RETURNS timestamp with time zone AS $$
     SELECT anon.random_date_between('1900-01-01'::timestamp with time zone,now());
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 
 -- integer
@@ -738,7 +772,7 @@ CREATE OR REPLACE FUNCTION anon.random_int_between(
 RETURNS INTEGER AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_bigint_between(
   int_start BIGINT,
@@ -747,7 +781,7 @@ CREATE OR REPLACE FUNCTION anon.random_bigint_between(
 RETURNS BIGINT AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS BIGINT );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_phone(
   phone_prefix TEXT DEFAULT '0'
@@ -757,7 +791,7 @@ RETURNS TEXT AS $$
           || CAST(anon.random_int_between(100000000,999999999) AS TEXT)
           AS "phone";
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 --
 -- hashing a seed with a random salt
@@ -775,7 +809,8 @@ $$
 $$
   LANGUAGE SQL
   VOLATILE
-  SECURITY DEFINER -- FIXME: set search_path
+  SECURITY DEFINER
+  SET search_path = ''
   RETURNS NULL ON NULL INPUT
 ;
 
@@ -783,29 +818,34 @@ $$
 -- FAKE data
 -------------------------------------------------------------------------------
 
+CREATE FUNCTION anon.system_rows(internal)
+RETURNS tsm_handler
+AS '$libdir/tsm_system_rows', 'tsm_system_rows_handler'
+LANGUAGE C STRICT;
+
 CREATE OR REPLACE FUNCTION anon.fake_first_name()
 RETURNS TEXT AS $$
     SELECT first_name
     FROM anon.first_name
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_last_name()
 RETURNS TEXT AS $$
     SELECT name
     FROM anon.last_name
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_email()
 RETURNS TEXT AS $$
     SELECT address
     FROM anon.email
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_city_in_country(
   country_name TEXT
@@ -816,15 +856,15 @@ RETURNS TEXT AS $$
     WHERE country=country_name
     ORDER BY random() LIMIT 1;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_city()
 RETURNS TEXT AS $$
     SELECT name
     FROM anon.city
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_region_in_country(
   country_name TEXT
@@ -835,55 +875,55 @@ RETURNS TEXT AS $$
     WHERE country=country_name
     ORDER BY random() LIMIT 1;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_region()
 RETURNS TEXT AS $$
     SELECT subcountry
     FROM anon.city
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_country()
 RETURNS TEXT AS $$
     SELECT country
     FROM anon.city
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_company()
 RETURNS TEXT AS $$
     SELECT name
     FROM anon.company
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_iban()
 RETURNS TEXT AS $$
     SELECT id
     FROM anon.iban
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_siren()
 RETURNS TEXT AS $$
     SELECT siren
     FROM anon.siret
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_siret()
 RETURNS TEXT AS $$
     SELECT siren||nic
     FROM anon.siret
-    TABLESAMPLE SYSTEM_ROWS(1);
+    TABLESAMPLE anon.system_rows(1);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Lorem Ipsum
 -- Usage:
@@ -961,7 +1001,7 @@ FROM
   cte_paragraphs
 ;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 --
 -- Backward compatibility with version 0.2.1 and earlier
@@ -969,56 +1009,56 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 CREATE OR REPLACE FUNCTION anon.random_first_name()
 RETURNS TEXT AS $$ SELECT anon.fake_first_name() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 
 CREATE OR REPLACE FUNCTION anon.random_last_name()
 RETURNS TEXT AS $$ SELECT anon.fake_last_name() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_email()
 RETURNS TEXT AS $$ SELECT anon.fake_email() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_city_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$ SELECT anon.fake_city_in_country(country_name) $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_city()
 RETURNS TEXT AS $$ SELECT anon.fake_city() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_region_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$ SELECT anon.fake_region_in_country(country_name) $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_region()
 RETURNS TEXT AS $$ SELECT anon.fake_region() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_country()
 RETURNS TEXT AS $$ SELECT anon.fake_country() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_company()
 RETURNS TEXT AS $$ SELECT anon.fake_company() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_iban()
 RETURNS TEXT AS $$ SELECT anon.fake_iban() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_siren()
 RETURNS TEXT AS $$ SELECT anon.fake_siren() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_siret()
 RETURNS TEXT AS $$ SELECT anon.fake_siret() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 
 -------------------------------------------------------------------------------
@@ -1038,7 +1078,7 @@ BEGIN
     EXECUTE 'SELECT x' || quote_literal(hexval) || '::INT' INTO result;
     RETURN result;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER;
+$$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER SET search_path='';
 
 --
 -- Return a deterministic value inside a range of OID for a given seed+salt
@@ -1066,6 +1106,7 @@ $$
   IMMUTABLE
   RETURNS NULL ON NULL INPUT
   SECURITY INVOKER
+  SET search_path=''
 ;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
@@ -1120,7 +1161,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.email_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_city(
   seed TEXT,
@@ -1135,7 +1176,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.city_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_region(
   seed TEXT,
@@ -1150,7 +1191,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.city_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_country(
   seed TEXT,
@@ -1165,7 +1206,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.city_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_company(
   seed TEXT,
@@ -1180,7 +1221,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.company_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_iban(
   seed TEXT,
@@ -1195,7 +1236,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.iban_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_siren(
   seed TEXT,
@@ -1210,7 +1251,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.siret_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_siret(
   seed TEXT,
@@ -1225,7 +1266,7 @@ RETURNS TEXT AS $$
     (SELECT last_value FROM anon.siret_oid_seq)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 
 
@@ -1248,7 +1289,7 @@ RETURNS TEXT AS $$
       || padding
       || substring(ov FROM (length(ov)-suffix+1) FOR suffix);
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 --
 -- email('daamien@gmail.com') will becomme 'da******@gm******.com'
@@ -1269,7 +1310,7 @@ RETURNS TEXT AS $$
       || regexp_replace(ov, '.*\.', '') -- com
   ;
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 
 -------------------------------------------------------------------------------
@@ -1393,7 +1434,7 @@ BEGIN
   RETURN TRUE;
 END;
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 
 -- Replace masked data in a table
@@ -1407,7 +1448,7 @@ $$
   FROM anon.pg_masking_rules
   WHERE attrelid::regclass=tablename;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Walk through all masked columns and permanently apply the mask
 CREATE OR REPLACE FUNCTION anon.anonymize_database()
@@ -1416,7 +1457,7 @@ $$
   SELECT bool_or(anon.anonymize_column(attrelid::REGCLASS,attname))
   FROM anon.pg_masking_rules;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION anon.static_substitution()
@@ -1424,7 +1465,7 @@ RETURNS BOOLEAN AS
 $$
   SELECT anon.anonymize_database();
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -------------------------------------------------------------------------------
 -- Dynamic Masking
@@ -1455,7 +1496,7 @@ FROM (
   SELECT FALSE as masked --
 ) AS m
 $$
-LANGUAGE SQL STABLE SECURITY INVOKER;
+LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
 
 -- DEPRECATED : use directly `hasmask(oid::REGROLE)` instead
 -- Adds a `hasmask` column to the pg_roles catalog
@@ -1488,7 +1529,7 @@ AND    NOT a.attisdropped
 ORDER BY a.attnum
 ;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- build a masked view for each table
 -- /!\ Disable the Event Trigger before calling this :-)
@@ -1505,7 +1546,7 @@ BEGIN
   ;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 
 -- get the "select filters" that will mask the real data of a table
@@ -1541,7 +1582,7 @@ BEGIN
   RETURN expression;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Build a masked view for a table
 CREATE OR REPLACE FUNCTION anon.mask_create_view(
@@ -1558,7 +1599,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Remove a masked view for a given table
 CREATE OR REPLACE FUNCTION anon.mask_drop_view(
@@ -1573,7 +1614,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Activate the masking engine
 CREATE OR REPLACE FUNCTION anon.start_dynamic_masking(
@@ -1613,7 +1654,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION anon.mask_init(
@@ -1625,7 +1666,7 @@ RETURNS BOOLEAN AS
 $$
 SELECT anon.start_dynamic_masking(sourceschema,maskschema,autoload);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- this is opposite of start_dynamic_masking()
 CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
@@ -1653,7 +1694,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 
 
@@ -1667,7 +1708,7 @@ BEGIN
   PERFORM anon.mask_update();
 END
 $$
-LANGUAGE plpgsql SECURITY INVOKER;
+LANGUAGE plpgsql SECURITY INVOKER SET search_path='';
 
 
 -- Mask a specific role
@@ -1697,7 +1738,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql SECURITY INVOKER;
+LANGUAGE plpgsql SECURITY INVOKER SET search_path='';
 
 -- Remove (partially) the mask of a specific role
 CREATE OR REPLACE FUNCTION anon.unmask_role(
@@ -1715,7 +1756,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql SECURITY INVOKER;
+LANGUAGE plpgsql SECURITY INVOKER SET search_path='';
 
 
 -- load the event trigger
@@ -1736,7 +1777,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -- unload the event trigger
 CREATE OR REPLACE FUNCTION anon.mask_disable()
@@ -1755,7 +1796,7 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Rebuild the dynamic masking views and masked roles from scratch
 CREATE OR REPLACE FUNCTION anon.mask_update()
@@ -1782,7 +1823,7 @@ $$
   -- Restore the mighty DDL EVENT TRIGGER
   SELECT anon.mask_enable();
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -------------------------------------------------------------------------------
 -- Anonymous Dumps
@@ -1799,7 +1840,7 @@ RETURNS TABLE (
 $$
     SELECT E'anon.dump_dll() is deprecated. Please use pg_dump_anon instead.'::TEXT
 $$
-LANGUAGE SQL SECURITY INVOKER;
+LANGUAGE SQL SECURITY INVOKER SET search_path='';
 
 -- generate the "COPY ... FROM STDIN" statement for a table
 CREATE OR REPLACE FUNCTION anon.get_copy_statement(relid OID)
@@ -1839,7 +1880,7 @@ BEGIN
   RETURN copy_statement;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 
 -- export content of all the tables as COPY statements
@@ -1853,7 +1894,7 @@ $$
   WHERE schemaname NOT IN ( 'anon' , anon.mask_schema() )
   ORDER BY  relid::regclass -- sort by name to force the dump order
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER;
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- export the database schema + anonymized data
 CREATE OR REPLACE FUNCTION anon.dump()
@@ -1871,7 +1912,7 @@ BEGIN
     SELECT anon.dump_data();
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 
 
@@ -1894,7 +1935,7 @@ SELECT int4range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 -- Transform a bigint into a range of bigint
 CREATE OR REPLACE FUNCTION anon.generalize_int8range(
@@ -1908,7 +1949,7 @@ SELECT int8range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 -- Transform a numeric into a range of numeric
 CREATE OR REPLACE FUNCTION anon.generalize_numrange(
@@ -1927,7 +1968,7 @@ SELECT numrange(
 FROM i
 ;
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 -- Transform a timestamp with out timezone (ts) into a range of ts
 -- the `step` option can have the following values
@@ -1944,7 +1985,7 @@ SELECT tsrange(
     date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE + ('1 '|| step)::INTERVAL
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 -- tstzrange
 CREATE OR REPLACE FUNCTION anon.generalize_tstzrange(
@@ -1960,7 +2001,7 @@ SELECT tstzrange( d, d + ('1 '|| step)::INTERVAL )
 FROM lowerbound
 ;
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 -- daterange — Range of date
 CREATE OR REPLACE FUNCTION anon.generalize_daterange(
@@ -1974,7 +2015,7 @@ SELECT daterange(
     (date_trunc(step, val) + ('1 '|| step)::INTERVAL)::DATE
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER;
+LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 -------------------------------------------------------------------------------
 -- Risk Evaluation
@@ -2050,7 +2091,7 @@ BEGIN
   RETURN result;
 END
 $$
-LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER;
+LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER SET search_path='';
 
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
