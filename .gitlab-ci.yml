@@ -124,6 +124,24 @@ make12:
         - results/
     expire_in: 1 day
 
+make13:
+  stage: build
+  image: postgres:13
+  script:
+    - apt-get update && apt-get install -y make gcc postgresql-server-dev-13
+    - make extension
+    - make install
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+    - export PG_TEST_EXTRA='masking_PG11+'
+    - make installcheck || diff results tests/expected
+  artifacts:
+    paths:
+        - anon*
+        - regression.*
+        - results/
+    expire_in: 1 day
+
 make11-centos:
   stage: build
   image: centos:7
