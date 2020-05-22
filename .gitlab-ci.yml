@@ -11,6 +11,12 @@ variables:
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
 
+stages:
+  - lint
+  - build
+  - test
+  - deploy
+
 image: postgres:11
 
 
@@ -25,6 +31,21 @@ before_script:
     - gosu postgres initdb
     - gosu postgres pg_ctl start
 
+
+##
+## L I N T
+##
+
+shellcheck:
+  stage: lint
+  script:
+    - apt-get update && apt-get install shellcheck
+    - shellcheck bin/pg_dump_anon.sh 
+  allow_failure: yes                                                                                                                    
+
+##
+## B U I L D
+##
 
 # PostgreSQL 9.5 is not supported
 make9.5:
@@ -203,6 +224,11 @@ demo:
     paths:
         - demo/*.out
     expire_in: 1 day
+
+
+##
+## D E P L O Y
+##
 
 pgxn:
   stage: deploy
