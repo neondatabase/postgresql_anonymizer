@@ -38,12 +38,16 @@ before_script:
 
 lint-bash:
   stage: lint
+  before_script:
+    - echo "disable the before_script"
   script:
     - apt-get update && apt-get install -y shellcheck
     - shellcheck bin/pg_dump_anon.sh 
   allow_failure: yes                                                                                                                    
 lint-sql:
   stage: lint
+  before_script:
+    - echo "disable the before_script"
   script:
       - apt update && apt-get install -y python3-pip
       - pip3 install sqlfluff
@@ -55,6 +59,8 @@ lint-sql:
 lint-markdown:
   stage: lint
   image: ruby:alpine
+  before_script:
+    - echo "disable the before_script"
   script: 
     - gem install mdl
     - mdl docs/*.md
