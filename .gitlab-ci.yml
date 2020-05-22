@@ -42,6 +42,14 @@ shellcheck:
     - apt-get update && apt-get install shellcheck
     - shellcheck bin/pg_dump_anon.sh 
   allow_failure: yes                                                                                                                    
+  sqlfluff:
+    stage: lint
+    script:
+      - apt update && apt-get install python3-pip
+      - pip3 install sqlfluff
+      - sqlfluff lint demo/*.sql
+      - sqlfluff lint tests/sql/*.sql
+    allow_failure: yes
 
 ##
 ## B U I L D
