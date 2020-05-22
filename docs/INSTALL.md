@@ -253,8 +253,16 @@ Here's an example in 4 steps:
 _Step 1:_  Dump your original data (for instance `dump.sql`)
 
 ```console
-$ pg_dump [...] my_database > dump.sql
+$ pg_dump [...] my_db > dump.sql
 ```
+
+If you want to maintain the owners and grants, you need export them with 
+`pg_dumpall --roles-only` like this:
+
+```console
+$ (pg_dumpall [...] --roles-only && pg_dump [...] my_db ) > dump.sql
+```
+
 
 _Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`)
 
@@ -284,7 +292,7 @@ $ cat dump.sql rules.sql | $ANON > anon_dump.sql
 _NB:_ You can also gather _step 1_ and _step 3_ in a single command:
 
 ```console
-$ pg_dump my_database | cat - rules.sql | $ANON > anon_dump.sql
+$ (pg_dumpall --roles-only && pg_dump my_db) | cat - rules.sql | $ANON > anon_dump.sql
 ```
 
 
