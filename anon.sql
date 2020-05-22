@@ -1225,7 +1225,6 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- ADD TEST IN FILES:
 --   * tests/sql/masking.sql
---   * tests/sql/masking_PG11+.sql
 --   * tests/sql/hasmask.sql
 
 -- True if the role is masked
