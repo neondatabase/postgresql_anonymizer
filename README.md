@@ -11,7 +11,7 @@ The project is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 
-Once the maskings rules are defined, you can access the anonymized data in 3  
+Once the maskings rules are defined, you can access the anonymized data in 3
 different ways :
 
 * [Anonymous Dumps] : Simply export the masked data into an SQL file
@@ -39,11 +39,11 @@ Declaring The Masking Rules
 
 The main idea of this extension is to offer **anonymization by design**.
 
-The data masking rules should be written by the people who develop the 
+The data masking rules should be written by the people who develop the
 application because they have the best knowledge of how the data model works.
 Therefore masking rules must be implemented directly inside the database schema.
 
-This allows masking the data directly inside the PostgreSQL instance without 
+This allows masking the data directly inside the PostgreSQL instance without
 using an external tool and thus limiting the exposure and the risks of data leak.
 
 The data masking rules are declared simply by using [security labels] :
@@ -55,7 +55,7 @@ The data masking rules are declared simply by using [security labels] :
 
 =# CREATE TABLE player( id SERIAL, name TEXT, points INT);
 
-=# SECURITY LABEL FOR anon ON COLUMN player.name 
+=# SECURITY LABEL FOR anon ON COLUMN player.name
 -# IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 =# SECURITY LABEL FOR anon ON COLUMN player.id
@@ -81,10 +81,10 @@ This will destroy the original data. Use with care.
 =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 =# SELECT anon.load();
 
-=# SECURITY LABEL FOR anon ON COLUMN customer.full_name 
+=# SECURITY LABEL FOR anon ON COLUMN customer.full_name
 -# IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
-=# SECURITY LABEL FOR anon ON COLUMN customer.birth   
+=# SECURITY LABEL FOR anon ON COLUMN customer.birth
 -# IS 'MASKED WITH FUNCTION anon.random_date_between(''1920-01-01''::DATE,now())';
 
 =# SECURITY LABEL FOR anon ON COLUMN customer.employer
@@ -114,13 +114,13 @@ Dynamic Masking
 ------------------------------------------------------------------------------
 
 You can hide the PII from a role by declaring it as a "MASKED". Other roles
-will still access the original data.  
+will still access the original data.
 
 **Example**:
 
 ```sql
 =# SELECT * FROM people;
- id | fistname | lastname |   phone    
+ id | fistname | lastname |   phone
 ----+----------+----------+------------
  T1 | Sarah    | Conor    | 0609110911
 (1 row)
@@ -143,10 +143,10 @@ Step 2 : Declare a masked user
 Step 3 : Declare the masking rules
 
 ```sql
-=# SECURITY LABEL FOR anon ON COLUMN people.lastname 
+=# SECURITY LABEL FOR anon ON COLUMN people.lastname
 -# IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
-=# SECURITY LABEL FOR anon ON COLUMN people.phone 
+=# SECURITY LABEL FOR anon ON COLUMN people.phone
 -# IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
@@ -154,7 +154,7 @@ Step 4 : Connect with the masked user
 
 ```sql
 =# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
- id | fistname | lastname  |   phone    
+ id | fistname | lastname  |   phone
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
 (1 row)
@@ -164,12 +164,12 @@ Step 4 : Connect with the masked user
 Anonymous Dumps
 ------------------------------------------------------------------------------
 
-Due to the core design of this extension, you cannot use `pg_dump` with a masked 
-user. If you want to export the entire database with the anonymized data, you 
+Due to the core design of this extension, you cannot use `pg_dump` with a masked
+user. If you want to export the entire database with the anonymized data, you
 must use the `pg_dump_anon` command line. For example
 
 ```console
-$ pg_dump_anon -h localhost -p 5432 -U bob bob_db > dump.sql
+pg_dump_anon -h localhost -p 5432 -U bob bob_db > dump.sql
 ```
 
 For more details, please read the [Anonymous Dumps] section.
@@ -197,7 +197,7 @@ See the [Developement Notes] for more details.
 
 [Developement Notes]: https://postgresql-anonymizer.readthedocs.io/en/latest/NOTES/
 
-It requires an extension called [tsm_system_rows] which is delivered by 
+It requires an extension called [tsm_system_rows] which is delivered by
 the `postgresql-contrib` package of the main linux distributions.
 
 [tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
@@ -219,9 +219,9 @@ _Step 2:_  Load the extension in the database you want to anonymize
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-There are other ways to install and load the extension. You can read the [INSTALL] 
-section for detailed instructions or if you want to deploy it on Amazon RDS or 
-some other DBaaS provider. 
+There are other ways to install and load the extension. You can read the [INSTALL]
+section for detailed instructions or if you want to deploy it on Amazon RDS or
+some other DBaaS provider.
 
 
 
@@ -229,9 +229,9 @@ some other DBaaS provider.
 Limitations
 ------------------------------------------------------------------------------
 
-* The dynamic masking system only works with one schema (by default `public`). 
-  When you start the masking engine with `start_dynamic_masking()`, you can 
-  specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`. 
+* The dynamic masking system only works with one schema (by default `public`).
+  When you start the masking engine with `start_dynamic_masking()`, you can
+  specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`.
   **However** in-place anonymization with `anon.anonymize()`and anonymous
   export with `anon.dump()` will work fine with multiple schemas.
 
@@ -244,7 +244,7 @@ So far, we've done very few performance tests. Depending on the size of your
 data set and number of columns your need to anonymize, you might end up with a
 very slow process.
 
-Here's some ideas :
+Here's some ideas:
 
 ### Sampling
 
