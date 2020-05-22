@@ -36,19 +36,29 @@ before_script:
 ## L I N T
 ##
 
-shellcheck:
+lint-bash:
   stage: lint
   script:
     - apt-get update && apt-get install -y shellcheck
     - shellcheck bin/pg_dump_anon.sh 
   allow_failure: yes                                                                                                                    
-sqlfluff:
+lint-sql:
   stage: lint
   script:
       - apt update && apt-get install -y python3-pip
       - pip3 install sqlfluff
       - sqlfluff lint demo/*.sql
       - sqlfluff lint tests/sql/*.sql
+      - sqlfluff lint anon.sql
+  allow_failure: yes
+
+lint-markdown:
+  stage: lint
+  script: 
+    - apt-get install ruby-gem -y
+    - gem install mdl
+    - mdl docs/*.md
+    - mdl *.md
   allow_failure: yes
 
 ##
