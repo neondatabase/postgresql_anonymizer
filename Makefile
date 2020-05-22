@@ -88,16 +88,13 @@ install-bin:
 lint: lint-sql lint-sh lint-md
 
 lint-sql:
-	-sqlfluff lint demo/*.sql
-	-sqlfluff lint tests/sql/*.sql
-	-sqlfluff lint anon.sql
+	-sqlfluff lint demo/*.sql tests/sql/*.sql anon.sql
 
 lint-sh:
-	-shellcheck bin/pg_dump_anon.sh
+	shellcheck bin/pg_dump_anon.sh
 
 lint-md:
-	-mdl docs/*.md
-	-mdl *.md
+	mdl docs/*.md *.md
 
 
 
