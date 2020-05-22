@@ -2,7 +2,7 @@
 verbose = 0
 nocolor = False
 dialect = postgres
-exclude_rules = 'PRS'
+exclude_rules = PRS
 
 [sqlfluff:rules]
 tab_space_size = 2
