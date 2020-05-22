@@ -207,7 +207,7 @@ BEGIN
 RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER; -- SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.add_noise_on_datetime_column(
   noise_table regclass,
@@ -241,7 +241,7 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
 
 -------------------------------------------------------------------------------
 -- "on the fly" noise
@@ -367,7 +367,7 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
 
 -------------------------------------------------------------------------------
 -- Fake Data
@@ -1434,7 +1434,7 @@ BEGIN
   RETURN TRUE;
 END;
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
 
 
 -- Replace masked data in a table
@@ -2091,7 +2091,7 @@ BEGIN
   RETURN result;
 END
 $$
-LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER SET search_path='';
+LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER; --SET search_path='';
 
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
