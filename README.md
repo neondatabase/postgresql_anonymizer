@@ -197,11 +197,11 @@ See the [Developement Notes] for more details.
 
 [Developement Notes]: https://postgresql-anonymizer.readthedocs.io/en/latest/NOTES/
 
-It requires an extension called [tsm_system_rows] which is delivered by
-the `postgresql-contrib` package of the main linux distributions.
+It requires 2 extensions called [tsm_system_rows] and [pgcrypto] which are 
+delivered by the `postgresql-contrib` package of the main linux distributions.
 
 [tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
-
+[pgcrypto]: https://www.postgresql.org/docs/current/pgcrypto.html
 
 
 Install

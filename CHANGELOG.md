@@ -6,7 +6,9 @@ CHANGELOG
 
 __Dependencies:__
 
+- pgcrypto
 - tms_system_rows
+
 
 
 20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps
