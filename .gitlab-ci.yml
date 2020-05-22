@@ -55,7 +55,7 @@ lint-sql:
 lint-markdown:
   stage: lint
   script: 
-    - apt-get install ruby-dev -y
+    - apt update && apt-get install -y ruby-dev
     - gem install mdl
     - mdl docs/*.md
     - mdl *.md
