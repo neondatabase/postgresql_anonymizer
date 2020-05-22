@@ -80,6 +80,8 @@ so that the masking view will be dropped too:
 Limitations
 ------------------------------------------------------------------------------
 
+### Only one schema
+
 The dynamic masking system only works with one schema (by default `public`).
 When you start the masking engine with `start_dynamic_masking()`, you can
 specify the schema that will be masked with:
@@ -91,3 +93,8 @@ SELECT start_dynamic_masking('sales');
 **However** in-place anonymization with `anon.anonymize()`and anonymous export
 with `anon.dump()` will work fine will multiple schemas.
 
+### Performances
+
+Dynamic Masking is now to be very slow with some queries, especially if you
+trying to join 2 tables with a masked foreign key using hashing or
+pseudonymisation.
