@@ -54,8 +54,8 @@ lint-sql:
 
 lint-markdown:
   stage: lint
+  image: ruby:alpine
   script: 
-    - apt update && apt-get install -y ruby-dev
     - gem install mdl
     - mdl docs/*.md
     - mdl *.md
