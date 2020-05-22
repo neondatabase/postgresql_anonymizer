@@ -7,104 +7,125 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.mask_init();
 
-SELECT anon.mask_init('public','foo');
-
 SELECT anon.start_dynamic_masking();
 
-SELECT anon.start_dynamic_masking('public','foo');
-
-CREATE TABLE t1 (
-  id SERIAL,
-  name TEXT,
-  "CreditCard" TEXT
---  fk_company INTEGER
+-- Table `people`
+CREATE TABLE people (
+	id SERIAL UNIQUE,
+	name TEXT,
+	"CreditCard" TEXT,
+	fk_company INTEGER
 );
 
-INSERT INTO t1
-VALUES (1,'Schwarzenegger','1234567812345678');
+INSERT INTO people
+VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 
--- Check old syntax
-COMMENT ON COLUMN t1.name
-IS '    MASKED WITH FUNCTION anon.random_last_name() ';
 
-COMMENT ON COLUMN t1."CreditCard"
-IS 'dfkjdsiv MASKED    WITH    FUNCTION         anon.random_string(12)';
+SECURITY LABEL FOR anon ON COLUMN people.name
+IS 'MASKED WITH FUNCTION anon.random_last_name() ';
 
-CREATE TABLE "T2" (
-  rn SERIAL,
-  "IBAN" TEXT,
-  COMPANY TEXT
+SECURITY LABEL FOR anon ON COLUMN people."CreditCard"
+IS 'MASKED WITH FUNCTION         anon.random_string(12)';
+
+-- Table `CoMPaNy`
+CREATE TABLE "CoMPaNy" (
+	id_company SERIAL UNIQUE,
+	"IBAN" TEXT,
+	NAME TEXT
 );
 
-INSERT INTO "T2"
+INSERT INTO "CoMPaNy"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 
--- New syntax
-SECURITY LABEL FOR anon
-ON COLUMN  "T2"."IBAN"
+SECURITY LABEL FOR anon ON COLUMN "CoMPaNy"."IBAN"
 IS 'MASKED WITH FUNCTION anon.random_iban()';
 
-SECURITY LABEL FOR anon
-ON COLUMN "T2".COMPANY
-IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdvjs';
+SECURITY LABEL FOR anon ON COLUMN "CoMPaNy".NAME
+IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
 
+-- BUG #51 :
+CREATE TABLE test_type_casts(
+	last_name VARCHAR(30)
+);
 
-SELECT count(*) = 4  FROM anon.pg_masking_rules;
+SECURITY LABEL FOR anon ON column test_type_casts.last_name
+IS 'MASKED WITH FUNCTION anon.random_last_name()::VARCHAR(30)';
 
-SELECT masking_function = 'anon.random_iban()'
-FROM anon.pg_masking_rules
-WHERE attname = 'IBAN';
+-- Table `work`
+CREATE TABLE work (
+	id_work SERIAL,
+	fk_employee INTEGER NOT NULL,
+	fk_company INTEGER NOT NULL,
+	first_day DATE NOT NULL,
+	last_day DATE,
+	FOREIGN KEY	(fk_employee) references people(id),
+	FOREIGN KEY (fk_company) references "CoMPaNy"(id_company)
+);
+
+INSERT INTO work
+VALUES ( 1, 1 , 1991, DATE '1985-05-25',NULL);
+
+SELECT count(*) = 4  FROM anon.pg_masks;
+
+SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
 
 --
 
-SELECT company != 'Cyberdyne Systems' FROM foo."T2" WHERE rn=1991;
+SELECT name != 'Cyberdyne Systems' FROM mask."CoMPaNy" WHERE id_company=1991;
 
-SELECT name != 'Schwarzenegger' FROM foo.t1 WHERE id = 1;
+SELECT name != 'Schwarzenegger' FROM mask.people WHERE id = 1;
 
 -- ROLE
 
 CREATE ROLE skynet LOGIN;
-
 SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 
+-- FORCE update because SECURITY LABEL doesn't trigger the Event Trigger
 SELECT anon.mask_update();
 
-CREATE ROLE hal LOGIN;
 
-COMMENT ON ROLE hal IS 'MASKED';
-
-SELECT anon.mask_update();
-
--- search_path must be 'foo,public'
+-- We're using an external connection instead of `SET ROLE`
+-- Because we need the tricky search_path
 \! psql contrib_regression -U skynet -c 'SHOW search_path;'
 
--- search_path must be 'foo,public'
-\! psql contrib_regression -U hal -c 'SHOW search_path;'
+-- This test should fail
+--
+-- We're catching the output because the message
+-- PG10 would say "ERROR:  permission denied for relation people"
+-- PG11 would say "ERROR:  permission denied for table people"
+--
+\! psql contrib_regression -U skynet -c "SELECT * FROM public.people;"  2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
 
--- Disabling this test, because the error message has changed between PG10 and PG11
--- This test should fail anyway, the skynet role is not allowed to access the t1 table
---\! psql contrib_regression -U skynet -c "SELECT * FROM public.t1;"
+\! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM people WHERE id = 1;"
 
-\! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;"
+\! psql contrib_regression -U skynet -c "SELECT name != 'Cyberdyne Systems' FROM \"CoMPaNy\" WHERE id_company=1991;"
 
-\! psql contrib_regression -U skynet -c "SELECT company != 'Cyberdyne Systems' FROM \"T2\" WHERE rn=1991;"
 
--- STOP
+-- A maked role cannot modify a table containing a mask column
 
-SELECT anon.stop_dynamic_masking();
+\! psql contrib_regression -U skynet -c "DELETE FROM people;" 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+
+\! psql contrib_regression -U skynet -c "UPDATE people SET name = 'check' WHERE name ='Schwarzenegger';"
+
+\! psql contrib_regression -U skynet -c "INSERT INTO people VALUES (1,'Schwarzenegger','1234567812345678', 1991);" ;
+
+\! psql contrib_regression -U skynet -c "DELETE FROM work;" 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+
+
+-- A masked role cannot access the stats of a masked column
+\! psql contrib_regression -U skynet -c "SELECT count(histogram_bounds)=0 FROM pg_stats WHERE tablename='people' AND attname='name';"
 
 --  CLEAN
 
-DROP TABLE "T2" CASCADE;
-DROP TABLE t1 CASCADE;
+--DROP SCHEMA mask CASCADE;
+
+DROP TABLE test_type_casts CASCADE;
+DROP TABLE work CASCADE;
+DROP TABLE "CoMPaNy" CASCADE;
+DROP TABLE people CASCADE;
 
 DROP EXTENSION anon CASCADE;
 
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
-
-REASSIGN OWNED BY hal TO postgres;
-DROP OWNED BY hal CASCADE;
-DROP ROLE hal;
-

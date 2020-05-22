@@ -94,7 +94,6 @@ make11:
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
-    - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
@@ -115,7 +114,6 @@ make12:
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
-    - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
@@ -133,7 +131,6 @@ make13:
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
-    - export PG_TEST_EXTRA='masking_PG11+'
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
@@ -232,7 +229,7 @@ test_pgxn:
     - pgxn install postgresql_anonymizer
   when: manual
 
-# test install 
+# test install
 test_pgxn_ubuntu_pg95:
   stage: deploy
   image: ubuntu:bionic
@@ -255,7 +252,7 @@ test_pgxn_ubuntu_pg95:
     - psql -c "ALTER DATABASE postgres SET session_preload_libraries='anon'"
     - psql -c "SELECT anon.load();"
   when: manual
-  
+
 test_yum_centos7_pg12:
   stage: deploy
   image: centos:7
