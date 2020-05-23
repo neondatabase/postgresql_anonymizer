@@ -298,7 +298,8 @@ For numeric values, 3 functions are available
 * `generalize_int8range(value, step)`
 * `generalize_numrange(value, step)`
 
-...where `value` is the data the will be generalized, `step` is the size of each range.
+...where `value` is the data the will be generalized, `step` is the size of
+each range.
 
 
 [RANGE]: https://www.postgresql.org/docs/current/rangetypes.html
@@ -317,14 +318,14 @@ For instance, if you wrote a function `foo()`, you can apply it like this:
 SECURITY LABEL FOR anon ON COLUMN player.score IS 'MASKED WITH FUNCTION foo()';
 ```
 
-### Example: Writing a masking function for a JSONB column 
+### Example: Writing a masking function for a JSONB column
 
 <!-- cf. demo/writing_your_own_mask.sql -->
 
-For complex data types, you may have to write you own function. This will be 
+For complex data types, you may have to write you own function. This will be
 a common use case if you have to hide certain parts of a JSON field.
 
-For example: 
+For example:
 
 ```sql
 CREATE TABLE company (
@@ -333,28 +334,28 @@ CREATE TABLE company (
 )
 ```
 
-The `info` field contains unstructured data like this: 
+The `info` field contains unstructured data like this:
 
 ```sql
 SELECT jsonb_pretty(info) FROM company WHERE business_name = 'Soylent Green';
-           jsonb_pretty                  
-----------------------------------       
- {                               
-     "employees": [              
-         {                       
-             "lastName": "Doe",  
-             "firstName": "John" 
-         },                      
-         {                       
+           jsonb_pretty
+----------------------------------
+ {
+     "employees": [
+         {
+             "lastName": "Doe",
+             "firstName": "John"
+         },
+         {
              "lastName": "Smith",
-             "firstName": "Anna" 
-         },                      
-         {                       
+             "firstName": "Anna"
+         },
+         {
              "lastName": "Jones",
              "firstName": "Peter"
-         }                       
-     ]                           
- }                                      
+         }
+     ]
+ }
 (1 row)
 ```
 
@@ -369,10 +370,10 @@ RETURNS JSONB
 VOLATILE
 LANGUAGE SQL
 AS $func$
-SELECT 
+SELECT
   json_build_object(
-    'employees' , 
-    array_agg(                           
+    'employees' ,
+    array_agg(
       jsonb_set(e ,'{lastName}', to_jsonb(anon.fake_last_name()))
     )
   )::JSONB
@@ -386,11 +387,11 @@ Then check that the function is working correctly:
 SELECT remove_last_name(info) FROM company;
 ```
 
-When that's ok you can declare this function as the mask of 
+When that's ok you can declare this function as the mask of
 the `info` field:
 
 ```sql
-SECURITY LABEL FOR anon ON COLUMN company.info 
+SECURITY LABEL FOR anon ON COLUMN company.info
 IS 'MASKED WITH FUNCTION remove_last_name(info)';
 ```
 
@@ -399,30 +400,30 @@ And try it out !
 ```sql
 # SELECT anonymize_table('company');
 # SELECT jsonb_pretty(info) FROM company WHERE business_name = 'Soylent Green';
-            jsonb_pretty                 
--------------------------------------    
- {                                       
-     "employees": [                 +   
-         {                          +   
-             "lastName": "Prawdzik",+   
-             "firstName": "John"    +   
-         },                         +   
-         {                          +   
-             "lastName": "Baltazor",+   
-             "firstName": "Anna"    +   
-         },                         +   
-         {                          +   
-             "lastName": "Taylan",  +   
-             "firstName": "Peter"   +   
-         }                          +   
-     ]                              +   
- }                                       
+            jsonb_pretty
+-------------------------------------
+ {
+     "employees": [                 +
+         {                          +
+             "lastName": "Prawdzik",+
+             "firstName": "John"    +
+         },                         +
+         {                          +
+             "lastName": "Baltazor",+
+             "firstName": "Anna"    +
+         },                         +
+         {                          +
+             "lastName": "Taylan",  +
+             "firstName": "Peter"   +
+         }                          +
+     ]                              +
+ }
 (1 row)
 ```
 
-This is just a quick and dirty example. As you can see manipulating a 
-sophiticated JSON structure with SQL is possible but it can be tricky at 
-first! There are multiple ways of walking through the keys and updating 
-values. You will probably have to try different approaches depending on 
+This is just a quick and dirty example. As you can see manipulating a
+sophiticated JSON structure with SQL is possible but it can be tricky at
+first! There are multiple ways of walking through the keys and updating
+values. You will probably have to try different approaches depending on
 your real JSON data and the performance you want ot reach.
 

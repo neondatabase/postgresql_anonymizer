@@ -1,8 +1,8 @@
 Hide sensible data from a "masked" user
 ===============================================================================
 
-You can hide some data from a role by declaring this role as a "MASKED". 
-Other roles will still access the original data.  
+You can hide some data from a role by declaring this role as a "MASKED".
+Other roles will still access the original data.
 
 **Example**:
 
@@ -14,7 +14,7 @@ INSERT INTO people VALUES ('T1','Sarah', 'Conor','0609110911');
 SELECT * FROM people;
 
 =# SELECT * FROM people;
- id | fistname | lastname |   phone    
+ id | fistname | lastname |   phone
 ----+----------+----------+------------
  T1 | Sarah    | Conor    | 0609110911
 (1 row)
@@ -31,17 +31,17 @@ Step 2 : Declare a masked user
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
-=# SECURITY LABEL FOR anon ON ROLE skynet 
+=# SECURITY LABEL FOR anon ON ROLE skynet
 -# IS 'MASKED';
 ```
 
 Step 3 : Declare the masking rules
 
 ```sql
-SECURITY LABEL FOR anon ON COLUMN people.name 
+SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH FUNCTION anon.random_last_name()';
 
-SECURITY LABEL FOR anon ON COLUMN people.phone 
+SECURITY LABEL FOR anon ON COLUMN people.phone
 IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
@@ -50,7 +50,7 @@ Step 4 : Connect with the masked user
 
 ```sql
 =# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
- id | fistname | lastname  |   phone    
+ id | fistname | lastname  |   phone
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
 (1 row)
@@ -59,7 +59,7 @@ Step 4 : Connect with the masked user
 Dropping a masking table
 ------------------------------------------------------------------------------
 
-The dynamic masking engine will build _masking views_ upon the masked tables. 
+The dynamic masking engine will build _masking views_ upon the masked tables.
 This means that it is not possible to drop a masked table directly. You will
 get an error like this :
 
@@ -69,7 +69,7 @@ psql: ERROR:  cannot drop table company because other objects depend on it
 DETAIL:  view mask.company depends on table company
 ```
 
-To effectively remove the table, it is necessary to add the `CASCADE` options 
+To effectively remove the table, it is necessary to add the `CASCADE` options
 so that the masking view will be dropped too:
 
 ```sql
@@ -80,10 +80,14 @@ so that the masking view will be dropped too:
 Limitations
 ------------------------------------------------------------------------------
 
-The dynamic masking system only works with one schema (by default `public`). 
-When you start the masking engine with `start_dynamic_masking()`, you can 
-specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`. 
+The dynamic masking system only works with one schema (by default `public`).
+When you start the masking engine with `start_dynamic_masking()`, you can
+specify the schema that will be masked with:
 
-**However** in-place anonymization with `anon.anonymize()`and anonymous export 
+```sql
+SELECT start_dynamic_masking('sales');
+```
+
+**However** in-place anonymization with `anon.anonymize()`and anonymous export
 with `anon.dump()` will work fine will multiple schemas.
 

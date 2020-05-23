@@ -40,18 +40,18 @@ In any case, let us know how we can help you moving forward
 Forking, mirroring and Rebasing
 -------------------------------------------------------------------------------
 
-To contribute code to this projet, you can simply create you own fork. 
+To contribute code to this projet, you can simply create you own fork.
 
-Over time, the main repository ( let's call it `upstream`) will evolve and your 
-own repository (let's call it  `origin`) will miss the latest commits. Here's 
+Over time, the main repository ( let's call it `upstream`) will evolve and your
+own repository (let's call it  `origin`) will miss the latest commits. Here's
 a few hints on how to handle this
 
-### Connect your repo to the upstream 
+### Connect your repo to the upstream
 
 Add a new remote to your local repo:
 
 ```bash
-git remote add upstream https://gitlab.com/dalibo/postgresql_anonymizer.git 
+git remote add upstream https://gitlab.com/dalibo/postgresql_anonymizer.git
 ```
 
 ### Keep your master branch up to date
@@ -71,9 +71,9 @@ git push origin
 
 ### Rebase a branch
 
-When working on a Merge Requests (`MR`) that takes a long time, it can happen 
+When working on a Merge Requests (`MR`) that takes a long time, it can happen
 that your local branch (let's call it `foo`) is out of sync. Here's how you
-can apply the lastest: 
+can apply the lastest:
 
 
 ```bash
@@ -132,8 +132,8 @@ About SQL Injection
 --------------------------------------------------------------------------------
 
 By design, this extension is prone to SQL Injections risks. When adding new
-features, a special focus should be made on security, especially by sanitizing 
-the functions parameters and using `regclass` and `oid` instead of literal 
+features, a special focus should be made on security, especially by sanitizing
+the functions parameters and using `regclass` and `oid` instead of literal
 names to designate objects...
 
 See links below for more details:
