@@ -551,7 +551,7 @@ BEGIN
   --WHERE isdir;
 
   -- This works with all current version of Postgres
-  datapath_regexp := '^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\0])[^/\0]+)*\/?$';
+  datapath_regexp := E'^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\\0])[^/\\0]+)*\/?$';
   SELECT regexp_matches(datapath,datapath_regexp) INTO datapath_check;
 
   -- Stop if is the directory does not exist
