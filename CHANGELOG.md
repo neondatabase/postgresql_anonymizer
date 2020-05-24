@@ -5,9 +5,22 @@ CHANGELOG
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-
 - pgcrypto
 - tms_system_rows
+
+* [install] Add a notice to users when they try to load the extension twice
+* [CI] Improve the masking test
+* Support for PostgreSQL 13
+* [noise] add on-the-fly noise functions (Gunnar Nick Bluth)
+* [dump] add a hint if a particular table dump fails (Gunnar Nick Bluth)
+* FIX #128: add version function and use it in pg_dump_anon (Yann ROBIN)
+* [doc] Security: explain noise reduction attacks
+* [doc] How To mask a JSONB column (Fabien BARBIER)
+* [doc] improve load doc
+* [CI] Test install on Ubuntu Bionic
+* [doc] DBaaS providers support for EVENT TRIGGERS and dynamic masking (Martin Kubrak)
+* [install] Remove dependency to the ddlx extension
+* FIX #123 : bug in the standalone install script (Florian Desbois)
 
 
 20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps
