@@ -226,7 +226,12 @@ do
   echo
 done
 
-
+##
+## Let's dump the DDL again !
+## This time we want to export only the sequences data, which must restored
+## after the tables data.
+## The trick here is to use `--exclude-table-data=*` instead of `--schema-only`
+##
 SEQUENCES="pg_dump --exclude-table-data=* $exclude_anon_schemas $pg_dump_opt"
 $SEQUENCES | grep '^SELECT pg_catalog.setval'
 
