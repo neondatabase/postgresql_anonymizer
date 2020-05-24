@@ -25,8 +25,11 @@ CREATE TABLE test_pg_dump_anon.customer (
   name TEXT,
   "CreditCard" TEXT
 );
-INSERT INTO test_pg_dump_anon.customer
-VALUES (1,'Schwarzenegger','1234567812345678');
+INSERT INTO test_pg_dump_anon.customer(name,"CreditCard")
+VALUES
+('Schwarzenegger','1234567812345678'),
+('Stalone'       ,'2683464645336781'),
+('Lundgren'      ,'6877322588932345');
 SECURITY LABEL FOR anon ON COLUMN test_pg_dump_anon.customer.name
 IS E'MASKED WITH FUNCTION md5(''0'') ';
 SECURITY LABEL FOR anon ON COLUMN test_pg_dump_anon.customer."CreditCard"
@@ -49,8 +52,16 @@ CREATE TABLE "FoO".customer (
   last_name TEXT,
   "CreditCard" TEXT
 );
-INSERT INTO "FoO".customer
-VALUES (0,'bob', 'doe', '1234-5678-1234-5678');
+INSERT INTO "FoO".customer(firstname,last_name,"CreditCard");
+ERROR:  syntax error at or near ";"
+LINE 1: ...NSERT INTO "FoO".customer(firstname,last_name,"CreditCard");
+                                                                      ^
+VALUES ('bob', 'doe', '1234-5678-1234-5678');
+ column1 | column2 |       column3       
+---------+---------+---------------------
+ bob     | doe     | 1234-5678-1234-5678
+(1 row)
+
 CREATE TABLE "FoO".vendor (
   employee_id INTEGER UNIQUE,
   "Firstname" TEXT,
@@ -69,6 +80,12 @@ CREATE TABLE "FoO".vendeur (
 );
 INSERT INTO "FoO".vendeur
 VALUES (1,'Jean', 'Bon', NULL, '0001-01-01');
+CREATE SEQUENCE test_pg_dump_anon.three
+INCREMENT -1
+MINVALUE 1
+MAXVALUE 3
+START 3
+CYCLE;
 --
 -- A. Dump and Restore and Dump again and compare
 --
@@ -76,11 +93,12 @@ VALUES (1,'Jean', 'Bon', NULL, '0001-01-01');
 \! pg_dump_anon --dbname=contrib_regression > tests/tmp/_pg_dump_anon_A1.sql
 -- A2. Clean up the database
 DROP SCHEMA test_pg_dump_anon CASCADE;
-NOTICE:  drop cascades to 4 other objects
+NOTICE:  drop cascades to 5 other objects
 DETAIL:  drop cascades to table test_pg_dump_anon.no_masks
 drop cascades to table test_pg_dump_anon.cards
 drop cascades to table test_pg_dump_anon.customer
 drop cascades to table test_pg_dump_anon."COMPANY"
+drop cascades to sequence test_pg_dump_anon.three
 DROP SCHEMA "FoO" CASCADE;
 NOTICE:  drop cascades to 3 other objects
 DETAIL:  drop cascades to table "FoO".customer
@@ -121,13 +139,29 @@ drop cascades to table "FoO".vendeur
 -- All these command lines should produce the same output
 --
 \! pg_dump_anon contrib_regression | grep 'ddlx'
+--
+-- F. Check the sequence values
+--
+SELECT pg_catalog.nextval('test_pg_dump_anon.customer_id_seq');
+ nextval 
+---------
+       4
+(1 row)
+
+SELECT pg_catalog.nextval('test_pg_dump_anon.three');
+ nextval 
+---------
+       3
+(1 row)
+
 --  CLEAN
 DROP SCHEMA test_pg_dump_anon CASCADE;
-NOTICE:  drop cascades to 4 other objects
+NOTICE:  drop cascades to 5 other objects
 DETAIL:  drop cascades to table test_pg_dump_anon."COMPANY"
 drop cascades to table test_pg_dump_anon.cards
 drop cascades to table test_pg_dump_anon.customer
 drop cascades to table test_pg_dump_anon.no_masks
+drop cascades to sequence test_pg_dump_anon.three
 DROP SCHEMA "FoO" CASCADE;
 NOTICE:  drop cascades to 3 other objects
 DETAIL:  drop cascades to table "FoO".customer

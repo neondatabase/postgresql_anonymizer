@@ -28,8 +28,12 @@ CREATE TABLE test_pg_dump_anon.customer (
   "CreditCard" TEXT
 );
 
-INSERT INTO test_pg_dump_anon.customer
-VALUES (1,'Schwarzenegger','1234567812345678');
+INSERT INTO test_pg_dump_anon.customer(name,"CreditCard")
+VALUES
+('Schwarzenegger','1234567812345678'),
+('Stalone'       ,'2683464645336781'),
+('Lundgren'      ,'6877322588932345');
+
 
 SECURITY LABEL FOR anon ON COLUMN test_pg_dump_anon.customer.name
 IS E'MASKED WITH FUNCTION md5(''0'') ';
@@ -60,8 +64,8 @@ CREATE TABLE "FoO".customer (
   last_name TEXT,
   "CreditCard" TEXT
 );
-INSERT INTO "FoO".customer
-VALUES (0,'bob', 'doe', '1234-5678-1234-5678');
+INSERT INTO "FoO".customer(firstname,last_name,"CreditCard");
+VALUES ('bob', 'doe', '1234-5678-1234-5678');
 
 CREATE TABLE "FoO".vendor (
   employee_id INTEGER UNIQUE,
@@ -84,6 +88,13 @@ CREATE TABLE "FoO".vendeur (
 
 INSERT INTO "FoO".vendeur
 VALUES (1,'Jean', 'Bon', NULL, '0001-01-01');
+
+CREATE SEQUENCE test_pg_dump_anon.three
+INCREMENT -1
+MINVALUE 1
+MAXVALUE 3
+START 3
+CYCLE;
 
 --
 -- A. Dump and Restore and Dump again and compare
@@ -147,6 +158,12 @@ DROP SCHEMA "FoO" CASCADE;
 --
 \! pg_dump_anon contrib_regression | grep 'ddlx'
 
+
+--
+-- F. Check the sequence values
+--
+SELECT pg_catalog.nextval('test_pg_dump_anon.customer_id_seq');
+SELECT pg_catalog.nextval('test_pg_dump_anon.three');
 
 --  CLEAN
 DROP SCHEMA test_pg_dump_anon CASCADE;
