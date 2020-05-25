@@ -10,7 +10,7 @@
 usage()
 {
 cat << END
-Usage: $(basename $0) [OPTION]... [DBNAME]
+Usage: $(basename "$0") [OPTION]... [DBNAME]
 
 General options:
   -f, --file=FILENAME           output file
@@ -160,7 +160,7 @@ while [ $# -gt 0 ]; do
         exit 0
         ;;
     -*|--*)
-        echo $0: Invalid option -- $1
+        echo "$0: Invalid option -- $1"
         echo Try "$0 --help" for more information.
         exit 1
         ;;
@@ -217,9 +217,9 @@ dumped_tables=`$DUMP $exclude_table |awk '/^CREATE TABLE /{ print $3 }'`
 ##
 for t in $dumped_tables
 do
-  filters=$(get_mask_filters $t)
+  filters=$(get_mask_filters "$t")
   ## generate the "COPY ... FROM STDIN" statement for a given table
-  echo COPY $t FROM STDIN WITH CSV';'
+  echo "COPY $t FROM STDIN WITH CSV;"
   $PSQL_PRINT -c "\copy (SELECT $filters FROM $t) TO STDOUT WITH CSV"
   [ $? -ne 0 ] && echo "... during export of $t" >&2
   echo \\.
