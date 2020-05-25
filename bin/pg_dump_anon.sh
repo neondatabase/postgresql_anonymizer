@@ -233,6 +233,5 @@ done
 ## The trick here is to use `--exclude-table-data=*` instead of `--schema-only`
 ##
 
-# shellcheck disable=SC2086
-pg_dump --exclude-table-data=* $exclude_anon_schemas $pg_dump_opt | grep '^SELECT pg_catalog.setval'
+pg_dump "--exclude-table-data=*" "${exclude_anon_schemas[@]}" "${pg_dump_opt[@]}" | grep '^SELECT pg_catalog.setval'
 
