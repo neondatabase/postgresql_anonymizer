@@ -1,19 +1,23 @@
 CHANGELOG
 ===============================================================================
 
-2020FIXME : 0.7.0 - WORK IN PROGRESS 
+2020FIXME : 0.7.0 - WORK IN PROGRESS
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-  - tms_system_rows
+
+- tms_system_rows
 
 
-20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps 
+20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-  - tms_system_rows
-  - ddlx 
+
+- tms_system_rows
+- ddlx
+
+__Changes:__
 
 * [doc] Typos, grammar (Nikolay Samokhvalov)
 * [doc] make help
@@ -38,10 +42,13 @@ __Dependencies:__
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-  - tms_system_rows
-  - ddlx
 
-* Introduce the Generalization method with 6 functions that transforms dates 
+- tms_system_rows
+- ddlx
+
+__Changes:__
+
+* Introduce the Generalization method with 6 functions that transforms dates
   and numeric values into ranges of value.
 
 * Introduce a k-anonymity assessment function.
@@ -59,8 +66,11 @@ __Dependencies:__
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-  - tms_system_rows
-  - ddlx
+
+- tms_system_rows
+- ddlx
+
+__Changes:__
 
 * FIX #87 : anon.config loaded twice with pg_restore (Olleg Samoylov)
 * [doc] : install with yum
@@ -69,8 +79,11 @@ __Dependencies:__
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-  - tms_system_rows
-  - ddlx
+
+- tms_system_rows
+- ddlx
+
+__Changes:__
 
 * Use Security Labels instead of COMMENTs. COMMENTs are still supported
 
@@ -84,8 +97,11 @@ __Dependencies:__
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-  - tms_system_rows
-  - ddlx
+
+- tms_system_rows
+- ddlx
+
+__Changes:__
 
 * In-place Anonymization : Permanently remove sensitive data
   with `anonymize_database()`, `anonymize_table()` or
@@ -95,23 +111,26 @@ __Dependencies:__
   the new `dump()` function. For instance:
 
   ```console
-  $ psql -q -t -A -c 'SELECT anon.dump()' the_database
+  psql -q -t -A -c 'SELECT anon.dump()' the_database
   ```
 
 * Dynamic Masking : new functions `start_dynamic_masking()` and
   `stop_dynamic_masking()`
 
 * shuffle an entire column with the new function :
-	```sql
-	SELECT anon.shuffle_column('employees','salary', 'id');
-	```
+
+  ```sql
+  SELECT anon.shuffle_column('employees','salary', 'id');
+  ```
 
 * Add +/-33% of noise to a column with:
-	```sql
+
+  ```sql
   SELECT anon.numeric_noise_on_column('employee','salary',0.33);
-	```
+  ```
 
 * Add +/-10 years of noise to a date with :
+
   ```sql
   SELECT anon.datetime_noise_on_column('employee','birthday','10 years');
   ```
@@ -133,19 +152,21 @@ __Dependencies:__
 20181029 : 0.2 - Dynamic masking and partial functions
 -------------------------------------------------------------------------------
 
-## Declare masking rules within the DDL :
+### Declare masking rules within the DDL
 
-* Declare a masked column with :
+* Declare a masked column with:
+
   ```sql
   COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
   ```
 
 * Declare a masked role with :
+
   ```sql
   COMMENT ON ROLE untrusted_user IS 'MASKED';
   ```
 
-## New functions for partial scrambling
+### New functions for partial scrambling
 
 * `partial()` will partially hide any TEXT value
 * `partial_email()` will partially hide an email address

@@ -19,7 +19,7 @@ Contributors
 * Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
 * Yann ROBIN (@me.show) : version() function and DBAAS install
 * Christophe Courtois (@Krysztophe) : Proofreading
-* Pierre-Henri Dubois Amy (@theodor_lobster) : Proofreading, GIS 
+* Pierre-Henri Dubois Amy (@theodor_lobster) : Proofreading, GIS
 * Thomas Clark (@cthomaspdx) : Pseudonymization
 * Joe Auty (@joeauty) : Issue #114
 * Bernie Caessens (@bcaessens) : Feedback on the black box method
@@ -28,9 +28,9 @@ Contributors
 * Nikolay Samokhvalov (@NikolayS) : Documentation
 * Travis Miller (@travismiller) : MacOS support
 * Jan Birk (@jabi27) : Install on Ubuntu
-* Olleg Samoylov (@Splarv) : Issue #87, Bug fixes, Documentation 
+* Olleg Samoylov (@Splarv) : Issue #87, Bug fixes, Documentation
 * Damien Cazeils (www.damiencazeils.com) : Logo
-* Ioseph Kim (@i0seph) : Documentation 
+* Ioseph Kim (@i0seph) : Documentation
 * Matiss Zarkevics (@leovingi) : Tests on Amazon RDS
 * Peter Goodwin (@Postgressor) : Tests
 * Tim (@roconda) : Documentation

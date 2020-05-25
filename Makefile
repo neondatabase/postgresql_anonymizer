@@ -82,6 +82,23 @@ install-bin:
 	install -m 0755 bin/pg_dump_anon.sh $(DESTDIR)$(BINDIR)/pg_dump_anon
 
 ##
+## L I N T
+##
+
+lint: lint-sql lint-sh lint-md
+
+lint-sql:
+	-sqlfluff lint demo/*.sql tests/sql/*.sql anon.sql
+
+lint-sh:
+	shellcheck bin/pg_dump_anon.sh
+
+lint-md:
+	mdl docs/*.md *.md
+
+
+
+##
 ## B U I L D
 ##
 

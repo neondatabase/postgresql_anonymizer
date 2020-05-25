@@ -11,6 +11,12 @@ variables:
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
 
+stages:
+  - lint
+  - build
+  - test
+  - deploy
+
 image: postgres:11
 
 
@@ -25,6 +31,42 @@ before_script:
     - gosu postgres initdb
     - gosu postgres pg_ctl start
 
+
+##
+## L I N T
+##
+
+lint-bash:
+  stage: lint
+  before_script:
+    - echo "disable the before_script"
+  script:
+    - apt-get update && apt-get install -y shellcheck
+    - shellcheck bin/pg_dump_anon.sh
+  allow_failure: yes
+lint-sql:
+  stage: lint
+  before_script:
+    - echo "disable the before_script"
+  script:
+      - apt update && apt-get install -y python3-pip
+      - pip3 install sqlfluff
+      - sqlfluff lint demo/*.sql tests/sql/*.sql anon.sql
+  allow_failure: yes
+
+lint-markdown:
+  stage: lint
+  image: ruby:alpine
+  before_script:
+    - echo "disable the before_script"
+  script:
+    - gem install mdl
+    - mdl docs/*.md *.md
+  allow_failure: yes
+
+##
+## B U I L D
+##
 
 # PostgreSQL 9.5 is not supported
 make9.5:
@@ -203,6 +245,11 @@ demo:
     paths:
         - demo/*.out
     expire_in: 1 day
+
+
+##
+## D E P L O Y
+##
 
 pgxn:
   stage: deploy

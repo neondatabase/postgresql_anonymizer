@@ -1,16 +1,16 @@
 
-PostgreSQL Anonymizer 0.6: Pseudonymization and Improved Anonymous Exports 
+PostgreSQL Anonymizer 0.6: Pseudonymization and Improved Anonymous Exports
 ================================================================================
 
 Eymoutiers, France, Mars 5, 2020
 
-`PostgreSQL Anonymizer` is an extension that hides or replaces personally 
-identifiable information (PII) or commercially sensitive data from a PostgreSQL 
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
 database.
 
-The extension supports 3 different anonymization strategies: [Dynamic Masking], 
-[In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of 
-[Masking Functions]: Substitution, Randomization, Faking, Pseudonymization, 
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions]: Substitution, Randomization, Faking, Pseudonymization,
 Partial Scrambling, Shuffling, Noise Addition and Generalization.
 
 [Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
@@ -21,27 +21,27 @@ Partial Scrambling, Shuffling, Noise Addition and Generalization.
 Pseudonymization
 --------------------------------------------------------------------------------
 
-[Pseudonymization] functions are similar to the faking functions in the sense 
-that they generate realistic values. The main difference is that pseudonymization 
-is deterministic : the functions will always return the same fake value based on 
-a seed and an optional salt. 
+[Pseudonymization] functions are similar to the faking functions in the sense
+that they generate realistic values. The main difference is that pseudonymization
+is deterministic : the functions will always return the same fake value based on
+a seed and an optional salt.
 
     # SELECT anon.pseudo_email('Alice','salt123');
        pseudo_email
     -------------------
-     fcadell56@ucoz.ru                                                                                                                                                                                                       
+     fcadell56@ucoz.ru
     # SELECT anon.pseudo_email('Alice','salt123');
        pseudo_email
     -------------------
-     fcadell56@ucoz.ru                       
-                                                                                                                                                                                                                                                                                                                                                                      
-**WARNING** : Pseudonymization is often confused with anonymization but in fact 
-they serve 2 different purposes. With pseudonymization, the real data can be 
+     fcadell56@ucoz.ru
+
+**WARNING** : Pseudonymization is often confused with anonymization but in fact
+they serve 2 different purposes. With pseudonymization, the real data can be
 rebuilt using the pseudo data and the masking rule. If an attacker
-gets access to these elements, he or she can easily re-identify some people 
-using `brute force` or `dictionary` attacks. Therefore, you should protect any 
-pseudonymized data with the same level of security that the original dataset. 
-The GDPR makes it very clear that personal data which have undergone 
+gets access to these elements, he or she can easily re-identify some people
+using `brute force` or `dictionary` attacks. Therefore, you should protect any
+pseudonymized data with the same level of security that the original dataset.
+The GDPR makes it very clear that personal data which have undergone
 pseudonymization are still considered to be personal information.
 
 [Pseudonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/#pseudonymization
@@ -51,28 +51,28 @@ pseudonymization are still considered to be personal information.
 Improved Anonymous Exports
 --------------------------------------------------------------------------------
 
-The `anon.dump()` function was slow and unpractical. It is now deprecated and 
-replace by a tool named `pg_dump_anon` that you can use like the regular `pg_dump` 
+The `anon.dump()` function was slow and unpractical. It is now deprecated and
+replace by a tool named `pg_dump_anon` that you can use like the regular `pg_dump`
 command:
 
-    $ pg_dump_anon -h localhost -U bob mydb > anonymous_dump.sql
+    pg_dump_anon -h localhost -U bob mydb > anonymous_dump.sql
 
-It uses the same connections parameters that `pg_dump`. The PostgreSQL 
-environment variables ($PGHOST, PGUSER, etc.)  and `.pgpass` are supported. 
-However the `plain` format is the only supported format. The other formats 
+It uses the same connections parameters that `pg_dump`. The PostgreSQL
+environment variables ($PGHOST, PGUSER, etc.)  and `.pgpass` are supported.
+However the `plain` format is the only supported format. The other formats
 (`custom`, `dir` and `tar`) are not supported.
 
 
 Detecting Hidden Identifiers
 --------------------------------------------------------------------------------
 
-This extension makes it very easy to declare masking rules. But of course when 
-you're creating an anonymization strategy, the hard part is to scan the database 
-model to find which columns contains direct and indirect identifiers and then 
+This extension makes it very easy to declare masking rules. But of course when
+you're creating an anonymization strategy, the hard part is to scan the database
+model to find which columns contains direct and indirect identifiers and then
 decide how these identifiers should be masked.
 
-We now provide a `detect()` function that will search for common identifiers 
-names based on a dictionary. For now, 2 dictionaries are available: English 
+We now provide a `detect()` function that will search for common identifiers
+names based on a dictionary. For now, 2 dictionaries are available: English
 ('en_US') and French ('fr_FR'). By default the English dictionary is used:
 
 
@@ -80,7 +80,7 @@ names based on a dictionary. For now, 2 dictionaries are available: English
      table_name |  column_name   | identifiers_category | direct
     ------------+----------------+----------------------+--------
      customer   | CreditCard     | creditcard           | t
-     customer   | id             | account_id           | t 
+     customer   | id             | account_id           | t
      vendor     | Firstname      | firstname            | t
 
 The identifier categories are based on the [HIPAA classification].
@@ -93,32 +93,32 @@ How to Install
 
 This extension is officially supported on PostgreSQL 9.6 and later.
 
-On Red Hat / CentOS systems, you can install it from the 
+On Red Hat / CentOS systems, you can install it from the
 [official PostgreSQL RPM repository]:
 
 
-    $ yum install postgresql_anonymizer12
+    yum install postgresql_anonymizer12
 
 
-Then add 'anon' in the `shared_preload_libraries` parameter of your 
-`postgresql.conf` file. And restart your instance. 
+Then add 'anon' in the `shared_preload_libraries` parameter of your
+`postgresql.conf` file. And restart your instance.
 
 For other systems, check out the [install] documentation :
 
 https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
 
-> **WARNING:** The project is at an early stage of development and should be 
+> **WARNING:** The project is at an early stage of development and should be
 > used carefully.
 
 [official PostgreSQL RPM repository]: https://yum.postgresql.org/
 [install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
 
-Thanks 
+Thanks
 --------------------------------------------------------------------------------
 
 
-This release includes code, bugfixes and ideas from Sebastien Delobel, Sam 
-Buckingham, Thomas Clark, Joe Auty, Pierre-Henri Dubois Amy and Olleg Samoylov.  
+This release includes code, bugfixes and ideas from Sebastien Delobel, Sam
+Buckingham, Thomas Clark, Joe Auty, Pierre-Henri Dubois Amy and Olleg Samoylov.
 
 Many thanks to them !
 
@@ -126,11 +126,11 @@ Many thanks to them !
 How to contribute
 --------------------------------------------------------------------------------
 
-PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly 
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
 developed by [Damien Clochard].
 
-This is an open project, contributions are welcome. We need your feedback and 
-ideas ! Let us know what you think of this tool, how it fits your needs and 
+This is an open project, contributions are welcome. We need your feedback and
+ideas ! Let us know what you think of this tool, how it fits your needs and
 what features are missing.
 
 If you want to help, you can find a list of `Junior Jobs` here:
@@ -151,13 +151,13 @@ PostgreSQL Anonymizer 0.5: Generalization and k-anonymity
 
 Eymoutiers, France, November 6, 2019
 
-`Postgresql Anonymizer` is an extension that hides or replaces personally 
-identifiable information (PII) or commercially sensitive data from a PostgreSQL 
+`Postgresql Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
 database.
 
-The extension supports 3 different anonymization strategies: [Dynamic Masking], 
-[In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of 
-[Masking Functions]: Substitution, Randomization, Faking, Partial Scrambling, 
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions]: Substitution, Randomization, Faking, Partial Scrambling,
 Shuffling, Noise Addition and Generalization.
 
 [Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
@@ -168,8 +168,8 @@ Shuffling, Noise Addition and Generalization.
 Generalization
 --------------------------------------------------------------------------------
 
-The idea of generalization is to replace data with a broader, less accurate 
-value. For instance, instead of saying "Bob is 28 years old", you can say 
+The idea of generalization is to replace data with a broader, less accurate
+value. For instance, instead of saying "Bob is 28 years old", you can say
 "Bob is between 20 and 30 years old". This is interesting for analytics because
 the data remains true while avoiding the risk of re-identification.
 
@@ -181,80 +181,72 @@ a lower and an upper bound.
 
 Here's a basic table containing medical data:
 
-```sql
-SELECT * FROM patient;
-     ssn     | firstname | zipcode |   birth    |    disease    
--------------+-----------+---------+------------+---------------
- 253-51-6170 | Alice     |   47012 | 1989-12-29 | Heart Disease
- 091-20-0543 | Bob       |   42678 | 1979-03-22 | Allergy
- 565-94-1926 | Caroline  |   42678 | 1971-07-22 | Heart Disease
- 510-56-7882 | Eleanor   |   47909 | 1989-12-15 | Acne
-```
+    SELECT * FROM patient;
+         ssn     | firstname | zipcode |   birth    |    disease
+    -------------+-----------+---------+------------+---------------
+     253-51-6170 | Alice     |   47012 | 1989-12-29 | Heart Disease
+     091-20-0543 | Bob       |   42678 | 1979-03-22 | Allergy
+     565-94-1926 | Caroline  |   42678 | 1971-07-22 | Heart Disease
+     510-56-7882 | Eleanor   |   47909 | 1989-12-15 | Acne
+
 
 We want the anonymized data to remain **true** because it will be
-used for statistics. We can build a view upon this table to remove 
-useless columns and generalize the indirect identifiers (zipcode and 
+used for statistics. We can build a view upon this table to remove
+useless columns and generalize the indirect identifiers (zipcode and
 birthday):
 
-```sql
-CREATE MATERIALIZED VIEW generalized_patient AS
-SELECT
-  'REDACTED'::TEXT AS firstname,
-  anon.generalize_int4range(zipcode,1000) AS zipcode,
-  anon.generalize_daterange(birth,'decade') AS birth,
-  disease
-FROM patient;
-```
+
+    CREATE MATERIALIZED VIEW generalized_patient AS
+    SELECT
+      'REDACTED'::TEXT AS firstname,
+      anon.generalize_int4range(zipcode,1000) AS zipcode,
+      anon.generalize_daterange(birth,'decade') AS birth,
+      disease
+    FROM patient;
 
 This will give us a less accurate view of the data:
 
-```sql
-SELECT * FROM generalized_patient;
- firstname |    zipcode    |          birth          |    disease    
------------+---------------+-------------------------+---------------
- REDACTED  | [47000,48000) | [1980-01-01,1990-01-01) | Heart Disease
- REDACTED  | [42000,43000) | [1970-01-01,1980-01-01) | Allergy
- REDACTED  | [42000,43000) | [1970-01-01,1980-01-01) | Heart Disease
- REDACTED  | [47000,48000) | [1980-01-01,1990-01-01) | Acne
-```
+    SELECT * FROM generalized_patient;
+     firstname |    zipcode    |          birth          |    disease
+    -----------+---------------+-------------------------+---------------
+     REDACTED  | [47000,48000) | [1980-01-01,1990-01-01) | Heart Disease
+     REDACTED  | [42000,43000) | [1970-01-01,1980-01-01) | Allergy
+     REDACTED  | [42000,43000) | [1970-01-01,1980-01-01) | Heart Disease
+     REDACTED  | [47000,48000) | [1980-01-01,1990-01-01) | Acne
 
 
 k-anonymity
 --------------------------------------------------------------------------------
 
-k-anonymity is an industry-standard term used to describe a property of an 
-anonymized dataset. The k-anonymity principle states that within a 
-given dataset, any anonymized individual cannot be distinguished from at 
-least `k-1` other individuals. In other words, k-anonymity might be described 
+k-anonymity is an industry-standard term used to describe a property of an
+anonymized dataset. The k-anonymity principle states that within a
+given dataset, any anonymized individual cannot be distinguished from at
+least `k-1` other individuals. In other words, k-anonymity might be described
 as a "hiding in the crowd" guarantee. A low value of `k` indicates there's a risk
 of re-identification using linkage with other data sources.
 
 You can evaluate the k-anonymity factor of a table in 2 steps :
 
-1. First defined the columns that are [indirect idenfiers] ( also known
-   as "quasi identifers") like this:
+Step 1: First defined the columns that are [indirect idenfiers] ( also known
+as "quasi identifers") like this:
 
-```sql
-SECURITY LABEL FOR anon ON COLUMN generalized_patient.zipcode 
-IS 'INDIRECT IDENTIFIER';
+    SECURITY LABEL FOR anon ON COLUMN generalized_patient.zipcode
+    IS 'INDIRECT IDENTIFIER';
 
-SECURITY LABEL FOR anon ON COLUMN generalized_patient.birth 
-IS 'INDIRECT IDENTIFIER';
-```
+    SECURITY LABEL FOR anon ON COLUMN generalized_patient.birth
+    IS 'INDIRECT IDENTIFIER';
 
-2. Once the indirect identifiers are declared :
+Step 2: Once the indirect identifiers are declared :
 
-```sql
-SELECT anon.k_anonymity('generalized_patient')
-```
+    SELECT anon.k_anonymity('generalized_patient')
 
-In the example above, the k-anonymity factor of the `generalized_patient` 
+In the example above, the k-anonymity factor of the `generalized_patient`
 materialized view is `2`.
 
 Lorem Ipsum
 --------------------------------------------------------------------------------
 
-For TEXT and VARCHAR columns, you can now use the classic [Lorem Ipsum] 
+For TEXT and VARCHAR columns, you can now use the classic [Lorem Ipsum]
 generator:
 
 * `anon.lorem_ipsum()` returns 5 paragraphs
@@ -270,41 +262,39 @@ How to Install
 
 This extension is officially supported on PostgreSQL 9.6 and later.
 
-On Red Hat / CentOS systems, you can install it from the 
+On Red Hat / CentOS systems, you can install it from the
 [official PostgreSQL RPM repository]:
 
-```
-$ yum install postgresql_anonymizer12
-```
+    yum install postgresql_anonymizer12
 
-Then add 'anon' in the `shared_preload_libraries` parameter of your 
-`postgresql.conf` file. And restart your instance. 
+Then add 'anon' in the `shared_preload_libraries` parameter of your
+`postgresql.conf` file. And restart your instance.
 
 For other system, check out the [install] documentation :
 
 https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
 
-> **WARNING:** The project is at an early stage of development and should be 
+> **WARNING:** The project is at an early stage of development and should be
 > used carefully.
 
 [official PostgreSQL RPM repository]: https://yum.postgresql.org/
 [install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
 
-Thanks 
+Thanks
 --------------------------------------------------------------------------------
 
-This release includes code and ideas from Travis Miller, Jan Birk and Olleg 
+This release includes code and ideas from Travis Miller, Jan Birk and Olleg
 Samoylov. Many thanks to them !
 
 
 How to contribute
 --------------------------------------------------------------------------------
 
-PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly 
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
 developed by [Damien Clochard].
 
-This is an open project, contributions are welcome. We need your feedback and 
-ideas ! Let us know what you think of this tool, how it fits your needs and 
+This is an open project, contributions are welcome. We need your feedback and
+ideas ! Let us know what you think of this tool, how it fits your needs and
 what features are missing.
 
 If you want to help, you can find a list of `Junior Jobs` here:
@@ -325,21 +315,19 @@ PostgreSQL Anonymizer 0.4 : Declare Masking Rules With Security Labels
 
 Eymoutiers, October 14, 2019
 
-`Postgresql Anonymizer` is an extension that hides or replaces personally 
-identifiable information (PII) or commercially sensitive data from a PostgreSQL 
+`Postgresql Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
 database.
 
-This new version introduces a major change of syntax. In the previous versions, 
-the data masking rules were declared with column comments. They are now defined 
+This new version introduces a major change of syntax. In the previous versions,
+the data masking rules were declared with column comments. They are now defined
 by using [security labels]:
 
 [security labels]: https://www.postgresql.org/docs/current/sql-security-label.html
 
-```sql
-SECURITY LABEL FOR anon 
-ON COLUMN customer.lastname 
-IS 'MASKED WITH FUNCTION anon.fake_last_name()'
-```
+    SECURITY LABEL FOR anon
+    ON COLUMN customer.lastname
+    IS 'MASKED WITH FUNCTION anon.fake_last_name()'
 
 The previous syntax is still supported and backward compatibility is maintained.
 
@@ -349,18 +337,16 @@ How to Install
 
 This extension is officially supported on PostgreSQL 9.6 and later.
 
-It requires extension named [tsm_system_rows] (available in the `contrib` 
+It requires extension named [tsm_system_rows] (available in the `contrib`
 package) and an extension called [ddlx] (available via [PGXN]) :
 
-```
-$ pgxn install ddlx
-$ pgxn install postgresql_anonymizer
-```
+    pgxn install ddlx
+    pgxn install postgresql_anonymizer
 
-Then add 'anon' in the `shared_preload_libraries` parameter of your 
-`postgresql.conf` file. And restart your instance. 
+Then add 'anon' in the `shared_preload_libraries` parameter of your
+`postgresql.conf` file. And restart your instance.
 
-> **WARNING:** The project is at an early stage of development and should be used 
+> **WARNING:** The project is at an early stage of development and should be used
 > carefully.
 
 [tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
@@ -371,11 +357,11 @@ Then add 'anon' in the `shared_preload_libraries` parameter of your
 How to contribute
 --------------------------------------------------------------------------------
 
-PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly 
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
 developed by [Damien Clochard].
 
-This is an open project, contributions are welcome. We need your feedback and 
-ideas ! Let us know what you think of this tool, how it fits your needs and 
+This is an open project, contributions are welcome. We need your feedback and
+ideas ! Let us know what you think of this tool, how it fits your needs and
 what features are missing.
 
 If you want to help, you can find a list of `Junior Jobs` here:
@@ -388,8 +374,7 @@ https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+J
 
 
 
-------------------------------------------------
-
+--------------------------------------------------------------------------------
 
 
 PostgreSQL Anonymizer 0.3 : In-Place Masking and Anonymous Dumps
@@ -397,18 +382,16 @@ PostgreSQL Anonymizer 0.3 : In-Place Masking and Anonymous Dumps
 
 Paris, August 26, 2019
 
-`postgresql_anonymizer` is an extension that hides or replaces personally 
-identifiable information (PII) or commercially sensitive data from a PostgreSQL 
+`postgresql_anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
 database.
 
-Firts of all, you declare a list of [Masking Rules] directly inside the database 
+Firts of all, you declare a list of [Masking Rules] directly inside the database
 model with SQL comments like this :
 
-```
-COMMENT ON COLUMN users.name IS 'MASKED WITH FUNCTION md5(name)';
-```
+    COMMENT ON COLUMN users.name IS 'MASKED WITH FUNCTION md5(name)';
 
-Once the masking rules are declared, anonymization can be acheived in 3 
+Once the masking rules are declared, anonymization can be acheived in 3
 different ways:
 
 * [Anonymous Dumps]: Simply export the masked data into an SQL file
@@ -416,7 +399,7 @@ different ways:
 * [Dynamic Masking]: Hide sensible data, only for the masked users
 
 In addition, various [Masking Functions] are available : randomization, faking,
-partial scrambling, shuffling, noise, etc... You can also user your own custom 
+partial scrambling, shuffling, noise, etc... You can also user your own custom
 function !
 
 For more detail, please take a look at the documention:
@@ -434,15 +417,13 @@ How to Install
 
 This extension is officially supported on PostgreSQL 9.6 and later.
 
-It requires extension named [tsm_system_rows] (available in the `contrib` 
+It requires extension named [tsm_system_rows] (available in the `contrib`
 package) and an extension called [ddlx] (available via [PGXN]) :
 
-```
-$ pgxn install ddlx
-$ pgxn install postgresql_anonymizer
-```
+    pgxn install ddlx
+    pgxn install postgresql_anonymizer
 
-> **WARNING:** The project is at an early stage of development and should be used 
+> **WARNING:** The project is at an early stage of development and should be used
 > carefully.
 
 [tsm_system_rows]: https://www.postgresql.org/docs/current/tsm-system-rows.html
@@ -453,11 +434,11 @@ $ pgxn install postgresql_anonymizer
 How to contribute
 --------------------------------------------------------------------------------
 
-PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly 
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
 developed by [Damien Clochard].
 
-This is an open project, contributions are welcome. We need your feedback and 
-ideas ! Let us know what you think of this tool, how it fits your needs and 
+This is an open project, contributions are welcome. We need your feedback and
+ideas ! Let us know what you think of this tool, how it fits your needs and
 what features are missing.
 
 If you want to help, you can find a list of `Junior Jobs` here:
@@ -470,23 +451,22 @@ https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+J
 
 
 
-------------------------------------------------
-
+--------------------------------------------------------------------------------
 
 Introducing PostgreSQL Anonymizer 0.2.1 !
 ================================================================================
 
 Paris, october 29, 2018
 
-`postgresql_anonymizer` is an extension to mask or replace personally identifiable 
+`postgresql_anonymizer` is an extension to mask or replace personally identifiable
 information (PII) or commercially sensitive data from a PostgreSQL database.
 
 The projet is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL's Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 
-The extension can be used to put dynamic masks on certain users or permanently 
-modify sensitive data. Various masking techniques are available : randomization, 
+The extension can be used to put dynamic masks on certain users or permanently
+modify sensitive data. Various masking techniques are available : randomization,
 partial scrambling, custom rules, etc.
 
 This tool is distributed under the PostgreSQL licence and the code is here:
@@ -498,43 +478,36 @@ Example
 
 Imagine a `people` table
 
-```sql
-=# SELECT * FROM people;
-  id  |      name      |   phone
-------+----------------+------------
- T800 | Schwarzenegger | 0609110911
-```
+    =# SELECT * FROM people;
+      id  |      name      |   phone
+    ------+----------------+------------
+     T800 | Schwarzenegger | 0609110911
 
 ### STEP 1 : Activate the masking engine
 
-```sql
-=# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-=# SELECT anon.mask_init();
-```
+    =# CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+    =# SELECT anon.mask_init();
 
 ### STEP 2 : Declare a masked user
 
-```sql
-=# CREATE ROLE skynet;
-=# COMMENT ON ROLE skynet IS 'MASKED';
-```
+    =# CREATE ROLE skynet;
+    =# COMMENT ON ROLE skynet IS 'MASKED';
 
 ### STEP 3 : Declare the masking rules
 
-```sql
-=# COMMENT ON COLUMN people.name IS 'MASKED WITH FUNCTION anon.random_last_name()';
+    =# COMMENT ON COLUMN people.name
+    -# IS 'MASKED WITH FUNCTION anon.random_last_name()';
 
-=# COMMENT ON COLUMN people.phone IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
-```
+    =# COMMENT ON COLUMN people.phone
+    -# IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 
 ### STEP 4 : Connect with the masked user
 
-```sql
-=# \! psql test -U skynet -c 'SELECT * FROM people;'
-  id  |   name   |   phone
-------+----------+------------
- T800 | Nunziata | 06******11
-```
+    =# \! psql test -U skynet -c 'SELECT * FROM people;'
+      id  |   name   |   phone
+    ------+----------+------------
+     T800 | Nunziata | 06******11
+
 
 How to Install
 --------------------------------------------------------------------------------
@@ -545,7 +518,7 @@ It should also work on PostgreSQL 9.5 with a bit of hacking.
 It requires an extension named `tsm_system_rows`, which is delivered by the
 postgresql-contrib package of the main linux distributions
 
-You can install it with `pgxn` or build from source it like any other 
+You can install it with `pgxn` or build from source it like any other
 extenstion.
 
 **WARNING:** The project is at an early stage of development and should be used carefully.
@@ -554,11 +527,11 @@ extenstion.
 How to contribute
 --------------------------------------------------------------------------------
 
-I'd like to thanks all my wonderful colleagues at [Dalibo] for their support 
+I'd like to thanks all my wonderful colleagues at [Dalibo] for their support
 and especially Thibaut Madelaine for the initial ideas.
 
-This is an open project, contributions are welcome. I need your feedback and 
-ideas ! Let me know what you think of this tool, how it fits your needs and 
+This is an open project, contributions are welcome. I need your feedback and
+ideas ! Let me know what you think of this tool, how it fits your needs and
 what features are missing.
 
 If you want to help, you can find a list of `Junior Jobs` here:

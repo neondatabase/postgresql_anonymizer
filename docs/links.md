@@ -12,7 +12,7 @@ Similar Implemntations
 * [MariaDB : Masking with maxscale](https://mariadb.com/kb/en/mariadb-enterprise/mariadb-maxscale-21-masking/)
 
 
-GDPR 
+GDPR
 --------------------------------------------------------------------------------
 
 * [Ultimate Guide to Data Anonymization](https://piwik.pro/blog/the-ultimate-guide-to-data-anonymization-in-analytics/)
