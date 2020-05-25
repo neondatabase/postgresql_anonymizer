@@ -1162,6 +1162,7 @@ DECLARE
   mf TEXT; -- masking_filter can be either a function or a value
   mf_is_a_faking_function BOOLEAN;
 BEGIN
+  SET CONSTRAINTS ALL DEFERRED;
   SELECT masking_filter INTO mf
   FROM anon.pg_masking_rules
   WHERE attrelid = tablename::OID
@@ -1192,31 +1193,31 @@ LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
 -- Replace masked data in a table
 CREATE OR REPLACE FUNCTION anon.anonymize_table(tablename REGCLASS)
 RETURNS BOOLEAN AS
-$func$
+$$
   -- bool_or is required to aggregate all tuples
   -- otherwise only the first masking rule is applied
   -- see issue #114
   SELECT bool_or(anon.anonymize_column(tablename,attname))
   FROM anon.pg_masking_rules
   WHERE attrelid::regclass=tablename;
-$func$
+$$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Walk through all masked columns and permanently apply the mask
 CREATE OR REPLACE FUNCTION anon.anonymize_database()
 RETURNS BOOLEAN AS
-$func$
+$$
   SELECT bool_or(anon.anonymize_column(attrelid::REGCLASS,attname))
   FROM anon.pg_masking_rules;
-$func$
+$$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION anon.static_substitution()
 RETURNS BOOLEAN AS
-$func$
+$$
   SELECT anon.anonymize_database();
-$func$
+$$
 LANGUAGE SQL VOLATILE SECURITY INVOKER;
 
 -------------------------------------------------------------------------------
