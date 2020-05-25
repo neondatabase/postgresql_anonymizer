@@ -232,6 +232,7 @@ done
 ## after the tables data.
 ## The trick here is to use `--exclude-table-data=*` instead of `--schema-only`
 ##
-SEQUENCES="pg_dump --exclude-table-data=* $exclude_anon_schemas $pg_dump_opt"
-$SEQUENCES | grep '^SELECT pg_catalog.setval'
+
+# shellcheck disable=SC2086
+pg_dump --exclude-table-data=* $exclude_anon_schemas $pg_dump_opt | grep '^SELECT pg_catalog.setval'
 
