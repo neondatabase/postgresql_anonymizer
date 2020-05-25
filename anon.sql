@@ -529,6 +529,31 @@ LANGUAGE plpgsql IMMUTABLE;
 
 -- ADD unit tests in tests/sql/load.sql
 
+CREATE OR REPLACE FUNCTION anon.load_csv(
+  dest_table REGCLASS,
+  csv_file TEXT
+)
+RETURNS BOOLEAN AS
+$$
+DECLARE
+  csv_file_check TEXT;
+BEGIN
+  SELECT * INTO  csv_file_check
+  FROM pg_stat_file(csv_file, missing_ok := TRUE );
+
+  IF csv_file_check IS NULL THEN
+    RAISE NOTICE 'Data file ''%'' is not present. Skipping.', csv_file;
+    RETURN FALSE;
+  END IF;
+
+  EXECUTE 'COPY ' || dest_table::REGCLASS::TEXT
+      || ' FROM ' || quote_literal(csv_file);
+
+  RETURN TRUE;
+END;
+$$
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+
 -- load fake data from a given path
 CREATE OR REPLACE FUNCTION anon.load(
   datapath TEXT
@@ -536,7 +561,6 @@ CREATE OR REPLACE FUNCTION anon.load(
 RETURNS BOOLEAN
 AS $func$
 DECLARE
-  datapath_regexp  TEXT;
   datapath_check TEXT;
 BEGIN
   IF anon.isloaded() THEN
@@ -546,24 +570,21 @@ BEGIN
 
   -- This check does not work with PG10 and below
   -- because absolute paths are not allowed
-  --SELECT * INTO  datapath_check
-  --FROM pg_stat_file(datapath, missing_ok := TRUE )
-  --WHERE isdir;
-
-  -- This works with all current version of Postgres
-  datapath_regexp := E'^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\\0])[^/\\0]+)*\/?$';
-  SELECT regexp_matches(datapath,datapath_regexp) INTO datapath_check;
+  SELECT * INTO  datapath_check
+  FROM pg_stat_file(datapath, missing_ok := TRUE )
+  WHERE isdir;
 
   -- Stop if is the directory does not exist
   IF datapath_check IS NULL THEN
-    RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath;
+    RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath
+      USING HINT='Use a relative path within the instance data directory';
     RETURN FALSE;
   END IF;
 
   -- Identifiers dictionnaries
-  EXECUTE 'COPY anon.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
-  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_fr_FR.csv');
-  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_en_US.csv');
+  PERFORM anon.load_csv('anon.identifiers_category',datapath||'/identifiers_category.csv');
+  PERFORM anon.load_csv('anon.identifier',datapath ||'/identifier_fr_FR.csv');
+  PERFORM anon.load_csv('anon.identifier',datapath ||'/identifier_en_US.csv');
 
   -- ADD NEW TABLE HERE
   EXECUTE 'COPY anon.city(name,country,subcountry,geonameid) FROM '
@@ -592,10 +613,6 @@ BEGIN
 
   RETURN TRUE;
 
-  EXCEPTION
-    WHEN undefined_file THEN
-      RAISE WARNING 'The path ''%'' does not exist. Data is not loaded.', datapath;
-    RETURN FALSE;
 END;
 $func$
 LANGUAGE PLPGSQL VOLATILE SECURITY INVOKER SET search_path='';
