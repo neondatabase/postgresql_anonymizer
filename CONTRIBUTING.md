@@ -175,7 +175,7 @@ See links below for more details:
 ### Security level for functions
 
 Most functions should be defined as `SECURITY INVOKER`. In very exceptionnal cases,
-it may be necessary to use `SECURITY DEFINER` but this should be used with cas.
+it may be necessary to use `SECURITY DEFINER` but this should be used with care.
 
 Read the [CREATE FUNCTION] documentation for more details:
 

@@ -44,7 +44,7 @@ SELECT pg_catalog.pg_extension_config_dump('anon.config','');
 
 COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
 
--- We also use a secret table to store the hash seed and algorithm
+-- We also use a secret table to store the hash salt and algorithm
 DROP TABLE IF EXISTS anon.secret;
 CREATE TABLE anon.secret (
     param TEXT UNIQUE NOT NULL,
@@ -54,7 +54,7 @@ REVOKE ALL ON TABLE anon.secret FROM PUBLIC;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.secret','');
 
-COMMENT ON TABLE anon.config IS 'Hashing secrets';
+COMMENT ON TABLE anon.secret IS 'Hashing secrets';
 
 --
 -- We use access methods to read/write the content of the `secret` table
