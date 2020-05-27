@@ -814,6 +814,21 @@ $$
   RETURNS NULL ON NULL INPUT
 ;
 
+-- Array
+CREATE OR REPLACE FUNCTION anon.random_in(
+  a ANYARRAY
+)
+RETURNS ANYELEMENT AS
+$$
+  SELECT a[floor(random()*array_length(a,1)+1)]
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+;
+
+
 -------------------------------------------------------------------------------
 -- FAKE data
 -------------------------------------------------------------------------------

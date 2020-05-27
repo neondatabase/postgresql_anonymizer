@@ -37,6 +37,12 @@ SELECT pg_typeof(anon.random_phone('0033')) = 'TEXT'::REGTYPE;
 SELECT anon.random_phone(NULL) IS NULL;
 SELECT pg_typeof(anon.random_phone()) = 'TEXT'::REGTYPE;
 
+-- Array
+SELECT anon.random_in(NULL::DATE[]) IS NULL;
+SELECT avg(anon.random_in(ARRAY[1,2,3]))::INT = 2 FROM generate_series(1,100);
+SELECT pg_typeof(anon.random_in(ARRAY['yes','no','maybe'])) = 'TEXT'::REGTYPE;
+
+
 DROP EXTENSION anon CASCADE;
 
 ROLLBACK;
