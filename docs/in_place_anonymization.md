@@ -1,10 +1,22 @@
 Permanently remove sensitive data
 ===============================================================================
 
-You can permanetly remove the Personal information from a database
-with `anon.anymize_database()`.
+Sometimes, it is usefull to transform directly the original dataset. You can
+do that in with different methods:
 
-This will destroy the original data. Use with care.
+* [Applying masking Rules]
+* [Shuffling a column]
+* [Adding noise to a column]
+
+These methods will destroy the original data. Use with care.
+
+Applying masking Rules
+--------------------------------------------------------------------------------
+
+You can permanetly apply the [masking rules] of a database with 
+`anon.anymize_database()`. 
+
+[masking rules]: declare_masking_rules.md
 
 
 Let's use a basic example :
@@ -80,15 +92,45 @@ SELECT anon.anonymize_table('customer');
 SELECT anon.anonymize_column('customer','zipcode');
 ```
 
-Warning : In-Place Anonymization is a slow process
+**WARNING** : **In-Place Anonymization is a slow process**. The principle of 
+in-place anonymization is to update all lines of all tables containing at 
+least one masked column. This basically means that PostgreSQL will rewrite 
+all the data on disk. Depending on the database size, the hardware and the 
+server config, it may be faster to export the anonymized data (See 
+[Anonymous Dumps] ) and reload it into the database.
+
+
+Shuffling
+------------------------------------------------------------------------------
+
+ **Shuffling** mixes values within the same columns.
+
+* `anon.shuffle_column(shuffle_table, shuffle_column, primary_key)` will rearrange
+  all values in a given column. You need to provide a primary key of the table.
+
+This is usefull for foreign keys because referential integrity will be kept.
+
+**IMPORTANT:**  shuffle_column is not a [masking function] because it works 
+"verticaly" : it will modify all values of a column at once.
+
+[masking function]: masking_functions.md
+
+Adding noise to a column
 --------------------------------------------------------------------------------
 
-The principle of in-place anonymization is to update all lines of all tables
-containing at least one masked column. This basically means that PostgreSQL
-will rewrite all the data on disk.
 
-Depending on the database size, the hardware and the server config, it may
-be faster to export the anonymized data (See [Anonymous Dumps] ) and reload
-it into the database.
+There are also some functions that can add noise on an entire column:
+
+* `anon.add_noise_on_numeric_column(table, column,ratio)` if ratio = 0.33, all
+  values of the column will be randomly shifted with a ratio of +/- 33%
+
+* `anon.add_noise_on_datetime_column(table, column,interval)` if interval = '2 days',
+  all values of the column will be randomly shifted by +/- 2 days
+
+**IMPORTANT** : The `noise()` masking functions are vulnerable to a form of
+repeat attack. See `demo/noise_reduction_attack.sql` for more details.
+
+
+
 
 
