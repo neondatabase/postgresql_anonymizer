@@ -88,5 +88,24 @@ SELECT pg_typeof(anon.random_phone()) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
+-- Array
+SELECT anon.random_in(NULL::DATE[]) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT avg(anon.random_in(ARRAY[1,2,3]))::INT = 2 FROM generate_series(1,100);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pg_typeof(anon.random_in(ARRAY['yes','no','maybe'])) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 DROP EXTENSION anon CASCADE;
 ROLLBACK;

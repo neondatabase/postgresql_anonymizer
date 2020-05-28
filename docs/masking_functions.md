@@ -111,6 +111,8 @@ data :
 * `anon.random_string(n)` returns a TEXT value containing `n` letters
 * `anon.random_zip()` returns a 5-digit code
 * `anon.random_phone(p)` returns a 8-digit phone with `p` as a prefix
+* `anon.random_in(ARRAY[1,2,3])` returns an element of an INT array
+* `anon.random_in(ARRAY['a','b','c'])` returns an element of a TEXT array
 
 
 
