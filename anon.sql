@@ -729,7 +729,12 @@ AS $$
     ),''
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Zip code
 CREATE OR REPLACE FUNCTION anon.random_zip()
@@ -742,7 +747,12 @@ AS $$
             ),''
           );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 -- date
@@ -754,13 +764,23 @@ CREATE OR REPLACE FUNCTION anon.random_date_between(
 RETURNS timestamp WITH TIME ZONE AS $$
     SELECT (random()*(date_end-date_start))::interval+date_start;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION random_date()
 RETURNS timestamp with time zone AS $$
     SELECT anon.random_date_between('1900-01-01'::timestamp with time zone,now());
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 -- integer
@@ -772,7 +792,12 @@ CREATE OR REPLACE FUNCTION anon.random_int_between(
 RETURNS INTEGER AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION anon.random_bigint_between(
   int_start BIGINT,
@@ -781,7 +806,12 @@ CREATE OR REPLACE FUNCTION anon.random_bigint_between(
 RETURNS BIGINT AS $$
     SELECT CAST ( random()*(int_stop-int_start)+int_start AS BIGINT );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION anon.random_phone(
   phone_prefix TEXT DEFAULT '0'
@@ -791,7 +821,12 @@ RETURNS TEXT AS $$
           || CAST(anon.random_int_between(100000000,999999999) AS TEXT)
           AS "phone";
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 --
 -- hashing a seed with a random salt
@@ -826,6 +861,7 @@ $$
   VOLATILE
   RETURNS NULL ON NULL INPUT
   SECURITY INVOKER
+  SET search_path=''
 ;
 
 
