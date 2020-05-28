@@ -29,7 +29,8 @@ DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
 REGRESS_TESTS = load detection
-REGRESS_TESTS+= destruction noise shuffle random faking pseudonymization partial
+REGRESS_TESTS+= destruction noise shuffle random faking partial
+REGRESS_TESTS+= pseudonymization hashing hashing_and_dynamic_masking
 REGRESS_TESTS+= anonymize pg_dump_anon restore
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path
 REGRESS_TESTS+= generalization k_anonymity
@@ -161,6 +162,7 @@ standalone: anon_standalone.sql #: build the standalone script
 
 anon_standalone.sql: anon.sql
 	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
+	echo 'CREATE EXTENSION IF NOT EXISTS pgcrypto;\n' >> $@
 	echo 'CREATE SCHEMA anon;\n' >> $@
 	sed 's/@extschema@/anon/g' anon.sql >> $@
 	$(SEDI) 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@

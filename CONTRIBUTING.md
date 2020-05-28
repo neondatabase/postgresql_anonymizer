@@ -93,10 +93,39 @@ git push origin --force-with-lease
 Adding new functions
 -------------------------------------------------------------------------------
 
-The set of funtions is based on my own experience. I tried to cover the most
-common personal data types. If you need an addditional function, let me know !
+The set of funtions is based on pragmatic experience and feedback. We try to 
+cover the most common personal data types. If you need an addditional function, 
+let us know !
+
+If you want to add new functions, please define the following attributes:
+
+  * volatility: should be `VOLATILE` (default), `STABLE` or `IMMUTABLE`  
+  * strict mode: `CALLED ON NULL INPUT`(default) or `RETURNS NULL ON NULL INPUT`
+  * security level: `SECURITY INVOKER`(default) or `SECURITY DEFINER`
+  * parallel mode: `PARALLEL UNSAFE` (default) or `PARALLEL SAFE`
+  * search_path: `SET search_path=''`
+
+Please read the [CREATE FUNCTION] documentation for more details.
+
+[CREATE FUNCTION]: https://www.postgresql.org/docs/current/sql-createfunction.html
 
 
+In most cases, a masking functions should have the following attributes:
+
+```sql
+CREATE OR REPLACE FUNCTION anon.foo(TEXT) 
+RETURNS TEXT AS
+$$
+    SELECT ...
+$$                                  
+    LANGUAGE SQL 
+    VOLATILE 
+    RETURNS NULL ON NULL INPUT 
+    PARALLEL UNSAFE
+    SECURITY INVOKER 
+    SET search_path=''
+; 
+```
 
 Testing with docker
 -------------------------------------------------------------------------------
@@ -126,10 +155,11 @@ psql
 ```
 
 
-
-
-About SQL Injection
+Security
 --------------------------------------------------------------------------------
+
+
+### About SQL Injection
 
 By design, this extension is prone to SQL Injections risks. When adding new
 features, a special focus should be made on security, especially by sanitizing
@@ -141,3 +171,24 @@ See links below for more details:
 * https://stackoverflow.com/questions/10705616/table-name-as-a-postgresql-function-parameter
 * https://www.postgresql.org/docs/current/datatype-oid.html
 * https://xkcd.com/327/
+
+### Security level for functions
+
+Most functions should be defined as `SECURITY INVOKER`. In very exceptionnal cases,
+it may be necessary to use `SECURITY DEFINER` but this should be used with care.
+
+Read the [CREATE FUNCTION] documentation for more details:
+
+https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
+
+### Search_path
+
+This extension will create views based on masking functions. These functions
+will be run as with priviledges of the owners of the views. This is prone
+to [search_path attacks]: an untrusted user may be able to overide some
+functions and gain superuser priviledges.
+
+Therefore all functions should be defined with `SET search_path=''` even if
+they are not `SECURITY DEFINER`.
+
+[search_path attacks]: https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/

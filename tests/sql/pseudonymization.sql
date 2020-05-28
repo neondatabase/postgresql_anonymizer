@@ -10,15 +10,10 @@ SELECT anon.hex_to_int('000000') = 0;
 SELECT anon.hex_to_int('123456') = 1193046;
 SELECT anon.hex_to_int('ffffff') = 16777215;
 
--- md5_project
-SELECT anon.md5_project(NULL,NULL) IS NULL;
-SELECT anon.md5_project('abcdefgh',NULL) = 0.90961080250804439235;
-SELECT anon.md5_project('xxxxxxxx','yyyyy') = 0.97840040793421315755;
-
--- project_oid
-SELECT anon.project_oid(NULL,NULL,NULL) IS NULL;
-SELECT anon.project_oid('abcdefgh',NULL, 'anon.email_oid_seq') = 7277;
-SELECT anon.project_oid('xxxxxxxx','yyyyy', 'anon.email_oid_seq') = 7827;
+-- projection_to_oid
+SELECT anon.projection_to_oid(NULL,NULL,NULL) IS NULL;
+SELECT anon.projection_to_oid('abcdefgh','', 10000) = 9096;
+SELECT anon.projection_to_oid('xxxxxxxx','yyyyy', 10000) = 9784;
 
 
 -- First Name
@@ -59,6 +54,13 @@ SELECT  anon.pseudo_company('bob','x') = anon.pseudo_company('bob','x');
 -- IBAN
 SELECT  anon.pseudo_iban(NULL) IS NULL;
 SELECT  anon.pseudo_iban('bob','x') = anon.pseudo_iban('bob','x');
+
+
+-- Use a predefined secret salt
+
+SELECT anon.set_secret_salt('a_VeRy_SeCReT_SaLT');
+
+SELECT  anon.pseudo_last_name('bob') = 'Tribley';
 
 
 ROLLBACK;

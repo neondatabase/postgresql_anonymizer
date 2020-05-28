@@ -6,6 +6,7 @@ CHANGELOG
 
 __Dependencies:__
 
+- pgcrypto
 - tms_system_rows
 
 

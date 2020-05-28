@@ -2,6 +2,7 @@
 CREATE DATABASE contrib_regression_test_restore;
 \! psql contrib_regression_test_restore -c 'CREATE EXTENSION anon CASCADE;'
 NOTICE:  installing required extension "tsm_system_rows"
+NOTICE:  installing required extension "pgcrypto"
 CREATE EXTENSION
 \! psql contrib_regression_test_restore -c 'SELECT anon.start_dynamic_masking();'
  start_dynamic_masking 
