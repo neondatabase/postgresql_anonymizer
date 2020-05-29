@@ -251,6 +251,17 @@ demo:
 ## D E P L O Y
 ##
 
+docker:
+  image: docker:19.03.8
+  stage: deploy
+  services:
+    - docker:19.03.8-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest .
+    - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:latest
+
+
 pgxn:
   stage: deploy
   image: alpine
