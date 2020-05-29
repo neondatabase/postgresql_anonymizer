@@ -208,8 +208,13 @@ If you can't (or don't want to) install the PostgreSQL Anonymizer extension
 directly inside your instance, then you can use the docker image :
 
 ```console
-docker pull registry.gitlab.com/dalibo/postgresql_anonymizer
+docker pull registry.gitlab.com/dalibo/postgresql_anonymizer:stable
 ```
+
+The image is available with 2 two tags:
+
+* `latest` (default) contains the current developments
+* `stable` is the based on the previous release
 
 You can now run the docker image like the regular [postgres docker image].
 
