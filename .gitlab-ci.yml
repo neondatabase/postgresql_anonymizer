@@ -260,7 +260,7 @@ docker_latest:
     - echo 'Disable before_script.'
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest .
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest . --file docker/Dockerfile
     - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:latest
 
 
