@@ -52,16 +52,8 @@ CREATE TABLE "FoO".customer (
   last_name TEXT,
   "CreditCard" TEXT
 );
-INSERT INTO "FoO".customer(firstname,last_name,"CreditCard");
-ERROR:  syntax error at or near ";"
-LINE 1: ...NSERT INTO "FoO".customer(firstname,last_name,"CreditCard");
-                                                                      ^
+INSERT INTO "FoO".customer(firstname,last_name,"CreditCard")
 VALUES ('bob', 'doe', '1234-5678-1234-5678');
- column1 | column2 |       column3       
----------+---------+---------------------
- bob     | doe     | 1234-5678-1234-5678
-(1 row)
-
 CREATE TABLE "FoO".vendor (
   employee_id INTEGER UNIQUE,
   "Firstname" TEXT,

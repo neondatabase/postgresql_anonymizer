@@ -64,7 +64,7 @@ CREATE TABLE "FoO".customer (
   last_name TEXT,
   "CreditCard" TEXT
 );
-INSERT INTO "FoO".customer(firstname,last_name,"CreditCard");
+INSERT INTO "FoO".customer(firstname,last_name,"CreditCard")
 VALUES ('bob', 'doe', '1234-5678-1234-5678');
 
 CREATE TABLE "FoO".vendor (
