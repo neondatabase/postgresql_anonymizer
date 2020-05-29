@@ -15,7 +15,6 @@ The extension provides functions to implement 8 main anonymization strategies:
 
 [Destruction]: #destruction
 [Adding Noise]: #adding-noise
-[Shuffling]: #shuffling
 [Randomization]: #randomization
 [Faking]: #faking
 [Pseudonymization]: #pseudonymization
@@ -66,16 +65,6 @@ dataset will remain meaningful.
   timestamp. If interval = '2 days', the return value will be the original value
   randomly shifted by +/- 2 days
 
-
-There are also some functions that can add noise on an entire column:
-
-* `anon.add_noise_on_numeric_column(table, column,ratio)` if ratio = 0.33, all
-  values of the column will be randomly shifted with a ratio of +/- 33%
-
-* `anon.add_noise_on_datetime_column(table, column,interval)` if interval = '2 days',
-  all values of the column will be randomly shifted by +/- 2 days
-
-
 **WARNING** : The `noise()` masking functions are vulnerable to a form of
 repeat attack, especially with [Dynamic Masking]. A masked user can guess
 an original value by resquesting its masked value multiple times and then simply
@@ -88,14 +77,7 @@ They should be avoided when using [Dynamic Masking].
 [In-Place Anonymization]: in_place_anonymization/
 [Dynamic Masking]: dynamic_masking/
 
-Shuffling
-------------------------------------------------------------------------------
 
- **Shuffling** mixes values within the same columns.
-
-* `anon.shuffle_column(shuffle_table, shuffle_column, primary_key)` will rearrange
-  all values in a given column. You need to provide a primary key of the table.
-  This is usefull for foreign keys because referential integrity will be kept.
 
 
 Randomization
