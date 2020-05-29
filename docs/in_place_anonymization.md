@@ -13,8 +13,8 @@ These methods will destroy the original data. Use with care.
 Applying masking Rules
 --------------------------------------------------------------------------------
 
-You can permanently apply the [masking rules] of a database with 
-`anon.anonymize_database()`. 
+You can permanently apply the [masking rules] of a database with
+`anon.anonymize_database()`.
 
 [masking rules]: declare_masking_rules.md
 
@@ -92,11 +92,11 @@ SELECT anon.anonymize_table('customer');
 SELECT anon.anonymize_column('customer','zipcode');
 ```
 
-**WARNING** : **In-Place Anonymization is a slow process**. The principle of 
-in-place anonymization is to update all lines of all tables containing at 
-least one masked column. This basically means that PostgreSQL will rewrite 
-all the data on disk. Depending on the database size, the hardware and the 
-server config, it may be faster to export the anonymized data (See 
+**WARNING** : **In-Place Anonymization is a slow process**. The principle of
+in-place anonymization is to update all lines of all tables containing at
+least one masked column. This basically means that PostgreSQL will rewrite
+all the data on disk. Depending on the database size, the hardware and the
+server config, it may be faster to export the anonymized data (See
 [Anonymous Dumps] ) and reload it into the database.
 
 
@@ -110,7 +110,7 @@ Shuffling
 
 This is usefull for foreign keys because referential integrity will be kept.
 
-**IMPORTANT:**  shuffle_column is not a [masking function] because it works 
+**IMPORTANT:**  shuffle_column is not a [masking function] because it works
 "verticaly" : it will modify all values of a column at once.
 
 [masking function]: masking_functions.md
