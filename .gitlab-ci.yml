@@ -252,8 +252,8 @@ demo:
 ##
 
 docker_latest:
-  image: docker:19.03.8
   stage: deploy
+  image: docker:19.03.8
   services:
     - docker:19.03.8-dind
   before_script:
@@ -262,6 +262,22 @@ docker_latest:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest . --file docker/Dockerfile
     - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:latest
+  only:
+    - master@dalibo/postgresql_anonymizer
+
+docker_stable:
+  stage: deploy
+  image: docker:19.03.8
+  services:
+    - docker:19.03.8-dind
+  before_script:
+    - echo 'Disable before_script.'
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:stable . --file docker/Dockerfile
+    - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:stable
+  only:
+    - stable@dalibo/postgresql_anonymizer
 
 
 pgxn:
