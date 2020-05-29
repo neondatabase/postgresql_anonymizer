@@ -18,7 +18,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Randomization]: #randomization
 [Faking]: #faking
 [Pseudonymization]: #pseudonymization
-[Generic Hashing]: #generic-hashing 
+[Generic Hashing]: #generic-hashing
 [Partial scrambling]: #partial-scrambling
 [Generalization]: #generalization
 
@@ -170,10 +170,10 @@ Once the fake data is loaded you have access to 10 pseudo functions:
 * `anon.pseudo_siret('seed','salt')` returns a valid SIRET
 * `anon.pseudo_siren('seed','salt')` returns a valid SIREN
 
-The second argument ("salt") is optional. You can call each function with 
+The second argument ("salt") is optional. You can call each function with
 only the seed like this `anon.pseudo_city('bob')`. The salt is here to increase
 complexity and avoid dictionnary and brute force attacks (see warning below).
-If a salt is not given, a random secret salt is used instead 
+If a salt is not given, a random secret salt is used instead
 (see the [Generic Hashing] section for more details)
 
 The seed can be any information related to the subjet. For instance, we can
@@ -204,15 +204,15 @@ goal is to escape from GDPR or similar data regulation, it is clearly a bad solu
 Generic hashing
 -------------------------------------------------------------------------------
 
-In theory, hashing is not a valid anonymization technique, however in practice 
+In theory, hashing is not a valid anonymization technique, however in practice
 it is sometimes necessary to generate a determinist hash of the original data.
 
-For instance, when a pair of  primary key / foreign key is a "natural key", 
-it may contain actual information ( like a customer number containing a birth 
+For instance, when a pair of  primary key / foreign key is a "natural key",
+it may contain actual information ( like a customer number containing a birth
 date or something similar).
 
-Hashing such columns allows to keep referential integrity intact even for 
-relatively unusual source data. Therefore, the 
+Hashing such columns allows to keep referential integrity intact even for
+relatively unusual source data. Therefore, the
 
 * `anon.hash(value)`  will return a text hash of the value using a secret salt
   and a secret hash algorithm (see below)
@@ -220,20 +220,20 @@ relatively unusual source data. Therefore, the
 * `anon.digest(value,salt,algorithm)` lets choose a salt and the hash algorithm
   you want to use
 
-By default a random secret salt is generated when the extension is initialiazed 
-anf the default hash algortihm is `sha512`. You can change for the entire 
+By default a random secret salt is generated when the extension is initialiazed
+anf the default hash algortihm is `sha512`. You can change for the entire
 database with to functions
 
 * `anon.set_secret_salt(value)` to define you own salt
-* `anon.set_secret_algorithm(value)` to select another hash functuon. 
+* `anon.set_secret_algorithm(value)` to select another hash functuon.
   Possible values are: md5, sha1, sha224, sha256, sha384 or sha512
 
-Keep in mind that hashing is a form a [Pseudonymization]. This means that the 
-real data can be rebuilt using the hashed value and the masking function. If an 
-attacker gets access to these elements, he or she can easily re-identify 
-some persons using `brute force` or `dictionary` attacks. Therefore, **the 
-salt and the algorithm used to hash the data must be protected with the 
-same level of security that the original dataset.** 
+Keep in mind that hashing is a form a [Pseudonymization]. This means that the
+real data can be rebuilt using the hashed value and the masking function. If an
+attacker gets access to these elements, he or she can easily re-identify
+some persons using `brute force` or `dictionary` attacks. Therefore, **the
+salt and the algorithm used to hash the data must be protected with the
+same level of security that the original dataset.**
 
 In a nutshell, we recommend that you use the `anon.hash()` function rather than
 `anon.digest()` because the salt will not appear clearly in the masking rule.
@@ -242,15 +242,15 @@ Furthermore: in practice the hash function will return a long string of caracter
 like this:
 
 ```sql
-SELECT anon.hash('bob'); 
+SELECT anon.hash('bob');
                                   hash
 ----------------------------------------------------------------------------------------------------------------------------------
-95b6accef02c5a725a8c9abf19ab5575f99ca3d9997984181e4b3f81d96cbca4d0977d694ac490350e01d0d213639909987ef52de8e44d6258d536c55e427397 
+95b6accef02c5a725a8c9abf19ab5575f99ca3d9997984181e4b3f81d96cbca4d0977d694ac490350e01d0d213639909987ef52de8e44d6258d536c55e427397
 ```
 
-For some columns, this may be too long and you may have to cut some parts the 
-hash in order to fit into the columm. For instance, if you have a foreign key 
-based on a phone number and the column is a VARCHAR(12) you can transform the 
+For some columns, this may be too long and you may have to cut some parts the
+hash in order to fit into the columm. For instance, if you have a foreign key
+based on a phone number and the column is a VARCHAR(12) you can transform the
 data like this:
 
 ```sql
@@ -261,7 +261,7 @@ SECURITY LABEL FOR anon ON COLUMN call_history.fk_phone_number
 IS 'MASKED WITH FUNCTION left(anon.hash(fk_phone_number),12)';
 ```
 
-Of course, cutting the hash value to 12 characters will increase the risk 
+Of course, cutting the hash value to 12 characters will increase the risk
 of "collision" ( 2 different values having the same fake hash). In such
 case, it's up to you to evaluate this risk.
 

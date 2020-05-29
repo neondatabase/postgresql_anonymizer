@@ -24,8 +24,8 @@ different ways :
 In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shufflin, noise or even your own custom function !
 
-Beyond masking, it is also possible to use a 4th approach called [Generalization] 
-which is perfect for statictics and data analytics. 
+Beyond masking, it is also possible to use a 4th approach called [Generalization]
+which is perfect for statictics and data analytics.
 
 Finally the extension offers a panel of [detection] functions that will try to
 guess which columns needs to be anonymized.

@@ -62,7 +62,6 @@ lint-markdown:
   script:
     - gem install mdl
     - mdl docs/*.md *.md
-  allow_failure: yes
 
 ##
 ## B U I L D

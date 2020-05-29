@@ -93,17 +93,17 @@ git push origin --force-with-lease
 Adding new functions
 -------------------------------------------------------------------------------
 
-The set of funtions is based on pragmatic experience and feedback. We try to 
-cover the most common personal data types. If you need an addditional function, 
+The set of funtions is based on pragmatic experience and feedback. We try to
+cover the most common personal data types. If you need an addditional function,
 let us know !
 
 If you want to add new functions, please define the following attributes:
 
-  * volatility: should be `VOLATILE` (default), `STABLE` or `IMMUTABLE`  
-  * strict mode: `CALLED ON NULL INPUT`(default) or `RETURNS NULL ON NULL INPUT`
-  * security level: `SECURITY INVOKER`(default) or `SECURITY DEFINER`
-  * parallel mode: `PARALLEL UNSAFE` (default) or `PARALLEL SAFE`
-  * search_path: `SET search_path=''`
+* volatility: should be `VOLATILE` (default), `STABLE` or `IMMUTABLE`
+* strict mode: `CALLED ON NULL INPUT`(default) or `RETURNS NULL ON NULL INPUT`
+* security level: `SECURITY INVOKER`(default) or `SECURITY DEFINER`
+* parallel mode: `PARALLEL UNSAFE` (default) or `PARALLEL SAFE`
+* search_path: `SET search_path=''`
 
 Please read the [CREATE FUNCTION] documentation for more details.
 
@@ -113,18 +113,18 @@ Please read the [CREATE FUNCTION] documentation for more details.
 In most cases, a masking functions should have the following attributes:
 
 ```sql
-CREATE OR REPLACE FUNCTION anon.foo(TEXT) 
+CREATE OR REPLACE FUNCTION anon.foo(TEXT)
 RETURNS TEXT AS
 $$
     SELECT ...
-$$                                  
-    LANGUAGE SQL 
-    VOLATILE 
-    RETURNS NULL ON NULL INPUT 
+$$
+    LANGUAGE SQL
+    VOLATILE
+    RETURNS NULL ON NULL INPUT
     PARALLEL UNSAFE
-    SECURITY INVOKER 
+    SECURITY INVOKER
     SET search_path=''
-; 
+;
 ```
 
 Testing with docker
