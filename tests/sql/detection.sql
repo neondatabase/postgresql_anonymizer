@@ -1,7 +1,6 @@
 
 BEGIN;
 
-DROP EXTENSION IF EXISTS anon CASCADE;
 CREATE EXTENSION anon CASCADE;
 
 
@@ -9,8 +8,7 @@ CREATE EXTENSION anon CASCADE;
 SELECT anon.detect();
 
 -- INIT
-
-SELECT anon.load();
+SELECT anon.init();
 
 
 CREATE TABLE customer (

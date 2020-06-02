@@ -55,8 +55,8 @@ IS 'MASKED WITH FUNCTION anon.random_string(18)';
 --
 -- Should return a NOTICE but anonymize data anyway
 SELECT anon.anonymize_column('employee','lastname');
-NOTICE:  The faking data is not loaded.
-HINT:  You probably need to run 'SELECT anon.load()' 
+NOTICE:  The faking data is not present.
+HINT:  You probably need to run 'SELECT anon.init()' 
  anonymize_column 
 ------------------
  t

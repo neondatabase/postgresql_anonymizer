@@ -51,7 +51,7 @@ Step 1: Load the extension :
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-SELECT anon.load();
+SELECT anon.init();
 ```
 
 Step 2: Declare the masking rules

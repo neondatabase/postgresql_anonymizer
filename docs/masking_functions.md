@@ -105,18 +105,26 @@ The idea of **Faking** is to replace sensitive data with **random-but-plausible*
 values. The goal is to avoid any identification from the data record while
 remaining suitable for testing, data analysis and data processing.
 
-In order to use the faking functions, you have to `load()` the extension
+In order to use the faking functions, you have to `init()` the extension
 in your database first:
 
 ```sql
-SELECT anon.load();
+SELECT anon.init();
 ```
 
-The `load()` function will charge a default dataset of random data ( lists
-names, cities, etc. ). If you want to use your own dataset, you can load
-custom CSV files with `load('/path/to/custom_cvs_files/')`
+The `init()` function will import a default dataset of random data ( iban,
+names, cities, etc. ).
 
-Once the fake data is loaded you have access to 12 faking functions:
+If you want to use your own dataset, you can import custom CSV files with :
+
+```sql
+SELECT init('/path/to/custom_cvs_files/')
+```
+
+> With PostgreSQL 9.6 and 10, the path must be relative to the instance data
+> directory (PGDATA).
+
+Once the fake data is loaded, you have access to 12 faking functions:
 
 * `anon.fake_first_name()` returns a generic first name
 * `anon.fake_last_name()` returns a generic last name
@@ -150,11 +158,11 @@ realistic values. The main difference is that the pseudonymization is
 deterministic : the functions always will return the same fake value based
 on a seed and an optional salt.
 
-In order to use the faking functions, you have to `load()` the extension
+In order to use the faking functions, you have to `init()` the extension
 in your database first:
 
 ```sql
-SELECT anon.load();
+SELECT anon.init();
 ```
 
 Once the fake data is loaded you have access to 10 pseudo functions:
