@@ -86,10 +86,7 @@ install-bin:
 ## L I N T
 ##
 
-lint: lint-sql lint-sh lint-md
-
-lint-sql:
-	-sqlfluff lint demo/*.sql tests/sql/*.sql anon.sql
+lint: lint-sh lint-md
 
 lint-sh:
 	shellcheck bin/pg_dump_anon.sh
