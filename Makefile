@@ -163,14 +163,14 @@ anon_standalone.sql: anon.sql
 	echo 'CREATE SCHEMA anon;\n' >> $@
 	sed 's/@extschema@/anon/g' anon.sql >> $@
 	$(SEDI) 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
-	echo "\\\\copy anon.city(name,country,subcountry,geonameid) FROM 'data/default/city.csv';\n" >> $@
-	echo "\\\\copy anon.company(name) FROM 'data/default/company.csv';\n" >> $@
-	echo "\\\\copy anon.email(address) FROM 'data/default/email.csv';\n" >> $@
-	echo "\\\\copy anon.first_name(first_name,male,female,language) FROM 'data/default/first_name.csv';\n" >> $@
-	echo "\\\\copy anon.iban(id) FROM 'data/default/iban.csv';\n" >> $@
-	echo "\\\\copy anon.last_name(name) FROM 'data/default/last_name.csv';\n" >> $@
-	echo "\\\\copy anon.siret(siren, nic) FROM 'data/default/siret.csv';\n" >> $@
-	echo "\\\\copy anon.lorem_ipsum(paragraph) FROM 'data/default/lorem_ipsum.csv';\n" >> $@
+	echo "\\\\copy anon.city FROM 'data/default/city.csv';\n" >> $@
+	echo "\\\\copy anon.company FROM 'data/default/company.csv';\n" >> $@
+	echo "\\\\copy anon.email FROM 'data/default/email.csv';\n" >> $@
+	echo "\\\\copy anon.first_name FROM 'data/default/first_name.csv';\n" >> $@
+	echo "\\\\copy anon.iban FROM 'data/default/iban.csv';\n" >> $@
+	echo "\\\\copy anon.last_name FROM 'data/default/last_name.csv';\n" >> $@
+	echo "\\\\copy anon.siret FROM 'data/default/siret.csv';\n" >> $@
+	echo "\\\\copy anon.lorem_ipsum FROM 'data/default/lorem_ipsum.csv';\n" >> $@
 	echo "\\\\copy anon.identifiers_category FROM 'data/default/identifiers_category.csv';\n" >> $@
 	echo "\\\\copy anon.identifier FROM 'data/default/identifier_fr_FR.csv';\n" >> $@
 	echo "\\\\copy anon.identifier FROM 'data/default/identifier_en_US.csv';\n" >> $@
