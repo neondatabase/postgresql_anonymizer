@@ -566,13 +566,15 @@ $$
 DECLARE
   csv_file_check TEXT;
 BEGIN
-  SELECT * INTO  csv_file_check
-  FROM pg_stat_file(csv_file, missing_ok := TRUE );
-
-  IF csv_file_check IS NULL THEN
-    RAISE NOTICE 'Data file ''%'' is not present. Skipping.', csv_file;
-    RETURN FALSE;
-  END IF;
+-- This check does not work with PG 10 and below (absolute path not supported)
+--
+--  SELECT * INTO  csv_file_check
+--  FROM pg_stat_file(csv_file, missing_ok := TRUE );
+--
+--  IF csv_file_check IS NULL THEN
+--    RAISE NOTICE 'Data file ''%'' is not present. Skipping.', csv_file;
+--    RETURN FALSE;
+--  END IF;
 
   EXECUTE 'COPY ' || dest_table::REGCLASS::TEXT
       || ' FROM ' || quote_literal(csv_file);
@@ -580,9 +582,25 @@ BEGIN
   EXECUTE 'CLUSTER ' || dest_table;
 
   RETURN TRUE;
+
+EXCEPTION
+
+  WHEN undefined_file THEN
+    RAISE NOTICE 'Data file ''%'' is not present. Skipping.', csv_file;
+    RETURN FALSE;
+
+  WHEN bad_copy_file_format THEN
+    RAISE NOTICE 'Data file ''%'' has a bad CSV format. Skipping.', csv_file;
+    RETURN FALSE;
+
 END;
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER;
+  LANGUAGE plpgsql
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 -- load fake data from a given path
@@ -600,17 +618,18 @@ BEGIN
     RETURN TRUE;
   END IF;
 
-  -- With PG10 and below, absolute paths are not allowed
-  SELECT * INTO  datapath_check
-  FROM pg_stat_file(datapath, missing_ok := TRUE )
-  WHERE isdir;
-
-  -- Stop if is the directory does not exist
-  IF datapath_check IS NULL THEN
-    RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath
-      USING HINT='Use a relative path within the instance data directory';
-    RETURN FALSE;
-  END IF;
+  -- Initialize the hashing secrets
+  PERFORM
+      -- if the secret salt is NULL, generate a random salt
+      COALESCE(
+          anon.get_secret_salt(),
+          anon.set_secret_salt(md5(random()::TEXT))
+      ),
+      -- if the secret hash algo is NULL, we use sha512 by default
+      COALESCE(
+          anon.get_secret_algorithm(),
+          anon.set_secret_algorithm('sha512')
+      );
 
   SELECT bool_or(results) INTO success
   FROM unnest(array[
@@ -630,42 +649,47 @@ BEGIN
 
 END;
 $$
-LANGUAGE PLPGSQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE PLPGSQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
+
 
 
 -- load() is here for backward compatibility wih version 0.6
 CREATE OR REPLACE FUNCTION anon.load(TEXT)
-RETURNS BOOLEAN AS $$ SELECT anon.init($1); $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS BOOLEAN AS
+$$
+  SELECT anon.init($1);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 -- If no path given, use the default data
 CREATE OR REPLACE FUNCTION anon.init()
 RETURNS BOOLEAN
 AS $$
-    WITH conf AS (
+  WITH conf AS (
         -- find the local extension directory
         SELECT setting AS sharedir
         FROM pg_config
         WHERE name = 'SHAREDIR'
     )
-    SELECT
-      anon.init(conf.sharedir || '/extension/anon/'),
-      -- FIXME: should go to init(TEXT)
-      -- if the secret salt is NULL, generate a random salt
-      COALESCE(
-          anon.get_secret_salt(),
-          anon.set_secret_salt(md5(random()::TEXT))
-      ),
-      -- if the secret hash algo is NULL, we use sha512 by default
-      COALESCE(
-          anon.get_secret_algorithm(),
-          anon.set_secret_algorithm('sha512')
-      )
-    FROM conf;
-    SELECT TRUE;
+  SELECT anon.init(conf.sharedir || '/extension/anon/')
+  FROM conf;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- load() is here for backward compatibility wih version 0.6 and below
 CREATE OR REPLACE FUNCTION anon.load()
@@ -673,7 +697,11 @@ RETURNS BOOLEAN
 AS $$
   SELECT anon.init();
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- True if the fake data is already here
 CREATE OR REPLACE FUNCTION anon.is_initialized()
@@ -692,11 +720,16 @@ AS $$
      LIMIT 1
   ) t
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- remove all fake data
 CREATE OR REPLACE FUNCTION anon.reset()
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN AS
+$$
     TRUNCATE anon.city;
     TRUNCATE anon.company;
     TRUNCATE anon.email;
@@ -711,12 +744,23 @@ RETURNS BOOLEAN AS $$
     -- ADD NEW TABLE HERE
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- backward compatibility with version 0.6 and below
 CREATE OR REPLACE FUNCTION anon.unload()
-RETURNS BOOLEAN AS $$ SELECT anon.reset() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS BOOLEAN AS
+$$
+  SELECT anon.reset()
+$$
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 --- Generic hashing

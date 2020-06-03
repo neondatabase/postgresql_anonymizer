@@ -121,9 +121,6 @@ If you want to use your own dataset, you can import custom CSV files with :
 SELECT init('/path/to/custom_cvs_files/')
 ```
 
-> With PostgreSQL 9.6 and 10, the path must be relative to the instance data
-> directory (PGDATA).
-
 Once the fake data is loaded, you have access to 12 faking functions:
 
 * `anon.fake_first_name()` returns a generic first name

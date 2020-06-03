@@ -30,8 +30,17 @@ NOTICE:  truncate cascades to table "identifier"
 
 -- returns a WARNING and FALSE
 SELECT anon.init('./does/not/exists/cd2ks3s/') IS FALSE;
-WARNING:  The path './does/not/exists/cd2ks3s/' is not correct. Data is not loaded.
-HINT:  Use a relative path within the instance data directory
+NOTICE:  Data file './does/not/exists/cd2ks3s//identifiers_category.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//identifier_fr_FR.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//identifier_en_US.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//city.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//company.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//email.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//first_name.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//iban.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//last_name.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//siret.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//lorem_ipsum.csv' is not present. Skipping.
  ?column? 
 ----------
  t
@@ -44,14 +53,22 @@ SELECT anon.is_initialized() IS FALSE;
 (1 row)
 
 -- load alternate data dir
-\! cp -pr data/default $PGDATA/tmp_anon_alternate_data
-SELECT anon.init('tmp_anon_alternate_data');
+\! cp -pr data/default /tmp/tmp_anon_alternate_data
+SELECT anon.init('/tmp/tmp_anon_alternate_data');
  init 
 ------
  t
 (1 row)
 
-\! rm -fr $PGDATA/tmp_anon_alternate_data
+-- Load bad data
+SELECT anon.load_csv('anon.city','/tmp/tmp_anon_alternate_data/iban.csv') IS FALSE;
+NOTICE:  Data file '/tmp/tmp_anon_alternate_data/iban.csv' has a bad CSV format. Skipping.
+ ?column? 
+----------
+ t
+(1 row)
+
+\! rm -fr /tmp/tmp_anon_alternate_data
 SELECT anon.reset();
 NOTICE:  truncate cascades to table "identifier"
  reset 
@@ -59,26 +76,8 @@ NOTICE:  truncate cascades to table "identifier"
  t
 (1 row)
 
--- load an empty data dir
--- returns a lot of NOTICE and FALSE
-SELECT anon.init('pg_twophase') IS FALSE;
-NOTICE:  Data file 'pg_twophase/identifiers_category.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/identifier_fr_FR.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/identifier_en_US.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/city.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/company.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/email.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/first_name.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/iban.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/last_name.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/siret.csv' is not present. Skipping.
-NOTICE:  Data file 'pg_twophase/lorem_ipsum.csv' is not present. Skipping.
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.is_initialized() IS FALSE;
+-- strict mode
+SELECT anon.init(NULL) IS NULL;
  ?column? 
 ----------
  t
