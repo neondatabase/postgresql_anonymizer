@@ -64,7 +64,7 @@ CREATE TABLE "FoO".customer (
   last_name TEXT,
   "CreditCard" TEXT
 );
-INSERT INTO "FoO".customer(firstname,last_name,"CreditCard");
+INSERT INTO "FoO".customer(firstname,last_name,"CreditCard")
 VALUES ('bob', 'doe', '1234-5678-1234-5678');
 
 CREATE TABLE "FoO".vendor (
@@ -121,6 +121,12 @@ DROP SCHEMA "FoO" CASCADE;
 -- ignore the plpgsql error on PG10 and PG9.6
 \! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
 
+
+-- A6. Dump a third file, this time with the `--file` option
+\! pg_dump_anon -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
+
+-- A7. Check that dump files are identical
+\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
 
 --
 -- B. Exclude some schemas

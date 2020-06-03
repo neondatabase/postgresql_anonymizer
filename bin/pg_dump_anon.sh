@@ -1,11 +1,6 @@
 #!/bin/bash
-#
 #    pg_dump_anon
 #    A basic wrapper to export anonymized data with pg_dump and psql
-#
-#    This is work in progress. Use with care.
-#
-#
 
 usage()
 {
@@ -39,14 +34,14 @@ END
 
 ## Return the masking schema
 get_mask_schema() {
-$PSQL << EOSQL
+psql "${psql_opts[@]}" << EOSQL
   SELECT anon.mask_schema();
 EOSQL
 }
 
 ## Return the masking filters based on the table name
 get_mask_filters() {
-$PSQL << EOSQL
+psql "${psql_opts[@]}" << EOSQL
   SELECT anon.mask_filters('$1'::REGCLASS);
 EOSQL
 }
@@ -60,101 +55,59 @@ grep -v -E "^-- Name: EXTENSION $1" |
 grep -v -E "^COMMENT ON EXTENSION $1"
 }
 
+################################################################################
+## 0. Parsing the command line arguments
 ##
-## M A I N
+## pg_dump_anon supports a subset of pg_dump options
 ##
+## some arguments will be pushed to `pg_dump` and/or `psql` while others need
+## specific treatment ( especially the `--file` option)
+################################################################################
 
-##
-## pg_dump and psql have a lot of common parameters ( -h, -d, etc.) but they
-## also have similar parameters with different names (e.g. `pg_dump -f` and
-## `psql -o` ). This wrapper script allows a subset of pg_dump's parameters
-## and when needed, we transform the pg_dump options into the matching psql
-## options
-##
-pg_dump_opt=$@        # backup args before parsing
-psql_connect_opt=     # connections options
-psql_output_opt=      # print options (currently only -f is supported)
-exclude_table_data=   # dump the ddl, but ignore the data
+output=/dev/stdout      # by default, use standard ouput
+pg_dump_opts=()         # export options
+psql_opts=(
+  "--quiet"
+  "--tuples-only"
+  "--no-align"
+)                       # connections options
+exclude_table_data=()   # dump the ddl, but ignore the data
 
 while [ $# -gt 0 ]; do
     case "$1" in
-    -d|--dbname)
-        psql_connect_op+=" $1"
-        shift
-        psql_connect_opt+=" $1"
-        ;;
-    --dbname=*)
-        psql_connect_opt+=" $1"
-        ;;
-    -f|--file)  # `pg_dump -f foo.sql` becomes `psql -o foo.sql`
-        psql_output_opt+=" -o"
-        shift
-        psql_output_opt+=" $1"
-        ;;
-    --file=*) # `pg_dump -file=foo.sql` becomes `psql --output=foo.sql`
-        psql_output_opt+=" $(echo $1| sed s/--file=/--output=/)"
-        ;;
-    -h|--host)
-        psql_connect_opt+=" $1"
-        shift
-        psql_connect_opt+=" $1"
-        ;;
-    --host=*)
-        psql_connect_opt+=" $1"
-        shift
-        psql_connect_opt+=" $1"
-        ;;
-    -p|--port)
-        psql_connect_opt+=" $1"
-        ;;
-    --port=*)
-        psql_connect_opt+=" $1"
-        ;;
-    -U|--username)
-        psql_connect_opt+=" $1"
-        shift
-        psql_connect_opt+=" $1"
-        ;;
-    --username=*)
-        psql_connect_opt+=" $1"
-        ;;
-    -w|--no-password)
-        psql_connect_opt+=" $1"
-        ;;
-    -W|--password)
-        psql_connect_opt+=" $1"
-        ;;
-    -n|--schema)
-        # ignore the option for psql
+    # options pushed to pg_dump and psql
+    -d|--dbname|-h|--host|-p|--port|-U|--username)
+        pg_dump_opts+=("$1" "$2")
+        psql_opts+=("$1" "$2")
         shift
         ;;
-    --schema=*)
-        # ignore the option for psql
+    --dbname=*|--host=*|--port=*|--username=*|-w|--no-password|-W|--password)
+        pg_dump_opts+=("$1")
+        psql_opts+=("$1")
         ;;
-    -N|--exclude-schema)
-        # ignore the option for psql
+    # output options
+    # `pg_dump_anon -f foo.sql` becomes `pg_dump [...] > foo.sql`
+    -f|--file)
+        shift # skip the `-f` tag
+        output="$1"
+        ;;
+    --file=*)
+        output="${1#--file=}"
+        ;;
+    # options pushed only to pg_dump
+    -n|--schema|-N|--exclude-schema|-t|--table|-T|--exclude-table)
+        pg_dump_opts+=("$1" "$2")
         shift
         ;;
-    --exclude-schema=*)
-        # ignore the option for psql
+    --schema=*|--exclude-schema=*|--table=*|--exclude-table=*)
+        pg_dump_opts+=("$1")
         ;;
-    -t)
-        # ignore the option for psql
-        shift
-        ;;
-    --table=*)
-        # ignore the option for psql
-        ;;
-    -T|--exclude-table)
-        # ignore the option for psql
-        shift
-        ;;
-    --exclude-table=*)
-        # ignore the option for psql
-        ;;
+    # special case for `--exclude-table-data`
     --exclude-table-data=*)
-        exclude_table_data+=" $1"
+        pg_dump_opts+=("$1")
+        exclude_table_data+=("$1")
         ;;
+    # general options and fallback
     --help)
         usage
         exit 0
@@ -166,73 +119,96 @@ while [ $# -gt 0 ]; do
         ;;
     *)
         # this is DBNAME
-        psql_connect_opt+=" $1"
+        pg_dump_opts+=("$1")
+        psql_opts+=("$1")
         ;;
     esac
     shift
 done
 
-PSQL="psql $psql_connect_opt --quiet --tuples-only --no-align"
-PSQL_PRINT="$PSQL $psql_output_opt"
-
-## Stop if the extension is not installed in the database
-version=$( $PSQL -c 'SELECT anon.version();' )
+# Stop if the extension is not installed in the database
+version=$( psql "${psql_opts[@]}" -c 'SELECT anon.version();' )
 if [ -z "$version" ]
 then
-  echo 'ERROR: Anon extension is not installed in this database.'
+  echo 'ERROR: Anon extension is not installed in this database.' >&2
   exit 1
 fi
 
-## Header
-echo "--"
-echo "-- Dump generated by PostgreSQL Anonymizer $version."
-echo "--"
-echo
+# Header
+cat > "$output" <<EOF
+--
+-- Dump generated by PostgreSQL Anonymizer $version
+--
+EOF
 
+################################################################################
+## 1. Dump the DDL
+################################################################################
 
-##
-## Dump the DDL
-##
-## We need to remove
-##  - Security Labels (masking rules are confidential)
-##  - The schemas installed by the anon extension
-##  - the anon extension and its dependencies
-##
-##
-exclude_anon_schemas="--exclude-schema=anon --exclude-schema=$(get_mask_schema)"
-DUMP="pg_dump --schema-only --no-security-labels $exclude_anon_schemas $pg_dump_opt"
+# gather all options needed to dump the DDL
+ddl_dump_opt=(
+  "${pg_dump_opts[@]}"     # options from the command line
+  "--schema-only"         # data will be dumped later
+  "--no-security-labels"  # masking rules are confidential
+  "--exclude-schema=anon" # do not dump the extension schema
+  "--exclude-schema=$(get_mask_schema)" # idem
+)
 
-$DUMP | filter_out_extension ddlx | filter_out_extension anon | filter_out_extension tsm_system_rows
+# we need to remove some `CREATE EXTENSION` commands
+pg_dump "${ddl_dump_opt[@]}" \
+| filter_out_extension anon  \
+| filter_out_extension pgcrypto  \
+| filter_out_extension tsm_system_rows \
+>> "$output"
 
+################################################################################
+## 2. Dump the tables data
 ##
-## We're launching the pg_dump again to get the list of the tables that were
-## dumped. Only this time we add extra parameters like --exclude-table-data
-##
-exclude_table=$(echo $exclude_table_data | sed s/--exclude-table-data=/--exclude-table=/)
-dumped_tables=`$DUMP $exclude_table |awk '/^CREATE TABLE /{ print $3 }'`
+## We need to know which table data must be dumped.
+## So We're launching the pg_dump again to get the list of the tables that were
+## dumped previously.
+################################################################################
 
-##
-## For each dumped table, we export the data form the Masking View
-## instead of the real data
-##
+# Only this time, we exclude the tables listed in `--exclude-table-data`
+tables_dump_opt=(
+  "${ddl_dump_opt[@]}"  # same as previously
+  ${exclude_table_data//--exclude-table-data=/--exclude-table=}
+)
+
+# List the tables whose data must be dumped
+dumped_tables=$(
+  pg_dump "${tables_dump_opt[@]}" \
+  | awk '/^CREATE TABLE /{ print $3 }'
+)
+
+# For each dumped table, we export the data by applying the masking rules
 for t in $dumped_tables
 do
+  # get the masking filters of this table (if any)
   filters=$(get_mask_filters "$t")
-  ## generate the "COPY ... FROM STDIN" statement for a given table
-  echo "COPY $t FROM STDIN WITH CSV;"
-  $PSQL_PRINT -c "\copy (SELECT $filters FROM $t) TO STDOUT WITH CSV"
-  [ $? -ne 0 ] && echo "... during export of $t" >&2
-  echo \\.
-  echo
+  # generate the "COPY ... FROM STDIN" statement for a given table
+  echo "COPY $t FROM STDIN WITH CSV;" >> "$output"
+  # export the data
+  psql "${psql_opts[@]}" \
+    -c "\\copy (SELECT $filters FROM $t) TO STDOUT WITH CSV" \
+    >> "$output" || echo "Error during export of $t" >&2
+  # close the stdin stream
+  echo \\.  >> "$output"
+  echo >> "$output"
 done
 
-##
-## Let's dump the DDL again !
-## This time we want to export only the sequences data, which must restored
-## after the tables data.
-## The trick here is to use `--exclude-table-data=*` instead of `--schema-only`
-##
+################################################################################
+## 3. Dump the sequences data
+################################################################################
 
-# shellcheck disable=SC2086
-pg_dump --exclude-table-data=* $exclude_anon_schemas $pg_dump_opt | grep '^SELECT pg_catalog.setval'
+# The trick here is to use `--exclude-table-data=*` instead of `--schema-only`
+seq_data_dump_opt=(
+  "${pg_dump_opts[@]}"      # options from the commande line
+  "--exclude-schema=anon"  # do not dump the anon sequences
+  "--exclude-table-data=*" # get the sequences data without the tables data
+)
+
+pg_dump "${seq_data_dump_opt[@]}"   \
+| grep '^SELECT pg_catalog.setval'  \
+>> "$output"
 

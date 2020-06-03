@@ -43,7 +43,6 @@ lint-bash:
   script:
     - apt-get update && apt-get install -y shellcheck
     - shellcheck bin/pg_dump_anon.sh
-  allow_failure: yes
 
 lint-markdown:
   stage: lint
