@@ -1733,10 +1733,13 @@ BEGIN
   AND relkind = 'r' -- relations only
   ;
 
-  -- Walk through all masked roles and remove their masl
+  -- Walk through all masked roles and remove their mask
   PERFORM anon.unmask_role(oid::REGROLE)
   FROM pg_catalog.pg_roles
   WHERE anon.hasmask(oid::REGROLE);
+
+  -- Drop the masking schema, it should be empty
+  EXECUTE format('DROP SCHEMA %I', anon.mask_schema()::REGNAMESPACE);
 
   -- Erase the config
   DELETE FROM anon.config WHERE param='sourceschema';
