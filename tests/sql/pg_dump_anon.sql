@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 -- INIT
 
-SELECT anon.load();
+SELECT anon.init();
 
 CREATE SCHEMA test_pg_dump_anon;
 

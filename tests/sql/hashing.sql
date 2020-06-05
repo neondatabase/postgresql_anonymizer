@@ -3,8 +3,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
--- Init
-SELECT anon.load();
+SELECT anon.init();
 
 --
 -- Using the automatic salt and default algorithm

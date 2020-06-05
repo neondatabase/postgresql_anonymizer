@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
-SELECT anon.load();
+SELECT anon.init();
 
 --
 -- Generic Types

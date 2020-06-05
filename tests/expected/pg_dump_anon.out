@@ -1,8 +1,8 @@
 -- this test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- INIT
-SELECT anon.load();
- load 
+SELECT anon.init();
+ init 
 ------
  t
 (1 row)

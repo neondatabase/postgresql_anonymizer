@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
-SELECT anon.load();
+SELECT anon.init();
 
 -- hex_to_int
 SELECT anon.hex_to_int(NULL) IS NULL;

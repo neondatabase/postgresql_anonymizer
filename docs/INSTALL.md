@@ -1,10 +1,12 @@
 INSTALL
 ===============================================================================
 
-The installation process is composed of 2 basic steps:
+The installation process is composed of 4 basic steps:
 
-* Step 1: First, install the extension on the PostgreSQL instance
-* Step 2: Then, load the extension in the instance
+* Step 1: **Deploy** the extension into the host server
+* Step 2: **Load** the extension in the PostgreSQL instance
+* Step 3: **Create** the extension inside the database
+* Step 4: **Initialize** the extension internal data
 
 There are multiple ways to install the extension :
 
@@ -16,9 +18,11 @@ There are multiple ways to install the extension :
 * [Install as a block box]
 * [Install on MacOS]
 
-In the examples below, we load the extension using `session_preload_librairies`
-but there are also multiple ways to load it. See [Load the extension]
-for more details.
+In the examples below, we load the extension (step2) using a parameter called
+`session_preload_librairies` but there are other ways to load it.
+See [Load the extension] for more details.
+
+If you're having any problem, check the [Troubleshooting] section.
 
 [Install on RedHat / CentOS]: #install-on-redhat-centos
 [Install with PGXN]: #install-with-pgxn
@@ -28,7 +32,7 @@ for more details.
 [Install as a block box]: #install-as-a-black-box
 [Install on MacOS]: #install-on-macos
 [Load the extension]: #load-the-extension
-
+[Troubleshooting]: #troubleshooting
 
 Install on RedHat / CentOS
 ------------------------------------------------------------------------------
@@ -46,7 +50,7 @@ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
 [PostgreSQL Official RPM Repo]: https://yum.postgresql.org/
 
 
-_Step 1:_ Install
+_Step 1:_ Deploy
 
 ```console
 sudo yum install postgresql_anonymizer12
@@ -54,18 +58,24 @@ sudo yum install postgresql_anonymizer12
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add the extension to the preloaded librairies of your database.
-(If you already loading extensions that way, just add it the list)
+_Step 2:_  Load the extension.
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-_Step 3:_  Declare the extension and load the anonymization data
+(If you already loading extensions that way, just add `anon` the current list)
+
+_Step 3:_  Create the extension and load the anonymization data
 
 ```sql
 CREATE EXTENSION anon CASCADE;
-SELECT anon.load();
+```
+
+_Step 4:_  Initialize the extension
+
+```sql
+SELECT anon.init();
 ```
 
 All new connections to the database can now use the extension.
@@ -75,7 +85,7 @@ Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
 
 
-_Step 1:_  Install the extension on the server with:
+_Step 1:_  Deploy the extension into the host server with:
 
 ```console
 sudo apt install pgxnclient postgresql-server-dev-12
@@ -84,18 +94,24 @@ sudo pgxn install postgresql_anonymizer
 
 (Replace `12` with the major version of your PostgreSQL instance.)
 
-_Step 2:_  Add the extension to the preloaded librairies of your database.
-(If you already loading extensions that way, just add it the list)
+_Step 2:_  Load the extension.
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-_Step 3:_  Declare the extension and load the anonymization data
+(If you already loading extensions that way, just add `anon` the current list)
+
+_Step 3:_  Create the extension
 
 ```sql
 CREATE EXTENSION anon CASCADE;
-SELECT anon.load();
+```
+
+_Step 4:_  Initialize the extension
+
+```sql
+SELECT anon.init();
 ```
 
 All new connections to the database can now use the extension.
@@ -116,9 +132,9 @@ All new connections to the database can now use the extension.
 Install From source
 ------------------------------------------------------------------------------
 
-_Step 0:_ First you need to install the postgresql development libraries. On most
-distribution, this is available through a package called `postgresql-devel`
-or `postgresql-server-dev`.
+_Step 0:_ First you need to install the postgresql development libraries.
+On most distributions, this is available through a package called
+`postgresql-devel` or `postgresql-server-dev`.
 
 _Step 1:_  Build the project like any other PostgreSQL extension:
 
@@ -127,18 +143,24 @@ make extension
 sudo make install
 ```
 
-_Step 2:_  Add the extension to the preloaded librairies of your database.
-(If you already loading extensions that way, just add it the list)
+_Step 2:_  Load the extension.
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-_Step 3:_  Declare the extension and load the anonymization data
+(If you already loading extensions that way, just add `anon` the current list)
+
+_Step 3:_  Create the extension
 
 ```sql
 CREATE EXTENSION anon CASCADE;
-SELECT anon.load();
+```
+
+_Step 4:_  Initialize the extension
+
+```sql
+SELECT anon.init();
 ```
 
 All new connections to the database can now use the extension.
@@ -166,8 +188,8 @@ make anon_standalone.sql
 psql ..... -f anon_standalone.sql
 ```
 
-In this situation, you will have to declare the masking rules with `COMMENT` instead
-of security labels. See [Declaring Rules with COMMENTs] for more details.
+In this situation, you will have to declare the masking rules with `COMMENT`
+instead of security labels. See [Declaring Rules with COMMENTs] for more details.
 
 [Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments
 
@@ -216,7 +238,7 @@ The image is available with 2 two tags:
 * `latest` (default) contains the current developments
 * `stable` is the based on the previous release
 
-You can now run the docker image like the regular [postgres docker image].
+You can run the docker image like the regular [postgres docker image].
 
 [postgres docker image]: https://hub.docker.com/_/postgres
 
@@ -234,7 +256,7 @@ Connect :
 psql -h localhost -p6543 -U postgres
 ```
 
-The extension is already loaded, you can use it directly:
+The extension is already created and initialized, you can use it directly:
 
 ```sql
 # SELECT anon.partial_email('daamien@gmail.com');
@@ -275,7 +297,7 @@ _Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`
 SELECT pg_catalog.set_config('search_path', 'public', false);
 
 CREATE EXTENSION anon CASCADE;
-SELECT anon.load();
+SELECT anon.init();
 
 SECURITY LABEL FOR anon ON COLUMN people.lastname
 IS 'MASKED WITH FUNCTION anon.fake_last_name()';
@@ -363,3 +385,54 @@ for more details.
 [LOAD]: https://www.postgresql.org/docs/current/sql-load.html
 [Shared Library Preloading]:https://www.postgresql.org/docs/current/runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD
 
+Troubleshooting
+------------------------------------------------------------------------------
+
+If you are having difficulties, you may have missed a step during the
+installation processus. Here's a quick checklist to help you:
+
+### Check that the extension is present
+
+First, let's see if the extension was correctly deployed:
+
+```console
+ls $(pg_config --sharedir)/extension/anon
+ls $(pg_config --pkglibdir)/anon.so
+```
+
+If you get an error, the extension is probably not present on host server.
+Go back to step 1.
+
+### Check that the extension is loaded
+
+Now connect to your database and look at the configuration with:
+
+```sql
+SHOW local_preload_libraries;
+SHOW session_preload_libraries;
+SHOW shared_preload_libraries;
+```
+
+If you don't see `anon` in any of these paramaters, go back to step 2.
+
+### Check that the extension is created
+
+Again connect to your database and type:
+
+```sql
+SELECT * FROM pg_extension WHERE extname= 'anon';
+```
+
+If the result is empty, the extension is not declared in your database.
+Go back to step 3.
+
+### Check that the extension is initialized
+
+Finally, look at the state of the extension:
+
+```sql
+SELECT anon.is_initialized();
+```
+
+If the result is not `t`, the extension data is not present.
+Go back to step 4.

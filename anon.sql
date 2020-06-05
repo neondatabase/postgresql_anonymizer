@@ -376,12 +376,15 @@ LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
 -- Cities, Regions & Countries
 DROP TABLE IF EXISTS anon.city;
 CREATE TABLE anon.city (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   name TEXT,
   country TEXT,
   subcountry TEXT,
   geonameid TEXT
 );
+
+ALTER TABLE anon.city CLUSTER ON city_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.city','');
 
 COMMENT ON TABLE anon.city IS 'Cities, Regions & Countries';
@@ -389,61 +392,82 @@ COMMENT ON TABLE anon.city IS 'Cities, Regions & Countries';
 -- Companies
 DROP TABLE IF EXISTS anon.company;
 CREATE TABLE anon.company (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   name TEXT
 );
+
+ALTER TABLE anon.company CLUSTER ON company_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.company','');
 
 -- Email
 DROP TABLE IF EXISTS anon.email;
 CREATE TABLE anon.email (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   address TEXT
 );
+
+ALTER TABLE anon.email CLUSTER ON email_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.email','');
 
 -- First names
 DROP TABLE IF EXISTS anon.first_name;
 CREATE TABLE anon.first_name (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   first_name TEXT,
   male BOOLEAN,
   female BOOLEAN,
   language TEXT
 );
+
+ALTER TABLE anon.first_name CLUSTER ON first_name_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.first_name','');
 
 -- IBAN
 DROP TABLE IF EXISTS anon.iban;
 CREATE TABLE anon.iban (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   id TEXT
 );
+
+ALTER TABLE anon.iban CLUSTER ON iban_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.iban','');
 
 -- Last names
 DROP TABLE IF EXISTS anon.last_name;
 CREATE TABLE anon.last_name (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   name TEXT
 );
+
+ALTER TABLE anon.last_name CLUSTER ON last_name_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.last_name','');
 
 -- SIRET
 DROP TABLE IF EXISTS anon.siret;
 CREATE TABLE anon.siret (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   siren TEXT,
   nic TEXT
 );
+
+ALTER TABLE anon.siret CLUSTER ON siret_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.siret','');
 
 -- Lorem Ipsum
 DROP TABLE IF EXISTS anon.lorem_ipsum;
 CREATE TABLE anon.lorem_ipsum (
-  oid SERIAL,
+  oid INTEGER UNIQUE NOT NULL,
   paragraph TEXT
 );
+
+ALTER TABLE anon.lorem_ipsum CLUSTER ON lorem_ipsum_oid_key;
+
 SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum','');
 
 -- ADD NEW TABLE HERE
@@ -456,12 +480,13 @@ SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum','');
 -- https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
 
 CREATE TABLE anon.identifiers_category(
-  id INTEGER,
-  name TEXT,
+  name TEXT UNIQUE NOT NULL,
   direct_identifier BOOLEAN,
-  anon_function TEXT,
-  PRIMARY KEY(name)
+  anon_function TEXT
 );
+
+ALTER TABLE anon.identifiers_category
+  CLUSTER ON identifiers_category_name_key;
 
 COMMENT ON TABLE anon.identifiers_category
 IS 'Generic identifiers categories based the HIPAA classification';
@@ -476,6 +501,9 @@ CREATE TABLE anon.identifier(
     REFERENCES anon.identifiers_category(name)
 );
 
+ALTER TABLE anon.identifier
+  CLUSTER ON identifier_pkey;
+
 COMMENT ON TABLE anon.identifier
 IS 'Dictionnary of common identifiers field names';
 
@@ -488,11 +516,11 @@ RETURNS TABLE (
   identifiers_category TEXT,
   direct BOOLEAN
 )
-AS $func$
+AS $$
 BEGIN
-  IF not anon.isloaded() THEN
-    RAISE NOTICE 'The dictionnaries are not loaded.'
-      USING HINT = 'You probably need to run ''SELECT anon.load()'' ';
+  IF not anon.is_initialized() THEN
+    RAISE NOTICE 'The dictionnary of identifiers is not present.'
+      USING HINT = 'You probably need to run ''SELECT anon.init()'' ';
   END IF;
 
 RETURN QUERY SELECT
@@ -519,99 +547,79 @@ WHERE fn.lang = dict_lang
       )
 ;
 END;
-$func$
+$$
 LANGUAGE plpgsql IMMUTABLE;
 
 
 -------------------------------------------------------------------------------
--- Functions : LOAD / UNLOAD
+-- Functions : INIT / RESET
 -------------------------------------------------------------------------------
 
--- ADD unit tests in tests/sql/load.sql
+-- ADD unit tests in tests/sql/init.sql
 
--- load fake data from a given path
-CREATE OR REPLACE FUNCTION anon.load(
-  datapath TEXT
+CREATE OR REPLACE FUNCTION anon.load_csv(
+  dest_table REGCLASS,
+  csv_file TEXT
 )
-RETURNS BOOLEAN
-AS $func$
+RETURNS BOOLEAN AS
+$$
 DECLARE
-  datapath_regexp  TEXT;
-  datapath_check TEXT;
+  csv_file_check TEXT;
 BEGIN
-  IF anon.isloaded() THEN
-    RAISE NOTICE 'The anon extension is already loaded.';
-    RETURN TRUE;
-  END IF;
+-- This check does not work with PG 10 and below (absolute path not supported)
+--
+--  SELECT * INTO  csv_file_check
+--  FROM pg_stat_file(csv_file, missing_ok := TRUE );
+--
+--  IF csv_file_check IS NULL THEN
+--    RAISE NOTICE 'Data file ''%'' is not present. Skipping.', csv_file;
+--    RETURN FALSE;
+--  END IF;
 
-  -- This check does not work with PG10 and below
-  -- because absolute paths are not allowed
-  --SELECT * INTO  datapath_check
-  --FROM pg_stat_file(datapath, missing_ok := TRUE )
-  --WHERE isdir;
+  EXECUTE 'COPY ' || dest_table::REGCLASS::TEXT
+      || ' FROM ' || quote_literal(csv_file);
 
-  -- This works with all current version of Postgres
-  datapath_regexp := '^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\0])[^/\0]+)*\/?$';
-  SELECT regexp_matches(datapath,datapath_regexp) INTO datapath_check;
-
-  -- Stop if is the directory does not exist
-  IF datapath_check IS NULL THEN
-    RAISE WARNING 'The path ''%'' is not correct. Data is not loaded.', datapath;
-    RETURN FALSE;
-  END IF;
-
-  -- Identifiers dictionnaries
-  EXECUTE 'COPY anon.identifiers_category FROM '|| quote_literal(datapath ||'/identifiers_category.csv');
-  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_fr_FR.csv');
-  EXECUTE 'COPY anon.identifier FROM '|| quote_literal(datapath ||'/identifier_en_US.csv');
-
-  -- ADD NEW TABLE HERE
-  EXECUTE 'COPY anon.city(name,country,subcountry,geonameid) FROM '
-    || quote_literal(datapath ||'/city.csv');
-
-  EXECUTE 'COPY anon.company(name) FROM '
-    || quote_literal(datapath ||'/company.csv');
-
-  EXECUTE 'COPY anon.email(address) FROM '
-    || quote_literal(datapath ||'/email.csv');
-
-  EXECUTE 'COPY anon.first_name(first_name,male,female,language) FROM '
-    || quote_literal(datapath ||'/first_name.csv');
-
-  EXECUTE 'COPY anon.iban(id) FROM '
-    || quote_literal(datapath ||'/iban.csv');
-
-  EXECUTE 'COPY anon.last_name(name) FROM '
-    || quote_literal(datapath ||'/last_name.csv');
-
-  EXECUTE 'COPY anon.siret(siren, nic) FROM '
-    || quote_literal(datapath ||'/siret.csv');
-
-  EXECUTE 'COPY anon.lorem_ipsum(paragraph) FROM '
-    || quote_literal(datapath ||'/lorem_ipsum.csv');
+  EXECUTE 'CLUSTER ' || dest_table;
 
   RETURN TRUE;
 
-  EXCEPTION
-    WHEN undefined_file THEN
-      RAISE WARNING 'The path ''%'' does not exist. Data is not loaded.', datapath;
-    RETURN FALSE;
-END;
-$func$
-LANGUAGE PLPGSQL VOLATILE SECURITY INVOKER SET search_path='';
+EXCEPTION
 
--- If no path given, use the default data
-CREATE OR REPLACE FUNCTION anon.load()
+  WHEN undefined_file THEN
+    RAISE NOTICE 'Data file ''%'' is not present. Skipping.', csv_file;
+    RETURN FALSE;
+
+  WHEN bad_copy_file_format THEN
+    RAISE NOTICE 'Data file ''%'' has a bad CSV format. Skipping.', csv_file;
+    RETURN FALSE;
+
+END;
+$$
+  LANGUAGE plpgsql
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
+-- load fake data from a given path
+CREATE OR REPLACE FUNCTION anon.init(
+  datapath TEXT
+)
 RETURNS BOOLEAN
 AS $$
-    WITH conf AS (
-        -- find the local extension directory
-        SELECT setting AS sharedir
-        FROM pg_config
-        WHERE name = 'SHAREDIR'
-    )
-    SELECT
-      anon.load(conf.sharedir || '/extension/anon/'),
+DECLARE
+  datapath_check TEXT;
+  success BOOLEAN;
+BEGIN
+  IF anon.is_initialized() THEN
+    RAISE NOTICE 'The anon extension is already initialized.';
+    RETURN TRUE;
+  END IF;
+
+  -- Initialize the hashing secrets
+  PERFORM
       -- if the secret salt is NULL, generate a random salt
       COALESCE(
           anon.get_secret_salt(),
@@ -621,17 +629,89 @@ AS $$
       COALESCE(
           anon.get_secret_algorithm(),
           anon.set_secret_algorithm('sha512')
-      )
-    FROM conf;
-    SELECT TRUE;
-$$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+      );
 
--- True, the fake data is already here
-CREATE OR REPLACE FUNCTION anon.isloaded()
-RETURNS BOOL
+  SELECT bool_or(results) INTO success
+  FROM unnest(array[
+    anon.load_csv('anon.identifiers_category',datapath||'/identifiers_category.csv'),
+    anon.load_csv('anon.identifier',datapath ||'/identifier_fr_FR.csv'),
+    anon.load_csv('anon.identifier',datapath ||'/identifier_en_US.csv'),
+    anon.load_csv('anon.city',datapath ||'/city.csv'),
+    anon.load_csv('anon.company',datapath ||'/company.csv'),
+    anon.load_csv('anon.email', datapath ||'/email.csv'),
+    anon.load_csv('anon.first_name',datapath ||'/first_name.csv'),
+    anon.load_csv('anon.iban',datapath ||'/iban.csv'),
+    anon.load_csv('anon.last_name',datapath ||'/last_name.csv'),
+    anon.load_csv('anon.siret',datapath ||'/siret.csv'),
+    anon.load_csv('anon.lorem_ipsum',datapath ||'/lorem_ipsum.csv')
+  ]) results;
+  RETURN success;
+
+END;
+$$
+  LANGUAGE PLPGSQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
+
+-- load() is here for backward compatibility with version 0.6
+CREATE OR REPLACE FUNCTION anon.load(TEXT)
+RETURNS BOOLEAN AS
+$$
+  SELECT anon.init($1);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
+-- If no path given, use the default data
+CREATE OR REPLACE FUNCTION anon.init()
+RETURNS BOOLEAN
 AS $$
-  SELECT count(*)::INT::BOOL
+  WITH conf AS (
+        -- find the local extension directory
+        SELECT setting AS sharedir
+        FROM pg_config
+        WHERE name = 'SHAREDIR'
+    )
+  SELECT anon.init(conf.sharedir || '/extension/anon/')
+  FROM conf;
+$$
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+-- load() is here for backward compatibility with version 0.6 and below
+CREATE OR REPLACE FUNCTION anon.load()
+RETURNS BOOLEAN
+AS $$
+BEGIN
+  RAISE NOTICE 'anon.load() will be deprecated in future versions.'
+    USING HINT = 'you should use anon.init() instead.';
+  RETURN anon.init();
+END;
+$$
+  LANGUAGE plpgsql
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+-- True if the fake data is already here
+CREATE OR REPLACE FUNCTION anon.is_initialized()
+RETURNS BOOLEAN
+AS $$
+  SELECT count(*)::INT::BOOLEAN
   FROM (   SELECT 1 FROM anon.siret
      UNION SELECT 1 FROM anon.company
      UNION SELECT 1 FROM anon.last_name
@@ -644,11 +724,16 @@ AS $$
      LIMIT 1
   ) t
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- remove all fake data
-CREATE OR REPLACE FUNCTION anon.unload()
-RETURNS BOOLEAN AS $$
+CREATE OR REPLACE FUNCTION anon.reset()
+RETURNS BOOLEAN AS
+$$
     TRUNCATE anon.city;
     TRUNCATE anon.company;
     TRUNCATE anon.email;
@@ -658,10 +743,28 @@ RETURNS BOOLEAN AS $$
     TRUNCATE anon.siret;
     TRUNCATE anon.lorem_ipsum;
     TRUNCATE anon.secret;
+    TRUNCATE anon.identifiers_category CASCADE;
+    TRUNCATE anon.identifier;
     -- ADD NEW TABLE HERE
     SELECT TRUE;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+-- backward compatibility with version 0.6 and below
+CREATE OR REPLACE FUNCTION anon.unload()
+RETURNS BOOLEAN AS
+$$
+  SELECT anon.reset()
+$$
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 --- Generic hashing
@@ -1170,7 +1273,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.first_name_oid_seq)
+    (SELECT max(oid) FROM anon.first_name)
   );
 $$
   LANGUAGE SQL
@@ -1189,7 +1292,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.last_name_oid_seq)
+    (SELECT max(oid) FROM anon.last_name)
   );
 $$
   LANGUAGE SQL
@@ -1209,7 +1312,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.email_oid_seq)
+    (SELECT MAX(oid) FROM anon.email)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1224,7 +1327,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.city_oid_seq)
+    (SELECT MAX(oid) FROM anon.city)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1239,7 +1342,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.city_oid_seq)
+    (SELECT max(oid) FROM anon.city)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1254,7 +1357,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.city_oid_seq)
+    (SELECT MAX(oid) FROM anon.city)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1269,7 +1372,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.company_oid_seq)
+    (SELECT MAX(oid) FROM anon.company)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1284,7 +1387,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.iban_oid_seq)
+    (SELECT MAX(oid) FROM anon.iban)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1299,7 +1402,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.siret_oid_seq)
+    (SELECT MAX(oid) FROM anon.siret)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1314,7 +1417,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_secret_salt()),
-    (SELECT last_value FROM anon.siret_oid_seq)
+    (SELECT MAX(oid) FROM anon.siret)
   );
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
@@ -1474,9 +1577,9 @@ BEGIN
   END IF;
 
   SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
-  IF mf_is_a_faking_function AND not anon.isloaded() THEN
-    RAISE NOTICE 'The faking data is not loaded.'
-      USING HINT = 'You probably need to run ''SELECT anon.load()'' ';
+  IF mf_is_a_faking_function AND not anon.is_initialized() THEN
+    RAISE NOTICE 'The faking data is not present.'
+      USING HINT = 'You probably need to run ''SELECT anon.init()'' ';
   END IF;
 
   RAISE DEBUG 'Anonymize %.% with %', tablename,colname, mf;
@@ -1687,13 +1790,13 @@ BEGIN
   ;
 
   -- Load faking data
-  SELECT anon.isloaded() AS loaded INTO r;
+  SELECT anon.is_initialized() AS init INTO r;
   IF NOT autoload THEN
     RAISE DEBUG 'Autoload is disabled.';
-  ELSEIF r.loaded THEN
-    RAISE DEBUG 'Anon data is already loaded.';
+  ELSEIF r.init THEN
+    RAISE DEBUG 'Anon extension is already initiliazed.';
   ELSE
-    PERFORM anon.load();
+    PERFORM anon.init();
   END IF;
 
   EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', maskschema);

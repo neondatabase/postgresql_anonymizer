@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-SELECT anon.load();
- load 
+SELECT anon.init();
+ init 
 ------
  t
 (1 row)

@@ -83,7 +83,17 @@ WARNING:  Column 'i; SELECT 1' is not present in table 'a'.
 --
 -- returns a WARNING and FALSE
 SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--') IS FALSE;
-WARNING:  The path 'base/'; CREATE TABLE inject_via_load (i int);--' is not correct. Data is not loaded.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/identifiers_category.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/identifier_fr_FR.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/identifier_en_US.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/city.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/company.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/email.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/first_name.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/iban.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/last_name.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/siret.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/lorem_ipsum.csv' is not present. Skipping.
  ?column? 
 ----------
  t
