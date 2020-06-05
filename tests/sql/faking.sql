@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
-SELECT anon.load();
+SELECT anon.init();
 
 --
 -- Personal Data (First Name, etc.)

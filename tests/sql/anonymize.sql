@@ -75,15 +75,15 @@ IS 'MASKED WITH FUNCTION anon.random_string(18)';
 SELECT anon.anonymize_column('employee','lastname');
 SELECT count(*)=0 FROM employee WHERE lastname= 'Connor';
 
-SELECT anon.load();
-SAVEPOINT after_load;
+SELECT anon.init();
+SAVEPOINT after_init;
 
 -- Anonymize all
 
 -- This should fail because of the UNIQUE constraint on the ssn column
 -- DISABLED because the error output differs between PG11- and PG12+
 --SELECT anonymize_database();
---ROLLBACK TO after_load;
+--ROLLBACK TO after_init;
 
 -- Remove uniquess and it should work
 ALTER TABLE employee DROP CONSTRAINT employee_ssn_key;
