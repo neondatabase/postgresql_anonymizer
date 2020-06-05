@@ -1,7 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.start_dynamic_masking();
-NOTICE:  schema "mask" already exists, skipping
  start_dynamic_masking 
 -----------------------
  t

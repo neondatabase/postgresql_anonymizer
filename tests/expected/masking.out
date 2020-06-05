@@ -3,7 +3,6 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- INIT
 SELECT anon.mask_init();
-NOTICE:  schema "mask" already exists, skipping
  mask_init 
 -----------
  t

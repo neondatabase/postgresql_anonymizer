@@ -31,6 +31,8 @@ SELECT lastname != 'Doe' FROM dbo_mask.tbl1;
 
 SELECT anon.stop_dynamic_masking();
 
+SELECT COUNT(*)=0 FROM pg_namespace WHERE nspname='dbo_mask';
+
 -- Test WITHOUT the masked schema in the search path
 
 SET search_path=public;
@@ -40,6 +42,8 @@ SELECT anon.start_dynamic_masking('dbo', 'dbo_mask_2');
 SELECT lastname != 'Doe' FROM dbo_mask_2.tbl1;
 
 SELECT anon.stop_dynamic_masking();
+
+SELECT COUNT(*)=0 FROM pg_namespace WHERE nspname='dbo_mask_2';
 
 ROLLBACK;
 
