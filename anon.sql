@@ -658,7 +658,7 @@ $$
 
 
 
--- load() is here for backward compatibility wih version 0.6
+-- load() is here for backward compatibility with version 0.6
 CREATE OR REPLACE FUNCTION anon.load(TEXT)
 RETURNS BOOLEAN AS
 $$
@@ -691,13 +691,17 @@ $$
   SET search_path=''
 ;
 
--- load() is here for backward compatibility wih version 0.6 and below
+-- load() is here for backward compatibility with version 0.6 and below
 CREATE OR REPLACE FUNCTION anon.load()
 RETURNS BOOLEAN
 AS $$
-  SELECT anon.init();
+BEGIN
+  RAISE NOTICE 'anon.load() will be deprecated in future versions.'
+    USING HINT = 'you should use anon.init() instead.';
+  RETURN anon.init();
+END;
 $$
-  LANGUAGE SQL
+  LANGUAGE plpgsql
   VOLATILE
   SECURITY INVOKER
   SET search_path=''
