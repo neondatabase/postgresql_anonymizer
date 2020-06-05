@@ -5,22 +5,44 @@ CHANGELOG
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-- pgcrypto
-- tms_system_rows
+  - tms_system_rows
+  - pg_crypto
 
 * [install] Add a notice to users when they try to load the extension twice
 * [CI] Improve the masking test
-* Support for PostgreSQL 13
+* [install] Support for PostgreSQL 13
 * [noise] add on-the-fly noise functions (Gunnar Nick Bluth)
 * [dump] add a hint if a particular table dump fails (Gunnar Nick Bluth)
-* FIX #128: add version function and use it in pg_dump_anon (Yann ROBIN)
+* [install] FIX #128: add version function (Yann Robin)
 * [doc] Security: explain noise reduction attacks
-* [doc] How To mask a JSONB column (Fabien BARBIER)
+* [doc] How To mask a JSONB column (Fabien Barbier)
 * [doc] improve load doc
 * [CI] Test install on Ubuntu Bionic
 * [doc] DBaaS providers support for EVENT TRIGGERS and dynamic masking (Martin Kubrak)
 * [install] Remove dependency to the ddlx extension
-* FIX #123 : bug in the standalone install script (Florian Desbois)
+* [install] FIX #123: bug in the standalone install script (Florian Desbois)
+* [doc] lint markdown 
+* [hashing] Introducing generic hashing function (Gunnar Nick Bluth)
+* [hashing] Storing the hashing salt in a secret table
+* [hashing] Add dependency to the pg_crypto extension
+* [init] Rename anon.load() to anon.init() for clarity
+* [random] new masking function: `anon.random_in(ARRAY['yes','no','maybe'])`
+* [in-place] defer all deferrable constraints
+* [doc] how to dump roles when using the black box method
+* [dump] FIX #146: export sequences data  (Joe Auty)
+* [doc] `anon.shuffle()` is not a masking function
+* [dump] FIX #129: `--file` option not working (Yann Robin)
+* [dump] use arrays for argument lists
+* [dump] use shellcheck
+* [docker] automatic publication of the `latest` tag
+* [masking] FIX #141 `anon.stop_dynamic_masking()` does not remove the mask schema
+* [init] fix `anon.reset()`
+* [init] FIX #103: Create extension encoding issue (Dattatray Phadtare)
+* [init] improve error handling
+* [init] add the oid into the CSV tables 
+* [init] Initcap on table `first_name`
+* [doc] Add a troubleshooting guide
+
 
 
 20200305 : 0.6.0 - Pseudonymization and Improved anonymous dumps
