@@ -1317,12 +1317,30 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
+CREATE OR REPLACE FUNCTION anon.check_init()
+RETURNS TEXT AS
+$$
+BEGIN
+  IF NOT anon.is_initialized() THEN
+    RAISE NOTICE 'The anon extension is not initialized.'
+      USING HINT='Use ''SELECT anon.init()'' before running this function';
+  END IF;
+  RETURN NULL;
+END;
+$$
+  LANGUAGE plpgsql
+  IMMUTABLE
+  SECURITY INVOKER
+  SET search_path='';
+;
+
+
 CREATE OR REPLACE FUNCTION anon.pseudo_city(
   seed TEXT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT name
+  SELECT COALESCE(name,anon.check_init())
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1337,7 +1355,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_region(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT subcountry
+  SELECT COALESCE(subcountry,anon.check_init())
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
