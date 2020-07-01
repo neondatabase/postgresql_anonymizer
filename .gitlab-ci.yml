@@ -214,6 +214,18 @@ standalone11:
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone.sql
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c 'SELECT anon.fake_city() IS NOT NULL'
 
+blackbox:
+  stage: build
+  image: docker:19.03.8
+  services:
+    - docker:19.03.8-dind
+  before_script:
+    - echo 'Disable before_script.'
+  script:
+    - docker build -t blackbox . --file docker/Dockerfile
+    - cat tests/sql/blackbox.sql | docker run --rm -i blackbox /anon.sh  > results/blackbox.out
+    - diff tests/expected/blackbox.out results/blackbox.out
+  only:
 
 ##
 ## T E S T
