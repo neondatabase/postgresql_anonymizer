@@ -40,7 +40,7 @@ Install on RedHat / CentOS
 > This is the recommended way to install the extension
 
 
-_Step 0:_ Add the [PostgreSQL Official RPM Repo] to your system. It shouldb be
+_Step 0:_ Add the [PostgreSQL Official RPM Repo] to your system. It should be
 something like:
 
 ```console
