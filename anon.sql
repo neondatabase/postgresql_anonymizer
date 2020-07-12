@@ -657,6 +657,25 @@ $$
 ;
 
 
+-- People tend to forget the anon.init() step
+-- This is a friendly notice for them
+CREATE OR REPLACE FUNCTION anon.notice_if_not_init()
+RETURNS TEXT AS
+$$
+BEGIN
+  IF NOT anon.is_initialized() THEN
+    RAISE NOTICE 'The anon extension is not initialized.'
+      USING HINT='Use ''SELECT anon.init()'' before running this function';
+  END IF;
+  RETURN NULL;
+END;
+$$
+  LANGUAGE plpgsql
+  IMMUTABLE
+  SECURITY INVOKER
+  SET search_path='';
+;
+
 
 -- load() is here for backward compatibility with version 0.6
 CREATE OR REPLACE FUNCTION anon.load(TEXT)
@@ -979,25 +998,25 @@ LANGUAGE C STRICT;
 
 CREATE OR REPLACE FUNCTION anon.fake_first_name()
 RETURNS TEXT AS $$
-    SELECT first_name
-    FROM anon.first_name
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(first_name,anon.notice_if_not_init())
+  FROM anon.first_name
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_last_name()
 RETURNS TEXT AS $$
-    SELECT name
-    FROM anon.last_name
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(name,anon.notice_if_not_init())
+  FROM anon.last_name
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_email()
 RETURNS TEXT AS $$
-    SELECT address
-    FROM anon.email
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(address,anon.notice_if_not_init())
+  FROM anon.email
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1005,18 +1024,18 @@ CREATE OR REPLACE FUNCTION anon.fake_city_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$
-    SELECT name
-    FROM anon.city
-    WHERE country=country_name
-    ORDER BY random() LIMIT 1;
+  SELECT COALESCE(name,anon.notice_if_not_init())
+  FROM anon.city
+  WHERE country=country_name
+  ORDER BY random() LIMIT 1;
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_city()
 RETURNS TEXT AS $$
-    SELECT name
-    FROM anon.city
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(name,anon.notice_if_not_init())
+  FROM anon.city
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1024,68 +1043,68 @@ CREATE OR REPLACE FUNCTION anon.fake_region_in_country(
   country_name TEXT
 )
 RETURNS TEXT AS $$
-    SELECT subcountry
-    FROM anon.city
-    WHERE country=country_name
-    ORDER BY random() LIMIT 1;
+  SELECT COALESCE(subcountry,anon.notice_if_not_init())
+  FROM anon.city
+  WHERE country=country_name
+  ORDER BY random() LIMIT 1;
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_region()
 RETURNS TEXT AS $$
-    SELECT subcountry
-    FROM anon.city
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(subcountry,anon.notice_if_not_init())
+  FROM anon.city
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_country()
 RETURNS TEXT AS $$
-    SELECT country
-    FROM anon.city
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(country,anon.notice_if_not_init())
+  FROM anon.city
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_company()
 RETURNS TEXT AS $$
-    SELECT name
-    FROM anon.company
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(name,anon.notice_if_not_init())
+  FROM anon.company
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_iban()
 RETURNS TEXT AS $$
-    SELECT id
-    FROM anon.iban
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(id,anon.notice_if_not_init())
+  FROM anon.iban
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_siren()
 RETURNS TEXT AS $$
-    SELECT siren
-    FROM anon.siret
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(siren,anon.notice_if_not_init())
+  FROM anon.siret
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_siret()
 RETURNS TEXT AS $$
-    SELECT siren||nic
-    FROM anon.siret
-    TABLESAMPLE anon.system_rows(1);
+  SELECT COALESCE(siren||nic,anon.notice_if_not_init())
+  FROM anon.siret
+  TABLESAMPLE anon.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 -- Lorem Ipsum
 -- Usage:
 --   `SELECT anon.lorem_ipsum()` returns 5 paragraphs
---   `SELECT anon.lorem_ipsum(2)` return 2 paragraphs
---   `SELECT anon.lorem_ipsum( paragraph := 4 )` return 4 paragraphs
---   `SELECT anon.lorem_ipsum( words := 20 )` return 20 words
---   `SELECT anon.lorem_ipsum( characters := 7 )` return 7 characters
+--   `SELECT anon.lorem_ipsum(2)` returns 2 paragraphs
+--   `SELECT anon.lorem_ipsum( paragraph := 4 )` returns 4 paragraphs
+--   `SELECT anon.lorem_ipsum( words := 20 )` returns 20 words
+--   `SELECT anon.lorem_ipsum( characters := 7 )` returns 7 characters
 --
 CREATE OR REPLACE FUNCTION anon.lorem_ipsum(
   paragraphs INTEGER DEFAULT 5,
@@ -1147,7 +1166,8 @@ cte_paragraphs AS (
 SELECT COALESCE(
   cte_characters.n_characters,
   cte_words.n_words,
-  cte_paragraphs.n_paragraphs
+  cte_paragraphs.n_paragraphs,
+  anon.notice_if_not_init()
 )
 FROM
   cte_characters,
@@ -1268,7 +1288,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT first_name
+  SELECT COALESCE(first_name,anon.notice_if_not_init())
   FROM anon.first_name
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1287,7 +1307,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_last_name(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT name
+  SELECT COALESCE(name,anon.notice_if_not_init())
   FROM anon.last_name
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1307,7 +1327,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_email(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT address
+  SELECT COALESCE(address,anon.notice_if_not_init())
   FROM anon.email
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1317,30 +1337,13 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
-CREATE OR REPLACE FUNCTION anon.check_init()
-RETURNS TEXT AS
-$$
-BEGIN
-  IF NOT anon.is_initialized() THEN
-    RAISE NOTICE 'The anon extension is not initialized.'
-      USING HINT='Use ''SELECT anon.init()'' before running this function';
-  END IF;
-  RETURN NULL;
-END;
-$$
-  LANGUAGE plpgsql
-  IMMUTABLE
-  SECURITY INVOKER
-  SET search_path='';
-;
-
 
 CREATE OR REPLACE FUNCTION anon.pseudo_city(
   seed TEXT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.check_init())
+  SELECT COALESCE(name,anon.notice_if_not_init())
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1355,7 +1358,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_region(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(subcountry,anon.check_init())
+  SELECT COALESCE(subcountry,anon.notice_if_not_init())
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1370,7 +1373,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_country(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT country
+  SELECT COALESCE(country,anon.notice_if_not_init())
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1385,7 +1388,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_company(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT name
+  SELECT COALESCE(name,anon.notice_if_not_init())
   FROM anon.company
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1400,7 +1403,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_iban(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT id
+  SELECT COALESCE(id,anon.notice_if_not_init())
   FROM anon.iban
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1415,7 +1418,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_siren(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT siren
+  SELECT COALESCE(siren,anon.notice_if_not_init())
   FROM anon.siret
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1430,7 +1433,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_siret(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT siren||nic
+  SELECT COALESCE(siren||nic,anon.notice_if_not_init())
   FROM anon.siret
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1447,9 +1450,7 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 -- Partial Scrambling
 -------------------------------------------------------------------------------
 
---
 -- partial('abcdefgh',1,'xxxx',3) will return 'axxxxfgh';
---
 CREATE OR REPLACE FUNCTION anon.partial(
   ov TEXT,
   prefix INT,
