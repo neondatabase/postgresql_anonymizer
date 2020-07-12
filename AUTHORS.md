@@ -10,14 +10,17 @@ how you can get involved, please read [CONTRIBUTING.md].
 Maintainer
 -------------------------------------------------------------------------------
 
-* Damien Clochard (@daamien)
+This software is mainly developed and maintained Damien Clochard (@daamien).
 
+Many thanks to Etienne Bersac (@bersace) for his help !
 
 Contributors
 -------------------------------------------------------------------------------
 
 * Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
 * Yann ROBIN (@me.show) : version() function and DBAAS install
+* Peter Neave (@peterneave) : Typos
+* Yann Robin (@me.show) : version() function and DBAAS install
 * Christophe Courtois (@Krysztophe) : Proofreading
 * Pierre-Henri Dubois Amy (@theodor_lobster) : Proofreading, GIS
 * Thomas Clark (@cthomaspdx) : Pseudonymization

@@ -42,6 +42,7 @@ __Dependencies:__
 * [init] add the oid into the CSV tables 
 * [init] Initcap on table `first_name`
 * [doc] Add a troubleshooting guide
+* [doc] Typo (Peter Neave)
 
 
 
