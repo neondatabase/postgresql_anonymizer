@@ -972,16 +972,11 @@ $$
 -- FAKE data
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION anon.system_rows(internal)
-RETURNS tsm_handler
-AS '$libdir/tsm_system_rows', 'tsm_system_rows_handler'
-LANGUAGE C STRICT;
-
 CREATE OR REPLACE FUNCTION anon.fake_first_name()
 RETURNS TEXT AS $$
     SELECT first_name
     FROM anon.first_name
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -989,7 +984,7 @@ CREATE OR REPLACE FUNCTION anon.fake_last_name()
 RETURNS TEXT AS $$
     SELECT name
     FROM anon.last_name
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -997,7 +992,7 @@ CREATE OR REPLACE FUNCTION anon.fake_email()
 RETURNS TEXT AS $$
     SELECT address
     FROM anon.email
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1016,7 +1011,7 @@ CREATE OR REPLACE FUNCTION anon.fake_city()
 RETURNS TEXT AS $$
     SELECT name
     FROM anon.city
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1035,7 +1030,7 @@ CREATE OR REPLACE FUNCTION anon.fake_region()
 RETURNS TEXT AS $$
     SELECT subcountry
     FROM anon.city
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1043,7 +1038,7 @@ CREATE OR REPLACE FUNCTION anon.fake_country()
 RETURNS TEXT AS $$
     SELECT country
     FROM anon.city
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1051,7 +1046,7 @@ CREATE OR REPLACE FUNCTION anon.fake_company()
 RETURNS TEXT AS $$
     SELECT name
     FROM anon.company
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1059,7 +1054,7 @@ CREATE OR REPLACE FUNCTION anon.fake_iban()
 RETURNS TEXT AS $$
     SELECT id
     FROM anon.iban
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1067,7 +1062,7 @@ CREATE OR REPLACE FUNCTION anon.fake_siren()
 RETURNS TEXT AS $$
     SELECT siren
     FROM anon.siret
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1075,7 +1070,7 @@ CREATE OR REPLACE FUNCTION anon.fake_siret()
 RETURNS TEXT AS $$
     SELECT siren||nic
     FROM anon.siret
-    TABLESAMPLE anon.system_rows(1);
+    TABLESAMPLE system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
