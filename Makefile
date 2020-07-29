@@ -162,7 +162,7 @@ EXTSCHEMA?=public
 standalone: anon_standalone.sql #: build the standalone script
 
 anon_standalone.sql: anon.sql
-	./standalone.sh $@
+	bin/standalone.sh $@
 
 clean_standalone:
 	rm -fr anon_standalone.sql

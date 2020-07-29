@@ -42,6 +42,7 @@ lint-bash:
     - echo "disable the before_script"
   script:
     - apt-get update && apt-get install -y shellcheck
+    - shellcheck bin/standalone.sh
     - shellcheck bin/pg_dump_anon.sh
 
 lint-markdown:
