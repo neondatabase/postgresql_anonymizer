@@ -19,6 +19,7 @@ Contributors
 
 * Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
 * Yann ROBIN (@me.show) : version() function and DBAAS install
+* Ilya Gorbunov (@dAverk) : Bug fixes
 * Peter Neave (@peterneave) : Typos
 * Yann Robin (@me.show) : version() function and DBAAS install
 * Christophe Courtois (@Krysztophe) : Proofreading

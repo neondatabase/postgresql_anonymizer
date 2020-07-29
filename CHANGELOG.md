@@ -43,6 +43,9 @@ __Dependencies:__
 * [init] Initcap on table `first_name`
 * [doc] Add a troubleshooting guide
 * [doc] Typo (Peter Neave)
+* [doc] Choose between stable and latest
+* [blackbox] FIX #156 stdout permissions (Ilya Gorbunov)
+* [init] better error handling
 
 
 
