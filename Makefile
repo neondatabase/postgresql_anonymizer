@@ -28,7 +28,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS_TESTS = init detection
+REGRESS_TESTS = init extschema detection
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= pseudonymization hashing hashing_and_dynamic_masking
 REGRESS_TESTS+= anonymize pg_dump_anon restore
@@ -153,6 +153,10 @@ tests/expected/unit.out:
 ##
 ## S T A N D A L O N E
 ##
+
+# This is the schema the required extension (for instance tsm_system_rows)
+# will be installed
+EXTSCHEMA?=public
 
 .PHONY: standalone
 standalone: anon_standalone.sql #: build the standalone script
