@@ -212,3 +212,4 @@ pg_dump "${seq_data_dump_opt[@]}"   \
 | grep '^SELECT pg_catalog.setval'  \
 >> "$output"
 
+exit 0
