@@ -226,7 +226,7 @@ blackbox:
     - docker build -t blackbox . --file docker/Dockerfile
     - mkdir results
     - cat tests/sql/blackbox.sql | docker run --rm -i blackbox /anon.sh  > results/blackbox.out
-    - diff tests/expected/blackbox.out results/blackbox.out
+    - diff -I '^--' tests/expected/blackbox.out results/blackbox.out
 
 ##
 ## T E S T
