@@ -223,9 +223,9 @@ blackbox:
     - echo 'Disable before_script.'
   script:
     - docker build -t blackbox . --file docker/Dockerfile
+    - mkdir results
     - cat tests/sql/blackbox.sql | docker run --rm -i blackbox /anon.sh  > results/blackbox.out
     - diff tests/expected/blackbox.out results/blackbox.out
-  only:
 
 ##
 ## T E S T
