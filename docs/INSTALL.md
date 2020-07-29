@@ -15,7 +15,7 @@ There are multiple ways to install the extension :
 * [Install from source]
 * [Install in the cloud]
 * [Install with docker]
-* [Install as a block box]
+* [Install as a black box]
 * [Install on MacOS]
 
 In the examples below, we load the extension (step2) using a parameter called
@@ -29,15 +29,26 @@ If you're having any problem, check the [Troubleshooting] section.
 [Install from source]: #install-from-source
 [Install in the cloud]: #install-in-the-cloud
 [Install with docker]: #install-with-docker
-[Install as a block box]: #install-as-a-black-box
+[Install as a black box]: #install-as-a-black-box
 [Install on MacOS]: #install-on-macos
 [Load the extension]: #load-the-extension
 [Troubleshooting]: #troubleshooting
 
+Choose your version : `Stable` or `Latest` ?
+------------------------------------------------------------------------------
+
+This extension is available in two versions :
+
+* `stable` is recommended for production
+* `latest` is usefull if you want to test new features
+
+
+
+
 Install on RedHat / CentOS
 ------------------------------------------------------------------------------
 
-> This is the recommended way to install the extension
+> This is the recommended way to install the `stable` extension
 
 
 _Step 0:_ Add the [PostgreSQL Official RPM Repo] to your system. It should be
@@ -83,6 +94,8 @@ All new connections to the database can now use the extension.
 
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
+
+> This method will install the `stable` extension
 
 
 _Step 1:_  Deploy the extension into the host server with:
@@ -131,6 +144,8 @@ All new connections to the database can now use the extension.
 
 Install From source
 ------------------------------------------------------------------------------
+
+> This is the recommended way to install the `latest` extension
 
 _Step 0:_ First you need to install the postgresql development libraries.
 On most distributions, this is available through a package called
