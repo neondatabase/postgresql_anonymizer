@@ -13,5 +13,5 @@ gosu postgres psql -c "SELECT pg_reload_conf();"
 cat | gosu postgres psql
 } &> /dev/null
 
-gosu postgres bin/pg_dump_anon.sh
+bin/pg_dump_anon.sh -U postgres
 
