@@ -28,7 +28,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS_TESTS = init detection
+REGRESS_TESTS = init extschema detection
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= pseudonymization hashing hashing_and_dynamic_masking
 REGRESS_TESTS+= anonymize pg_dump_anon restore
@@ -154,26 +154,15 @@ tests/expected/unit.out:
 ## S T A N D A L O N E
 ##
 
+# This is the schema the required extension (for instance tsm_system_rows)
+# will be installed
+EXTSCHEMA?=public
+
 .PHONY: standalone
 standalone: anon_standalone.sql #: build the standalone script
 
 anon_standalone.sql: anon.sql
-	echo 'CREATE EXTENSION IF NOT EXISTS tsm_system_rows;\n' > $@
-	echo 'CREATE EXTENSION IF NOT EXISTS pgcrypto;\n' >> $@
-	echo 'CREATE SCHEMA anon;\n' >> $@
-	sed 's/@extschema@/anon/g' anon.sql >> $@
-	$(SEDI) 's/^SELECT pg_catalog.pg_extension_config_dump(.*//' $@
-	echo "\\\\copy anon.city FROM 'data/default/city.csv';\n" >> $@
-	echo "\\\\copy anon.company FROM 'data/default/company.csv';\n" >> $@
-	echo "\\\\copy anon.email FROM 'data/default/email.csv';\n" >> $@
-	echo "\\\\copy anon.first_name FROM 'data/default/first_name.csv';\n" >> $@
-	echo "\\\\copy anon.iban FROM 'data/default/iban.csv';\n" >> $@
-	echo "\\\\copy anon.last_name FROM 'data/default/last_name.csv';\n" >> $@
-	echo "\\\\copy anon.siret FROM 'data/default/siret.csv';\n" >> $@
-	echo "\\\\copy anon.lorem_ipsum FROM 'data/default/lorem_ipsum.csv';\n" >> $@
-	echo "\\\\copy anon.identifiers_category FROM 'data/default/identifiers_category.csv';\n" >> $@
-	echo "\\\\copy anon.identifier FROM 'data/default/identifier_fr_FR.csv';\n" >> $@
-	echo "\\\\copy anon.identifier FROM 'data/default/identifier_en_US.csv';\n" >> $@
+	bin/standalone.sh $@
 
 clean_standalone:
 	rm -fr anon_standalone.sql

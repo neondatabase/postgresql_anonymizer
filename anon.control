@@ -2,7 +2,6 @@
 comment = 'Data anonymization tools'
 default_version = '0.7.0'
 directory='extension/anon'
-schema = 'anon'
 relocatable = false
 requires = 'tsm_system_rows,pgcrypto'
 superuser = false

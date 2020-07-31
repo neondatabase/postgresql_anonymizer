@@ -7,6 +7,9 @@
 --  * tms_system_rows (should be available with all distributions of postgres)
 --  * pgcrypto ( because PG10 does not include hashing functions )
 
+-- This cannot be done using `schema = anon` in anon.control
+-- because we want to be able to put the dependencies in a different schema
+CREATE SCHEMA IF NOT EXISTS anon;
 
 --------------------------------------------------------------------------------
 -- Security First
@@ -29,6 +32,7 @@ REVOKE ALL ON ALL TABLES IN SCHEMA anon FROM PUBLIC;
 -- https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY
 -- https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
 --
+
 
 -------------------------------------------------------------------------------
 -- Config
@@ -789,12 +793,6 @@ $$
 --- Generic hashing
 -------------------------------------------------------------------------------
 
--- https://github.com/postgres/postgres/blob/master/contrib/pgcrypto/pgcrypto--1.3.sql#L6
-CREATE OR REPLACE FUNCTION anon.pgcrypto_digest(text, text)
-RETURNS bytea
-AS '$libdir/pgcrypto', 'pg_digest'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 -- This is a wrapper around the pgcrypto digest function
 -- Standard algorithms are md5, sha1, sha224, sha256, sha384 and sha512.
 -- https://www.postgresql.org/docs/current/pgcrypto.html
@@ -805,7 +803,7 @@ CREATE OR REPLACE FUNCTION anon.digest(
 )
 RETURNS TEXT AS
 $$
-  SELECT encode(anon.pgcrypto_digest(concat(seed,salt),algorithm),'hex');
+  SELECT encode(@extschema@.digest(concat(seed,salt),algorithm),'hex');
 $$
   LANGUAGE SQL
   IMMUTABLE
@@ -893,9 +891,9 @@ $$
   SET search_path=''
 ;
 
-CREATE OR REPLACE FUNCTION random_date()
+CREATE OR REPLACE FUNCTION anon.random_date()
 RETURNS timestamp with time zone AS $$
-    SELECT anon.random_date_between('1900-01-01'::timestamp with time zone,now());
+  SELECT anon.random_date_between('1900-01-01'::timestamp with time zone,now());
 $$
   LANGUAGE SQL
   VOLATILE
@@ -991,32 +989,27 @@ $$
 -- FAKE data
 -------------------------------------------------------------------------------
 
-CREATE FUNCTION anon.system_rows(internal)
-RETURNS tsm_handler
-AS '$libdir/tsm_system_rows', 'tsm_system_rows_handler'
-LANGUAGE C STRICT;
-
 CREATE OR REPLACE FUNCTION anon.fake_first_name()
 RETURNS TEXT AS $$
-  SELECT COALESCE(first_name,anon.notice_if_not_init())
-  FROM anon.first_name
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(first_name,anon.notice_if_not_init())
+    FROM anon.first_name
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_last_name()
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.notice_if_not_init())
-  FROM anon.last_name
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(name,anon.notice_if_not_init())
+    FROM anon.last_name
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_email()
 RETURNS TEXT AS $$
-  SELECT COALESCE(address,anon.notice_if_not_init())
-  FROM anon.email
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(address,anon.notice_if_not_init())
+    FROM anon.email
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1033,9 +1026,9 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_city()
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.notice_if_not_init())
-  FROM anon.city
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(name,anon.notice_if_not_init())
+    FROM anon.city
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
@@ -1052,49 +1045,49 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_region()
 RETURNS TEXT AS $$
-  SELECT COALESCE(subcountry,anon.notice_if_not_init())
-  FROM anon.city
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(subcountry,anon.notice_if_not_init())
+    FROM anon.city
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_country()
 RETURNS TEXT AS $$
-  SELECT COALESCE(country,anon.notice_if_not_init())
-  FROM anon.city
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(country,anon.notice_if_not_init())
+    FROM anon.city
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_company()
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.notice_if_not_init())
-  FROM anon.company
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(name,anon.notice_if_not_init())
+    FROM anon.company
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_iban()
 RETURNS TEXT AS $$
-  SELECT COALESCE(id,anon.notice_if_not_init())
-  FROM anon.iban
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(id,anon.notice_if_not_init())
+    FROM anon.iban
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_siren()
 RETURNS TEXT AS $$
-  SELECT COALESCE(siren,anon.notice_if_not_init())
-  FROM anon.siret
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(siren,anon.notice_if_not_init())
+    FROM anon.siret
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.fake_siret()
 RETURNS TEXT AS $$
-  SELECT COALESCE(siren||nic,anon.notice_if_not_init())
-  FROM anon.siret
-  TABLESAMPLE anon.system_rows(1);
+    SELECT COALESCE(siren||nic,anon.notice_if_not_init())
+    FROM anon.siret
+    TABLESAMPLE @extschema@.system_rows(1);
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
