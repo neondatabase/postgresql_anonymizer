@@ -44,6 +44,7 @@ lint-bash:
     - apt-get update && apt-get install -y shellcheck
     - shellcheck bin/standalone.sh
     - shellcheck bin/pg_dump_anon.sh
+    - shellcheck docker/anon.sh
 
 lint-markdown:
   stage: lint
@@ -215,6 +216,21 @@ standalone11:
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone.sql
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c 'SELECT anon.fake_city() IS NOT NULL'
 
+blackbox:
+  stage: build
+  image: docker:19.03.8
+  services:
+    - docker:19.03.8-dind
+  before_script:
+    - echo 'Disable before_script.'
+  script:
+    - docker build -t blackbox . --file docker/Dockerfile
+    - mkdir results
+    - cat tests/sql/blackbox.sql | docker run --rm -i blackbox /anon.sh  > results/blackbox.out
+    # we remove comments because pg_dump ouputs the PG version and we don't want
+    # this test to break every time a new minor version is released
+    - sed -i 's/^--.*$//' results/blackbox.out
+    - diff tests/expected/blackbox.out results/blackbox.out
 
 ##
 ## T E S T
