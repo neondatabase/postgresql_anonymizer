@@ -8,6 +8,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 * [Shuffling]
 * [Randomization]
 * [Faking]
+* [Advanced Faking]
 * [Pseudonymization]
 * [Generic Hashing]
 * [Partial scrambling]
@@ -17,6 +18,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Adding Noise]: #adding-noise
 [Randomization]: #randomization
 [Faking]: #faking
+[Advanced Faking]: #advanced_faking
 [Pseudonymization]: #pseudonymization
 [Generic Hashing]: #generic-hashing
 [Partial scrambling]: #partial-scrambling
@@ -146,6 +148,30 @@ For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 
 [Lorem Ipsum]: https://lipsum.com
 
+Advanced Faking
+------------------------------------------------------------------------------
+
+Generating fake data is a complex topic. The functions provided here are
+limited to basic use case. For more advanced faking methods, in particular
+if you are looking for **localized fake data**, take a look at
+[PostgreSQL Faker], a extension based upon the well-known [Faker python library].
+
+[PostgreSQL Faker]: https://gitlab.com/dalibo/postgresql_faker
+[Faker python library]: https://faker.readthedocs.io
+
+This extension provides an advanced faking engine with localisation support
+
+For example:
+
+```sql
+CREATE SCHEMA faker;
+CREATE EXTENSION faker SCHEMA faker;
+SELECT faker.faker('de_DE');
+SELECT faker.first_name_female();
+ first_name_female
+-------------------
+ Mirja
+```
 
 Pseudonymization
 ------------------------------------------------------------------------------
