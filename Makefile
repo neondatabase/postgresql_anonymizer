@@ -88,10 +88,10 @@ install-bin:
 
 lint: lint-sh lint-md
 
-lint-sh:
+lint-sh: #: check the shell script syntax
 	shellcheck bin/pg_dump_anon.sh
 
-lint-md:
+lint-md: #: check the markdown syntax
 	mdl docs/*.md *.md
 
 
