@@ -70,6 +70,7 @@ psql_opts=(
   "--quiet"
   "--tuples-only"
   "--no-align"
+  "--no-psqlrc"
 )                       # connections options
 exclude_table_data=()   # dump the ddl, but ignore the data
 
