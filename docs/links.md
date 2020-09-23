@@ -1,6 +1,16 @@
 Ideas and Resources
 ================================================================================
 
+Videos / Presentations 
+--------------------------------------------------------------------------------
+
+* French: https://www.youtube.com/watch?v=KGSlp4UygdU
+* Chinese: https://www.youtube.com/watch?v=n9atI31FcSM
+
+Other technologies
+--------------------------------------------------------------------------------
+
+* [pgsodium and postgresql-anonymizer](https://github.com/michelp/pgsodium/blob/michelp/anonymizer-example/example/PgSodiumAnonymizer.ipynb)
 
 Similar Implemntations
 --------------------------------------------------------------------------------
