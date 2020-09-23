@@ -1,7 +1,7 @@
 Ideas and Resources
 ================================================================================
 
-Videos / Presentations 
+Videos / Presentations
 --------------------------------------------------------------------------------
 
 * French: https://www.youtube.com/watch?v=KGSlp4UygdU
