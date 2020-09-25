@@ -1,12 +1,15 @@
 CHANGELOG
 ===============================================================================
 
-2020FIXME : 0.7.0 - Generic Hashing and Advanced Faking 
+20200925 : 0.7.0 - Generic Hashing and Advanced Faking
 -------------------------------------------------------------------------------
 
 __Dependencies:__
-  - tms_system_rows
-  - pg_crypto
+
+- tms_system_rows
+- pg_crypto
+
+__Changes:__
 
 * [install] Add a notice to users when they try to load the extension twice
 * [CI] Improve the masking test
@@ -21,7 +24,7 @@ __Dependencies:__
 * [doc] DBaaS providers support for EVENT TRIGGERS and dynamic masking (Martin Kubrak)
 * [install] Remove dependency to the ddlx extension
 * [install] FIX #123: bug in the standalone install script (Florian Desbois)
-* [doc] lint markdown 
+* [doc] lint markdown
 * [hashing] Introducing generic hashing function (Gunnar Nick Bluth)
 * [hashing] Storing the hashing salt in a secret table
 * [hashing] Add dependency to the pg_crypto extension
@@ -39,7 +42,7 @@ __Dependencies:__
 * [init] fix `anon.reset()`
 * [init] FIX #103: Create extension encoding issue (Dattatray Phadtare)
 * [init] improve error handling
-* [init] add the oid into the CSV tables 
+* [init] add the oid into the CSV tables
 * [init] Initcap on table `first_name`
 * [doc] Add a troubleshooting guide
 * [doc] Typo (Peter Neave)

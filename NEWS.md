@@ -10,8 +10,8 @@ database.
 
 The extension supports 3 different anonymization strategies: [Dynamic Masking],
 [In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of
-[Masking Functions] such as Substitution, Randomization, Faking, 
-Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and 
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
 Generalization.
 
 [Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
@@ -35,7 +35,7 @@ functions:
 * `anon.hash(value)`  will return a text hash of the value using a secret salt
   and a secret hash algorithm (see below)
 
-* `anon.digest(value,salt,algorithm)` lets you choose a salt and the hash 
+* `anon.digest(value,salt,algorithm)` lets you choose a salt and the hash
   algorithm you want to use
 
 By default a random secret salt is generated when the extension is initialized
@@ -54,7 +54,7 @@ Many thanks to Gunnar "Nick" Bluth for his help on this feature !
 Advanced Faking
 -------------------------------------------------------------------------------
 
-Generating fake data is a complex topic. The anon extension offer a set of 
+Generating fake data is a complex topic. The anon extension offer a set of
 basic faking functions but for more advanced faking methods, in particular
 if you are looking for **localized fake data**, take a look at
 [PostgreSQL Faker], an extension based upon the well-known [Faker python library].
@@ -86,8 +86,8 @@ On Red Hat / CentOS systems, you can install it from the
 
     yum install postgresql_anonymizer12
 
-Then load the extension with: 
-    
+Then load the extension with:
+
     ALTER DATABASE foo SET session_preload_libraries = 'anon';
 
 Create the extension inside the database:
