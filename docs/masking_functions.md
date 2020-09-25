@@ -5,7 +5,6 @@ The extension provides functions to implement 8 main anonymization strategies:
 
 * [Destruction]
 * [Adding Noise]
-* [Shuffling]
 * [Randomization]
 * [Faking]
 * [Advanced Faking]

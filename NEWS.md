@@ -1,4 +1,148 @@
 
+PostgreSQL Anonymizer 0.7: Generic Hashing and Advanced Faking
+================================================================================
+
+Eymoutiers, France, September 25, 2020
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[In-Place Anonymization] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
+Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[In-Place Anonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/in_place_anonymization/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+Generic Hashing
+--------------------------------------------------------------------------------
+
+In theory, hashing is not a valid anonymization technique, however in practice
+it is sometimes necessary to generate a determinist hash of the original data.
+For instance, when a pair of  primary key / foreign key is a "natural key",
+it may contain actual information ( like a customer number containing a birth
+date or something similar).
+
+Hashing such columns allows to keep referential integrity intact even for
+relatively unusual source data. Therefore, the extension provides 2 masking
+functions:
+
+* `anon.hash(value)`  will return a text hash of the value using a secret salt
+  and a secret hash algorithm (see below)
+
+* `anon.digest(value,salt,algorithm)` lets you choose a salt and the hash
+  algorithm you want to use
+
+By default a random secret salt is generated when the extension is initialized
+and the default hash algortihm is `sha512`. You can change that if needed.
+
+Keep in mind that hashing is a form of Pseudonymization. This means that the
+real data can be rebuilt using the hashed value and the masking function. If an
+attacker gets access to these elements, he or she can easily re-identify
+some persons using `brute force` or `dictionary` attacks. Therefore, **the
+salt and the algorithm used to hash the data must be protected with the
+same level of security that the original dataset.**
+
+Many thanks to Gunnar "Nick" Bluth for his help on this feature !
+
+
+Advanced Faking
+-------------------------------------------------------------------------------
+
+Generating fake data is a complex topic. The anon extension offer a set of
+basic faking functions but for more advanced faking methods, in particular
+if you are looking for **localized fake data**, take a look at
+[PostgreSQL Faker], an extension based upon the well-known [Faker python library].
+
+[PostgreSQL Faker]: https://gitlab.com/dalibo/postgresql_faker
+[Faker python library]: https://faker.readthedocs.io
+
+This extension provides an advanced faking engine with localisation support
+
+For example:
+
+    CREATE SCHEMA faker;
+    CREATE EXTENSION faker SCHEMA faker;
+    SELECT faker.faker('de_DE');
+    SELECT faker.first_name_female();
+     first_name_female
+    -------------------
+     Mirja
+
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 9.6 and further versions.
+
+On Red Hat / CentOS systems, you can install it from the
+[official PostgreSQL RPM repository]:
+
+
+    yum install postgresql_anonymizer12
+
+Then load the extension with:
+
+    ALTER DATABASE foo SET session_preload_libraries = 'anon';
+
+Create the extension inside the database:
+
+    CREATE EXTENSION anon CASCADE;
+
+And finally, initialize the extension
+
+    SELECT anon.init();
+
+
+For other systems, check out the [install] documentation :
+
+https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+> **WARNING:** The project is at an early stage of development and should be
+> used carefully.
+
+[official PostgreSQL RPM repository]: https://yum.postgresql.org/
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+Thanks
+--------------------------------------------------------------------------------
+
+
+This release includes code, bugfixes and ideas from Gunnar "Nick" Bluth,
+Yann Robin, Christophe Courtois, Nikolay Samokhvalov.
+
+Many thanks to them !
+
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas ! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+
+
+--------------------------------------------------------------------------------
+
+
+
 PostgreSQL Anonymizer 0.6: Pseudonymization and Improved Anonymous Exports
 ================================================================================
 
