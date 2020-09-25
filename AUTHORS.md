@@ -17,6 +17,7 @@ Many thanks to Etienne Bersac (@bersace) for his help !
 Contributors
 -------------------------------------------------------------------------------
 
+* Nikolay Samokhvalov (@NikolayS) : Bug fix
 * Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
 * Yann ROBIN (@me.show) : version() function and DBAAS install
 * Ilya Gorbunov (@dAverk) : Bug fixes

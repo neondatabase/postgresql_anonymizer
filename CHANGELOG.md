@@ -1,7 +1,7 @@
 CHANGELOG
 ===============================================================================
 
-2020FIXME : 0.7.0 - WORK IN PROGRESS
+2020FIXME : 0.7.0 - Generic Hashing and Advanced Faking 
 -------------------------------------------------------------------------------
 
 __Dependencies:__
@@ -46,6 +46,9 @@ __Dependencies:__
 * [doc] Choose between stable and latest
 * [blackbox] FIX #156 stdout permissions (Ilya Gorbunov)
 * [init] better error handling
+* [init] rename anon.load() to anon.init()
+* [doc] how to use the PostgreSQL Faker extension
+* [dump] Ignore .psqlrc (Nikolay Samokhvalov)
 
 
 
