@@ -1,4 +1,3 @@
-
 PostgreSQL Anonymizer 0.7: Generic Hashing and Advanced Faking
 ================================================================================
 
@@ -25,7 +24,7 @@ Generic Hashing
 In theory, hashing is not a valid anonymization technique, however in practice
 it is sometimes necessary to generate a determinist hash of the original data.
 For instance, when a pair of  primary key / foreign key is a "natural key",
-it may contain actual information ( like a customer number containing a birth
+it may contain actual information (like a customer number containing a birth
 date or something similar).
 
 Hashing such columns allows to keep referential integrity intact even for
@@ -54,7 +53,7 @@ Many thanks to Gunnar "Nick" Bluth for his help on this feature !
 Advanced Faking
 -------------------------------------------------------------------------------
 
-Generating fake data is a complex topic. The anon extension offer a set of
+Generating fake data is a complex topic. The anon extension offers a set of
 basic faking functions but for more advanced faking methods, in particular
 if you are looking for **localized fake data**, take a look at
 [PostgreSQL Faker], an extension based upon the well-known [Faker python library].
