@@ -19,13 +19,14 @@ CREATE TABLE employee (
   lastname TEXT,
   phone TEXT UNIQUE,
   ssn TEXT UNIQUE,
-  iban TEXT UNIQUE
+  iban TEXT UNIQUE,
+  linkedin_url TEXT
 );
 
 INSERT INTO employee
 VALUES
-(1,'Sarah','Connor','0609110911','153-473-999','FI9562411724264125'),
-(2,'Kyle', 'Reese', '0230366642','573-731-129','GB32BARC20039593595589')
+(1,'Sarah','Connor','0609110911','153-473-999','FI9562411724264125',NULL),
+(2,'Kyle', 'Reese', '0230366642','573-731-129','GB32BARC20039593595589',NULL)
 ;
 
 CREATE TABLE call_history (
@@ -67,6 +68,10 @@ IS 'MASKED WITH FUNCTION anon.partial(ssn,0,$$XXX-XXX-XX$$,1)';
 SECURITY LABEL FOR anon ON COLUMN employee.iban
 IS 'MASKED WITH FUNCTION anon.random_string(18)';
 
+-- Issue #181
+SECURITY LABEL FOR anon ON COLUMN employee.linkedin_url
+IS 'MASKED WITH VALUE ''https://example.com/path'' ';
+
 --
 -- T E S T S
 --
@@ -91,6 +96,9 @@ SELECT anon.anonymize_database();
 
 -- Issue #114 : Check if all columns are masked
 SELECT phone != '0609110911' FROM employee WHERE id=1;
+
+-- Issue #181
+SELECT bool_and(linkedin_url IS NOT NULL) FROM employee;
 
 -- Anonymize a masked table
 SELECT anon.anonymize_table('employee');

@@ -133,6 +133,14 @@ WHERE tablename='inject_via_init';
 --
 SECURITY LABEL FOR anon ON COLUMN a.x
 IS 'MASKED WITH VALUE foo; CREATE TABLE inject_via_rule (i int);--';
+ERROR:  syntax error at or near ";"
+LINE 1: ...ject_via_init (i int);--".a AS SELECT i,d,CAST(foo; CREATE T...
+                                                             ^
+QUERY:  CREATE OR REPLACE VIEW "foo; CREATE TABLE inject_via_init (i int);--".a AS SELECT i,d,CAST(foo; CREATE TABLE inject_via_rule (i int);-- AS integer) AS x FROM public.a
+CONTEXT:  PL/pgSQL function anon.mask_create_view(oid) line 3 at EXECUTE
+SQL function "mask_update" statement 2
+SQL statement "SELECT anon.mask_update()"
+PL/pgSQL function anon.mask_trigger() line 5 at PERFORM
 SELECT COUNT(*) = 0
 FROM pg_tables
 WHERE tablename='inject_via_rule';

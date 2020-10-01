@@ -1489,9 +1489,10 @@ LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 CREATE OR REPLACE VIEW anon.pg_masking_rules AS
 WITH const AS (
   SELECT
+    -- #" is the escape-double-quote separator
     '%MASKED +WITH +FUNCTION +#"%#(%#)#"%'::TEXT
       AS pattern_mask_column_function,
-    'MASKED +WITH +VALUE +([''$A-Za-z0-9]*) ?'::TEXT
+    'MASKED +WITH +VALUE +#"%#" ?'::TEXT
       AS pattern_mask_column_value
 ),
 rules_from_comments AS (
@@ -1502,11 +1503,11 @@ SELECT
   a.attname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   pg_catalog.col_description(a.attrelid, a.attnum),
-  substring(  pg_catalog.col_description(a.attrelid, a.attnum)
-              from k.pattern_mask_column_function for '#')
+  trim(substring( pg_catalog.col_description(a.attrelid, a.attnum)
+                  FROM k.pattern_mask_column_function FOR '#'))
     AS masking_function,
-  substring(  pg_catalog.col_description(a.attrelid, a.attnum)
-              from k.pattern_mask_column_value)
+  trim(substring( pg_catalog.col_description(a.attrelid, a.attnum)
+                  FROM k.pattern_mask_column_value FOR '#'))
     AS masking_value,
   0 AS priority --low priority for the comment syntax
 FROM const k,
@@ -1515,8 +1516,10 @@ JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
 WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
-AND (   pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
-    OR  pg_catalog.col_description(a.attrelid, a.attnum) SIMILAR TO k.pattern_mask_column_value
+AND (   pg_catalog.col_description(a.attrelid, a.attnum)
+          SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
+    OR  pg_catalog.col_description(a.attrelid, a.attnum)
+          SIMILAR TO k.pattern_mask_column_value ESCAPE '#'
     )
 ),
 rules_from_seclabels AS (
@@ -1527,8 +1530,10 @@ SELECT
   a.attname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   sl.label AS col_description,
-  substring(sl.label from k.pattern_mask_column_function for '#')  AS masking_function,
-  substring(sl.label from k.pattern_mask_column_value )  AS masking_value,
+  trim(substring( sl.label FROM k.pattern_mask_column_function FOR '#'))
+    AS masking_function,
+  trim(substring(sl.label FROM k.pattern_mask_column_value FOR '#'))
+    AS masking_value,
   100 AS priority -- high priority for the security label syntax
 FROM const k,
      pg_catalog.pg_seclabel sl
@@ -1538,7 +1543,7 @@ WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
 AND (   sl.label SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
-    OR  sl.label SIMILAR TO k.pattern_mask_column_value
+    OR  sl.label SIMILAR TO k.pattern_mask_column_value ESCAPE '#'
     )
 AND sl.provider = 'anon' -- this is hard-coded in anon.c
 ),
