@@ -56,7 +56,25 @@ Step 4 : Connect with the masked user
 (1 row)
 ```
 
-Dropping a masking table
+How to change the type of a masked column
+------------------------------------------------------------------------------
+
+When dynamic masking is activated, you are not allowed to change the datatype
+on a column is there's a mask upon it.
+
+To modify a masked column, you need to switch of temporarily the masking engine
+like this:
+
+```sql
+BEGIN;
+SELECT anon.stop_dynamic_masking();
+ALTER TABLE people ALTER COLUMN phone TYPE VARCHAR(255);
+SELECT anon.start_dynamic_masking();
+COMMIT;
+```
+
+
+How to drop a masked table
 ------------------------------------------------------------------------------
 
 The dynamic masking engine will build _masking views_ upon the masked tables.
@@ -64,16 +82,16 @@ This means that it is not possible to drop a masked table directly. You will
 get an error like this :
 
 ```sql
-# DROP TABLE company;
-psql: ERROR:  cannot drop table company because other objects depend on it
-DETAIL:  view mask.company depends on table company
+# DROP TABLE people;
+psql: ERROR:  cannot drop table people because other objects depend on it
+DETAIL:  view mask.company depends on table people
 ```
 
 To effectively remove the table, it is necessary to add the `CASCADE` options
 so that the masking view will be dropped too:
 
 ```sql
-# DROP TABLE company CASCADE;
+DROP TABLE people CASCADE;
 ```
 
 
