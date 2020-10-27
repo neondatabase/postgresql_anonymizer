@@ -14,7 +14,7 @@ INSERT INTO stock VALUES
 (2,400);
 
 CREATE TABLE employee (
-  id INT,
+  id INT PRIMARY KEY,
   firstname TEXT,
   lastname TEXT,
   phone TEXT UNIQUE,
@@ -40,6 +40,29 @@ INSERT INTO call_history
 VALUES
 (464,'0609110911','2020-05-24 08:11:30', '2020-05-24 08:11:43'),
 (465,'0609110911','2020-05-25 15:58:23', '2020-05-24 16:01:11');
+
+INSERT INTO call_history
+VALUES
+(464,'0609110911','2020-05-24 08:11:30', '2020-05-24 08:11:43'),
+(465,'0609110911','2020-05-25 15:58:23', '2020-05-24 16:01:11');
+
+CREATE TABLE profile (
+  id INT,
+  customer_id INT REFERENCES employee(id),
+  personalDataA TEXT,
+  personalDataB TEXT,
+  personalDataC TEXT,
+  personalDataD TEXT,
+  personalDataE TEXT,
+  personalDataF TEXT,
+  personalDataG TEXT,
+  personalDataH TEXT
+);
+
+INSERT INTO profile
+SELECT i, (i % 2) + 1,'personal data A '|| i, 'personal data B '|| i, 'personal data C '|| i, 'personal data D '|| i,'personal data E '|| i, 'personal data F '|| i, 'personal data G '|| i, 'personal data H '|| i
+FROM GENERATE_SERIES(1, 50000) i;
+
 
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
@@ -71,6 +94,31 @@ IS 'MASKED WITH FUNCTION anon.random_string(18)';
 -- Issue #181
 SECURITY LABEL FOR anon ON COLUMN employee.linkedin_url
 IS 'MASKED WITH VALUE ''https://example.com/path'' ';
+
+-- Issue #185 : improve perfs
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataA
+IS 'MASKED WITH VALUE ''xxxA'' ';
+
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataB
+IS 'MASKED WITH VALUE ''xxxB'' ';
+
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataC
+IS 'MASKED WITH VALUE ''xxxC'' ';
+
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataD
+IS 'MASKED WITH VALUE ''xxxD'' ';
+
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataE
+IS 'MASKED WITH VALUE ''xxxE'' ';
+
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataF
+IS 'MASKED WITH VALUE ''xxxF'' ';
+
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataG
+IS 'MASKED WITH VALUE ''xxxG'' ';
+
+SECURITY LABEL FOR anon ON COLUMN profile.personalDataH
+IS 'MASKED WITH VALUE ''xxxH'' ';
 
 --
 -- T E S T S
@@ -109,6 +157,17 @@ SELECT anon.anonymize_table('stock') IS NULL;
 
 -- Anonymize a table that does not exist
 SELECT anon.anonymize_table('employee');
+
+-- Issue #185 : improve perfs
+SELECT anon.anonymize_table('profile');
+SELECT count(*)=0 FROM profile WHERE personalDataA != 'xxxA';
+SELECT count(*)=0 FROM profile WHERE personalDataB != 'xxxB';
+SELECT count(*)=0 FROM profile WHERE personalDataC != 'xxxC';
+SELECT count(*)=0 FROM profile WHERE personalDataD != 'xxxD';
+SELECT count(*)=0 FROM profile WHERE personalDataE != 'xxxE';
+SELECT count(*)=0 FROM profile WHERE personalDataF != 'xxxF';
+SELECT count(*)=0 FROM profile WHERE personalDataG != 'xxxG';
+SELECT count(*)=0 FROM profile WHERE personalDataH != 'xxxH';
 
 -- Anonymize a masked column
 SELECT anon.anonymize_column('employee','phone');
