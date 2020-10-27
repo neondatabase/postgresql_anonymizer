@@ -1569,12 +1569,12 @@ SELECT * FROM anon.pg_masking_rules
 -- In-Place Anonymization
 -------------------------------------------------------------------------------
 
--- Replace masked data in a column
-CREATE OR REPLACE FUNCTION anon.anonymize_column(
+-- Return SQL assigment which replace masked data in a column or null when no masking rule was found
+CREATE OR REPLACE FUNCTION anon.build_anonymize_column_assignment(
   tablename REGCLASS,
   colname NAME
 )
-RETURNS BOOLEAN AS
+RETURNS TEXT AS
 $$
 DECLARE
   mf TEXT; -- masking_filter can be either a function or a value
@@ -1590,7 +1590,7 @@ BEGIN
     RAISE WARNING 'There is no masking rule for column % in table %',
                   colname,
                   tablename;
-    RETURN FALSE;
+    RETURN null;
   END IF;
 
   SELECT mf LIKE 'anon.fake_%' INTO mf_is_a_faking_function;
@@ -1599,34 +1599,65 @@ BEGIN
       USING HINT = 'You probably need to run ''SELECT anon.init()'' ';
   END IF;
 
-  RAISE DEBUG 'Anonymize %.% with %', tablename,colname, mf;
-  EXECUTE format('UPDATE %s SET %I = %s', tablename,colname, mf);
+  RETURN format('%I = %s', colname, mf);
+END;
+$$
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER
+SET search_path='';
 
+-- Replace masked data in a column
+CREATE OR REPLACE FUNCTION anon.anonymize_column(
+  tablename REGCLASS,
+  colname NAME
+)
+RETURNS BOOLEAN AS
+$$
+DECLARE
+  sql TEXT;
+BEGIN
+  SET CONSTRAINTS ALL DEFERRED;
+  sql := anon.build_anonymize_column_assignment(tablename, colname);
+  IF sql IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  RAISE DEBUG 'Anonymize % with %', tablename, sql;
+  EXECUTE format('UPDATE %s SET %s', tablename, sql);
   RETURN TRUE;
 END;
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
-
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER
+SET search_path='';
 
 -- Replace masked data in a table
 CREATE OR REPLACE FUNCTION anon.anonymize_table(tablename REGCLASS)
 RETURNS BOOLEAN AS
 $$
-  -- bool_or is required to aggregate all tuples
-  -- otherwise only the first masking rule is applied
-  -- see issue #114
-  SELECT bool_or(anon.anonymize_column(tablename,attname))
+DECLARE sql TEXT;
+BEGIN
+  SELECT string_agg(anon.build_anonymize_column_assignment(tablename, attname), ',') INTO sql
   FROM anon.pg_masking_rules
-  WHERE attrelid::regclass=tablename;
-$$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  WHERE attrelid::regclass = tablename;
 
--- Walk through all masked columns and permanently apply the mask
+  IF sql != '' THEN
+    RAISE DEBUG 'Anonymize table % with %', tablename, sql;
+    EXECUTE format('UPDATE %s SET %s', tablename, sql);
+    RETURN true;
+  END IF;
+
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql VOLATILE SECURITY INVOKER
+SET search_path = '';
+
+-- Walk through all tables with masked columns and execute anonymize_table on them
 CREATE OR REPLACE FUNCTION anon.anonymize_database()
 RETURNS BOOLEAN AS
 $$
-  SELECT bool_or(anon.anonymize_column(attrelid::REGCLASS,attname))
-  FROM anon.pg_masking_rules;
+  SELECT bool_or(anon.anonymize_table(t.regclass))
+  FROM (
+      SELECT distinct attrelid::REGCLASS as regclass
+      FROM anon.pg_masking_rules
+  ) as t;
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
