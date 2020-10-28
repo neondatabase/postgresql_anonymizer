@@ -1013,6 +1013,22 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
+CREATE OR REPLACE FUNCTION anon.fake_email2()
+RETURNS TEXT AS $$
+    SELECT COALESCE(address,anon.notice_if_not_init())
+    FROM anon.email
+    WHERE oid=(SELECT (random()*max(oid))::INT FROM anon.email);
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+
+CREATE OR REPLACE FUNCTION anon.fake_email3()
+RETURNS TEXT AS $$
+    SELECT COALESCE(address,anon.notice_if_not_init())
+    FROM anon.email
+    TABLESAMPLE SYSTEM(50) LIMIT 1;
+$$
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+
 CREATE OR REPLACE FUNCTION anon.fake_city_in_country(
   country_name TEXT
 )
