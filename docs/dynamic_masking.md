@@ -108,7 +108,7 @@ specify the schema that will be masked with:
 SELECT start_dynamic_masking('sales');
 ```
 
-**However** in-place anonymization with `anon.anonymize()`and anonymous export
+**However** static masking with `anon.anonymize()`and anonymous export
 with `anon.dump()` will work fine will multiple schemas.
 
 ### Performances

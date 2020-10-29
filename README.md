@@ -15,7 +15,7 @@ Once the maskings rules are defined, you can access the anonymized data in 3
 different ways :
 
 * [Anonymous Dumps] : Simply export the masked data into an SQL file
-* [In-Place Anonymization] : Remove the PII according to the rules
+* [Static Masking] : Remove permamently the PII according to the rules
 * [Dynamic Masking] : Hide PII only for the masked users
 
 In addition, various [Masking Functions] are available: randomization, faking,
@@ -30,7 +30,7 @@ about the latest version.
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 
 [Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
-[In-Place Anonymization]: https://postgresql-anonymizer.readthedocs.io/en/latest/in_place_anonymization/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
 [Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
 [Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
 
@@ -64,11 +64,11 @@ The data masking rules are declared simply by using [security labels] :
 
 [security labels]: https://www.postgresql.org/docs/current/sql-security-label.html
 
-In-Place Anonymization
+Static Masking
 ------------------------------------------------------------------------------
 
-You can permanently remove the PII from a database with `anon.anymize_database()`.
-This will destroy the original data. Use with care.
+You can permanently remove the PII from a database with
+`anon.anonymize_database()`. This will destroy the original data. Use with care.
 
 ```sql
 =# SELECT * FROM customer;
@@ -232,7 +232,7 @@ Limitations
 * The dynamic masking system only works with one schema (by default `public`).
   When you start the masking engine with `start_dynamic_masking()`, you can
   specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`.
-  **However** in-place anonymization with `anon.anonymize()`and anonymous
+  **However** static masking with `anon.anonymize()`and anonymous
   export with `anon.dump()` will work fine with multiple schemas.
 
 
