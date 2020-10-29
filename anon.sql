@@ -1732,24 +1732,6 @@ ORDER BY a.attnum
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
--- build a masked view for each table
--- /!\ Disable the Event Trigger before calling this :-)
--- We can't use the namespace oids because the mask schema may not be present
-CREATE OR REPLACE FUNCTION  anon.mask_create()
-RETURNS SETOF VOID AS
-$$
-BEGIN
-  -- Walk through all tables in the source schema
-  PERFORM anon.mask_create_view(oid)
-  FROM pg_class
-  WHERE relnamespace=anon.source_schema()::regnamespace
-  AND relkind IN ('r','p') -- relations or partitions
-  ;
-END
-$$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
-
 -- get the "select filters" that will mask the real data of a table
 CREATE OR REPLACE FUNCTION anon.mask_filters(
   relid OID
