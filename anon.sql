@@ -1566,7 +1566,7 @@ SELECT * FROM anon.pg_masking_rules
 
 
 -------------------------------------------------------------------------------
--- In-Place Anonymization
+-- Static Masking
 -------------------------------------------------------------------------------
 
 -- Return SQL assigment which replace masked data in a column or null when no masking rule was found

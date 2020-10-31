@@ -17,7 +17,7 @@ Once the maskings rules are defined, you can access the anonymized data in 3
 different ways :
 
 * [Anonymous Dumps] : Simply export the masked data into an SQL file
-* [In-Place Anonymization] : Remove the PII according to the rules
+* [Static Masking] : Remove the PII according to the rules
 * [Dynamic Masking] : Hide PII only for the masked users
 
 
@@ -36,7 +36,7 @@ guess which columns needs to be anonymized.
 [declare the masking rules]: declare_masking_rules/
 
 [Anonymous Dumps]: anonymous_dumps/
-[In-Place Anonymization]: in_place_anonymization/
+[Static Masking]: static_masking/
 [Dynamic Masking]: dynamic_masking/
 [Masking Functions]: masking_functions/
 

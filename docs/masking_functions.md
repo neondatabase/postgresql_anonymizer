@@ -71,11 +71,11 @@ repeat attack, especially with [Dynamic Masking]. A masked user can guess
 an original value by resquesting its masked value multiple times and then simply
 use the `AVG()` function to get a close approximation. ( See
 `demo/noise_reduction_attack.sql` for more details). In a nutshell, these
-functions are best fitted for [Anonymous Dumps] and [In-Place Anonymization].
+functions are best fitted for [Anonymous Dumps] and [Static Masking].
 They should be avoided when using [Dynamic Masking].
 
 [Anonymous Dumps]: anonymous_dumps/
-[In-Place Anonymization]: in_place_anonymization/
+[Static Masking]: static_masking/
 [Dynamic Masking]: dynamic_masking/
 
 

@@ -92,11 +92,11 @@ SELECT anon.anonymize_table('customer');
 SELECT anon.anonymize_column('customer','zipcode');
 ```
 
-**WARNING** : **In-Place Anonymization is a slow process**. The principle of
-in-place anonymization is to update all lines of all tables containing at
+**WARNING** : **Static masking is a slow process**. The principle of
+static masking is to update all lines of all tables containing at
 least one masked column. This basically means that PostgreSQL will rewrite
 all the data on disk. Depending on the database size, the hardware and the
-server config, it may be faster to export the anonymized data (See
+instance config, it may be faster to export the anonymized data (See
 [Anonymous Dumps] ) and reload it into the database.
 
 
