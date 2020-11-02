@@ -1,4 +1,3 @@
-
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 --\echo Use "CREATE EXTENSION anon" to load this file. \quit
 
@@ -1743,8 +1742,8 @@ BEGIN
   -- Walk through all tables in the source schema
   PERFORM anon.mask_create_view(oid)
   FROM pg_class
-  WHERE relnamespace=anon.sourceschema()::regnamespace
-  AND relkind = 'r' -- relations only
+  WHERE relnamespace=anon.source_schema()::regnamespace
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 END
 $$
@@ -1881,7 +1880,7 @@ BEGIN
   PERFORM anon.mask_drop_view(oid)
   FROM pg_class
   WHERE relnamespace=anon.source_schema()::regnamespace
-  AND relkind = 'r' -- relations only
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 
   -- Walk through all masked roles and remove their mask
@@ -2017,7 +2016,7 @@ $$
   SELECT anon.mask_create_view(oid)
   FROM pg_class
   WHERE relnamespace=anon.source_schema()::regnamespace
-  AND relkind = 'r' -- relations only
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 
   -- Walk through all masked roles and apply the restrictions
