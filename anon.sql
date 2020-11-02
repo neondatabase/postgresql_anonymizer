@@ -1743,7 +1743,7 @@ BEGIN
   PERFORM anon.mask_create_view(oid)
   FROM pg_class
   WHERE relnamespace=anon.source_schema()::regnamespace
-  AND (relkind = 'r' or relkind = 'p')  -- relations only
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 END
 $$
@@ -1880,7 +1880,7 @@ BEGIN
   PERFORM anon.mask_drop_view(oid)
   FROM pg_class
   WHERE relnamespace=anon.source_schema()::regnamespace
-  AND (relkind = 'r' or relkind = 'p')  -- relations only
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 
   -- Walk through all masked roles and remove their mask
@@ -2016,7 +2016,7 @@ $$
   SELECT anon.mask_create_view(oid)
   FROM pg_class
   WHERE relnamespace=anon.source_schema()::regnamespace
-  AND (relkind = 'r' or relkind = 'p')  -- relations only
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 
   -- Walk through all masked roles and apply the restrictions
