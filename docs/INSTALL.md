@@ -50,6 +50,8 @@ Install on RedHat / CentOS
 
 > This is the recommended way to install the `stable` extension
 
+> This method works for RHEL/CentOS 7 and 8. If you're running RHEL/CentOS 6,
+> consider upgrading or read the [Install With PGXN] section.
 
 _Step 0:_ Add the [PostgreSQL Official RPM Repo] to your system. It should be
 something like:
