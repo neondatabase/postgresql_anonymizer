@@ -17,6 +17,7 @@ There are multiple ways to install the extension :
 * [Install with docker]
 * [Install as a black box]
 * [Install on MacOS]
+* [Install on Windows]
 
 In the examples below, we load the extension (step2) using a parameter called
 `session_preload_librairies` but there are other ways to load it.
@@ -31,8 +32,9 @@ If you're having any problem, check the [Troubleshooting] section.
 [Install with docker]: #install-with-docker
 [Install as a black box]: #install-as-a-black-box
 [Install on MacOS]: #install-on-macos
-[Load the extension]: #load-the-extension
-[Troubleshooting]: #troubleshooting
+[Install on Windows]: #install-on-windows
+[Load the extension]: #addendum--load-the-extension
+[Troubleshooting]: #addendum--troubleshooting
 
 Choose your version : `Stable` or `Latest` ?
 ------------------------------------------------------------------------------
@@ -351,8 +353,20 @@ make extension
 make install
 ```
 
+Install on Windows
+------------------------------------------------------------------------------
 
-Load the extension
+This extension is not supported on Windows.
+
+However in theory it should be possible to compile it using Visual Studio.
+we simply lack the time and ressource to work on this topic. You can contact us
+if you which to fund this effort.
+
+Alternatively, the [Install in the cloud] method should work on Windows too.
+
+
+
+Addendum: Alternative ways to load the extension
 ------------------------------------------------------------------------------
 
 Here's some additional notes about how you can load the extension:
@@ -401,7 +415,8 @@ for more details.
 [LOAD]: https://www.postgresql.org/docs/current/sql-load.html
 [Shared Library Preloading]:https://www.postgresql.org/docs/current/runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD
 
-Troubleshooting
+
+Addendum: Troubleshooting
 ------------------------------------------------------------------------------
 
 If you are having difficulties, you may have missed a step during the
