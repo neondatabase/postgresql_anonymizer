@@ -173,7 +173,29 @@ LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
 $$
 LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
 
+-------------------------------------------------------------------------------
+-- Common functions
+-------------------------------------------------------------------------------
 
+-- Returns TRUE if the column exists in the table
+CREATE OR REPLACE FUNCTION anon.column_exists(
+  table_relid regclass,
+  column_name NAME
+)
+RETURNS BOOLEAN
+AS $func$
+  SELECT count(attname)>0
+  FROM pg_attribute
+  WHERE attrelid = table_relid
+  AND attnum > 0 -- Ordinary columns are numbered from 1 up
+  AND NOT attisdropped
+  AND attname = column_name;
+$func$
+  LANGUAGE SQL
+  STABLE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 -- Noise
@@ -186,16 +208,10 @@ CREATE OR REPLACE FUNCTION anon.add_noise_on_numeric_column(
 )
 RETURNS BOOLEAN
 AS $func$
-DECLARE
-  colname TEXT;
 BEGIN
 
   -- Stop if noise_column does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=noise_table::TEXT
-  AND column_name=noise_column::TEXT;
-  IF colname IS NULL THEN
+  IF NOT anon.column_exists(noise_table,noise_column) THEN
     RAISE WARNING 'Column ''%'' is not present in table ''%''.',
                     noise_column,
                     noise_table;
@@ -219,16 +235,9 @@ CREATE OR REPLACE FUNCTION anon.add_noise_on_datetime_column(
 )
 RETURNS BOOLEAN
 AS $func$
-DECLARE
-  colname TEXT;
 BEGIN
-
   -- Stop if noise_column does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=noise_table::TEXT
-  AND column_name=noise_column::TEXT;
-  IF colname IS NULL THEN
+  IF NOT anon.column_exists(noise_table,noise_column) THEN
     RAISE WARNING 'Column ''%'' is not present in table ''%''.',
                   noise_column,
                   noise_table;
@@ -321,15 +330,8 @@ CREATE OR REPLACE FUNCTION anon.shuffle_column(
 )
 RETURNS BOOLEAN
 AS $func$
-DECLARE
-  colname TEXT;
 BEGIN
-  -- Stop if shuffle_column does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=shuffle_table::TEXT
-  AND column_name=shuffle_column::TEXT;
-  IF colname IS NULL THEN
+  IF NOT anon.column_exists(shuffle_table,shuffle_column) THEN
     RAISE WARNING 'Column ''%'' is not present in table ''%''.',
                   shuffle_column,
                   shuffle_table;
@@ -337,11 +339,7 @@ BEGIN
   END IF;
 
   -- Stop if primary_key does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=shuffle_table::TEXT
-  AND column_name=primary_key::TEXT;
-  IF colname IS NULL THEN
+  IF NOT anon.column_exists(shuffle_table,primary_key) THEN
     RAISE WARNING 'Column ''%'' is not present in table ''%''.',
                   primary_key,
                   shuffle_table;
@@ -354,15 +352,15 @@ BEGIN
     -- shuffle the primary key
     SELECT row_number() over (order by random()) n,
            %3$I AS pkey
-    FROM %1$I
+    FROM %1$s
   ),
   s2 AS (
     -- shuffle the column
     SELECT row_number() over (order by random()) n,
            %2$I AS val
-    FROM %1$I
+    FROM %1$s
   )
-  UPDATE %1$I
+  UPDATE %1$s
   SET %2$I = s2.val
   FROM s1 JOIN s2 ON s1.n = s2.n
   WHERE %3$I = s1.pkey;
