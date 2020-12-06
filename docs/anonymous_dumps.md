@@ -57,6 +57,16 @@ variable value is used.
 [.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 
+TIP: Avoid multiple password prompts
+------------------------------------------------------------------------------
+
+If you don't provide the connection password to `pg_dump_anon` using the
+`--password` option, you may have to type the password multipe times.To
+avoid this, you can either [define the $PGPASS variable] or place your
+password in a [.pgpass] file.
+ *
+[define the $PGPASS variable]: https://www.postgresql.org/docs/current/libpq-envars.html
+
 
 DEPRECATED: DO NOT USE anon.dump()
 ------------------------------------------------------------------------------
