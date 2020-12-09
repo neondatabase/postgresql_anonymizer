@@ -143,13 +143,13 @@ cat > "$output" <<EOF
 EOF
 
 ################################################################################
-## 1. Dump the DDL
+## 1. Dump the DDL (pre-data section)
 ################################################################################
 
 # gather all options needed to dump the DDL
 ddl_dump_opt=(
   "${pg_dump_opts[@]}"     # options from the command line
-  "--schema-only"         # data will be dumped later
+  "--section=pre-data"         # data will be dumped later
   "--no-security-labels"  # masking rules are confidential
   "--exclude-schema=anon" # do not dump the extension schema
   "--exclude-schema=$(get_mask_schema)" # idem
@@ -212,5 +212,22 @@ seq_data_dump_opt=(
 pg_dump "${seq_data_dump_opt[@]}"   \
 | grep '^SELECT pg_catalog.setval'  \
 >> "$output"
+
+
+################################################################################
+## 4. Dump the DDL (post-data section)
+################################################################################
+
+# gather all options needed to dump the DDL
+ddl_dump_opt=(
+  "${pg_dump_opts[@]}"    # options from the command line
+  "--section=post-data"
+  "--no-security-labels"  # masking rules are confidential
+  "--exclude-schema=anon" # do not dump the extension schema
+  "--exclude-schema=$(get_mask_schema)" # idem
+)
+
+# we need to remove some `CREATE EXTENSION` commands
+pg_dump "${ddl_dump_opt[@]}" >> "$output"
 
 exit 0
