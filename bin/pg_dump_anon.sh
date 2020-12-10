@@ -33,9 +33,9 @@ END
 }
 
 ## Return the masking schema
-get_mask_schema() {
+get_maskschema() {
 psql "${psql_opts[@]}" << EOSQL
-  SELECT anon.mask_schema();
+  SELECT anon.maskschema();
 EOSQL
 }
 
@@ -152,7 +152,7 @@ ddl_dump_opt=(
   "--section=pre-data"         # data will be dumped later
   "--no-security-labels"  # masking rules are confidential
   "--exclude-schema=anon" # do not dump the extension schema
-  "--exclude-schema=$(get_mask_schema)" # idem
+  "--exclude-schema=$(get_maskschema)" # idem
 )
 
 # we need to remove some `CREATE EXTENSION` commands
@@ -224,7 +224,7 @@ ddl_dump_opt=(
   "--section=post-data"
   "--no-security-labels"  # masking rules are confidential
   "--exclude-schema=anon" # do not dump the extension schema
-  "--exclude-schema=$(get_mask_schema)" # idem
+  "--exclude-schema=$(get_maskschema)" # idem
 )
 
 # we need to remove some `CREATE EXTENSION` commands
