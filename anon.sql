@@ -145,7 +145,7 @@ $func$
 
 -- name of the source schema
 -- default value: 'public'
-CREATE OR REPLACE FUNCTION anon.source_schema()
+CREATE OR REPLACE FUNCTION anon.sourceschema()
 RETURNS TEXT AS
 $$
 WITH default_config(value) AS (
@@ -160,7 +160,7 @@ LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
 
 -- name of the masking schema
 -- default value: 'mask'
-CREATE OR REPLACE FUNCTION anon.mask_schema()
+CREATE OR REPLACE FUNCTION anon.maskschema()
 RETURNS TEXT AS
 $$
 WITH default_config(value) AS (
@@ -545,7 +545,7 @@ WHERE fn.lang = dict_lang
         WHERE nspname NOT LIKE 'pg_%'
         AND nspname NOT IN  ( 'information_schema',
                               'anon',
-                              anon.mask_schema()
+                              anon.maskschema()
                             )
       )
 ;
@@ -1732,24 +1732,6 @@ ORDER BY a.attnum
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
--- build a masked view for each table
--- /!\ Disable the Event Trigger before calling this :-)
--- We can't use the namespace oids because the mask schema may not be present
-CREATE OR REPLACE FUNCTION  anon.mask_create()
-RETURNS SETOF VOID AS
-$$
-BEGIN
-  -- Walk through all tables in the source schema
-  PERFORM anon.mask_create_view(oid)
-  FROM pg_class
-  WHERE relnamespace=anon.source_schema()::regnamespace
-  AND relkind IN ('r','p') -- relations or partitions
-  ;
-END
-$$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
-
 -- get the "select filters" that will mask the real data of a table
 CREATE OR REPLACE FUNCTION anon.mask_filters(
   relid OID
@@ -1793,7 +1775,7 @@ RETURNS BOOLEAN AS
 $$
 BEGIN
   EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
-                                  anon.mask_schema(),
+                                  anon.maskschema(),
                                   (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid),
                                   anon.mask_filters(relid),
                                   relid::REGCLASS);
@@ -1809,7 +1791,7 @@ CREATE OR REPLACE FUNCTION anon.mask_drop_view(
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  EXECUTE format('DROP VIEW "%s".%s;', anon.mask_schema(),
+  EXECUTE format('DROP VIEW "%s".%s;', anon.maskschema(),
                   (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid)
   );
   RETURN TRUE;
@@ -1879,7 +1861,7 @@ BEGIN
   -- Walk through all tables in the source schema and drop the masking view
   PERFORM anon.mask_drop_view(oid)
   FROM pg_class
-  WHERE relnamespace=anon.source_schema()::regnamespace
+  WHERE relnamespace=anon.sourceschema()::regnamespace
   AND relkind IN ('r','p') -- relations or partitions
   ;
 
@@ -1889,7 +1871,7 @@ BEGIN
   WHERE anon.hasmask(oid::REGROLE);
 
   -- Drop the masking schema, it should be empty
-  EXECUTE format('DROP SCHEMA %I', anon.mask_schema()::REGNAMESPACE);
+  EXECUTE format('DROP SCHEMA %I', anon.maskschema()::REGNAMESPACE);
 
   -- Erase the config
   DELETE FROM anon.config WHERE param='sourceschema';
@@ -1925,8 +1907,8 @@ DECLARE
   sourceschema REGNAMESPACE;
   maskschema REGNAMESPACE;
 BEGIN
-  SELECT anon.source_schema()::REGNAMESPACE INTO sourceschema;
-  SELECT anon.mask_schema()::REGNAMESPACE INTO maskschema;
+  SELECT anon.sourceschema()::REGNAMESPACE INTO sourceschema;
+  SELECT anon.maskschema()::REGNAMESPACE INTO maskschema;
   RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
   -- The masked role cannot read the authentic data in the source schema
   EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
@@ -2015,7 +1997,7 @@ $$
   -- and build a dynamic masking view
   SELECT anon.mask_create_view(oid)
   FROM pg_class
-  WHERE relnamespace=anon.source_schema()::regnamespace
+  WHERE relnamespace=anon.sourceschema()::regnamespace
   AND relkind IN ('r','p') -- relations or partitions
   ;
 
@@ -2095,7 +2077,7 @@ RETURNS TABLE (
 $$
   SELECT anon.get_copy_statement(relid)
   FROM pg_stat_user_tables
-  WHERE schemaname NOT IN ( 'anon' , anon.mask_schema() )
+  WHERE schemaname NOT IN ( 'anon' , anon.maskschema() )
   ORDER BY  relid::regclass -- sort by name to force the dump order
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
