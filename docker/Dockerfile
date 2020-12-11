@@ -1,9 +1,9 @@
-FROM postgres:12
+FROM postgres:13
 
 RUN apt-get update && apt-get install -y \
     gcc \
     make \
-    postgresql-server-dev-12  \
+    postgresql-server-dev-13  \
     wget \
  && rm -rf /var/lib/apt/lists/*
 
