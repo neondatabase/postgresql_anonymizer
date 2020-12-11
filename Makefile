@@ -126,8 +126,12 @@ PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib
 ## D O C K E R
 ##
 
+ifneq ($(PG_MAJOR_VERSION),)
+BUILD_ARG := --build-arg PG_MAJOR_VERSION=$(PG_MAJOR_VERSION)
+endif
+
 docker_image: docker/Dockerfile #: build the docker image
-	docker build -t registry.gitlab.com/dalibo/postgresql_anonymizer . --file $^
+	docker build -t registry.gitlab.com/dalibo/postgresql_anonymizer . --file $^  $(BUILD_ARG)
 
 docker_push: #: push the docker image to the registry
 	docker push registry.gitlab.com/dalibo/postgresql_anonymizer

@@ -1,9 +1,15 @@
-FROM postgres:12
+ARG PG_MAJOR_VERSION=13
+
+FROM postgres:$PG_MAJOR_VERSION
+
+# An ARG declared before a FROM is outside of a build stage, so it can’t be
+# used in any instruction after a FROM. We need to declare it again.
+ARG PG_MAJOR_VERSION
 
 RUN apt-get update && apt-get install -y \
     gcc \
     make \
-    postgresql-server-dev-12  \
+    postgresql-server-dev-$PG_MAJOR_VERSION\
     wget \
  && rm -rf /var/lib/apt/lists/*
 
