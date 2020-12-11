@@ -284,6 +284,15 @@ The extension is already created and initialized, you can use it directly:
 (1 row)
 ```
 
+
+**Note:** The docker image is based on the latest PostgreSQL version and we do
+not plan to provide a docker image for each version of PostgreSQL. However you
+can build your own image based on the version you need like this:
+
+```shell
+$ PG_MAJOR_VERSION=11 make docker_image
+```
+
 Install as a "Black Box"
 ------------------------------------------------------------------------------
 
