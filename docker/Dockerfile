@@ -1,9 +1,13 @@
-FROM postgres:12
+ARG PG_MAJOR_VERSION=13
+
+FROM postgres:$PG_MAJOR_VERSION
+
+ARG PG_MAJOR_VERSION
 
 RUN apt-get update && apt-get install -y \
     gcc \
     make \
-    postgresql-server-dev-12  \
+    postgresql-server-dev-$PG_MAJOR_VERSION\
     wget \
  && rm -rf /var/lib/apt/lists/*
 
