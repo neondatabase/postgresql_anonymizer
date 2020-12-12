@@ -59,8 +59,13 @@ SAVEPOINT does_not_exists_1;
 SELECT anon.shuffle_column('core.does_not_exists', 'kanji_last_name', 'id');
 ROLLBACK TO does_not_exists_1;
 
-SELECT anon.shuffle_column('core.users_msk', 'does_not_exists', 'id') IS FALSE;
-SELECT anon.shuffle_column('core.users_msk', 'kanji_last_name', 'does_not_exists') IS FALSE;
+SAVEPOINT does_not_exists_2;
+SELECT anon.shuffle_column('core.users_msk', 'does_not_exists', 'id');
+ROLLBACK TO does_not_exists_2;
+
+SAVEPOINT does_not_exists_3;
+SELECT anon.shuffle_column('core.users_msk', 'kanji_last_name', 'does_not_exists');
+ROLLBACK TO does_not_exists_3;
 
 SELECT anon.shuffle_column('core.users_msk', 'kanji_last_name', 'id');
 
@@ -78,11 +83,13 @@ SAVEPOINT test_injection_1;
 SELECT anon.shuffle_column('a; SELECT 1','x','i');
 ROLLBACK TO test_injection_1;
 
--- returns a WARNING and FALSE
+SAVEPOINT test_injection_2;
 SELECT anon.shuffle_column('a','x; SELECT 1','i') IS FALSE;
+ROLLBACK TO test_injection_2;
 
--- returns a WARNING and FALSE
+SAVEPOINT test_injection_3;
 SELECT anon.shuffle_column('a','x','i; SELECT 1') IS FALSE;
+ROLLBACK TO test_injection_3;
 
 ROLLBACK;
 

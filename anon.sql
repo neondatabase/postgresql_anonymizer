@@ -212,7 +212,7 @@ BEGIN
 
   -- Stop if noise_column does not exist
   IF NOT anon.column_exists(noise_table,noise_column) THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                     noise_column,
                     noise_table;
     RETURN FALSE;
@@ -238,7 +238,7 @@ AS $func$
 BEGIN
   -- Stop if noise_column does not exist
   IF NOT anon.column_exists(noise_table,noise_column) THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                   noise_column,
                   noise_table;
     RETURN FALSE;
@@ -332,7 +332,7 @@ RETURNS BOOLEAN
 AS $func$
 BEGIN
   IF NOT anon.column_exists(shuffle_table,shuffle_column) THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                   shuffle_column,
                   shuffle_table;
     RETURN FALSE;
@@ -340,7 +340,7 @@ BEGIN
 
   -- Stop if primary_key does not exist
   IF NOT anon.column_exists(shuffle_table,primary_key) THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                   primary_key,
                   shuffle_table;
     RETURN FALSE;
