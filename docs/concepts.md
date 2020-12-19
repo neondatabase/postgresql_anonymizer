@@ -17,7 +17,7 @@ The data can be altered with several techniques:
 * **Deletion** or **Nullification** simply removes data.
 
 * **Static Subtitution** consistently replaces the data with a generic
-   values. For instance: replacing all values of TEXT column with the value
+   value. For instance: replacing all values of a TEXT column with the value
    "CONFIDENTIAL".
 
 * **Variance** is the action of "shifting" dates and numeric values. For
@@ -45,7 +45,7 @@ The data can be altered with several techniques:
    them coherent.
 
 Please note that **Encryption** and **Hashing** are not considered as
-anonymization techniques, because they requires additional information
-(a private key or a salt) and if this information is stolen, then the authentic
+anonymization techniques, because they require additional information
+(a private key or a salt), and if this information is stolen, then the authentic
 data can be revealed.
 
