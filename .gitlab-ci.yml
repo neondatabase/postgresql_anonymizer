@@ -292,7 +292,7 @@ pgxn:
   before_script:
     - echo 'Disable before_script.'
   script:
-    - apk update && apk add make git zip
+    - apk add -U make git zip
     - make pgxn
   artifacts:
     paths:
