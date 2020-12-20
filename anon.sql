@@ -1496,6 +1496,7 @@ rules_from_comments AS (
 SELECT
   a.attrelid,
   a.attnum,
+  c.relnamespace::REGNAMESPACE,
   c.relname,
   a.attname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
@@ -1523,6 +1524,7 @@ rules_from_seclabels AS (
 SELECT
   sl.objoid AS attrelid,
   sl.objsubid  AS attnum,
+  c.relnamespace::REGNAMESPACE,
   c.relname,
   a.attname,
   pg_catalog.format_type(a.atttypid, a.atttypmod),
