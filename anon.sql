@@ -1,4 +1,3 @@
-
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 --\echo Use "CREATE EXTENSION anon" to load this file. \quit
 
@@ -146,7 +145,7 @@ $func$
 
 -- name of the source schema
 -- default value: 'public'
-CREATE OR REPLACE FUNCTION anon.source_schema()
+CREATE OR REPLACE FUNCTION anon.sourceschema()
 RETURNS TEXT AS
 $$
 WITH default_config(value) AS (
@@ -161,7 +160,7 @@ LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
 
 -- name of the masking schema
 -- default value: 'mask'
-CREATE OR REPLACE FUNCTION anon.mask_schema()
+CREATE OR REPLACE FUNCTION anon.maskschema()
 RETURNS TEXT AS
 $$
 WITH default_config(value) AS (
@@ -174,7 +173,29 @@ LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
 $$
 LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
 
+-------------------------------------------------------------------------------
+-- Common functions
+-------------------------------------------------------------------------------
 
+-- Returns TRUE if the column exists in the table
+CREATE OR REPLACE FUNCTION anon.column_exists(
+  table_relid regclass,
+  column_name NAME
+)
+RETURNS BOOLEAN
+AS $func$
+  SELECT count(attname)>0
+  FROM pg_attribute
+  WHERE attrelid = table_relid
+  AND attnum > 0 -- Ordinary columns are numbered from 1 up
+  AND NOT attisdropped
+  AND attname = column_name;
+$func$
+  LANGUAGE SQL
+  STABLE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 -- Noise
@@ -187,17 +208,11 @@ CREATE OR REPLACE FUNCTION anon.add_noise_on_numeric_column(
 )
 RETURNS BOOLEAN
 AS $func$
-DECLARE
-  colname TEXT;
 BEGIN
 
   -- Stop if noise_column does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=noise_table::TEXT
-  AND column_name=noise_column::TEXT;
-  IF colname IS NULL THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+  IF NOT anon.column_exists(noise_table,noise_column) THEN
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                     noise_column,
                     noise_table;
     RETURN FALSE;
@@ -220,17 +235,10 @@ CREATE OR REPLACE FUNCTION anon.add_noise_on_datetime_column(
 )
 RETURNS BOOLEAN
 AS $func$
-DECLARE
-  colname TEXT;
 BEGIN
-
   -- Stop if noise_column does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=noise_table::TEXT
-  AND column_name=noise_column::TEXT;
-  IF colname IS NULL THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+  IF NOT anon.column_exists(noise_table,noise_column) THEN
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                   noise_column,
                   noise_table;
     RETURN FALSE;
@@ -322,28 +330,17 @@ CREATE OR REPLACE FUNCTION anon.shuffle_column(
 )
 RETURNS BOOLEAN
 AS $func$
-DECLARE
-  colname TEXT;
 BEGIN
-  -- Stop if shuffle_column does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=shuffle_table::TEXT
-  AND column_name=shuffle_column::TEXT;
-  IF colname IS NULL THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+  IF NOT anon.column_exists(shuffle_table,shuffle_column) THEN
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                   shuffle_column,
                   shuffle_table;
     RETURN FALSE;
   END IF;
 
   -- Stop if primary_key does not exist
-  SELECT column_name INTO colname
-  FROM information_schema.columns
-  WHERE table_name=shuffle_table::TEXT
-  AND column_name=primary_key::TEXT;
-  IF colname IS NULL THEN
-    RAISE WARNING 'Column ''%'' is not present in table ''%''.',
+  IF NOT anon.column_exists(shuffle_table,primary_key) THEN
+    RAISE EXCEPTION 'Column "%" does not exist in table "%".',
                   primary_key,
                   shuffle_table;
     RETURN FALSE;
@@ -355,15 +352,15 @@ BEGIN
     -- shuffle the primary key
     SELECT row_number() over (order by random()) n,
            %3$I AS pkey
-    FROM %1$I
+    FROM %1$s
   ),
   s2 AS (
     -- shuffle the column
     SELECT row_number() over (order by random()) n,
            %2$I AS val
-    FROM %1$I
+    FROM %1$s
   )
-  UPDATE %1$I
+  UPDATE %1$s
   SET %2$I = s2.val
   FROM s1 JOIN s2 ON s1.n = s2.n
   WHERE %3$I = s1.pkey;
@@ -546,7 +543,7 @@ WHERE fn.lang = dict_lang
         WHERE nspname NOT LIKE 'pg_%'
         AND nspname NOT IN  ( 'information_schema',
                               'anon',
-                              anon.mask_schema()
+                              anon.maskschema()
                             )
       )
 ;
@@ -1582,7 +1579,7 @@ SELECT * FROM anon.pg_masking_rules
 
 
 -------------------------------------------------------------------------------
--- In-Place Anonymization
+-- Static Masking
 -------------------------------------------------------------------------------
 
 -- Return SQL assigment which replace masked data in a column or null when no masking rule was found
@@ -1749,24 +1746,6 @@ ORDER BY a.attnum
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
--- build a masked view for each table
--- /!\ Disable the Event Trigger before calling this :-)
--- We can't use the namespace oids because the mask schema may not be present
-CREATE OR REPLACE FUNCTION  anon.mask_create()
-RETURNS SETOF VOID AS
-$$
-BEGIN
-  -- Walk through all tables in the source schema
-  PERFORM anon.mask_create_view(oid)
-  FROM pg_class
-  WHERE relnamespace=anon.sourceschema()::regnamespace
-  AND relkind = 'r' -- relations only
-  ;
-END
-$$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
-
 -- get the "select filters" that will mask the real data of a table
 CREATE OR REPLACE FUNCTION anon.mask_filters(
   relid OID
@@ -1810,7 +1789,7 @@ RETURNS BOOLEAN AS
 $$
 BEGIN
   EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
-                                  anon.mask_schema(),
+                                  anon.maskschema(),
                                   (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid),
                                   anon.mask_filters(relid),
                                   relid::REGCLASS);
@@ -1826,7 +1805,7 @@ CREATE OR REPLACE FUNCTION anon.mask_drop_view(
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  EXECUTE format('DROP VIEW "%s".%s;', anon.mask_schema(),
+  EXECUTE format('DROP VIEW "%s".%s;', anon.maskschema(),
                   (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid)
   );
   RETURN TRUE;
@@ -1896,8 +1875,8 @@ BEGIN
   -- Walk through all tables in the source schema and drop the masking view
   PERFORM anon.mask_drop_view(oid)
   FROM pg_class
-  WHERE relnamespace=anon.source_schema()::regnamespace
-  AND relkind = 'r' -- relations only
+  WHERE relnamespace=anon.sourceschema()::regnamespace
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 
   -- Walk through all masked roles and remove their mask
@@ -1906,7 +1885,7 @@ BEGIN
   WHERE anon.hasmask(oid::REGROLE);
 
   -- Drop the masking schema, it should be empty
-  EXECUTE format('DROP SCHEMA %I', anon.mask_schema()::REGNAMESPACE);
+  EXECUTE format('DROP SCHEMA %I', anon.maskschema()::REGNAMESPACE);
 
   -- Erase the config
   DELETE FROM anon.config WHERE param='sourceschema';
@@ -1942,8 +1921,8 @@ DECLARE
   sourceschema REGNAMESPACE;
   maskschema REGNAMESPACE;
 BEGIN
-  SELECT anon.source_schema()::REGNAMESPACE INTO sourceschema;
-  SELECT anon.mask_schema()::REGNAMESPACE INTO maskschema;
+  SELECT anon.sourceschema()::REGNAMESPACE INTO sourceschema;
+  SELECT anon.maskschema()::REGNAMESPACE INTO maskschema;
   RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
   -- The masked role cannot read the authentic data in the source schema
   EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
@@ -2032,8 +2011,8 @@ $$
   -- and build a dynamic masking view
   SELECT anon.mask_create_view(oid)
   FROM pg_class
-  WHERE relnamespace=anon.source_schema()::regnamespace
-  AND relkind = 'r' -- relations only
+  WHERE relnamespace=anon.sourceschema()::regnamespace
+  AND relkind IN ('r','p') -- relations or partitions
   ;
 
   -- Walk through all masked roles and apply the restrictions
@@ -2112,7 +2091,7 @@ RETURNS TABLE (
 $$
   SELECT anon.get_copy_statement(relid)
   FROM pg_stat_user_tables
-  WHERE schemaname NOT IN ( 'anon' , anon.mask_schema() )
+  WHERE schemaname NOT IN ( 'anon' , anon.maskschema() )
   ORDER BY  relid::regclass -- sort by name to force the dump order
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';

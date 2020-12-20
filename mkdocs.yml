@@ -4,13 +4,13 @@ site_author: www.dalibo.com
 copyright: Copyright 2018-2020 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://gitlab.com/dalibo/postgresql_anonymizer
 theme:
-  name: readthedocs 
+  name: readthedocs
 nav:
   - 'Home': 'index.md'
   - 'Install': 'INSTALL.md'
   - 'Declare Masking rules': 'declare_masking_rules.md'
   - 'Masking Functions': 'masking_functions.md'
-  - 'In-Place Anonymization': 'in_place_anonymization.md' 
+  - 'Static Masking': 'static_masking.md'
   - 'Dynamic Masking': 'dynamic_masking.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
   - 'Generalization': 'generalization.md'
@@ -18,5 +18,5 @@ nav:
   - 'Concepts': 'concepts.md'
   - 'Upgrade': 'UPGRADE.md'
   - 'Security': 'SECURITY.md'
-  - 'Notes': 'NOTES.md'  
+  - 'Notes': 'NOTES.md'
   - 'Links': 'links.md'

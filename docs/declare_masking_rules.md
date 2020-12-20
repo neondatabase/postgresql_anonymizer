@@ -39,6 +39,13 @@ You can simply erase a masking rule like this:
 SECURITY LABEL FOR anon ON COLUMN player.name IS NULL
 ```
 
+Limitations
+------------------------------------------------------------------------------
+
+* The masking rules are **NOT INHERITED** ! If you have split a table into
+  multiple partitions, you need to declare the masking rules for each partition.
+
+
 Declaring Rules with COMMENTs
 ------------------------------------------------------------------------------
 
