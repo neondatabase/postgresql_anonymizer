@@ -185,7 +185,7 @@ CREATE OR REPLACE FUNCTION anon.column_exists(
 RETURNS BOOLEAN
 AS $func$
   SELECT count(attname)>0
-  FROM pg_attribute
+  FROM pg_catalog.pg_attribute
   WHERE attrelid = table_relid
   AND attnum > 0 -- Ordinary columns are numbered from 1 up
   AND NOT attisdropped
@@ -539,7 +539,7 @@ JOIN pg_catalog.pg_class c
 WHERE fn.lang = dict_lang
   AND c.relnamespace IN ( -- exclude the extension tables and the catalog
         SELECT oid
-        FROM pg_namespace
+        FROM pg_catalog.pg_namespace
         WHERE nspname NOT LIKE 'pg_%'
         AND nspname NOT IN  ( 'information_schema',
                               'anon',
@@ -570,7 +570,7 @@ BEGIN
 -- This check does not work with PG 10 and below (absolute path not supported)
 --
 --  SELECT * INTO  csv_file_check
---  FROM pg_stat_file(csv_file, missing_ok := TRUE );
+--  FROM pg_catalog.pg_stat_file(csv_file, missing_ok := TRUE );
 --
 --  IF csv_file_check IS NULL THEN
 --    RAISE NOTICE 'Data file ''%'' is not present. Skipping.', csv_file;
@@ -699,7 +699,7 @@ AS $$
   WITH conf AS (
         -- find the local extension directory
         SELECT setting AS sharedir
-        FROM pg_config
+        FROM pg_catalog.pg_config
         WHERE name = 'SHAREDIR'
     )
   SELECT anon.init(conf.sharedir || '/extension/anon/')
@@ -1683,7 +1683,9 @@ $$
 SELECT bool_or(m.masked)
 FROM (
   -- Rule from COMMENT
-  SELECT shobj_description(role,'pg_authid') SIMILAR TO '%MASKED%' AS masked
+  -- /!\ `pg_catalog.pg_authid` does not work with shobj_description()
+  SELECT pg_catalog.shobj_description(role,'pg_authid')
+          SIMILAR TO '%MASKED%' AS masked
   UNION
   -- Rule from SECURITY LABEL
   SELECT label ILIKE 'MASKED' AS masked
@@ -1718,7 +1720,7 @@ SELECT
   a.attname::NAME, -- explicit cast for PG 9.6
   m.masking_filter,
   m.format_type
-FROM pg_attribute a
+FROM pg_catalog.pg_attribute a
 LEFT JOIN  anon.pg_masking_rules m
         ON m.attrelid = a.attrelid
         AND m.attname = a.attname
@@ -1774,7 +1776,11 @@ $$
 BEGIN
   EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
                                   anon.maskschema(),
-                                  (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid),
+                                  -- FIXME quote_ident(relid::REGCLASS::TEXT) ?
+                                  ( SELECT quote_ident(relname)
+                                    FROM pg_catalog.pg_class
+                                    WHERE relid = oid
+                                  ),
                                   anon.mask_filters(relid),
                                   relid::REGCLASS);
   RETURN TRUE;
@@ -1790,7 +1796,11 @@ RETURNS BOOLEAN AS
 $$
 BEGIN
   EXECUTE format('DROP VIEW "%s".%s;', anon.maskschema(),
-                  (SELECT quote_ident(relname) FROM pg_class WHERE relid = oid)
+                  -- FIXME quote_ident(relid::REGCLASS::TEXT) ?
+                  ( SELECT quote_ident(relname)
+                    FROM pg_catalog.pg_class
+                    WHERE relid = oid
+                  )
   );
   RETURN TRUE;
 END
@@ -1858,7 +1868,7 @@ BEGIN
 
   -- Walk through all tables in the source schema and drop the masking view
   PERFORM anon.mask_drop_view(oid)
-  FROM pg_class
+  FROM pg_catalog.pg_class
   WHERE relnamespace=anon.sourceschema()::regnamespace
   AND relkind IN ('r','p') -- relations or partitions
   ;
@@ -1949,7 +1959,9 @@ RETURNS BOOLEAN AS
 $$
 BEGIN
   IF NOT EXISTS (
-    SELECT FROM pg_event_trigger WHERE evtname='anon_mask_update'
+    SELECT
+      FROM pg_catalog.pg_event_trigger
+      WHERE evtname='anon_mask_update'
   )
   THEN
     CREATE EVENT TRIGGER anon_mask_update ON ddl_command_end
@@ -1969,7 +1981,9 @@ RETURNS BOOLEAN AS
 $$
 BEGIN
   IF EXISTS (
-    SELECT FROM pg_event_trigger WHERE evtname='anon_mask_update'
+    SELECT
+      FROM pg_catalog.pg_event_trigger
+      WHERE evtname='anon_mask_update'
   )
   THEN
     DROP EVENT TRIGGER IF EXISTS anon_mask_update;
@@ -1994,7 +2008,7 @@ $$
   -- Walk through all tables in the source schema
   -- and build a dynamic masking view
   SELECT anon.mask_create_view(oid)
-  FROM pg_class
+  FROM pg_catalog.pg_class
   WHERE relnamespace=anon.sourceschema()::regnamespace
   AND relkind IN ('r','p') -- relations or partitions
   ;
@@ -2074,7 +2088,7 @@ RETURNS TABLE (
 ) AS
 $$
   SELECT anon.get_copy_statement(relid)
-  FROM pg_stat_user_tables
+  FROM pg_catalog.pg_stat_user_tables
   WHERE schemaname NOT IN ( 'anon' , anon.maskschema() )
   ORDER BY  relid::regclass -- sort by name to force the dump order
 $$
