@@ -22,6 +22,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Generic Hashing]: #generic-hashing
 [Partial scrambling]: #partial-scrambling
 [Generalization]: #generalization
+[Shuffling]: /static_masking#shuffling
 
 Depending on your data, you may need to use different strategies on different
 columns :
@@ -38,8 +39,8 @@ Destruction
 First of all, the fastest and safest way to anonymize a data is to destroy it
 :-)
 
-In many case, the best approach to hide the content of a column is to replace
-all values with a single static value.
+In many cases, the best approach to hide the content of a column is to replace
+all the values with a single static value.
 
 For instance, you can replace a entire column by the word 'CONFIDENTIAL' like
 this:
@@ -119,7 +120,7 @@ names, cities, etc. ).
 If you want to use your own dataset, you can import custom CSV files with :
 
 ```sql
-SELECT init('/path/to/custom_cvs_files/')
+SELECT init('/path/to/custom_csv_files/')
 ```
 
 Once the fake data is loaded, you have access to 12 faking functions:
@@ -226,7 +227,7 @@ dataset. The GDPR makes it very clear that personal data which have undergone
 pseudonymization are still considered to be personnal information (see [Recital 26])
 
 In a nutshell: pseudonymization may be usefull in some use cases. But if your
-goal is to escape from GDPR or similar data regulation, it is clearly a bad solution.
+goal is to comply with GDPR or similar data regulation, it is clearly a bad solution.
 
 
 [Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
@@ -247,12 +248,13 @@ relatively unusual source data. Therefore, the
 * `anon.hash(value)`  will return a text hash of the value using a secret salt
   and a secret hash algorithm (see below)
 
-* `anon.digest(value,salt,algorithm)` lets choose a salt and the hash algorithm
-  you want to use
+* `anon.digest(value,salt,algorithm)` lets you choose a salt, and a hash algorithm
+  from a pre-defined list
 
-By default a random secret salt is generated when the extension is initialiazed
-anf the default hash algortihm is `sha512`. You can change for the entire
-database with to functions
+By default, a random secret salt is generated when the extension is
+initialiazed,
+and the default hash algortihm is `sha512`. You can change these for the entire
+database with two functions:
 
 * `anon.set_secret_salt(value)` to define you own salt
 * `anon.set_secret_algorithm(value)` to select another hash functuon.
@@ -312,12 +314,12 @@ For instance : a credit card number can be replaced by '40XX XXXX XXXX XX96'.
 Generalization
 -------------------------------------------------------------------------------
 
-Genelization is the principle of replace the original value by a range
+Generalization is the principle of replacing the original value by a range
 containing this values. For instance, instead of saying 'Paul is 42 years old',
-you would can say 'Paul is between 40 and 50 years old.
+you would say 'Paul is between 40 and 50 years old'.
 
 > The generalization functions are a data type transformation. Therefore it is
-> not possible to use them with the dynamic masking engine. Hower they are
+> not possible to use them with the dynamic masking engine. However they are
 > useful to create anonymized views. See example below
 
 Let's imagine a table containing health information
@@ -344,14 +346,14 @@ this:
 ```sql
 CREATE VIEW anonymized_patient AS
 SELECT
-    'REDACTED' AS name,
+    'REDACTED' AS lastname,
     anon.generalize_int4range(zipcode,100) AS zipcode,
     anon.generalize_tsrange(birth,'decade') AS birth
     disease
 FROM patients;
 ```
 
-The anonymized table now look like that:
+The anonymized table now looks like that:
 
 ```sql
 SELECT * FROM anonymized_patient;
@@ -370,7 +372,8 @@ SELECT * FROM anonymized_patient;
 
 
 The generalized values are still useful for statistics because they remain
-true but they are less accurante therefore reduce the risk of re-identification.
+true, but they are less accurate, and therefore reduce the risk of
+re-identification.
 
 PostgreSQL offers several [RANGE] data types which are perfect for dates and
 numeric values.
@@ -381,7 +384,7 @@ For numeric values, 3 functions are available
 * `generalize_int8range(value, step)`
 * `generalize_numrange(value, step)`
 
-...where `value` is the data the will be generalized, `step` is the size of
+...where `value` is the data that will be generalized, and `step` is the size of
 each range.
 
 
@@ -391,7 +394,7 @@ each range.
 Write your own Masks !
 ------------------------------------------------------------------------------
 
-You can also use you own functions as a mask. The function must either be
+You can also use your own function as a mask. The function must either be
 destructive (like [Partial Scrambling]) or insert some randomness in the dataset
 (like [Faking]).
 
@@ -443,7 +446,7 @@ SELECT jsonb_pretty(info) FROM company WHERE business_name = 'Soylent Green';
 ```
 
 Using the [PostgreSQL JSON functions and operators], you can walk
-through the keys and replace the sensible values as needed.
+through the keys and replace the sensitive values as needed.
 
 [PostgreSQL JSON functions and operators]: https://www.postgresql.org/docs/current/functions-json.html
 
@@ -504,9 +507,9 @@ And try it out !
 (1 row)
 ```
 
-This is just a quick and dirty example. As you can see manipulating a
-sophiticated JSON structure with SQL is possible but it can be tricky at
+This is just a quick and dirty example. As you can see, manipulating a
+sophiticated JSON structure with SQL is possible, but it can be tricky at
 first! There are multiple ways of walking through the keys and updating
-values. You will probably have to try different approaches depending on
-your real JSON data and the performance you want ot reach.
+values. You will probably have to try different approaches, depending on
+your real JSON data and the performance you want to reach.
 
