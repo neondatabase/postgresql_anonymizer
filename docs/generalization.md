@@ -2,7 +2,7 @@ Generalization
 ===============================================================================
 
 
-Reducing the accuracy of sensible data
+Reducing the accuracy of sensitive data
 --------------------------------------------------------------------------------
 
 The idea of generalization is to replace data with a broader, less accurate
@@ -13,7 +13,7 @@ the data remains true while avoiding the risk of re-identification.
 Generalization is a way to achieve [k-anonymity].
 
 PostgreSQL can handle generalization very easily with the [RANGE] data types,
-a very powefull way to store and manipulate a set of values contained between
+a very powerfull way to store and manipulate a set of values contained between
 a lower and an upper bound.
 
 [k-anonymity]: #k-anonymity
@@ -79,7 +79,7 @@ Generalization Functions
 --------------------------------------------------------------------------------
 
 PostgreSQL Anonymizer provides 6 generalization functions. One for each [RANGE]
-type. Generally these functions take the original value as the first parameter
+type. Generally these functions take the original value as the first parameter,
 and a second parameter for the length of each step.
 
 For numeric values :
@@ -125,7 +125,7 @@ very far from the average salary. Therefore this person is probably the CEO
 of the company.
 
 With generalization, this is important because the size of the range (the "step")
-must be wide enough to avoid identify one single individual.
+must be wide enough to prevent the identification of one single individual.
 
 [k-anonymity] is a way to assess this risk.
 
@@ -136,7 +136,7 @@ By definition, with generalization the data remains true, but the column type
 is changed.
 
 This means that the transformation is not transparent, and therefore it cannot
-be used for [dynamic masking].
+be used with [dynamic masking].
 
 [dynamic masking]: dynamic_masking/
 
@@ -174,4 +174,4 @@ The higher the value, the better...
 References
 --------------------------------------------------------------------------------
 
-* [How Google Anonymizes Data]: https://policies.google.com/technologies/anonymization
+* [How Google Anonymizes Data](https://policies.google.com/technologies/anonymization)
