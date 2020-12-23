@@ -22,13 +22,13 @@ different ways :
 
 
 In addition, various [Masking Functions] are available : randomization, faking,
-partial scrambling, shufflin, noise or even your own custom function !
+partial scrambling, shuffling, noise or even your own custom function!
 
-Beyond masking, it is also possible to use a 4th approach called [Generalization]
+Beyond masking, it is also possible to use a fourth approach called [Generalization]
 which is perfect for statictics and data analytics.
 
-Finally the extension offers a panel of [detection] functions that will try to
-guess which columns needs to be anonymized.
+Finally, the extension offers a panel of [detection] functions that will try to
+guess which columns need to be anonymized.
 
 [INSTALL.md]: INSTALL/
 [Concepts]: concepts/
@@ -39,6 +39,8 @@ guess which columns needs to be anonymized.
 [Static Masking]: static_masking/
 [Dynamic Masking]: dynamic_masking/
 [Masking Functions]: masking_functions/
+[Generalization]: generalization/
+[detection]: detection/
 
 
 
@@ -79,7 +81,8 @@ Step 3 : Declare the masking rules
 Step 4 : Connect with the masked user
 
 ```sql
-=# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
+=# \c - skynet
+=> SELECT * FROM people;
  id | fistname | lastname  |   phone
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
@@ -89,9 +92,9 @@ Step 4 : Connect with the masked user
 Warning
 ------------------------------------------------------------------------------
 
-> *This is projet is at an early stage of development and should used carefully.*
+> *This projet is at an early stage of development, and should be used carefully.*
 
-We need your feedback and ideas ! Let us know what you think of this tool,how it
+We need your feedback and ideas ! Let us know what you think of this tool, how it
 fits your needs and what features are missing.
 
 You can either [open an issue] or send a message at <contact@dalibo.com>.
