@@ -41,7 +41,8 @@ lint-bash:
   before_script:
     - echo "disable the before_script"
   script:
-    - apt-get update && apt-get install -y shellcheck
+    - apt-get update
+    - apt-get install -y shellcheck
     - shellcheck bin/standalone.sh
     - shellcheck bin/pg_dump_anon.sh
     - shellcheck docker/anon.sh
@@ -64,7 +65,8 @@ make9.5:
   stage: build
   image: postgres:9.5
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-server-dev-9.5 pgxnclient
+    - apt-get update
+    - apt-get install -y make gcc postgresql-server-dev-9.5 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -84,7 +86,8 @@ make9.6:
   stage: build
   image: postgres:9.6
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-server-dev-9.6 pgxnclient
+    - apt-get update
+    - apt-get install -y make gcc postgresql-server-dev-9.6 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -102,7 +105,8 @@ make10:
   stage: build
   image: postgres:10
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-server-dev-10 pgxnclient
+    - apt-get update
+    - apt-get install -y make gcc postgresql-server-dev-10 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -121,7 +125,8 @@ make11:
   stage: build
   image: postgres:11
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
+    - apt-get update
+    - apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -139,7 +144,8 @@ make12:
   stage: build
   image: postgres:12
   script:
-    - apt-get update && apt-get install -y make gcc git postgresql-server-dev-12 pgxnclient
+    - apt-get update
+    - apt-get install -y make gcc git postgresql-server-dev-12 pgxnclient
     - pgxn install ddlx
 #    - git clone https://github.com/lacanoid/pgddl.git
 #    - make -C pgddl && make -C pgddl install
@@ -159,7 +165,8 @@ make13:
   stage: build
   image: postgres:13
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-server-dev-13
+    - apt-get update
+    - apt-get install -y make gcc postgresql-server-dev-13
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -197,7 +204,8 @@ standalone12:
   before_script:
     - echo "disable the before_script"
   script:
-    - apt-get update && apt-get install -y make git postgresql-server-dev-all
+    - apt-get update
+    - apt-get install -y make git postgresql-server-dev-all
     - make anon_standalone.sql
     - export PGPASSWORD=$POSTGRES_PASSWORD
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone.sql
@@ -210,7 +218,8 @@ standalone11:
   before_script:
     - echo "disable the before_script"
   script:
-    - apt-get update && apt-get install -y make git postgresql-server-dev-all
+    - apt-get update
+    - apt-get install -y make git postgresql-server-dev-all
     - make anon_standalone.sql
     - export PGPASSWORD=$POSTGRES_PASSWORD
     - $PSQL -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f anon_standalone.sql
@@ -239,7 +248,8 @@ blackbox:
 demo:
   stage: test
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 postgresql-contrib-11  pgxnclient
+    - apt-get update
+    - apt-get install -y make gcc postgresql-server-dev-11 postgresql-contrib-11  pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -307,7 +317,8 @@ test_pgxn:
   before_script:
     - echo "disable the before_script"
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
+    - apt-get update
+    - apt-get install -y make gcc postgresql-server-dev-11 pgxnclient
     - pgxn install postgresql_anonymizer
   when: manual
 
@@ -318,7 +329,8 @@ test_pgxn_ubuntu_pg95:
   before_script:
     - echo "disable the before_script"
   script:
-    - apt-get update && apt-get install -y make gcc postgresql-common pgxnclient gnupg ca-cacert
+    - apt-get update
+    - apt-get install -y make gcc postgresql-common pgxnclient gnupg ca-cacert
     - yes '' | sh /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh bionic
     - apt-get install -y postgres-9.5 postgres-9.5-contrib postgresql-server-dev-9.5
     - export PGDATA=/var/lib/postgresql/data
