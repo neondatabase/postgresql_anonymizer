@@ -87,7 +87,7 @@ make9.6:
   image: postgres:9.6
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-9.6 pgxnclient
+    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-9.6 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -106,7 +106,7 @@ make10:
   image: postgres:10
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-10 pgxnclient
+    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-10 pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
