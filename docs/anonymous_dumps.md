@@ -64,7 +64,7 @@ If you don't provide the connection password to `pg_dump_anon` using the
 `--password` option, you may have to type the password multipe times.To
 avoid this, you can either [define the $PGPASS variable] or place your
 password in a [.pgpass] file.
- *
+
 [define the $PGPASS variable]: https://www.postgresql.org/docs/current/libpq-envars.html
 
 
@@ -75,8 +75,8 @@ The version 0.3 of PostgreSQL Anonymizer introduced a function called
 `anon.dump()`. This function is extremely slow. Since version 0.6, it has
 been deprecated and it is not supported anymore.
 
-The function is kept as is for backward compatibility. It will be probably be
-remove from one ogf the forthcoming versions.
+The function is kept as is for backward compatibility. It will probably be
+removed from one of the forthcoming versions.
 
 Again: do not use this function ! To dump the masked data, use the
 `pg_dump_anon` command line tool as described above.

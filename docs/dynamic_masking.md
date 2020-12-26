@@ -1,7 +1,7 @@
-Hide sensible data from a "masked" user
+Hide sensitive data from a "masked" user
 ===============================================================================
 
-You can hide some data from a role by declaring this role as a "MASKED".
+You can hide some data from a role by declaring this role as a "MASKED" one.
 Other roles will still access the original data.
 
 **Example**:
@@ -49,7 +49,8 @@ IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 Step 4 : Connect with the masked user
 
 ```sql
-=# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
+=# \c - skynet
+=> SELECT * FROM people;
  id | fistname | lastname  |   phone
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
@@ -60,7 +61,7 @@ How to change the type of a masked column
 ------------------------------------------------------------------------------
 
 When dynamic masking is activated, you are not allowed to change the datatype
-on a column is there's a mask upon it.
+of a column if there's a mask upon it.
 
 To modify a masked column, you need to switch of temporarily the masking engine
 like this:
@@ -87,7 +88,7 @@ psql: ERROR:  cannot drop table people because other objects depend on it
 DETAIL:  view mask.company depends on table people
 ```
 
-To effectively remove the table, it is necessary to add the `CASCADE` options
+To effectively remove the table, it is necessary to add the `CASCADE` option,
 so that the masking view will be dropped too:
 
 ```sql
@@ -109,10 +110,10 @@ SELECT start_dynamic_masking('sales');
 ```
 
 **However** static masking with `anon.anonymize()`and anonymous export
-with `anon.dump()` will work fine will multiple schemas.
+with `anon.dump()` will work fine with multiple schemas.
 
 ### Performances
 
-Dynamic Masking is now to be very slow with some queries, especially if you
-trying to join 2 tables with a masked foreign key using hashing or
-pseudonymisation.
+Dynamic Masking is known to be very slow with some queries, especially if you
+try to join 2 tables on a masked key using hashing or
+pseudonymization.

@@ -2,15 +2,15 @@ Permanently remove sensitive data
 ===============================================================================
 
 Sometimes, it is usefull to transform directly the original dataset. You can
-do that in with different methods:
+do that with different methods:
 
-* [Applying masking Rules]
-* [Shuffling a column]
-* [Adding noise to a column]
+* [Applying masking rules]: #applying-masking-rules
+* [Shuffling a column]: #shuffling
+* [Adding noise to a column]: #adding-noise-to-a-column
 
 These methods will destroy the original data. Use with care.
 
-Applying masking Rules
+Applying masking rules
 --------------------------------------------------------------------------------
 
 You can permanently apply the [masking rules] of a database with
@@ -110,8 +110,8 @@ Shuffling
 
 This is usefull for foreign keys because referential integrity will be kept.
 
-**IMPORTANT:**  shuffle_column is not a [masking function] because it works
-"verticaly" : it will modify all values of a column at once.
+**IMPORTANT:**  `shuffle_column()` is not a [masking function] because it works
+"verticaly" : it will modify all the values of a column at once.
 
 [masking function]: masking_functions.md
 
