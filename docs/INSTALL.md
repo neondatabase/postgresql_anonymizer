@@ -187,16 +187,17 @@ All new connections to the database can now use the extension.
 Install in the cloud
 ------------------------------------------------------------------------------
 
-> **DISCLAIMER** if privacy and anonymity are a concern to you, hosting your
-> data on someone else's computer is probably not a clever idea....
+> **WARNING** This extension was never really intended to work on Database As A
+> Service platforms ( such as Amazon RDS ). It just happens to work currently
+> using the `standalone` method described below. In future versions, we may
+> introduce features that will force us to drop the suppport for this. If
+> privacy and anonymity are a concern to you, we encourage you to contact the
+> customer services of these plateforms and ask them if they plan to support
+> this extension.
 
-Generally Database As A Service operators ( such as Amazon RDS ) do not allow
-their clients to load any extension. Instead they support only a limited subset
-of extensions, such as PostGIS or pgcrypto. You can ask them if they plan to
-support this one in the near future, but you shouldn't bet your life on it 😃
-
-However this tool is set of `plpgsql` functions, which means should you be able
-to install it directly without declaring an extension.
+That being said, currently `PostgreSQL Anonymizer` is a set of `plpgsql` functions,
+which means should you be able to install it directly without declaring
+an extension.
 
 Here's a few steps to try it out:
 

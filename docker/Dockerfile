@@ -6,10 +6,11 @@ FROM postgres:$PG_MAJOR_VERSION
 # used in any instruction after a FROM. We need to declare it again.
 ARG PG_MAJOR_VERSION
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     make \
-    postgresql-server-dev-$PG_MAJOR_VERSION\
+    postgresql-server-dev-$PG_MAJOR_VERSION \
+    libc6-dev \
     wget \
  && rm -rf /var/lib/apt/lists/*
 
