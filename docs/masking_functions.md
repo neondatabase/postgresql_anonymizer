@@ -217,6 +217,13 @@ SECURITY LABEL FOR anon
   IS 'MASKED WITH FUNCTION anon.pseudo_email(users.login) ';
 ```
 
+**NOTE** : You may want to produce unique values using a pseudonymization
+function. For instance, if you want to mask an `email` column that is declared
+as `UNIQUE`. In this case, you will need to intialize the extension with a fake
+dataset that is **way bigger** than the numbers of rows of the table. Otherwise you
+may see some "collisions" happening, i.e. two different original values producing
+the same pseudo value.
+
 **WARNING** : Pseudonymization is often confused with anonymization but in fact
 they serve 2 different purposes. With pseudonymization, the real data can be
 rebuild using the pseudo data, the masking rules and the seed. If an attacker
