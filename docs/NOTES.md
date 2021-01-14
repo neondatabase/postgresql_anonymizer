@@ -7,7 +7,7 @@ Support for PostgreSQL 9.5
 PostgeSQL 9.5 has 2 main issues for this extension :
 
 
-* The pg_config table is called by the init() fuction but it was introduced
+* The pg_config table is called by the init() function but it was introduced
   in PG 9.6. You can simplify create a temporary pg_config table just before
   loading the extension:
 
@@ -19,7 +19,7 @@ PostgeSQL 9.5 has 2 main issues for this extension :
   ```
 
 * The CASCADE option is not available with PG 9.5. So you need to load
-  `tsm_sytem_rows` manually:
+  `tsm_system_rows` manually:
 
   ```sql
   CREATE EXTENSION IF NOT EXISTS tsm_system_rows;

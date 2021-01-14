@@ -16,7 +16,7 @@ The data can be altered with several techniques:
 
 * **Deletion** or **Nullification** simply removes data.
 
-* **Static Subtitution** consistently replaces the data with a generic
+* **Static Substitution** consistently replaces the data with a generic
    value. For instance: replacing all values of a TEXT column with the value
    "CONFIDENTIAL".
 
@@ -41,7 +41,7 @@ The data can be altered with several techniques:
    '40XX XXXX XXXX XX96'
 
 * **Custom rules** are designed to alter data following specific needs. For
-   instance, randomizing simultanously a zipcode and a city name while keeping
+   instance, randomizing simultaneously a zipcode and a city name while keeping
    them coherent.
 
 Please note that **Encryption** and **Hashing** are not considered as

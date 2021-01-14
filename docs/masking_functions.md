@@ -27,8 +27,8 @@ The extension provides functions to implement 8 main anonymization strategies:
 Depending on your data, you may need to use different strategies on different
 columns :
 
-* For names and other 'direct identifiers' , [Faking] is often usefull
-* [Shuffling] is convienient for foreign keys
+* For names and other 'direct identifiers' , [Faking] is often useful
+* [Shuffling] is convenient for foreign keys
 * [Adding Noise] is interesting for numeric values and dates
 * [Partial Scrambling] is perfect for email address and phone numbers
 * etc.
@@ -69,8 +69,8 @@ dataset will remain meaningful.
 
 **WARNING** : The `noise()` masking functions are vulnerable to a form of
 repeat attack, especially with [Dynamic Masking]. A masked user can guess
-an original value by resquesting its masked value multiple times and then simply
-use the `AVG()` function to get a close approximation. ( See
+an original value by requesting its masked value multiple times and then simply
+use the `AVG()` function to get a close approximation. (See
 `demo/noise_reduction_attack.sql` for more details). In a nutshell, these
 functions are best fitted for [Anonymous Dumps] and [Static Masking].
 They should be avoided when using [Dynamic Masking].
@@ -114,8 +114,8 @@ in your database first:
 SELECT anon.init();
 ```
 
-The `init()` function will import a default dataset of random data ( iban,
-names, cities, etc. ).
+The `init()` function will import a default dataset of random data (iban,
+names, cities, etc.).
 
 If you want to use your own dataset, you can import custom CSV files with :
 
@@ -203,12 +203,12 @@ Once the fake data is loaded you have access to 10 pseudo functions:
 
 The second argument ("salt") is optional. You can call each function with
 only the seed like this `anon.pseudo_city('bob')`. The salt is here to increase
-complexity and avoid dictionnary and brute force attacks (see warning below).
+complexity and avoid dictionary and brute force attacks (see warning below).
 If a salt is not given, a random secret salt is used instead
 (see the [Generic Hashing] section for more details)
 
-The seed can be any information related to the subjet. For instance, we can
-consistenty generate the same fake email address for a given person by using
+The seed can be any information related to the subject. For instance, we can
+consistently generate the same fake email address for a given person by using
 her login as the seed :
 
 ```sql
@@ -219,7 +219,7 @@ SECURITY LABEL FOR anon
 
 **NOTE** : You may want to produce unique values using a pseudonymization
 function. For instance, if you want to mask an `email` column that is declared
-as `UNIQUE`. In this case, you will need to intialize the extension with a fake
+as `UNIQUE`. In this case, you will need to initialize the extension with a fake
 dataset that is **way bigger** than the numbers of rows of the table. Otherwise you
 may see some "collisions" happening, i.e. two different original values producing
 the same pseudo value.
@@ -228,12 +228,12 @@ the same pseudo value.
 they serve 2 different purposes. With pseudonymization, the real data can be
 rebuild using the pseudo data, the masking rules and the seed. If an attacker
 gets access to these 3 elements, he/she can easily re-identify some people
-using `brute force` or `dictionnary` attacks. Therefore, you should protect any
+using `brute force` or `dictionary` attacks. Therefore, you should protect any
 pseudonymized data and your seeds with the same level of security that the original
 dataset. The GDPR makes it very clear that personal data which have undergone
-pseudonymization are still considered to be personnal information (see [Recital 26])
+pseudonymization are still considered to be personnel information (see [Recital 26])
 
-In a nutshell: pseudonymization may be usefull in some use cases. But if your
+In a nutshell: pseudonymization may be useful in some use cases. But if your
 goal is to comply with GDPR or similar data regulation, it is clearly a bad solution.
 
 
@@ -259,12 +259,12 @@ relatively unusual source data. Therefore, the
   from a pre-defined list
 
 By default, a random secret salt is generated when the extension is
-initialiazed,
-and the default hash algortihm is `sha512`. You can change these for the entire
+initialized,
+and the default hash algorithm is `sha512`. You can change these for the entire
 database with two functions:
 
 * `anon.set_secret_salt(value)` to define you own salt
-* `anon.set_secret_algorithm(value)` to select another hash functuon.
+* `anon.set_secret_algorithm(value)` to select another hash function.
   Possible values are: md5, sha1, sha224, sha256, sha384 or sha512
 
 Keep in mind that hashing is a form a [Pseudonymization]. This means that the
@@ -277,7 +277,7 @@ same level of security that the original dataset.**
 In a nutshell, we recommend that you use the `anon.hash()` function rather than
 `anon.digest()` because the salt will not appear clearly in the masking rule.
 
-Furthermore: in practice the hash function will return a long string of caracter
+Furthermore: in practice the hash function will return a long string of character
 like this:
 
 ```sql
@@ -288,7 +288,7 @@ SELECT anon.hash('bob');
 ```
 
 For some columns, this may be too long and you may have to cut some parts the
-hash in order to fit into the columm. For instance, if you have a foreign key
+hash in order to fit into the column. For instance, if you have a foreign key
 based on a phone number and the column is a VARCHAR(12) you can transform the
 data like this:
 
@@ -301,7 +301,7 @@ IS 'MASKED WITH FUNCTION left(anon.hash(fk_phone_number),12)';
 ```
 
 Of course, cutting the hash value to 12 characters will increase the risk
-of "collision" ( 2 different values having the same fake hash). In such
+of "collision" (2 different values having the same fake hash). In such
 case, it's up to you to evaluate this risk.
 
 
@@ -315,7 +315,7 @@ For instance : a credit card number can be replaced by '40XX XXXX XXXX XX96'.
 2 functions are available:
 
 * `anon.partial('abcdefgh',1,'xxxx',3)` will return 'axxxxfgh';
-* `anon.partial_email('daamien@gmail.com')` will becomme 'da******@gm******.com'
+* `anon.partial_email('daamien@gmail.com')` will become 'da******@gm******.com'
 
 
 Generalization
@@ -346,7 +346,7 @@ SELECT * FROM patient;
   9 | Ingrid   |    47607 | 1991-12-12 | Cancer
 ```
 
-We can build a view upon this table to suppress some colums ( `SSN`
+We can build a view upon this table to suppress some columns ( `SSN`
 and `name` ) and generalize the zipcode and the birth date like
 this:
 
@@ -515,7 +515,7 @@ And try it out !
 ```
 
 This is just a quick and dirty example. As you can see, manipulating a
-sophiticated JSON structure with SQL is possible, but it can be tricky at
+sophisticated JSON structure with SQL is possible, but it can be tricky at
 first! There are multiple ways of walking through the keys and updating
 values. You will probably have to try different approaches, depending on
 your real JSON data and the performance you want to reach.

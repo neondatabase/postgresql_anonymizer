@@ -1,7 +1,7 @@
 Permanently remove sensitive data
 ===============================================================================
 
-Sometimes, it is usefull to transform directly the original dataset. You can
+Sometimes, it is useful to transform directly the original dataset. You can
 do that with different methods:
 
 * [Applying masking rules]: #applying-masking-rules
@@ -108,7 +108,7 @@ Shuffling
 * `anon.shuffle_column(shuffle_table, shuffle_column, primary_key)` will rearrange
   all values in a given column. You need to provide a primary key of the table.
 
-This is usefull for foreign keys because referential integrity will be kept.
+This is useful for foreign keys because referential integrity will be kept.
 
 **IMPORTANT:**  `shuffle_column()` is not a [masking function] because it works
 "verticaly" : it will modify all the values of a column at once.

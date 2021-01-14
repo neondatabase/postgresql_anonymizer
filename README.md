@@ -15,7 +15,7 @@ Once the maskings rules are defined, you can access the anonymized data in 3
 different ways :
 
 * [Anonymous Dumps] : Simply export the masked data into an SQL file
-* [Static Masking] : Remove permamently the PII according to the rules
+* [Static Masking] : Remove permanently the PII according to the rules
 * [Dynamic Masking] : Hide PII only for the masked users
 
 In addition, various [Masking Functions] are available: randomization, faking,
@@ -120,7 +120,7 @@ will still access the original data.
 
 ```sql
 =# SELECT * FROM people;
- id | fistname | lastname |   phone
+ id | firstname | lastname |   phone
 ----+----------+----------+------------
  T1 | Sarah    | Conor    | 0609110911
 (1 row)
@@ -154,7 +154,7 @@ Step 4 : Connect with the masked user
 
 ```sql
 =# \! psql peopledb -U skynet -c 'SELECT * FROM people;'
- id | fistname | lastname  |   phone
+ id | firstname | lastname  |   phone
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
 (1 row)
@@ -193,7 +193,7 @@ Requirements
 
 This extension is officially supported on PostgreSQL 9.6 and later.
 It should also work on PostgreSQL 9.5 with a bit of hacking.
-See the [Developement Notes] for more details.
+See the [Development Notes] for more details.
 
 [Developement Notes]: https://postgresql-anonymizer.readthedocs.io/en/latest/NOTES/
 
@@ -250,7 +250,7 @@ Here's some ideas:
 
 If you need to anonymize data for testing purpose, chances are that a smaller
 subset of your database will be enough. In that case, you can easily speed up
-the anonymization by downsizing the volume of data. There are mulitple ways to
+the anonymization by downsizing the volume of data. There are multiple ways to
 extract a sample of database:
 
 * [TABLESAMPLE](https://www.postgresql.org/docs/current/static/sql-select.html)

@@ -27,8 +27,8 @@ extension on performances
 [issue board]. If you want to give a try, simply fork the git repository
 and start coding !
 
-5- **Spread the Word** : If you loke this extension, just let other people know !
-You can publish a blog post about it or a youtube video or wahtever format
+5- **Spread the Word** : If you look this extension, just let other people know !
+You can publish a blog post about it or a youtube video or whatever format
 you feel comfortable with !
 
 In any case, let us know how we can help you moving forward
@@ -40,10 +40,10 @@ In any case, let us know how we can help you moving forward
 Forking, mirroring and Rebasing
 -------------------------------------------------------------------------------
 
-To contribute code to this projet, you can simply create you own fork.
+To contribute code to this project, you can simply create you own fork.
 
-Over time, the main repository ( let's call it `upstream`) will evolve and your
-own repository (let's call it  `origin`) will miss the latest commits. Here's
+Over time, the main repository (let's call it `upstream`) will evolve and your
+own repository (let's call it `origin`) will miss the latest commits. Here's
 a few hints on how to handle this
 
 ### Connect your repo to the upstream
@@ -93,8 +93,8 @@ git push origin --force-with-lease
 Adding new functions
 -------------------------------------------------------------------------------
 
-The set of funtions is based on pragmatic experience and feedback. We try to
-cover the most common personal data types. If you need an addditional function,
+The set of functions is based on pragmatic experience and feedback. We try to
+cover the most common personal data types. If you need an additional function,
 let us know !
 
 If you want to add new functions, please define the following attributes:
@@ -174,7 +174,7 @@ See links below for more details:
 
 ### Security level for functions
 
-Most functions should be defined as `SECURITY INVOKER`. In very exceptionnal cases,
+Most functions should be defined as `SECURITY INVOKER`. In very exceptional cases,
 it may be necessary to use `SECURITY DEFINER` but this should be used with care.
 
 Read the [CREATE FUNCTION] documentation for more details:
@@ -184,9 +184,9 @@ https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTI
 ### Search_path
 
 This extension will create views based on masking functions. These functions
-will be run as with priviledges of the owners of the views. This is prone
-to [search_path attacks]: an untrusted user may be able to overide some
-functions and gain superuser priviledges.
+will be run as with privileges of the owners of the views. This is prone
+to [search_path attacks]: an untrusted user may be able to override some
+functions and gain superuser privileges.
 
 Therefore all functions should be defined with `SET search_path=''` even if
 they are not `SECURITY DEFINER`.

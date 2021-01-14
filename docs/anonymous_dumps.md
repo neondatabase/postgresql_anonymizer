@@ -48,7 +48,7 @@ variable value is used.
 ```
 
 
-* The [PostgreSQL environement variables] ($PGHOST, PGUSER, etc.) are supported.
+* The [PostgreSQL environment variables] ($PGHOST, PGUSER, etc.) are supported.
 * The [.pgpass] file is also supported.
 * The `plain` format is the only supported format. The other formats (`custom`, `dir`
   and `tar`) are not supported
@@ -61,7 +61,7 @@ TIP: Avoid multiple password prompts
 ------------------------------------------------------------------------------
 
 If you don't provide the connection password to `pg_dump_anon` using the
-`--password` option, you may have to type the password multipe times.To
+`--password` option, you may have to type the password multiple times.To
 avoid this, you can either [define the $PGPASS variable] or place your
 password in a [.pgpass] file.
 
