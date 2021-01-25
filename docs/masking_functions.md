@@ -315,7 +315,7 @@ For instance : a credit card number can be replaced by '40XX XXXX XXXX XX96'.
 2 functions are available:
 
 * `anon.partial('abcdefgh',1,'xxxx',3)` will return 'axxxxfgh';
-* `anon.email('daamien@gmail.com')` will becomme 'da******@gm******.com'
+* `anon.partial_email('daamien@gmail.com')` will becomme 'da******@gm******.com'
 
 
 Generalization

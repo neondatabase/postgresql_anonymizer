@@ -1471,7 +1471,7 @@ $$
 LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 
 --
--- email('daamien@gmail.com') will becomme 'da******@gm******.com'
+-- partial_email('daamien@gmail.com') will becomme 'da******@gm******.com'
 --
 CREATE OR REPLACE FUNCTION anon.partial_email(
   ov TEXT
