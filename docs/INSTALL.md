@@ -20,7 +20,7 @@ There are multiple ways to install the extension :
 * [Install on Windows]
 
 In the examples below, we load the extension (step2) using a parameter called
-`session_preload_librairies` but there are other ways to load it.
+`session_preload_libraries` but there are other ways to load it.
 See [Load the extension] for more details.
 
 If you're having any problem, check the [Troubleshooting] section.
@@ -42,7 +42,7 @@ Choose your version : `Stable` or `Latest` ?
 This extension is available in two versions :
 
 * `stable` is recommended for production
-* `latest` is usefull if you want to test new features
+* `latest` is useful if you want to test new features
 
 
 
@@ -188,11 +188,11 @@ Install in the cloud
 ------------------------------------------------------------------------------
 
 > **WARNING** This extension was never really intended to work on Database As A
-> Service platforms ( such as Amazon RDS ). It just happens to work currently
+> Service platforms (such as Amazon RDS). It just happens to work currently
 > using the `standalone` method described below. In future versions, we may
-> introduce features that will force us to drop the suppport for this. If
+> introduce features that will force us to drop the support for this. If
 > privacy and anonymity are a concern to you, we encourage you to contact the
-> customer services of these plateforms and ask them if they plan to support
+> customer services of these platforms and ask them if they plan to support
 > this extension.
 
 That being said, currently `PostgreSQL Anonymizer` is a set of `plpgsql` functions,
@@ -369,7 +369,7 @@ Install on Windows
 This extension is not supported on Windows.
 
 However in theory it should be possible to compile it using Visual Studio.
-we simply lack the time and ressource to work on this topic. You can contact us
+we simply lack the time and resource to work on this topic. You can contact us
 if you which to fund this effort.
 
 Alternatively, the [Install in the cloud] method should work on Windows too.
@@ -430,7 +430,7 @@ Addendum: Troubleshooting
 ------------------------------------------------------------------------------
 
 If you are having difficulties, you may have missed a step during the
-installation processus. Here's a quick checklist to help you:
+installation processes. Here's a quick checklist to help you:
 
 ### Check that the extension is present
 
@@ -454,7 +454,7 @@ SHOW session_preload_libraries;
 SHOW shared_preload_libraries;
 ```
 
-If you don't see `anon` in any of these paramaters, go back to step 2.
+If you don't see `anon` in any of these parameters, go back to step 2.
 
 ### Check that the extension is created
 

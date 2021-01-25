@@ -9,7 +9,7 @@ Anonymization & Data Masking for PostgreSQL
 [personally identifiable information] (PII) or commercially sensitive data from
 a PostgreSQL database.
 
-The projet has a **declarative approach** of anonymization. This means you can
+The project has a **declarative approach** of anonymization. This means you can
 [declare the masking rules] using the PostgreSQL Data Definition Language (DDL)
 and specify your anonymization strategy inside the table definition itself.
 
@@ -25,7 +25,7 @@ In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shuffling, noise or even your own custom function!
 
 Beyond masking, it is also possible to use a fourth approach called [Generalization]
-which is perfect for statictics and data analytics.
+which is perfect for statistics and data analytics.
 
 Finally, the extension offers a panel of [detection] functions that will try to
 guess which columns need to be anonymized.
@@ -49,7 +49,7 @@ Example
 
 ```sql
 =# SELECT * FROM people;
- id | fistname | lastname |   phone
+ id | firstname | lastname |   phone
 ----+----------+----------+------------
  T1 | Sarah    | Conor    | 0609110911
 ```
@@ -83,7 +83,7 @@ Step 4 : Connect with the masked user
 ```sql
 =# \c - skynet
 => SELECT * FROM people;
- id | fistname | lastname  |   phone
+ id | firstname | lastname  |   phone
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
 ```
@@ -92,7 +92,7 @@ Step 4 : Connect with the masked user
 Warning
 ------------------------------------------------------------------------------
 
-> *This projet is at an early stage of development, and should be used carefully.*
+> *This project is at an early stage of development, and should be used carefully.*
 
 We need your feedback and ideas ! Let us know what you think of this tool, how it
 fits your needs and what features are missing.

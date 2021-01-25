@@ -13,7 +13,7 @@ the data remains true while avoiding the risk of re-identification.
 Generalization is a way to achieve [k-anonymity].
 
 PostgreSQL can handle generalization very easily with the [RANGE] data types,
-a very powerfull way to store and manipulate a set of values contained between
+a very powerful way to store and manipulate a set of values contained between
 a lower and an upper bound.
 
 [k-anonymity]: #k-anonymity
@@ -105,7 +105,7 @@ Limitations
 ### Singling out and extreme values
 
 "Singling Out" is the possibility to isolate an individual in a dataset by using
-extreme value or exceptionnal values.
+extreme value or exceptional values.
 
 For example:
 
@@ -152,7 +152,7 @@ of re-identification using linkage with other data sources.
 
 You can evaluate the k-anonymity factor of a table in 2 steps :
 
-Step 1: First defined the columns that are [indirect identifiers] ( also known
+Step 1: First defined the columns that are [indirect identifiers] (also known
 as "quasi identifers") like this:
 
 ```sql

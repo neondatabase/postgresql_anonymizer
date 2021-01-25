@@ -9,12 +9,12 @@ Other roles will still access the original data.
 <!-- demo/masking.sql -->
 
 ```sql
-CREATE TABLE people ( id TEXT, fistname TEXT, lastname TEXT, phone TEXT);
+CREATE TABLE people ( id TEXT, firstname TEXT, lastname TEXT, phone TEXT);
 INSERT INTO people VALUES ('T1','Sarah', 'Conor','0609110911');
 SELECT * FROM people;
 
 =# SELECT * FROM people;
- id | fistname | lastname |   phone
+ id | firstname | lastname |   phone
 ----+----------+----------+------------
  T1 | Sarah    | Conor    | 0609110911
 (1 row)
@@ -51,7 +51,7 @@ Step 4 : Connect with the masked user
 ```sql
 =# \c - skynet
 => SELECT * FROM people;
- id | fistname | lastname  |   phone
+ id | firstname | lastname  |   phone
 ----+----------+-----------+------------
  T1 | Sarah    | Stranahan | 06******11
 (1 row)
