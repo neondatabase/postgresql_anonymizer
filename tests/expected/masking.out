@@ -151,6 +151,9 @@ DROP TABLE people CASCADE;
 NOTICE:  drop cascades to view mask.people
 DROP EXTENSION anon CASCADE;
 NOTICE:  drop cascades to event trigger anon_mask_update
+DROP EXTENSION tsm_system_rows;
+DROP EXTENSION pgcrypto;
+DROP SCHEMA mask;
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;
