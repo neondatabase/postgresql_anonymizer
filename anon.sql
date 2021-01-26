@@ -1888,7 +1888,7 @@ BEGIN
   PERFORM anon.mask_drop_view(oid)
   FROM pg_catalog.pg_class
   WHERE relnamespace=anon.sourceschema()::regnamespace
-  AND relkind IN ('r','p') -- relations or partitions
+  AND relkind IN ('r','p','f') -- relations or partitions or foreign tables
   ;
 
   -- Walk through all masked roles and remove their mask
@@ -2028,7 +2028,7 @@ $$
   SELECT anon.mask_create_view(oid)
   FROM pg_catalog.pg_class
   WHERE relnamespace=anon.sourceschema()::regnamespace
-  AND relkind IN ('r','p') -- relations or partitions
+  AND relkind IN ('r','p','f') -- relations or partitions or foreign tables
   ;
 
   -- Walk through all masked roles and apply the restrictions

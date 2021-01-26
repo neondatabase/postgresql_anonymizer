@@ -5,7 +5,7 @@
 variables:
     PGDATA: /var/lib/postgresql/data
     PGUSER: postgres
-    EXTDIR: /usr/share/postgresql/11/extension/
+    EXTDIR: /usr/share/postgresql/13/extension/
     PSQL: psql -v ON_ERROR_STOP=1
     POSTGRES_DB: nice_marmot
     POSTGRES_USER: runner
@@ -17,7 +17,7 @@ stages:
   - test
   - deploy
 
-image: postgres:11
+image: postgres:13
 
 
 ##
@@ -249,7 +249,7 @@ demo:
   stage: test
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 postgresql-contrib-11  pgxnclient
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 postgresql-contrib-13  pgxnclient
     - pgxn install ddlx
     - make extension
     - make install
@@ -318,7 +318,7 @@ test_pgxn:
     - echo "disable the before_script"
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 pgxnclient
     - pgxn install postgresql_anonymizer
   when: manual
 

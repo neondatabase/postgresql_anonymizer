@@ -113,7 +113,7 @@ while [ $# -gt 0 ]; do
         usage
         exit 0
         ;;
-    -*|--*)
+    -*)
         echo "$0: Invalid option -- $1"
         echo Try "$0 --help" for more information.
         exit 1
@@ -171,6 +171,7 @@ pg_dump "${ddl_dump_opt[@]}" \
 ################################################################################
 
 # Only this time, we exclude the tables listed in `--exclude-table-data`
+# shellcheck disable=SC2206
 tables_dump_opt=(
   "${ddl_dump_opt[@]}"  # same as previously
   ${exclude_table_data//--exclude-table-data=/--exclude-table=}
