@@ -26,4 +26,5 @@ anon*.zip
 anon_standalone.sql
 anon_standalone_PG*
 # jupyter
+.ipynb_checkpoints/
 */.ipynb_checkpoints/
