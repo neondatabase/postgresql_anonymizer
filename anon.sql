@@ -2031,6 +2031,7 @@ BEGIN
   -- The masked role can use the anon schema (except the secrets)
   EXECUTE format('GRANT USAGE ON SCHEMA anon TO %s', maskedrole);
   EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA anon TO %s', maskedrole);
+  EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA anon TO %s', maskedrole);
   EXECUTE format('REVOKE ALL ON TABLE anon.secret FROM %s',  maskedrole);
   -- The masked role can use the masking schema
   EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', maskschema, maskedrole);
