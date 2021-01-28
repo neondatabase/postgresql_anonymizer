@@ -8,6 +8,8 @@
 #include "commands/seclabel.h"
 #include "parser/parser.h"
 #include "utils/builtins.h"
+#include "fmgr.h"
+#include "utils/guc.h"
 
 PG_MODULE_MAGIC;
 
@@ -17,6 +19,8 @@ PG_MODULE_MAGIC;
 void    _PG_init(void);
 
 PG_FUNCTION_INFO_V1(anon_seclabel_anon);
+
+static bool guc_restrict_to_trusted_schemas;
 
 /*
  * Checking the syntax of the masking rules
@@ -44,6 +48,21 @@ _PG_init(void)
 {
   /* Security label provider hook */
   register_label_provider("anon",anon_object_relabel);
+
+  /* GUC parameters */
+  DefineCustomBoolVariable
+  (
+    "anon.restrict_to_trusted_schemas",
+    "Masking filters must be in a trusted schema",
+    "Activate this option to prevent non-superuser from using their own masking filters",
+    &guc_restrict_to_trusted_schemas,
+    false,
+    PGC_SUSET,
+    0,
+    NULL,
+    NULL,
+    NULL
+  );
 }
 
 /*
