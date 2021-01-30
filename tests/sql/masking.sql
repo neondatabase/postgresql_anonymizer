@@ -38,10 +38,10 @@ INSERT INTO "CoMPaNy"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 
 SECURITY LABEL FOR anon ON COLUMN "CoMPaNy"."IBAN"
-IS 'MASKED WITH FUNCTION anon.random_iban()';
+IS 'MASKED WITH FUNCTION anon.partial("IBAN", 0, $$***********$$, 4 ) This will be ignored';
 
 SECURITY LABEL FOR anon ON COLUMN "CoMPaNy".NAME
-IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
+IS 'MASKED WITH VALUE $$CONFIDENTIAL$$';
 
 -- BUG #51 :
 CREATE TABLE test_type_casts(
@@ -67,7 +67,9 @@ VALUES ( 1, 1 , 1991, DATE '1985-05-25',NULL);
 
 SELECT count(*) = 5  FROM anon.pg_masks;
 
-SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
+SELECT masking_function = 'anon.partial("IBAN", 0, $$***********$$, 4 )'
+  FROM anon.pg_masks
+  WHERE attname = 'IBAN';
 
 SELECT name != 'Cyberdyne Systems' FROM mask."CoMPaNy" WHERE id_company=1991;
 
