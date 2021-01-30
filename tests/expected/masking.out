@@ -1,6 +1,8 @@
--- This test cannot be run in a single transcation
+-- This test cannot be run in a single transaction
 -- This test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "tsm_system_rows"
+NOTICE:  installing required extension "pgcrypto"
 -- INIT
 SELECT anon.mask_init();
  mask_init 
@@ -17,10 +19,10 @@ NOTICE:  schema "mask" already exists, skipping
 
 -- Table `people`
 CREATE TABLE people (
-	id SERIAL UNIQUE,
-	name TEXT,
-	"CreditCard" TEXT,
-	fk_company INTEGER
+  id SERIAL UNIQUE,
+  name TEXT,
+  "CreditCard" TEXT,
+  fk_company INTEGER
 );
 INSERT INTO people
 VALUES (1,'Schwarzenegger','1234567812345678', 1991);
@@ -30,47 +32,48 @@ SECURITY LABEL FOR anon ON COLUMN people."CreditCard"
 IS 'MASKED WITH FUNCTION         anon.random_string(12)';
 -- Table `CoMPaNy`
 CREATE TABLE "CoMPaNy" (
-	id_company SERIAL UNIQUE,
-	"IBAN" TEXT,
-	NAME TEXT
+  id_company SERIAL UNIQUE,
+  "IBAN" TEXT,
+  NAME TEXT
 );
 INSERT INTO "CoMPaNy"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 SECURITY LABEL FOR anon ON COLUMN "CoMPaNy"."IBAN"
-IS 'MASKED WITH FUNCTION anon.random_iban()';
+IS 'MASKED WITH FUNCTION anon.partial("IBAN", 0, $$***********$$, 4 ) This will be ignored';
 SECURITY LABEL FOR anon ON COLUMN "CoMPaNy".NAME
-IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
+IS 'MASKED WITH VALUE $$CONFIDENTIAL$$';
 -- BUG #51 :
 CREATE TABLE test_type_casts(
-	last_name VARCHAR(30)
+  last_name VARCHAR(30)
 );
 SECURITY LABEL FOR anon ON column test_type_casts.last_name
 IS 'MASKED WITH FUNCTION anon.random_last_name()::VARCHAR(30)';
 -- Table `work`
 CREATE TABLE work (
-	id_work SERIAL,
-	fk_employee INTEGER NOT NULL,
-	fk_company INTEGER NOT NULL,
-	first_day DATE NOT NULL,
-	last_day DATE,
-	FOREIGN KEY	(fk_employee) references people(id),
-	FOREIGN KEY (fk_company) references "CoMPaNy"(id_company)
+  id_work SERIAL,
+  fk_employee INTEGER NOT NULL,
+  fk_company INTEGER NOT NULL,
+  first_day DATE NOT NULL,
+  last_day DATE,
+  FOREIGN KEY (fk_employee) references people(id),
+  FOREIGN KEY (fk_company) references "CoMPaNy"(id_company)
 );
 INSERT INTO work
 VALUES ( 1, 1 , 1991, DATE '1985-05-25',NULL);
-SELECT count(*) = 4  FROM anon.pg_masks;
- ?column? 
-----------
- f
-(1 row)
-
-SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
+SELECT count(*) = 5  FROM anon.pg_masks;
  ?column? 
 ----------
  t
 (1 row)
 
---
+SELECT masking_function = 'anon.partial("IBAN", 0, $$***********$$, 4 )'
+  FROM anon.pg_masks
+  WHERE attname = 'IBAN';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT name != 'Cyberdyne Systems' FROM mask."CoMPaNy" WHERE id_company=1991;
  ?column? 
 ----------

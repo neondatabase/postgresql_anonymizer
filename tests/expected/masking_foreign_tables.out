@@ -45,6 +45,8 @@ NOTICE:  The previous priviledges of 'skynet' are not restored. You need to gran
 
 --  CLEAN
 DROP EXTENSION anon CASCADE;
+DROP EXTENSION tsm_system_rows;
+DROP EXTENSION pgcrypto;
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;

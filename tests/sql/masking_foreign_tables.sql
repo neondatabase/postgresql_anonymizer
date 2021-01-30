@@ -36,6 +36,8 @@ SELECT anon.stop_dynamic_masking();
 --  CLEAN
 
 DROP EXTENSION anon CASCADE;
+DROP EXTENSION tsm_system_rows;
+DROP EXTENSION pgcrypto;
 
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
