@@ -1,4 +1,4 @@
--- This test cannot be run in a single transcation
+-- This test cannot be run in a single transaction
 -- This test must be run on a database named 'contrib_regression'
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
@@ -11,10 +11,10 @@ SELECT anon.start_dynamic_masking();
 
 -- Table `people`
 CREATE TABLE people (
-	id SERIAL UNIQUE,
-	name TEXT,
-	"CreditCard" TEXT,
-	fk_company INTEGER
+  id SERIAL UNIQUE,
+  name TEXT,
+  "CreditCard" TEXT,
+  fk_company INTEGER
 );
 
 INSERT INTO people
@@ -29,9 +29,9 @@ IS 'MASKED WITH FUNCTION         anon.random_string(12)';
 
 -- Table `CoMPaNy`
 CREATE TABLE "CoMPaNy" (
-	id_company SERIAL UNIQUE,
-	"IBAN" TEXT,
-	NAME TEXT
+  id_company SERIAL UNIQUE,
+  "IBAN" TEXT,
+  NAME TEXT
 );
 
 INSERT INTO "CoMPaNy"
@@ -45,7 +45,7 @@ IS 'MASKED WITH FUNCTION anon.random_company() jenfk snvi  jdnvkjsnvsndvjs';
 
 -- BUG #51 :
 CREATE TABLE test_type_casts(
-	last_name VARCHAR(30)
+  last_name VARCHAR(30)
 );
 
 SECURITY LABEL FOR anon ON column test_type_casts.last_name
@@ -53,23 +53,21 @@ IS 'MASKED WITH FUNCTION anon.random_last_name()::VARCHAR(30)';
 
 -- Table `work`
 CREATE TABLE work (
-	id_work SERIAL,
-	fk_employee INTEGER NOT NULL,
-	fk_company INTEGER NOT NULL,
-	first_day DATE NOT NULL,
-	last_day DATE,
-	FOREIGN KEY	(fk_employee) references people(id),
-	FOREIGN KEY (fk_company) references "CoMPaNy"(id_company)
+  id_work SERIAL,
+  fk_employee INTEGER NOT NULL,
+  fk_company INTEGER NOT NULL,
+  first_day DATE NOT NULL,
+  last_day DATE,
+  FOREIGN KEY (fk_employee) references people(id),
+  FOREIGN KEY (fk_company) references "CoMPaNy"(id_company)
 );
 
 INSERT INTO work
 VALUES ( 1, 1 , 1991, DATE '1985-05-25',NULL);
 
-SELECT count(*) = 4  FROM anon.pg_masks;
+SELECT count(*) = 5  FROM anon.pg_masks;
 
 SELECT masking_function = 'anon.random_iban()' FROM anon.pg_masks WHERE attname = 'IBAN';
-
---
 
 SELECT name != 'Cyberdyne Systems' FROM mask."CoMPaNy" WHERE id_company=1991;
 
