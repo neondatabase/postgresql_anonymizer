@@ -189,11 +189,11 @@ Install in the cloud
 
 > **WARNING** This extension was never really intended to work on Database As A
 > Service platforms (such as Amazon RDS). It just happens to work currently
-> using the `standalone` method described below. In future versions, we may
-> introduce features that will force us to drop the support for this. If
-> privacy and anonymity are a concern to you, we encourage you to contact the
-> customer services of these platforms and ask them if they plan to support
-> this extension.
+> using the `standalone` method described below but **we do not support it**.
+> In future versions, we will introduce features that will force us to deprecated
+> this method. If privacy and anonymity are a concern to you, we encourage you to
+> contact the customer services of these platforms and ask them if they plan to
+> add this extension to their catalog.
 
 That being said, currently `PostgreSQL Anonymizer` is a set of `plpgsql` functions,
 which means should you be able to install it directly without declaring

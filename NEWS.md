@@ -1,3 +1,116 @@
+PostgreSQL Anonymizer 0.8: Masking foreign tables and partitions
+================================================================================
+
+Paris, France, February 8, 2021
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[Static Masking] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
+Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+Improve performances and randomness
+--------------------------------------------------------------------------------
+
+Our latest efforts were focused on performance and improving the `shuffle`
+algorithm and `fake` data filters. You may also notice that the `anonymize_database`
+function is much faster.
+
+Support for foreign tables and partitions
+--------------------------------------------------------------------------------
+
+You can now declare masking rules on partitions, inherited tables and foreign tables.
+However keep in mind that the masking rules are **NOT INHERITED**. If you have
+split a table into multiple partitions, you need to declare the masking rules for
+each partition.
+
+
+Warning :  Support for Amazon RDS will be deprecated in the next version
+--------------------------------------------------------------------------------
+
+This extension was never really intended to work on Database As A Service platforms
+(such as Amazon RDS or Google Cloud SQL). It just happens to work currently using
+the `standalone installation` method but **we will no longer actively support it**.
+In practice, the `anon_standalone.sql` file will not evolve anymore.
+
+In future versions, we will introduce features that will force us to deprecate
+this method. If privacy and anonymity are a concern to you, we encourage you to
+contact the customer services of these platforms and ask them if they plan to
+add this extension to their catalog.
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 9.6 and further versions.
+
+On Red Hat / CentOS systems, you can install it from the
+[official PostgreSQL RPM repository]:
+
+    yum install postgresql_anonymizer12
+
+Then load the extension with:
+
+    ALTER DATABASE foo SET session_preload_libraries = 'anon';
+
+Create the extension inside the database:
+
+    CREATE EXTENSION anon CASCADE;
+
+And finally, initialize the extension
+
+    SELECT anon.init();
+
+
+For other systems, check out the [install] documentation :
+
+https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+> **WARNING:** The project is still under active development and should be
+> used carefully.
+
+[official PostgreSQL RPM repository]: https://yum.postgresql.org/
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+Thanks
+--------------------------------------------------------------------------------
+
+This release includes code, bugfixes and ideas from Rushal Verma, Paul Bonaud,
+Dmitry Fomin, Rodrigo Otsuka , Nicolas Peltier, Matthieu Larcher and others.
+
+Many thanks to them!
+
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+
+--------------------------------------------------------------------------------
+
+
 PostgreSQL Anonymizer 0.7: Generic Hashing and Advanced Faking
 ================================================================================
 
