@@ -1,6 +1,34 @@
 CHANGELOG
 ===============================================================================
 
+
+20200201 : 0.8.0 - WORK IN PROGRESS
+-------------------------------------------------------------------------------
+
+<!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/11 -->
+
+__Dependencies:__
+
+- tms_system_rows
+- pg_crypto
+
+__Changes:__
+
+* [doc] FIX #168: how to alter a masked column (Rodrigo Otsuka)
+* [doc] FIX #174: How to anonymize 2 columns simultaneously (Nicolas Peltier)
+* [rules] FIX #181: handle all chars in MASKED WITH VALUES (Matthieu Larcher)
+* [in-place] Refactor anonymize_database to improve perfs  (Sébastien Helbert)
+* [core] Add support of partitioned tables (Dmitry Fomin)
+* [core] Add support of foreign tables (Paul Bonaud)
+* [core] Add schemaname in `pg_masking_rules`
+* [doc] Explain the permission model
+* [docker] simplify the build process for different PG major versions
+* [core] FIX #198: bug in the `shuffle` mecanism
+* [doc] Documentation Improvements (Rushal Verma)
+* [core] Improve the random generator, deprecated use of `tms_system_rows`
+
+
+
 20200928 : 0.7.1 - bugfix release
 -------------------------------------------------------------------------------
 

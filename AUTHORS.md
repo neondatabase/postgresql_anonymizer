@@ -10,13 +10,19 @@ how you can get involved, please read [CONTRIBUTING.md].
 Maintainer
 -------------------------------------------------------------------------------
 
-This software is mainly developed and maintained Damien Clochard (@daamien).
-
-Many thanks to Etienne Bersac (@bersace) for his help !
+This software is mainly developed and maintained by Damien Clochard (@daamien)
+along with Étienne Bersac (@bersace) and Frédéric Yhuel (@yhuelf).
 
 Contributors
 -------------------------------------------------------------------------------
 
+* Rushal Verma (@rusrushal13) : documentation
+* Paul Bonaud (@paulrbr) : support for foreign tables
+* Dmitry Fomin (@fomin.list) : Bug fix
+* Sébastien Helbert (@sebastien-helbert) : Code refactoring
+* Rodrigo Otsuka (@rodrigo.otsuka) : Bug reports
+* Nicolas Peltier (@npeltier) : Bug reports
+* Matthieu Larcher (@somatt) : Bug reports
 * Nikolay Samokhvalov (@NikolayS) : Bug fix
 * Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
 * Yann ROBIN (@me.show) : version() function and DBAAS install

@@ -4,9 +4,10 @@ Permanently remove sensitive data
 Sometimes, it is useful to transform directly the original dataset. You can
 do that with different methods:
 
-* [Applying masking rules]: #applying-masking-rules
-* [Shuffling a column]: #shuffling
-* [Adding noise to a column]: #adding-noise-to-a-column
+* [Applying masking rules](#applying-masking-rules)
+* [Shuffling a column](#shuffling)
+* [Adding noise to a column](#adding-noise-to-a-column)
+
 
 These methods will destroy the original data. Use with care.
 
