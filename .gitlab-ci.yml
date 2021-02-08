@@ -60,28 +60,6 @@ lint-markdown:
 ## B U I L D
 ##
 
-# PostgreSQL 9.5 is not supported
-make9.5:
-  stage: build
-  image: postgres:9.5
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-9.5 pgxnclient
-    - pgxn install ddlx
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-        - anon*
-        - regression.*
-        - results/
-    expire_in: 1 day
-  when: manual
-  allow_failure: yes
-
 make9.6:
   stage: build
   image: postgres:9.6
