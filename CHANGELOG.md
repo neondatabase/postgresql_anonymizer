@@ -1,8 +1,20 @@
 CHANGELOG
 ===============================================================================
 
+20200210 : 0.8.1 - bugfix release
+-------------------------------------------------------------------------------
 
-20200201 : 0.8.0 - WORK IN PROGRESS
+__Dependencies:__
+
+- tms_system_rows
+- pg_crypto
+
+__Changes:__
+
+* [standalone] FIX #219 : Update sequences after fake data is loaded
+
+
+20200208 : 0.8.0 - Support for Foreign Tables and Partition
 -------------------------------------------------------------------------------
 
 <!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/11 -->
