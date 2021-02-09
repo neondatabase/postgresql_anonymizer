@@ -87,7 +87,7 @@ install-bin:
 ## L I N T
 ##
 
-lint: lint-sh lint-md lint-sql
+lint: lint-sh lint-md lint-sql lint-py
 
 lint-sh: #: check the shell script syntax
 	shellcheck bin/pg_dump_anon.sh
@@ -98,6 +98,9 @@ lint-md: #: check the markdown syntax
 lint-sql: #: check the SQL syntax
 	sqlint anon.sql
 	sqlint demo/*.sql
+
+lint-py: #: check the python syntax
+	flake8 python/*.py
 
 ##
 ## B U I L D
