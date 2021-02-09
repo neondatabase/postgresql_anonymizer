@@ -1,0 +1,21 @@
+BEGIN;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "tsm_system_rows"
+NOTICE:  installing required extension "pgcrypto"
+SELECT anon.init();
+ init 
+------
+ t
+(1 row)
+
+TRUNCATE anon.email;
+COPY anon.email
+  FROM PROGRAM
+  'python3 $(pg_config --sharedir)/extension/anon/populate.py --table email --lines 500';
+SELECT count(DISTINCT address)=500 FROM anon.email;
+ ?column? 
+----------
+ t
+(1 row)
+
+ROLLBACK;
