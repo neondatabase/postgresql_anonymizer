@@ -13,11 +13,11 @@ There are multiple ways to install the extension :
 * [Install on RedHat / CentOS]
 * [Install with PGXN]
 * [Install from source]
-* [Install in the cloud]
 * [Install with docker]
 * [Install as a black box]
 * [Install on MacOS]
 * [Install on Windows]
+* [Install in the cloud]
 
 In the examples below, we load the extension (step2) using a parameter called
 `session_preload_libraries` but there are other ways to load it.
@@ -184,61 +184,6 @@ SELECT anon.init();
 All new connections to the database can now use the extension.
 
 
-Install in the cloud
-------------------------------------------------------------------------------
-
-> **WARNING** This extension was never really intended to work on Database As A
-> Service platforms (such as Amazon RDS). It just happens to work currently
-> using the `standalone` method described below but **we do not support it**.
-> In future versions, we will introduce features that will force us to deprecated
-> this method. If privacy and anonymity are a concern to you, we encourage you to
-> contact the customer services of these platforms and ask them if they plan to
-> add this extension to their catalog.
-
-That being said, currently `PostgreSQL Anonymizer` is a set of `plpgsql` functions,
-which means should you be able to install it directly without declaring
-an extension.
-
-Here's a few steps to try it out:
-
-```console
-git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
-make anon_standalone.sql
-psql ..... -f anon_standalone.sql
-```
-
-In this situation, you will have to declare the masking rules with `COMMENT`
-instead of security labels. See [Declaring Rules with COMMENTs] for more details.
-
-[Declaring Rules with COMMENTs]: declare_masking_rules.md#declaring-rules-with-comments
-
-### Special Notes about Dynamic Masking and DBaaS providers
-
-Here's a few remarks on how to make the [Dynamic Masking] work on a cloud
-PostgreSQL service :
-
-
-First, when you activate the masking engine, you need also to disable `autoload`
-(because the data was already loaded by the `anon_standalone.sql` script):
-
-```sql
-SELECT anon.start_dynamic_masking( autoload := FALSE );
-```
-
-Second, the [Dynamic Masking] engine will put [Event Triggers] on the tables.
-In order to do that, you must be allowed to create event triggers, which means
-either being a superuser or having a role with similar privileges.
-
-Creating [Event Triggers] may or may be not be supported by your cloud
-operator. For instance, [Amazon RDS supports event triggers] since version 9.4
-while [Alibaba Cloud does not allow them]. You should refer to your provider's
-documentation or its customer service to check if this feature is available.
-
-
-[Dynamic Masking]: dynamic_masking.md
-[Event Triggers]: https://www.postgresql.org/docs/current/event-triggers.html
-[Amazon RDS supports event triggers]: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.EventTriggers
-[Alibaba Cloud does not allow them]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/126
 
 
 
@@ -374,6 +319,15 @@ if you which to fund this effort.
 
 Alternatively, the [Install in the cloud] method should work on Windows too.
 
+Install in the cloud
+------------------------------------------------------------------------------
+
+> **WARNING** In previous versons, this extension could be installed on various
+> Database As A Service platforms (such as Amazon RDS). Starting with version 0.9,
+> this is not possible anymore. We do not support the former `standalone` method.
+> If privacy and anonymity are a concern to you, we encourage you to contact the 
+> customer services of these platforms and ask them if they plan to add this 
+> extension to their catalog.
 
 
 Addendum: Alternative ways to load the extension
