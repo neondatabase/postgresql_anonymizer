@@ -317,7 +317,6 @@ However in theory it should be possible to compile it using Visual Studio.
 we simply lack the time and resource to work on this topic. You can contact us
 if you which to fund this effort.
 
-Alternatively, the [Install in the cloud] method should work on Windows too.
 
 Install in the cloud
 ------------------------------------------------------------------------------
@@ -325,8 +324,8 @@ Install in the cloud
 > **WARNING** In previous versons, this extension could be installed on various
 > Database As A Service platforms (such as Amazon RDS). Starting with version 0.9,
 > this is not possible anymore. We do not support the former `standalone` method.
-> If privacy and anonymity are a concern to you, we encourage you to contact the 
-> customer services of these platforms and ask them if they plan to add this 
+> If privacy and anonymity are a concern to you, we encourage you to contact the
+> customer services of these platforms and ask them if they plan to add this
 > extension to their catalog.
 
 
