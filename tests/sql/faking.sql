@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.init();
@@ -5,6 +7,9 @@ SELECT anon.init();
 --
 -- Personal Data (First Name, etc.)
 --
+
+--- Address
+SELECT pg_typeof(anon.fake_address()) = 'TEXT'::REGTYPE;
 
 -- First Name
 SELECT pg_typeof(anon.fake_first_name()) = 'TEXT'::REGTYPE;
@@ -15,38 +20,29 @@ SELECT pg_typeof(anon.fake_last_name()) = 'TEXT'::REGTYPE;
 -- Email
 SELECT pg_typeof(anon.fake_email()) = 'TEXT'::REGTYPE;
 
-
--- Location
-SELECT pg_typeof(anon.fake_city_in_country('France')) = 'TEXT'::REGTYPE;
-
-SELECT anon.fake_city_in_country('dfndjndjnjdnvjdnjvndjnvjdnvjdnjnvdnvjdnvj') IS NULL;
-
-SELECT anon.fake_city_in_country(NULL) IS NULL;
-
+-- City
+SELECT pg_typeof(anon.random_city()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_city()) = 'TEXT'::REGTYPE;
 
-SELECT pg_typeof(anon.fake_region_in_country('Italy')) = 'TEXT'::REGTYPE;
-
-SELECT anon.fake_region_in_country('c,dksv,kdfsdnfvsjdnfjsdnjfndj') IS NULL;
-
-SELECT anon.fake_region_in_country(NULL) IS NULL;
-
-SELECT pg_typeof(anon.fake_region()) = 'TEXT'::REGTYPE;
-
-SELECT pg_typeof(anon.fake_country()) = 'TEXT'::REGTYPE;
-
 -- Company
+SELECT pg_typeof(anon.random_company()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_company()) = 'TEXT'::REGTYPE;
 
+-- Country
+SELECT pg_typeof(anon.fake_country()) = 'TEXT'::REGTYPE;
+
 -- IBAN
+SELECT pg_typeof(anon.random_iban()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_iban()) = 'TEXT'::REGTYPE;
 
--- SIRET
-SELECT pg_typeof(anon.fake_siren()) = 'TEXT'::REGTYPE;
+-- postcode
+SELECT pg_typeof(anon.fake_postcode()) = 'TEXT'::REGTYPE;
 
---
+-- SIRET
+SELECT pg_typeof(anon.fake_siret()) = 'TEXT'::REGTYPE;
+>>>>>>> [tests] changes in the populate/fake data process
+
 -- Lorem Ipsum
---
 SELECT COUNT(*) = 5-1
 FROM (
   SELECT regexp_matches(anon.lorem_ipsum(), E'\n', 'g')
@@ -80,3 +76,5 @@ SELECT bool_and(anon.fake_last_name() IS NOT NULL) FROM generate_series(1,100);
 
 
 DROP EXTENSION anon CASCADE;
+
+ROLLBACK;

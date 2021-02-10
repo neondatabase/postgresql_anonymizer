@@ -14,11 +14,12 @@ SELECT anon.init('./does/not/exists/cd2ks3s/') IS FALSE;
 SELECT anon.is_initialized() IS FALSE;
 
 -- load alternate data dir
-\! cp -pr data/default /tmp/tmp_anon_alternate_data
+\! cp -pr data/ /tmp/tmp_anon_alternate_data
 SELECT anon.init('/tmp/tmp_anon_alternate_data');
 
 -- Load bad data
-SELECT anon.load_csv('anon.city','/tmp/tmp_anon_alternate_data/iban.csv') IS FALSE;
+\! echo '1\t too \t many \t tabs' > /tmp/tmp_anon_alternate_data/bad.csv
+SELECT anon.load_csv('anon.city','/tmp/tmp_anon_alternate_data/bad.csv') IS FALSE;
 
 \! rm -fr /tmp/tmp_anon_alternate_data
 

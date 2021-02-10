@@ -116,19 +116,6 @@ SELECT  anon.pseudo_city('bob','x') = anon.pseudo_city('bob','x');
  t
 (1 row)
 
--- Region
-SELECT  anon.pseudo_region(NULL) IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT  anon.pseudo_region('bob','x') = anon.pseudo_region('bob','x');
- ?column? 
-----------
- t
-(1 row)
-
 -- Country
 SELECT  anon.pseudo_country(NULL) IS NULL;
  ?column? 
@@ -175,7 +162,7 @@ SELECT anon.set_salt('a_VeRy_SeCReT_SaLT');
  a_VeRy_SeCReT_SaLT
 (1 row)
 
-SELECT  anon.pseudo_last_name('bob') = 'Tribley';
+SELECT  anon.pseudo_last_name('bob') = 'Damian';
  ?column? 
 ----------
  t

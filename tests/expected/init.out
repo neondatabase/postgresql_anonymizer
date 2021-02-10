@@ -33,12 +33,15 @@ SELECT anon.init('./does/not/exists/cd2ks3s/') IS FALSE;
 NOTICE:  Data file './does/not/exists/cd2ks3s//identifiers_category.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//identifier_fr_FR.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//identifier_en_US.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//address.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//city.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//company.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//country.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//email.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//first_name.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//iban.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//last_name.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//postcode.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//siret.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//lorem_ipsum.csv' is not present. Skipping.
  ?column? 
@@ -53,7 +56,7 @@ SELECT anon.is_initialized() IS FALSE;
 (1 row)
 
 -- load alternate data dir
-\! cp -pr data/default /tmp/tmp_anon_alternate_data
+\! cp -pr data/ /tmp/tmp_anon_alternate_data
 SELECT anon.init('/tmp/tmp_anon_alternate_data');
  init 
 ------
@@ -61,8 +64,9 @@ SELECT anon.init('/tmp/tmp_anon_alternate_data');
 (1 row)
 
 -- Load bad data
-SELECT anon.load_csv('anon.city','/tmp/tmp_anon_alternate_data/iban.csv') IS FALSE;
-NOTICE:  Data file '/tmp/tmp_anon_alternate_data/iban.csv' has a bad CSV format. Skipping.
+\! echo '1\t too \t many \t tabs' > /tmp/tmp_anon_alternate_data/bad.csv
+SELECT anon.load_csv('anon.city','/tmp/tmp_anon_alternate_data/bad.csv') IS FALSE;
+NOTICE:  Data file '/tmp/tmp_anon_alternate_data/bad.csv' has a bad CSV format. Skipping.
  ?column? 
 ----------
  t

@@ -1,3 +1,4 @@
+BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "pgcrypto"
@@ -10,6 +11,13 @@ SELECT anon.init();
 --
 -- Personal Data (First Name, etc.)
 --
+--- Address
+SELECT pg_typeof(anon.fake_address()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 -- First Name
 SELECT pg_typeof(anon.fake_first_name()) = 'TEXT'::REGTYPE;
  ?column? 
@@ -31,20 +39,8 @@ SELECT pg_typeof(anon.fake_email()) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
--- Location
-SELECT pg_typeof(anon.fake_city_in_country('France')) = 'TEXT'::REGTYPE;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.fake_city_in_country('dfndjndjnjdnvjdnjvndjnvjdnvjdnjnvdnvjdnvj') IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.fake_city_in_country(NULL) IS NULL;
+-- City
+SELECT pg_typeof(anon.random_city()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
@@ -56,60 +52,54 @@ SELECT pg_typeof(anon.fake_city()) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
-SELECT pg_typeof(anon.fake_region_in_country('Italy')) = 'TEXT'::REGTYPE;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.fake_region_in_country('c,dksv,kdfsdnfvsjdnfjsdnjfndj') IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.fake_region_in_country(NULL) IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT pg_typeof(anon.fake_region()) = 'TEXT'::REGTYPE;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT pg_typeof(anon.fake_country()) = 'TEXT'::REGTYPE;
- ?column? 
-----------
- t
-(1 row)
-
 -- Company
+SELECT pg_typeof(anon.random_company()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT pg_typeof(anon.fake_company()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
 (1 row)
 
+-- Country 
+SELECT pg_typeof(anon.fake_country()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 -- IBAN
+SELECT pg_typeof(anon.random_iban()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT pg_typeof(anon.fake_iban()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
 (1 row)
 
--- SIRET
-SELECT pg_typeof(anon.fake_siren()) = 'TEXT'::REGTYPE;
+-- postcode
+SELECT pg_typeof(anon.fake_postcode()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
  t
 (1 row)
 
---
+-- SIRET
+SELECT pg_typeof(anon.fake_siret()) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
 -- Lorem Ipsum
---
 SELECT COUNT(*) = 5-1
 FROM (
   SELECT regexp_matches(anon.lorem_ipsum(), E'\n', 'g')
@@ -179,3 +169,4 @@ SELECT bool_and(anon.fake_last_name() IS NOT NULL) FROM generate_series(1,100);
 (1 row)
 
 DROP EXTENSION anon CASCADE;
+ROLLBACK;

@@ -10,6 +10,6 @@ COPY anon.email
   FROM PROGRAM
   'python3 $(pg_config --sharedir)/extension/anon/populate.py --table email --lines 500';
 
-SELECT count(DISTINCT address)=500 FROM anon.email;
+SELECT count(DISTINCT val)=500 FROM anon.email;
 
 ROLLBACK;
