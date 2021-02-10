@@ -3,56 +3,111 @@
 import sys
 import csv
 import argparse
-from faker import Faker
+import random
+import faker
+import importlib
 
 
-# FIXME: split the table in 5 : address + city + region + country + zipcode
-def city(r):
-    return []
+def address():
+    return [[oid, f.unique.address().replace('\n', ', ')]
+            for oid in range(lines)]
 
 
-def email(r):
-    return [[oid, f.unique.email()] for oid in range(r)]
+def city():
+    return [[oid, f.unique.city()] for oid in range(lines)]
 
 
-def company(r):
-    return [[oid, f.unique.company()] for oid in range(r)]
+def company():
+    return [[oid, f.unique.company()] for oid in range(lines)]
 
 
-def first_name(r):
-    return [[oid, f.unique.first_name()] for oid in range(r)]
+# The dataset is too small, we're extracting the values directly
+def country():
+    values = []
+    for loc in locales:
+        m = importlib.import_module('faker.providers.address.'+loc)
+        values += list(set(m.Provider.countries))
+    random.shuffle(values)
+    return [[oid, values[oid]]
+            for oid in range(min(len(values), lines))]
 
 
-def iban(r):
-    return [[oid, f.unique.iban()] for oid in range(r)]
+def email():
+    return [[oid, f.unique.email()] for oid in range(lines)]
 
 
-def last_name(r):
-    return [[oid, f.unique.last_name()] for oid in range(r)]
+# The dataset is too small, we're extracting the values directly
+def first_name():
+    values = []
+    for loc in locales:
+        m = importlib.import_module('faker.providers.person.'+loc)
+        values += list(set(m.Provider.first_names))
+    random.shuffle(values)
+    return [[oid, values[oid]]
+            for oid in range(min(len(values), lines))]
 
 
-# FIXME: what's the size of the lorem ipsum column ?
-def lorem_ipsum(r):
-    return [[oid, f.unique.paragraph(nb_sentences=10)] for oid in range(r)]
+def iban():
+    return [[oid, f.unique.iban()] for oid in range(lines)]
 
 
-def siret(r):
-    french_faker = Faker('fr_FR')
-    return [[oid, french_faker.unique.siret()] for oid in range(r)]
+# The dataset is too small, we're extracting the values directly
+def last_name():
+    values = []
+    for loc in locales:
+        m = importlib.import_module('faker.providers.person.'+loc)
+        values += list(set(m.Provider.first_names))
+    random.shuffle(values)
+    return [[oid, values[oid]]
+            for oid in range(min(len(values), lines))]
+
+
+def lorem_ipsum():
+    return [[oid, f.unique.paragraph(nb_sentences=8)] for oid in range(lines)]
+
+
+def postcode():
+    return [[oid, f.unique.postcode()] for oid in range(lines)]
+
+
+def siret():
+    # override the locales this data is only relevant in France
+    french_faker = faker.Faker('fr_FR')
+    return [[oid, french_faker.unique.siret()] for oid in range(lines)]
 
 
 # Input
 parser = argparse.ArgumentParser()
-parser.add_argument('--table', help='', required=True)
-parser.add_argument('--locale', help='')
-parser.add_argument('--lines', help='', type=int, default=1000)
-parser.add_argument('--seed', help='')
+parser.add_argument(
+    '--table',
+    help='Type of data (city, email, etc.)',
+    required=True
+)
+parser.add_argument(
+    '--locales',
+    help='Localization of the fake data (comma separated list)',
+    default='en'
+)
+parser.add_argument(
+    '--lines',
+    help='Number of rows to add to the table',
+    type=int,
+    default=1000
+)
+parser.add_argument(
+    '--seed',
+    help='Initializes the random generator'
+)
 args = parser.parse_args()
 
-# Generator
-f = Faker(args.locale)
-if args.seed:
-    Faker.seed(args.seed)
+locales = args.locales.split(',')
+lines = args.lines
 
-for row in eval(args.table)(args.lines):
+# Generator
+f = faker.Faker(locales)
+if args.seed:
+    random.seed(args.seed)
+    faker.Faker.seed(args.seed)
+
+for row in eval(args.table)():
     csv.writer(sys.stdout, delimiter='\t').writerow(row)
