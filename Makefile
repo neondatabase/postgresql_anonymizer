@@ -28,7 +28,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS_TESTS = init extschema detection
+REGRESS_TESTS = init populate extschema detection
 REGRESS_TESTS+= get_function_schema trusted_schemas
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= pseudonymization hashing hashing_and_dynamic_masking
@@ -83,6 +83,8 @@ install-bin:
 	install -d $(DESTDIR)$(BINDIR)
 	install -m 0755 bin/pg_dump_anon.sh $(DESTDIR)$(BINDIR)/pg_dump_anon
 
+install-py:
+
 ##
 ## L I N T
 ##
@@ -111,7 +113,8 @@ lint-py: #: check the python syntax
 extension: #: build the extension
 	mkdir -p anon
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
-	cp data/default/* anon/
+	cp data/*.csv anon/
+	cp python/populate.py anon/
 
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner
 SED1=sed 's/public.//'
@@ -182,9 +185,26 @@ clean_standalone:
 ## L O A D
 ##
 
-.PHONY: load
-load: #: Load data from CSV files into SQL tables
-	$(PSQL) -f data/load.sql
+FAKE_DATA_TABLES?=address city company country email first_name iban last_name lorem_ipsum postcode siret
+FAKE_DATA_LINES?=1000
+FAKE_DATA_LOCALES?=en
+FAKE_DATA_SEED?=0
+
+FAKE_DATA_CSV_FILES=$(addprefix data/, $(addsuffix .csv, $(FAKE_DATA_TABLES)))
+
+.PHONY: fake_data
+fake_data: $(FAKE_DATA_CSV_FILES) #: generate the fake data tables
+
+data/%.csv:
+	python/populate.py \
+	  --table $* \
+	  --lines $(FAKE_DATA_LINES) \
+	  --locales $(FAKE_DATA_LOCALES) \
+	  --seed $(FAKE_DATA_SEED) \
+	  > $@
+
+clean_fake_data:
+	rm $(FAKE_DATA_CSV_FILES)
 
 ##
 ## D E M O   &   T E S T S
