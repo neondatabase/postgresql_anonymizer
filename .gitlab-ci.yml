@@ -40,10 +40,11 @@ lint-markdown:
     - gem install mdl
     - mdl docs/*.md *.md
 
-lint-y:
+lint-py:
   stage: lint
   image: python:3.7
   script:
+    - pip3 install flake8
     - flake8 python/*.py
 
 ##
