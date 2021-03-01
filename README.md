@@ -191,11 +191,9 @@ You can either [open an issue] or send a message at <contact@dalibo.com>.
 Requirements
 --------------------------------------------------------------------------------
 
-This extension is officially supported on PostgreSQL 9.6 and later.
-It should also work on PostgreSQL 9.5 with a bit of hacking.
-See the [Development Notes] for more details.
+This extension works with all [supported versions of PostgreSQL].
 
-[Developement Notes]: https://postgresql-anonymizer.readthedocs.io/en/latest/NOTES/
+[supported versions of PostgreSQL]: https://www.postgresql.org/support/versioning/
 
 It requires 2 extensions called [tsm_system_rows] and [pgcrypto] which are
 delivered by the `postgresql-contrib` package of the main linux distributions.
