@@ -21,25 +21,11 @@ image: postgres:13
 
 
 ##
-## We run most tests on the postgres instance inside the docker image.
-## We need to launch manually the instance because the entrypoint is skipped.
-##
-before_script:
-    - mkdir -p $PGDATA
-    - mkdir -p $EXTDIR
-    - chown postgres $PGDATA
-    - gosu postgres initdb
-    - gosu postgres pg_ctl start
-
-
-##
 ## L I N T
 ##
 
 lint-bash:
   stage: lint
-  before_script:
-    - echo "disable the before_script"
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends shellcheck
@@ -50,8 +36,6 @@ lint-bash:
 lint-markdown:
   stage: lint
   image: ruby:alpine
-  before_script:
-    - echo "disable the before_script"
   script:
     - gem install mdl
     - mdl docs/*.md *.md
@@ -60,7 +44,17 @@ lint-markdown:
 ## B U I L D
 ##
 
+# We need to launch manually the instance because the entrypoint is skipped.
+.init_PG_instance: &init_PG_instance
+  before_script:
+    - mkdir -p $PGDATA
+    - mkdir -p $EXTDIR
+    - chown postgres $PGDATA
+    - gosu postgres initdb
+    - gosu postgres pg_ctl start
+
 make9.6:
+  <<: *init_PG_instance
   stage: build
   image: postgres:9.6
   script:
@@ -80,6 +74,7 @@ make9.6:
     expire_in: 1 day
 
 make10:
+  <<: *init_PG_instance
   stage: build
   image: postgres:10
   script:
@@ -100,6 +95,7 @@ make10:
     expire_in: 1 day
 
 make11:
+  <<: *init_PG_instance
   stage: build
   image: postgres:11
   script:
@@ -119,6 +115,7 @@ make11:
     expire_in: 1 day
 
 make12:
+  <<: *init_PG_instance
   stage: build
   image: postgres:12
   script:
@@ -140,6 +137,7 @@ make12:
     expire_in: 1 day
 
 make13:
+  <<: *init_PG_instance
   stage: build
   image: postgres:13
   script:
@@ -160,8 +158,6 @@ make13:
 make11-centos:
   stage: build
   image: centos:7
-  before_script:
-    - echo 'ignoring global before_script'
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-centos11-11-2.noarch.rpm
     - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools
@@ -179,8 +175,6 @@ standalone12:
   stage: build
   services:
     - postgres:12
-  before_script:
-    - echo "disable the before_script"
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make git postgresql-server-dev-all
@@ -193,8 +187,6 @@ standalone11:
   stage: build
   services:
     - postgres:11
-  before_script:
-    - echo "disable the before_script"
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make git postgresql-server-dev-all
@@ -208,8 +200,6 @@ blackbox:
   image: docker:19.03.8
   services:
     - docker:19.03.8-dind
-  before_script:
-    - echo 'Disable before_script.'
   script:
     - docker build -t blackbox . --file docker/Dockerfile
     - mkdir results
@@ -224,6 +214,7 @@ blackbox:
 ##
 
 demo:
+  <<: *init_PG_instance
   stage: test
   script:
     - apt-get update
@@ -240,6 +231,8 @@ demo:
         - demo/*.out
     expire_in: 1 day
 
+include:
+  - template: Security/SAST.gitlab-ci.yml
 
 ##
 ## D E P L O Y
@@ -250,8 +243,6 @@ docker_latest:
   image: docker:19.03.8
   services:
     - docker:19.03.8-dind
-  before_script:
-    - echo 'Disable before_script.'
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest . --file docker/Dockerfile
@@ -264,8 +255,6 @@ docker_stable:
   image: docker:19.03.8
   services:
     - docker:19.03.8-dind
-  before_script:
-    - echo 'Disable before_script.'
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:stable . --file docker/Dockerfile
@@ -277,8 +266,6 @@ docker_stable:
 pgxn:
   stage: deploy
   image: alpine
-  before_script:
-    - echo 'Disable before_script.'
   script:
     - apk add -U make git zip
     - make pgxn
@@ -292,8 +279,6 @@ pgxn:
 
 test_pgxn:
   stage: deploy
-  before_script:
-    - echo "disable the before_script"
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 pgxnclient
@@ -304,8 +289,6 @@ test_pgxn:
 test_pgxn_ubuntu_pg95:
   stage: deploy
   image: ubuntu:bionic
-  before_script:
-    - echo "disable the before_script"
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc postgresql-common pgxnclient gnupg ca-cacert
@@ -328,8 +311,6 @@ test_pgxn_ubuntu_pg95:
 test_yum_centos7_pg12:
   stage: deploy
   image: centos:7
-  before_script:
-    - echo 'ignoring global before_script'
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
     - yum -y install postgresql12-contrib postgresql_anonymizer12
