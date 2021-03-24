@@ -94,4 +94,11 @@ SELECT char_length(anon.lorem_ipsum( characters := 7 , words := 100)) = 7;
 
 SELECT char_length(anon.lorem_ipsum( characters := 7 , paragraphs := 100)) = 7;
 
+-- Issue #223 : fake_* function should not return NULL
+TRUNCATE anon.last_name;
+INSERT INTO anon.last_name VALUES ( 1,'joan' ), (2,'ken');
+SELECT setval('anon.last_name_oid_seq', 2, true);
+SELECT bool_and(anon.fake_last_name() IS NOT NULL) FROM generate_series(1,100);
+
+
 DROP EXTENSION anon CASCADE;

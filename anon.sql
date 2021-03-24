@@ -990,7 +990,7 @@ CREATE OR REPLACE FUNCTION anon.random_in(
 )
 RETURNS ANYELEMENT AS
 $$
-  SELECT a[floor(random()*array_length(a,1)+1)]
+  SELECT a[pg_catalog.floor(pg_catalog.random()*array_length(a,1)+1)]
 $$
   LANGUAGE SQL
   VOLATILE
@@ -1004,10 +1004,16 @@ $$
 -- FAKE data
 -------------------------------------------------------------------------------
 
+-- We avoid using the floor() function in the function below because it is
+-- way too slow. Instead we're using the mod operator like this:
+--    (pg_catalog.random()*last_value)::INTEGER%last_value
+-- See Issue #223 for more details
+-- https://gitlab.com/dalibo/postgresql_anonymizer/-/merge_requests/223
+
 CREATE OR REPLACE FUNCTION anon.fake_first_name()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (pg_catalog.random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(f.first_name,anon.notice_if_not_init())
@@ -1023,7 +1029,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_last_name()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (pg_catalog.random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.last_name_oid_seq
   )
   SELECT COALESCE(l.name,anon.notice_if_not_init())
@@ -1039,7 +1045,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_email()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (pg_catalog.random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.email_oid_seq
   )
   SELECT COALESCE(e.address,anon.notice_if_not_init())
@@ -1070,7 +1076,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_city()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (pg_catalog.random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(name,anon.notice_if_not_init())
@@ -1101,7 +1107,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_region()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (pg_catalog.random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(c.subcountry,anon.notice_if_not_init())
@@ -1117,7 +1123,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_country()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(c.country,anon.notice_if_not_init())
@@ -1133,7 +1139,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_company()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(c.name,anon.notice_if_not_init())
@@ -1149,7 +1155,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_iban()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(i.id,anon.notice_if_not_init())
@@ -1165,7 +1171,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_siren()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(s.siren,anon.notice_if_not_init())
@@ -1181,7 +1187,7 @@ $$
 CREATE OR REPLACE FUNCTION anon.fake_siret()
 RETURNS TEXT AS $$
   WITH random AS (
-    SELECT (random()*last_value+1)::INTEGER as oid
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
   SELECT COALESCE(s.siren||nic,anon.notice_if_not_init())
