@@ -1,4 +1,4 @@
-###############################################################################
+##############################################################################
 #
 # Makefile
 #
@@ -86,7 +86,7 @@ install-bin:
 ## L I N T
 ##
 
-lint: lint-sh lint-md
+lint: lint-sh lint-md lint-sql
 
 lint-sh: #: check the shell script syntax
 	shellcheck bin/pg_dump_anon.sh
@@ -94,7 +94,9 @@ lint-sh: #: check the shell script syntax
 lint-md: #: check the markdown syntax
 	mdl docs/*.md *.md
 
-
+lint-sql: #: check the SQL syntax
+	sqlint anon.sql
+	sqlint demo/*.sql
 
 ##
 ## B U I L D
