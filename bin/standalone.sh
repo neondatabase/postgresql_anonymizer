@@ -1,5 +1,6 @@
 #!/bin/bash
-#
+# This script is DEPRECATED and NOT SUPPORTED
+# It will be removed from future versions
 
 ##
 ## 0. Input variables

@@ -165,10 +165,10 @@ tests/expected/unit.out:
 EXTSCHEMA?=public
 
 .PHONY: standalone
-standalone: anon_standalone.sql #: build the standalone script
+standalone: anon_standalone.sql #: build the standalone script (deprecated)
 
 anon_standalone.sql: anon.sql
-	bin/standalone.sh $@
+	echo "The standalone install method is deprecated."
 
 clean_standalone:
 	rm -fr anon_standalone.sql

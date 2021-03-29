@@ -49,6 +49,9 @@ Limitations
 Declaring Rules with COMMENTs
 ------------------------------------------------------------------------------
 
+> **WARNING** : This method is not supported anymore and will be fully
+> deprecated in future versions.
+
 There is an alternative way for declaring masking rules, using the
 COMMENT syntax:
 
@@ -57,16 +60,6 @@ COMMENT ON COLUMN player.name
 IS 'MASKED WITH FUNCTION anon.fake_last_name()'
 ```
 
-This is useful especially if you can't modify the instance configuration and
-load the extension with `session_preload_libraries`. In this situation, the
-security labels won't work and you have to declare rules with comments.
-
-If your columns already have comments, simply append the `MASKED WITH FUNCTION`
-statement at the end of the comment.
-
-See also [Install in the Cloud].
-
-[Install in the Cloud]: INSTALL.md#install-in-the-cloud
 
 
 
