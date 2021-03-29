@@ -61,9 +61,9 @@ COMMENT ON TABLE anon.secret IS 'Hashing secrets';
 
 --
 -- We use access methods to read/write the content of the `secret` table
--- The `get_secret_xxx()` function can be used with the security definer option
+-- The `get_salt()` function can be used with the security definer option
 --
-CREATE OR REPLACE FUNCTION anon.set_secret_salt(v TEXT)
+CREATE OR REPLACE FUNCTION anon.set_salt(v TEXT)
 RETURNS TEXT AS
 $$
   INSERT INTO anon.secret(param,value)
@@ -80,9 +80,9 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
-REVOKE EXECUTE ON FUNCTION anon.set_secret_salt(TEXT)  FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION anon.set_salt(TEXT)  FROM PUBLIC;
 
-CREATE OR REPLACE FUNCTION anon.get_secret_salt()
+CREATE OR REPLACE FUNCTION anon.get_salt()
 RETURNS TEXT AS
 $$
   SELECT value
@@ -95,9 +95,9 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
-REVOKE EXECUTE ON FUNCTION anon.get_secret_salt()  FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION anon.get_salt()  FROM PUBLIC;
 
-CREATE OR REPLACE FUNCTION anon.set_secret_algorithm(v TEXT)
+CREATE OR REPLACE FUNCTION anon.set_algorithm(v TEXT)
 RETURNS TEXT AS
 $$
   INSERT INTO anon.secret(param,value)
@@ -114,9 +114,9 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
-REVOKE EXECUTE ON FUNCTION anon.set_secret_algorithm(TEXT)  FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION anon.set_algorithm(TEXT)  FROM PUBLIC;
 
-CREATE OR REPLACE FUNCTION anon.get_secret_algorithm()
+CREATE OR REPLACE FUNCTION anon.get_algorithm()
 RETURNS TEXT AS
 $$
   SELECT value
@@ -129,7 +129,7 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
-REVOKE EXECUTE ON FUNCTION anon.get_secret_algorithm()  FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION anon.get_algorithm()  FROM PUBLIC;
 
 
 
@@ -641,13 +641,13 @@ BEGIN
   PERFORM
       -- if the secret salt is NULL, generate a random salt
       COALESCE(
-          anon.get_secret_salt(),
-          anon.set_secret_salt(md5(random()::TEXT))
+          anon.get_salt(),
+          anon.set_salt(md5(random()::TEXT))
       ),
       -- if the secret hash algo is NULL, we use sha512 by default
       COALESCE(
-          anon.get_secret_algorithm(),
-          anon.set_secret_algorithm('sha512')
+          anon.get_algorithm(),
+          anon.set_algorithm('sha512')
       );
 
   SELECT bool_or(results) INTO success
@@ -834,8 +834,8 @@ CREATE OR REPLACE FUNCTION anon.hash(
 RETURNS TEXT AS $$
   SELECT anon.digest(
     seed,
-    anon.get_secret_salt(),
-    anon.get_secret_algorithm()
+    anon.get_salt(),
+    anon.get_algorithm()
   );
 $$
   LANGUAGE SQL
@@ -974,7 +974,7 @@ $$
   SELECT anon.digest(
     seed,
     anon.random_string(6),
-    anon.get_secret_algorithm()
+    anon.get_algorithm()
   );
 $$
   LANGUAGE SQL
@@ -1394,7 +1394,7 @@ RETURNS TEXT AS $$
   FROM anon.first_name
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT max(oid) FROM anon.first_name)
   );
 $$
@@ -1413,7 +1413,7 @@ RETURNS TEXT AS $$
   FROM anon.last_name
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT max(oid) FROM anon.last_name)
   );
 $$
@@ -1433,7 +1433,7 @@ RETURNS TEXT AS $$
   FROM anon.email
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT MAX(oid) FROM anon.email)
   );
 $$
@@ -1449,7 +1449,7 @@ RETURNS TEXT AS $$
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT MAX(oid) FROM anon.city)
   );
 $$
@@ -1464,7 +1464,7 @@ RETURNS TEXT AS $$
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT max(oid) FROM anon.city)
   );
 $$
@@ -1479,7 +1479,7 @@ RETURNS TEXT AS $$
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT MAX(oid) FROM anon.city)
   );
 $$
@@ -1494,7 +1494,7 @@ RETURNS TEXT AS $$
   FROM anon.company
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT MAX(oid) FROM anon.company)
   );
 $$
@@ -1509,7 +1509,7 @@ RETURNS TEXT AS $$
   FROM anon.iban
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT MAX(oid) FROM anon.iban)
   );
 $$
@@ -1524,7 +1524,7 @@ RETURNS TEXT AS $$
   FROM anon.siret
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT MAX(oid) FROM anon.siret)
   );
 $$
@@ -1539,7 +1539,7 @@ RETURNS TEXT AS $$
   FROM anon.siret
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_secret_salt()),
+    COALESCE(salt,anon.get_salt()),
     (SELECT MAX(oid) FROM anon.siret)
   );
 $$

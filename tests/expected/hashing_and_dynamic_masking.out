@@ -8,9 +8,9 @@ SELECT anon.start_dynamic_masking();
  t
 (1 row)
 
-SELECT anon.set_secret_salt('x');
- set_secret_salt 
------------------
+SELECT anon.set_salt('x');
+ set_salt 
+----------
  x
 (1 row)
 
@@ -67,8 +67,8 @@ SELECT anon.mask_update();
 (2 rows)
 
 -- Jimmy tries to find the salt :-)
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_secret_salt();'
-ERROR:  permission denied for function get_secret_salt
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_salt();'
+ERROR:  permission denied for function get_salt
 -- Jimmy cant read the secrets
 --
 -- Here we use a trick to catch to output because the error message is different

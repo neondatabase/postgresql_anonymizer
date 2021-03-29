@@ -169,8 +169,8 @@ SELECT  anon.pseudo_iban('bob','x') = anon.pseudo_iban('bob','x');
 (1 row)
 
 -- Use a predefined secret salt
-SELECT anon.set_secret_salt('a_VeRy_SeCReT_SaLT');
-  set_secret_salt   
+SELECT anon.set_salt('a_VeRy_SeCReT_SaLT');
+      set_salt      
 --------------------
  a_VeRy_SeCReT_SaLT
 (1 row)

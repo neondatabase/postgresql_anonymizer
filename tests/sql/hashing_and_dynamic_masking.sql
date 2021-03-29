@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- Dynamic masking
 SELECT anon.start_dynamic_masking();
 
-SELECT anon.set_secret_salt('x');
+SELECT anon.set_salt('x');
 
 CREATE TABLE phone (
   phone_owner  TEXT,
@@ -58,7 +58,7 @@ SELECT anon.mask_update();
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
 
 -- Jimmy tries to find the salt :-)
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_secret_salt();'
+\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_salt();'
 
 
 -- Jimmy cant read the secrets

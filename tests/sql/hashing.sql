@@ -11,7 +11,7 @@ SELECT anon.init();
 SELECT anon.hash(NULL) IS NULL;
 
 SELECT anon.hash('x')
-     = anon.digest('x',anon.get_secret_salt(), anon.get_secret_algorithm());
+     = anon.digest('x',anon.get_salt(), anon.get_algorithm());
 
 --
 -- With a random salt
@@ -19,10 +19,10 @@ SELECT anon.hash('x')
 SELECT anon.random_hash('abcd') != anon.random_hash('abcd');
 
 -- Restore a predifened salt and change the algo
-SELECT anon.set_secret_salt('4a6821d6z4e33108gg316093e6182b803d0361');
-SELECT anon.set_secret_algorithm('md5');
+SELECT anon.set_salt('4a6821d6z4e33108gg316093e6182b803d0361');
+SELECT anon.set_algorithm('md5');
 SELECT anon.hash('x');
-SELECT anon.set_secret_algorithm('sha512');
+SELECT anon.set_algorithm('sha512');
 SELECT anon.hash('x');
 
 -- digest

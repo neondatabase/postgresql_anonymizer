@@ -29,3 +29,9 @@ indent_style = tab
 # Use tabs for indentation (Makefiles require tabs)
 indent_style = tab
 
+# ignore test output
+[tests/expected/*]
+trim_trailing_whitespace = false
+insert_final_newline = false
+indent_size = unset
+indent_style = unset
