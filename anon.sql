@@ -1594,6 +1594,12 @@ LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 -- anonymize(), dump() and dynamic masking engine
 -------------------------------------------------------------------------------
 
+
+-- See tests in tests/sql/get_function_schema.sql
+CREATE OR REPLACE FUNCTION anon.get_function_schema(text) RETURNS text
+AS 'MODULE_PATHNAME', 'get_function_schema'
+LANGUAGE C IMMUTABLE STRICT;
+
 -- List of all the masked columns
 CREATE OR REPLACE VIEW anon.pg_masking_rules AS
 WITH const AS (
