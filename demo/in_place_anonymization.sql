@@ -1,6 +1,6 @@
-*BEGIN;
+BEGIN;
 
--- STEP 1 : Basic Example 
+-- STEP 1 : Basic Example
 
 CREATE TABLE customer(
 	id SERIAL,
@@ -12,14 +12,14 @@ CREATE TABLE customer(
 );
 
 INSERT INTO customer
-VALUES 
+VALUES
 (911,'Chuck Norris','1940-03-10','Texas Rangers', '75001',12),
 (312,'David Hasselhoff','1952-07-17','Baywatch', '90001',423)
 ;
 
 SELECT * FROM customer;
 
--- STEP 2: Load the extension 
+-- STEP 2: Load the extension
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
@@ -27,7 +27,7 @@ SELECT anon.load();
 
 -- STEP 3: Declare the masking rules
 
-SECURITY LABEL FOR anon ON COLUMN customer.full_name 
+SECURITY LABEL FOR anon ON COLUMN customer.full_name
 IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
 SECURITY LABEL FOR anon ON COLUMN customer.employer
@@ -36,7 +36,7 @@ IS 'MASKED WITH FUNCTION anon.fake_company()';
 SECURITY LABEL FOR anon ON COLUMN customer.zipcode
 IS 'MASKED WITH FUNCTION anon.random_zip()';
 
--- STEP 4: Replace Sensitive Data 
+-- STEP 4: Replace Sensitive Data
 
 SELECT anon.anonymize_database();
 
