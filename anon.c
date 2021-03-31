@@ -77,7 +77,7 @@ get_function_schema(PG_FUNCTION_ARGS)
 {
     bool input_is_null = PG_ARGISNULL(0);
     char* function_call= text_to_cstring(PG_GETARG_TEXT_PP(0));
-    char  query_string[1024];
+    char query_string[1024];
     List  *raw_parsetree_list;
     SelectStmt *stmt;
     ResTarget  *restarget;
@@ -87,8 +87,8 @@ get_function_schema(PG_FUNCTION_ARGS)
 
     /* build a simple SELECT statement and parse it */
     query_string[0] = '\0';
-    strcat(query_string, "SELECT ");
-    strcat(query_string,function_call);
+    strlcat(query_string, "SELECT ", sizeof(query_string));
+    strlcat(query_string, function_call, sizeof(query_string));
     raw_parsetree_list = raw_parser(query_string);
 
     /* walk throught the parse tree, down to the FuncCall node (if present) */
