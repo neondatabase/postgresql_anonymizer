@@ -1,65 +1,54 @@
 BEGIN;
--- Sometimes it is considered as a good practice to remove the public schema
-DROP SCHEMA public;
---
--- TEST 1
--- This is a weel-known case of "search_path attack"
--- An attacker could try to substitute a generic function with a malicious code
--- https://wiki.postgresql.org/wiki/A_Guide_to_CVE-2018-1058%3A_Protect_Your_Search_Path
---
-CREATE SCHEMA common;
-CREATE FUNCTION common.digest(TEXT,TEXT)
-RETURNS BYTEA
-AS $$
-  CREATE ROLE bob;
-  GRANT postgres TO bob;
-  SELECT NULL::BYTEA;
-$$
-LANGUAGE SQL IMMUTABLE;
-SAVEPOINT before_error;
--- This should fail
-CREATE EXTENSION IF NOT EXISTS anon CASCADE SCHEMA common;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "pgcrypto"
-ERROR:  function "digest" already exists with same argument types
-ROLLBACK TO SAVEPOINT before_error;
---
--- TEST 2
---
-CREATE SCHEMA application;
-CREATE EXTENSION IF NOT EXISTS anon CASCADE SCHEMA application;
-NOTICE:  installing required extension "tsm_system_rows"
-NOTICE:  installing required extension "pgcrypto"
-SELECT anon.is_initialized() IS FALSE;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT application.digest('a','sha1');
-                   digest                   
---------------------------------------------
- \x86f7e437faa5a7fce15d1ddcb9eaeaea377667b8
-(1 row)
-
--- basic usage
 SELECT anon.init();
  init 
 ------
  t
 (1 row)
 
-SELECT anon.is_initialized();
- is_initialized 
-----------------
- t
-(1 row)
-
-SELECT anon.reset();
-NOTICE:  truncate cascades to table "identifier"
- reset 
--------
- t
-(1 row)
-
+--SELECT anon.start_dynamic_masking();
+-- Table `people`
+CREATE TABLE people (
+  id SERIAL UNIQUE,
+  name TEXT,
+  "CreditCard" TEXT,
+  fk_company INTEGER
+);
+CREATE OR REPLACE FUNCTION public.lower(TEXT)
+RETURNS TEXT AS $$
+  SELECT upper($1)
+$$ LANGUAGE SQL;
+SET anon.restrict_to_trusted_schemas = off;
+-- TEST 1
+SECURITY LABEL FOR anon ON COLUMN people.name
+IS 'MASKED WITH FUNCTION lower(people.name) ';
+SET anon.restrict_to_trusted_schemas = on;
+-- TEST 2 generates an error
+SAVEPOINT before_test_2;
+SECURITY LABEL FOR anon ON COLUMN people.name
+IS 'MASKED WITH FUNCTION lower(people.name) ';
+ERROR:  The schema of the making filter must be defined
+HINT:  Check the anon.restrict_to_trusted_schemas parameter
+CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 14 at RAISE
+ROLLBACK TO before_test_2;
+-- TEST 3 generates an error
+SAVEPOINT before_test_3;
+SECURITY LABEL FOR anon ON COLUMN people.name
+IS 'MASKED WITH FUNCTION public.lower(people.name) ';
+ERROR:  public is not a trusted schema.
+HINT:  Check the anon.trusted_schemas parameter
+CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 17 at RAISE
+ROLLBACK TO before_test_3;
+-- TEST 4
+SECURITY LABEL FOR anon ON COLUMN people.name
+IS 'MASKED WITH FUNCTION pg_catalog.lower(people.name) ';
+SET anon.trusted_schemas = 'public';
+-- TEST 5
+SECURITY LABEL FOR anon ON COLUMN people.name
+IS 'MASKED WITH FUNCTION public.lower() ';
+-- TEST 6
+SECURITY LABEL FOR anon ON COLUMN people.name
+IS 'MASKED WITH VALUE NULL';
 ROLLBACK;
