@@ -29,7 +29,7 @@ DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
 REGRESS_TESTS = init extschema detection
-REGRESS_TESTS+= get_function_schema
+REGRESS_TESTS+= get_function_schema trusted_schemas
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= pseudonymization hashing hashing_and_dynamic_masking
 REGRESS_TESTS+= anonymize pg_dump_anon restore
