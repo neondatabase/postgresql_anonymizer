@@ -1284,57 +1284,129 @@ LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 --
 
 CREATE OR REPLACE FUNCTION anon.random_first_name()
-RETURNS TEXT AS $$ SELECT anon.fake_first_name() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_first_name() instead';
+  RETURN anon.fake_first_name() ;
+END;
+$$
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 
 CREATE OR REPLACE FUNCTION anon.random_last_name()
-RETURNS TEXT AS $$ SELECT anon.fake_last_name() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_last_name() instead';
+  RETURN  anon.fake_last_name();
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_email()
-RETURNS TEXT AS $$ SELECT anon.fake_email() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_email() instead';
+  RETURN  anon.fake_email() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_city_in_country(
   country_name TEXT
 )
-RETURNS TEXT AS $$ SELECT anon.fake_city_in_country(country_name) $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_city_in_country() instead';
+  RETURN  anon.fake_city_in_country(country_name) ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_city()
-RETURNS TEXT AS $$ SELECT anon.fake_city() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_city() instead';
+  RETURN  anon.fake_city() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_region_in_country(
   country_name TEXT
 )
-RETURNS TEXT AS $$ SELECT anon.fake_region_in_country(country_name) $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_region_in_country() instead';
+  RETURN  anon.fake_region_in_country(country_name) ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_region()
-RETURNS TEXT AS $$ SELECT anon.fake_region() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_region() instead';
+  RETURN  anon.fake_region() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_country()
-RETURNS TEXT AS $$ SELECT anon.fake_country() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_country() instead';
+  RETURN anon.fake_country() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_company()
-RETURNS TEXT AS $$ SELECT anon.fake_company() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_company() instead';
+  RETURN  anon.fake_company() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_iban()
-RETURNS TEXT AS $$ SELECT anon.fake_iban() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_iban() instead';
+  RETURN  anon.fake_iban() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_siren()
-RETURNS TEXT AS $$ SELECT anon.fake_siren() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_siren() instead';
+  RETURN  anon.fake_siren() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.random_siret()
-RETURNS TEXT AS $$ SELECT anon.fake_siret() $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+RETURNS TEXT AS $$
+BEGIN
+  RAISE WARNING 'This function is deprecated'
+    USING HINT = 'Use anon.fake_siret() instead';
+  RETURN  anon.fake_siret() ;
+END;
+$$
+LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
 
 -------------------------------------------------------------------------------

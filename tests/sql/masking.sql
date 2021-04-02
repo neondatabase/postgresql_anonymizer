@@ -22,7 +22,7 @@ VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 
 
 SECURITY LABEL FOR anon ON COLUMN people.name
-IS 'MASKED WITH FUNCTION anon.random_last_name() ';
+IS 'MASKED WITH FUNCTION anon.fake_last_name() ';
 
 SECURITY LABEL FOR anon ON COLUMN people."CreditCard"
 IS 'MASKED WITH FUNCTION         anon.random_string(12)';
@@ -49,7 +49,7 @@ CREATE TABLE test_type_casts(
 );
 
 SECURITY LABEL FOR anon ON column test_type_casts.last_name
-IS 'MASKED WITH FUNCTION anon.random_last_name()::VARCHAR(30)';
+IS 'MASKED WITH FUNCTION anon.fake_last_name()::VARCHAR(30)';
 
 -- Table `work`
 CREATE TABLE work (
