@@ -44,8 +44,8 @@ The data can be altered with several techniques:
    instance, randomizing simultaneously a zipcode and a city name while keeping
    them coherent.
 
-Please note that **Encryption** and **Hashing** are not considered as
-anonymization techniques, because they require additional information
-(a private key or a salt), and if this information is stolen, then the authentic
-data can be revealed.
+* **Pseudonymization** is a way to **protect** personal information by hiding it
+  using additional information. **Encryption** and **Hashing** are two examples
+  of pseudonymization techniques. However a pseudonymizated data is still linked
+  to the original data.
 

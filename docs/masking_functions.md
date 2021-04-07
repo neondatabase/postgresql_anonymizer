@@ -225,19 +225,12 @@ may see some "collisions" happening, i.e. two different original values producin
 the same pseudo value.
 
 **WARNING** : Pseudonymization is often confused with anonymization but in fact
-they serve 2 different purposes. With pseudonymization, the real data can be
-rebuild using the pseudo data, the masking rules and the seed. If an attacker
-gets access to these 3 elements, he/she can easily re-identify some people
-using `brute force` or `dictionary` attacks. Therefore, you should protect any
-pseudonymized data and your seeds with the same level of security that the original
-dataset. The GDPR makes it very clear that personal data which have undergone
-pseudonymization are still considered to be personnel information (see [Recital 26])
+they serve 2 different purposes : `pseudonymization` is a way to **protect** the
+personal information but the pseudonymized data is still "linked" to the real data.
+The GDPR makes it very clear that personal data which have undergone
+pseudonymization are still related to a person. (see [GDPR Recital 26])
 
-In a nutshell: pseudonymization may be useful in some use cases. But if your
-goal is to comply with GDPR or similar data regulation, it is clearly a bad solution.
-
-
-[Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
+[GDPR Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
 
 Generic hashing
 -------------------------------------------------------------------------------
@@ -253,7 +246,7 @@ Hashing such columns allows to keep referential integrity intact even for
 relatively unusual source data. Therefore, the
 
 * `anon.hash(value)`  will return a text hash of the value using a secret salt
-  and a secret hash algorithm (see below)
+  and hash algorithm (see below)
 
 * `anon.digest(value,salt,algorithm)` lets you choose a salt, and a hash algorithm
   from a pre-defined list
@@ -264,12 +257,12 @@ and the default hash algorithm is `sha512`. You can change these for the entire
 database with two functions:
 
 * `anon.set_secret_salt(value)` to define you own salt
-* `anon.set_secret_algorithm(value)` to select another hash function.
+* `anon.set_algorithm(value)` to select another hash function.
   Possible values are: md5, sha1, sha224, sha256, sha384 or sha512
 
 Keep in mind that hashing is a form a [Pseudonymization]. This means that the
-real data can be rebuilt using the hashed value and the masking function. If an
-attacker gets access to these elements, he or she can easily re-identify
+data can be "de-anonymized" using the hashed value and the masking function. If an
+attacker gets access to these 2 elements, he or she could re-identify
 some persons using `brute force` or `dictionary` attacks. Therefore, **the
 salt and the algorithm used to hash the data must be protected with the
 same level of security that the original dataset.**
