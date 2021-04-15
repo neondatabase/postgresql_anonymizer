@@ -1077,7 +1077,7 @@ CREATE OR REPLACE FUNCTION anon.fake_city()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.first_name_oid_seq
+    FROM anon.city_oid_seq
   )
   SELECT COALESCE(name,anon.notice_if_not_init())
   FROM anon.city c
@@ -1108,7 +1108,7 @@ CREATE OR REPLACE FUNCTION anon.fake_region()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.first_name_oid_seq
+    FROM anon.city_oid_seq
   )
   SELECT COALESCE(c.subcountry,anon.notice_if_not_init())
   FROM anon.city c
@@ -1124,7 +1124,7 @@ CREATE OR REPLACE FUNCTION anon.fake_country()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.first_name_oid_seq
+    FROM anon.city_oid_seq
   )
   SELECT COALESCE(c.country,anon.notice_if_not_init())
   FROM anon.city c
@@ -1140,7 +1140,7 @@ CREATE OR REPLACE FUNCTION anon.fake_company()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.first_name_oid_seq
+    FROM anon.company_oid_seq
   )
   SELECT COALESCE(c.name,anon.notice_if_not_init())
   FROM anon.company c
@@ -1156,7 +1156,7 @@ CREATE OR REPLACE FUNCTION anon.fake_iban()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.first_name_oid_seq
+    FROM anon.iban_oid_seq
   )
   SELECT COALESCE(i.id,anon.notice_if_not_init())
   FROM anon.iban i
@@ -1172,7 +1172,7 @@ CREATE OR REPLACE FUNCTION anon.fake_siren()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.first_name_oid_seq
+    FROM anon.siret_oid_seq
   )
   SELECT COALESCE(s.siren,anon.notice_if_not_init())
   FROM anon.siret s
@@ -1188,7 +1188,7 @@ CREATE OR REPLACE FUNCTION anon.fake_siret()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.first_name_oid_seq
+    FROM anon.siret_oid_seq
   )
   SELECT COALESCE(s.siren||nic,anon.notice_if_not_init())
   FROM anon.siret s
