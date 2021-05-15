@@ -1,6 +1,7 @@
 Security
 ===============================================================================
 
+
 Permissions
 ------------------------------------------------------------------------------
 
@@ -26,6 +27,27 @@ Here's an overview of what users can do depending on the role they have:
 
 
 
+Limit masking filters only to trusted schemas
+------------------------------------------------------------------------------
+
+The database owner is allowed to declare masking rules. He or She can also
+create a function containing arbitrary code and use this function inside a
+masking rule. In certain circumstances, the database owner can "trick" a
+superuser into querying a masked table and thus executing the arbitrary code.
+
+To prevent this, the superusers can configure the parameters below :
+
+```ini
+anon.restrict_to_trusted_schemas = on
+anon.trusted_schemas = pg_catalog, anon
+```
+
+With this setting, the database owner can only masking functions that are
+located in the trusted schemas which are controlled by the superusers.
+
+See the [Configure] section for more details.
+
+[Configure]: configure/
 
 Security context of the functions
 ------------------------------------------------------------------------------

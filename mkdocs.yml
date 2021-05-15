@@ -8,6 +8,7 @@ theme:
 nav:
   - 'Home': 'index.md'
   - 'Install': 'INSTALL.md'
+  - 'Configure': 'configure.md'
   - 'Declare Masking rules': 'declare_masking_rules.md'
   - 'Masking Functions': 'masking_functions.md'
   - 'Static Masking': 'static_masking.md'

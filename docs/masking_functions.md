@@ -287,10 +287,10 @@ data like this:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN people.phone_number
-IS 'MASKED WITH FUNCTION left(anon.hash(phone_number),12)';
+IS 'MASKED WITH FUNCTION pg_catalog.left(anon.hash(phone_number),12)';
 
 SECURITY LABEL FOR anon ON COLUMN call_history.fk_phone_number
-IS 'MASKED WITH FUNCTION left(anon.hash(fk_phone_number),12)';
+IS 'MASKED WITH FUNCTION pg_catalog.left(anon.hash(fk_phone_number),12)';
 ```
 
 Of course, cutting the hash value to 12 characters will increase the risk
@@ -398,11 +398,16 @@ You can also use your own function as a mask. The function must either be
 destructive (like [Partial Scrambling]) or insert some randomness in the dataset
 (like [Faking]).
 
-For instance, if you wrote a function `foo()`, you can apply it like this:
+For instance if you wrote a function `foo()` inside the schema `bar`,
+then you can apply it like this:
 
 ```sql
-SECURITY LABEL FOR anon ON COLUMN player.score IS 'MASKED WITH FUNCTION foo()';
+SECURITY LABEL FOR anon ON COLUMN player.score
+IS 'MASKED WITH FUNCTION bar.foo()';
 ```
+
+> NOTE: If `anon.restrict_to_trusted_schema` is enabled, then you need to add
+> the `bar` schema in the `anon.trusted_schema` parameter.
 
 ### Example: Writing a masking function for a JSONB column
 
@@ -451,7 +456,7 @@ through the keys and replace the sensitive values as needed.
 [PostgreSQL JSON functions and operators]: https://www.postgresql.org/docs/current/functions-json.html
 
 ```sql
-CREATE FUNCTION remove_last_name(j JSONB)
+CREATE FUNCTION custom_masks.remove_last_name(j JSONB)
 RETURNS JSONB
 VOLATILE
 LANGUAGE SQL
@@ -470,7 +475,7 @@ $func$;
 Then check that the function is working correctly:
 
 ```sql
-SELECT remove_last_name(info) FROM company;
+SELECT custom_masks.remove_last_name(info) FROM company;
 ```
 
 When that's ok you can declare this function as the mask of
@@ -478,7 +483,7 @@ the `info` field:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN company.info
-IS 'MASKED WITH FUNCTION remove_last_name(info)';
+IS 'MASKED WITH FUNCTION custom_masks.remove_last_name(info)';
 ```
 
 And try it out !

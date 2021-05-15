@@ -1672,6 +1672,38 @@ CREATE OR REPLACE FUNCTION anon.get_function_schema(text) RETURNS text
 AS 'MODULE_PATHNAME', 'get_function_schema'
 LANGUAGE C IMMUTABLE STRICT;
 
+CREATE OR REPLACE FUNCTION anon.trg_check_trusted_schemas()
+RETURNS event_trigger
+AS $$
+DECLARE
+  untrusted_schema TEXT;
+BEGIN
+  SELECT anon.get_function_schema(masking_function)
+  INTO untrusted_schema
+  FROM anon.pg_masking_rules
+  WHERE pg_catalog.current_setting('anon.restrict_to_trusted_schemas')::BOOLEAN
+  AND masking_function IS NOT NULL
+  AND NOT trusted_schema
+  LIMIT 1;
+
+  IF untrusted_schema = '' THEN
+    RAISE 'The schema of the making filter must be defined'
+      USING HINT = 'Check the anon.restrict_to_trusted_schemas parameter';
+  ELSIF length(untrusted_schema) > 0 THEN
+    RAISE '% is not a trusted schema.', untrusted_schema
+      USING HINT = 'Check the anon.trusted_schemas parameter';
+  END IF;
+END;
+$$
+  LANGUAGE plpgsql
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+CREATE EVENT TRIGGER trg_check_trusted_schemas ON ddl_command_end
+WHEN TAG IN ('SECURITY LABEL', 'COMMENT')
+EXECUTE PROCEDURE anon.trg_check_trusted_schemas();
+
 -- List of all the masked columns
 CREATE OR REPLACE VIEW anon.pg_masking_rules AS
 WITH const AS (
@@ -1742,8 +1774,16 @@ UNION
 SELECT * FROM rules_from_seclabels
 )
 -- DISTINCT will keep just the 1st rule for each column based on priority,
-SELECT DISTINCT ON (attrelid, attnum) *,
-    COALESCE(masking_function, masking_value) AS masking_filter
+SELECT
+  DISTINCT ON (attrelid, attnum) *,
+  COALESCE(masking_function, masking_value) AS masking_filter,
+  ( anon.get_function_schema(masking_function)
+    = ANY( pg_catalog.string_to_array(
+             pg_catalog.current_setting('anon.trusted_schemas'),
+             ', ')
+         )
+  ) AS trusted_schema
+
 FROM rules_from_all
 ORDER BY attrelid, attnum, priority DESC
 ;
