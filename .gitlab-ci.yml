@@ -67,8 +67,9 @@ make9.6:
   image: postgres:9.6
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-9.6 pgxnclient
-    - pgxn install ddlx
+    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-9.6 pgxnclient python3 python3-pip
+    - pip install --upgrade pip
+    - pip install --no-cache-dir -r python/requirements.txt
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -87,8 +88,7 @@ make10:
   image: postgres:10
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-10 pgxnclient
-    - pgxn install ddlx
+    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-10 pgxnclient python3
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -108,8 +108,7 @@ make11:
   image: postgres:11
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient
-    - pgxn install ddlx
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient python3
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -128,10 +127,7 @@ make12:
   image: postgres:12
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient
-    - pgxn install ddlx
-#    - git clone https://github.com/lacanoid/pgddl.git
-#    - make -C pgddl && make -C pgddl install
+    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient python3
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -150,7 +146,7 @@ make13:
   image: postgres:13
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 python3
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
