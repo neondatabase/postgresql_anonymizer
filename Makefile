@@ -42,6 +42,8 @@ REGRESS?=$(REGRESS_TESTS)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 
+EXTRA_CLEAN = anon _venv $(ZIPBALL)
+
 OBJS = anon.o
 
 ##
@@ -89,20 +91,25 @@ install-py:
 ## L I N T
 ##
 
+.PHONY: lint
 lint: lint-sh lint-md lint-sql lint-py
 
+.PHONY: lint-sh
 lint-sh: #: check the shell script syntax
 	shellcheck bin/pg_dump_anon.sh
 
+.PHONY: lint-md
 lint-md: #: check the markdown syntax
 	mdl docs/*.md *.md
 
+.PHONY: lint-sql
 lint-sql: #: check the SQL syntax
 	sqlint anon.sql
 	sqlint demo/*.sql
 
-lint-py: #: check the python syntax
-	flake8 python/*.py
+.PHONY: lint-py
+lint-py: | _venv #: Check the python syntax
+	_venv/bin/python -m flake8 python/*.py
 
 ##
 ## B U I L D
@@ -110,11 +117,13 @@ lint-py: #: check the python syntax
 
 
 .PHONY: extension
-extension: #: build the extension
-	mkdir -p anon
+extension: | anon #: build the extension
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/*.csv anon/
 	cp python/populate.py anon/
+
+anon:
+	mkdir -p $@
 
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner
 SED1=sed 's/public.//'
@@ -177,10 +186,6 @@ standalone: anon_standalone.sql #: build the standalone script (deprecated)
 anon_standalone.sql: anon.sql
 	echo "The standalone install method is deprecated."
 
-clean_standalone:
-	rm -fr anon_standalone.sql
-
-
 ##
 ## L O A D
 ##
@@ -195,13 +200,18 @@ FAKE_DATA_CSV_FILES=$(addprefix data/, $(addsuffix .csv, $(FAKE_DATA_TABLES)))
 .PHONY: fake_data
 fake_data: $(FAKE_DATA_CSV_FILES) #: generate the fake data tables
 
-data/%.csv:
-	python/populate.py \
+data/%.csv: | _venv
+	_venv/bin/python python/populate.py \
 	  --table $* \
 	  --lines $(FAKE_DATA_LINES) \
 	  --locales $(FAKE_DATA_LOCALES) \
 	  --seed $(FAKE_DATA_SEED) \
 	  > $@
+
+_venv:
+	python3 -m venv $@
+	$@/bin/pip install --upgrade pip
+	$@/bin/pip install -r python/requirements.txt
 
 clean_fake_data:
 	rm $(FAKE_DATA_CSV_FILES)
