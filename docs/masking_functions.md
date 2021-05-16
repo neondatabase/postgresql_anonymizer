@@ -115,9 +115,9 @@ SELECT anon.init();
 ```
 
 The `init()` function will import a default dataset of random data (iban,
-names, cities, etc.). 
+names, cities, etc.).
 
-> This is dataset is in English and very small ( 1000 values for each 
+> This is dataset is in English and very small ( 1000 values for each
 > category ). If you want to use localized data or load a
 > specific dataset, please read the [Custom Fake Data] section.
 
