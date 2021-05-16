@@ -16,12 +16,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
  && rm -rf /var/lib/apt/lists/*
 
+# Import source files into the image
+WORKDIR /src
+COPY . .
+
 # Install faker
 RUN pip3 install --no-cache-dir -r python/requirements.txt
 
 # Install anon extension
-WORKDIR /src
-COPY . .
 RUN make clean && make && make install
 
 # init script
