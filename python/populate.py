@@ -56,7 +56,7 @@ def last_name():
     values = []
     for loc in locales:
         m = importlib.import_module('faker.providers.person.'+loc)
-        values += list(set(m.Provider.first_names))
+        values += list(set(m.Provider.last_names))
     random.shuffle(values)
     return [[oid, values[oid]]
             for oid in range(min(len(values), lines))]
