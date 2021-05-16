@@ -68,8 +68,8 @@ make9.6:
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-9.6 pgxnclient python3 python3-pip
-    - pip install --upgrade pip
-    - pip install --no-cache-dir -r python/requirements.txt
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
