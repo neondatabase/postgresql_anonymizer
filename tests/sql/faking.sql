@@ -40,7 +40,6 @@ SELECT pg_typeof(anon.fake_postcode()) = 'TEXT'::REGTYPE;
 
 -- SIRET
 SELECT pg_typeof(anon.fake_siret()) = 'TEXT'::REGTYPE;
->>>>>>> [tests] changes in the populate/fake data process
 
 -- Lorem Ipsum
 SELECT COUNT(*) = 5-1

@@ -51,19 +51,19 @@ SELECT anon.mask_update();
 
 -- Jimmy reads the phone book
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM phone'
- phone_owner  |                                                           phone_number                                                           
---------------+----------------------------------------------------------------------------------------------------------------------------------
- Rocco Elena  | 5a82e2a98ee0e9741ae1d9fa1e602caf8ac2544539c13d1fed5415bb82f52dc546a0a94eb3d9309628b20c79f9b20392b5735b18d9c452806e7999235e40509b
- Konner Mauro | c7c0bf1d9098960e9880f2358645a67e959842de0fea31c0a36876ca119ffc6a159ed22d698c36809ec71863205d4785ea2a2c06144c48d1286c1bb35ef3fea7
- Gasper Melva | 5f8f9852f9b7a0d344b231350a97e14ca78d30242085c2791001b78a0db7ac1650ba02f356baed620c1750060812cbb724df47da3eabd8c79650bbf1ad627483
+   phone_owner   |                                                           phone_number                                                           
+-----------------+----------------------------------------------------------------------------------------------------------------------------------
+ Needham Robel   | 5a82e2a98ee0e9741ae1d9fa1e602caf8ac2544539c13d1fed5415bb82f52dc546a0a94eb3d9309628b20c79f9b20392b5735b18d9c452806e7999235e40509b
+ Liston Johnston | c7c0bf1d9098960e9880f2358645a67e959842de0fea31c0a36876ca119ffc6a159ed22d698c36809ec71863205d4785ea2a2c06144c48d1286c1bb35ef3fea7
+ Gaston Hudson   | 5f8f9852f9b7a0d344b231350a97e14ca78d30242085c2791001b78a0db7ac1650ba02f356baed620c1750060812cbb724df47da3eabd8c79650bbf1ad627483
 (3 rows)
 
 -- Jimmy joins table to get the call history
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
-     from     |      to      |           call_start_time           
---------------+--------------+-------------------------------------
- Gasper Melva | Rocco Elena  | Mon May 17 04:22:51.859137 2004 PDT
- Konner Mauro | Gasper Melva | Mon May 17 02:41:01.859137 2004 PDT
+      from       |      to       |           call_start_time           
+-----------------+---------------+-------------------------------------
+ Gaston Hudson   | Needham Robel | Mon May 17 04:22:51.859137 2004 PDT
+ Liston Johnston | Gaston Hudson | Mon May 17 02:41:01.859137 2004 PDT
 (2 rows)
 
 -- Jimmy tries to find the salt :-)

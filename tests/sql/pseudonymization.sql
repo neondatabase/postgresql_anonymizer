@@ -56,7 +56,7 @@ SELECT  anon.pseudo_iban('bob','x') = anon.pseudo_iban('bob','x');
 
 SELECT anon.set_salt('a_VeRy_SeCReT_SaLT');
 
-SELECT  anon.pseudo_last_name('bob') = 'Damian';
+SELECT anon.pseudo_last_name('bob');
 
 
 ROLLBACK;
