@@ -10,6 +10,7 @@ variables:
     POSTGRES_DB: nice_marmot
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
+    SAST_EXCLUDED_PATHS: '_venv'
 
 stages:
   - lint
