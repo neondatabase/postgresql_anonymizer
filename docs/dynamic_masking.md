@@ -115,5 +115,24 @@ with `anon.dump()` will work fine with multiple schemas.
 ### Performances
 
 Dynamic Masking is known to be very slow with some queries, especially if you
-try to join 2 tables on a masked key using hashing or
-pseudonymization.
+try to join 2 tables on a masked key using hashing or pseudonymization.
+
+### Graphic Tools
+
+When you are using a masked role with a graphic interface such as DBeaver or
+pgAdmin, the "data" panel may produce the following error when trying to display
+the content of a masked table called `foo`:
+
+```bash
+SQL Error [42501]: ERROR: permission denied for table foo
+```
+
+This is because most of these tools will directly query the `public.foo` table
+instead of being "redirected" by the masking engine toward the `mask.foo` view.
+
+In order the view the masked data with a graphic tool, you can either:
+
+1- Open the SQL query panel and type `SELECT * FROM foo`
+
+2- Navigate to `Database > Schemas > mask > Views > foo`
+
