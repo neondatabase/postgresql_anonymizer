@@ -16,7 +16,6 @@ stages:
   - lint
   - build
   - test
-  - doc
   - deploy
 
 image: postgres:13
@@ -274,16 +273,14 @@ blackbox:
 ## T E S T
 ##
 
+## automatic SAST from Gitlab.com
 include:
   - template: Security/SAST.gitlab-ci.yml
 
-##
-## D O C
-##
-
+## basic user sories
 demo:
   <<: *init_PG_instance
-  stage: doc
+  stage: test
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 postgresql-contrib-13  pgxnclient
@@ -342,17 +339,18 @@ pgxn:
   only:
     - master
 
-test_pgxn:
-  stage: deploy
+## Test various installation process
+
+install_pgxn:
+  stage: test
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 pgxnclient
     - pgxn install postgresql_anonymizer
   when: manual
 
-# test install
-test_pgxn_ubuntu_pg95:
-  stage: deploy
+install_pgxn_ubuntu_pg95:
+  stage: test
   image: ubuntu:bionic
   script:
     - apt-get update
@@ -364,17 +362,15 @@ test_pgxn_ubuntu_pg95:
     - su postgres -c /usr/lib/postgresql/9.5/bin/initdb
     - su postgres -c "/usr/lib/postgresql/9.5/bin/pg_ctl start" &
     - pg_config --sharedir
-    - pgxn install --pg_config /usr/lib/postgresql/9.5/bin/pg_config ddlx
     - pgxn install --pg_config /usr/lib/postgresql/9.5/bin/pg_config postgresql_anonymizer
-    - psql -c "CREATE EXTENSION ddlx;"
     - psql -c "CREATE EXTENSION tsm_system_rows;"
     - psql -c "CREATE TEMPORARY TABLE pg_config AS SELECT 'SHAREDIR'::TEXT AS name, '/usr/share/postgresql/9.5'::TEXT AS setting;CREATE EXTENSION anon;"
     - psql -c "ALTER DATABASE postgres SET session_preload_libraries='anon'"
-    - psql -c "SELECT anon.load();"
+    - psql -c "SELECT anon.init();"
   when: manual
 
-test_yum_centos7_pg12:
-  stage: deploy
+install_yum_centos7_pg12:
+  stage: test
   image: centos:7
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
@@ -384,4 +380,25 @@ test_yum_centos7_pg12:
     - su postgres -c /usr/pgsql-12/bin/initdb $PGDATA
     - su postgres -c "/usr/pgsql-12/bin/pg_ctl start"
     - su postgres -c "psql -c 'CREATE EXTENSION anon CASCADE;'"
+  when: manual
+
+install_source_fedora:
+  stage: test
+  image: fedora:34
+  script:
+    - dnf install --assumeyes postgresql-server postgresql-contrib postgresql-server-devel libpq-devel make git redhat-rpm-config diffutils python3-faker
+    - cd /tmp
+    - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
+    - cd postgresql_anonymizer
+    - make
+    - make install
+    - export PGDATA=/var/lib/postgresql/data
+    - mkdir -p $PGDATA
+    - chown postgres $PGDATA
+    - su postgres -c initdb
+    - su postgres -c "pg_ctl start"
+    - export PGUSER=postgres
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+    - make installcheck || diff results tests/expected
   when: manual
