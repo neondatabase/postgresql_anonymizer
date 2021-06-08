@@ -1687,7 +1687,7 @@ BEGIN
   LIMIT 1;
 
   IF untrusted_schema = '' THEN
-    RAISE 'The schema of the making filter must be defined'
+    RAISE 'The schema of the masking filter must be defined'
       USING HINT = 'Check the anon.restrict_to_trusted_schemas parameter';
   ELSIF length(untrusted_schema) > 0 THEN
     RAISE '% is not a trusted schema.', untrusted_schema
@@ -2455,7 +2455,7 @@ LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 -- ADD TEST IN FILES:
 --   * tests/sql/k_anonymity.sql
 
--- This is an attempt to implement various anonymity assement methods.
+-- This is an attempt to implement various anonymity assessment methods.
 -- These functions should be used with care.
 
 CREATE OR REPLACE VIEW anon.pg_identifiers AS
