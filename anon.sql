@@ -79,8 +79,7 @@ $$
   ON CONFLICT (param)
   DO
     UPDATE
-    SET value=v
-    WHERE EXCLUDED.param = 'salt'
+    SET value=EXCLUDED.value
   RETURNING value
 $$
   LANGUAGE SQL
@@ -113,8 +112,7 @@ $$
   ON CONFLICT (param)
   DO
     UPDATE
-    SET value=v
-    WHERE EXCLUDED.param = 'algorithm'
+    SET value=EXCLUDED.value
   RETURNING value
 $$
   LANGUAGE SQL
