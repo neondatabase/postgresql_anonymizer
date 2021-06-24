@@ -20,6 +20,12 @@ void    _PG_init(void);
 
 PG_FUNCTION_INFO_V1(anon_seclabel_anon);
 
+#ifdef _WIN64
+PGDLLEXPORT Datum get_function_schema(PG_FUNCTION_ARGS);
+#endif // _WIN64
+
+PG_FUNCTION_INFO_V1(get_function_schema);
+
 static bool guc_anon_restrict_to_trusted_schemas;
 static char *guc_anon_trusted_schemas;
 
@@ -106,7 +112,6 @@ anon_seclabel_anon(PG_FUNCTION_ARGS)
  * simply deduce the schema name as it is provided.
  *
  */
-PG_FUNCTION_INFO_V1(get_function_schema);
 
 Datum
 get_function_schema(PG_FUNCTION_ARGS)
