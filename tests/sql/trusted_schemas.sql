@@ -43,11 +43,12 @@ ROLLBACK TO before_test_3;
 SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH FUNCTION pg_catalog.lower(people.name) ';
 
-SET anon.trusted_schemas = 'public';
+SECURITY LABEL FOR anon ON SCHEMA public
+IS 'TRUSTED';
 
 -- TEST 5
 SECURITY LABEL FOR anon ON COLUMN people.name
-IS 'MASKED WITH FUNCTION public.lower() ';
+IS 'MASKED WITH FUNCTION public.lower(people.name) ';
 
 -- TEST 6
 SECURITY LABEL FOR anon ON COLUMN people.name

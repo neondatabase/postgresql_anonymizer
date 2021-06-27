@@ -31,7 +31,7 @@ SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH FUNCTION lower(people.name) ';
 ERROR:  The schema of the masking filter must be defined
 HINT:  Check the anon.restrict_to_trusted_schemas parameter
-CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 14 at RAISE
+CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 15 at RAISE
 ROLLBACK TO before_test_2;
 -- TEST 3 generates an error
 SAVEPOINT before_test_3;
@@ -39,15 +39,16 @@ SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH FUNCTION public.lower(people.name) ';
 ERROR:  public is not a trusted schema.
 HINT:  Check the anon.trusted_schemas parameter
-CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 17 at RAISE
+CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 18 at RAISE
 ROLLBACK TO before_test_3;
 -- TEST 4
 SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH FUNCTION pg_catalog.lower(people.name) ';
-SET anon.trusted_schemas = 'public';
+SECURITY LABEL FOR anon ON SCHEMA public
+IS 'TRUSTED';
 -- TEST 5
 SECURITY LABEL FOR anon ON COLUMN people.name
-IS 'MASKED WITH FUNCTION public.lower() ';
+IS 'MASKED WITH FUNCTION public.lower(people.name) ';
 -- TEST 6
 SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH VALUE NULL';

@@ -10,6 +10,10 @@
 #include "utils/builtins.h"
 #include "fmgr.h"
 #include "utils/guc.h"
+#include "catalog/pg_class.h"
+#include "catalog/pg_namespace.h"
+#include "catalog/pg_authid.h"
+#include "miscadmin.h"
 
 PG_MODULE_MAGIC;
 
@@ -35,18 +39,72 @@ static char *guc_anon_trusted_schemas;
 static void
 anon_object_relabel(const ObjectAddress *object, const char *seclabel)
 {
-  if (seclabel == NULL
-    || pg_strcasecmp(seclabel,"MASKED") == 0
-    || pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0
-    || pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0
-    || pg_strncasecmp(seclabel, "QUASI IDENTIFIER",17) == 0
-    || pg_strncasecmp(seclabel, "INDIRECT IDENTIFIER",19) == 0
-  )
-  return;
+  /* SECURITY LABEL FOR anon ON COLUMN foo.bar IS NULL */
+  if (seclabel == NULL) return;
+
+ // ereport(ERROR,
+ //       (errcode(ERRCODE_INVALID_NAME),
+ //       errmsg("classId = %d + SubId = %d", object->classId, object->objectSubId)));
+
+  switch (object->classId)
+  {
+    case RelationRelationId:
+
+      /* SECURITY LABEL FOR anon ON TABLE ...' */
+      if (object->objectSubId == 0)
+        ereport(ERROR,
+          (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+           errmsg("anon provider does not support labels on this object")));
+
+      /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
+      if ( pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0
+        || pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0
+        || pg_strncasecmp(seclabel, "QUASI IDENTIFIER",17) == 0
+        || pg_strncasecmp(seclabel, "INDIRECT IDENTIFIER",19) == 0
+      )
+        return;
+
+      ereport(ERROR,
+        (errcode(ERRCODE_INVALID_NAME),
+         errmsg("'%s' is not a valid label for a column", seclabel)));
+      break;
+
+    /* SECURITY LABEL FOR anon ON ROLE batman IS 'MASKED' */
+    case AuthIdRelationId:
+      if (pg_strcasecmp(seclabel,"MASKED") == 0)
+        return;
+
+      ereport(ERROR,
+        (errcode(ERRCODE_INVALID_NAME),
+         errmsg("'%s' is not a valid label for a role", seclabel)));
+      break;
+
+    /* SECURITY LABEL FOR anon ON SCHEMA public IS 'TRUSTED' */
+    case NamespaceRelationId:
+      if (!superuser())
+        ereport(ERROR,
+            (errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+             errmsg("only superuser can set an anon label for a schema")));
+
+      if (pg_strcasecmp(seclabel,"TRUSTED") == 0)
+        return;
+
+      ereport(ERROR,
+        (errcode(ERRCODE_INVALID_NAME),
+         errmsg("'%s' is not a valid label for a schema", seclabel)));
+      break;
+
+    /* everything else is unsupported */
+    default:
+      ereport(ERROR,
+          (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+           errmsg("anon provider does not support labels on this object")));
+      break;
+  }
 
   ereport(ERROR,
       (errcode(ERRCODE_INVALID_NAME),
-       errmsg("'%s' is not a valid masking rule", seclabel)));
+       errmsg("'%s' is not a valid label", seclabel)));
 }
 
 /*

@@ -402,12 +402,13 @@ For instance if you wrote a function `foo()` inside the schema `bar`,
 then you can apply it like this:
 
 ```sql
+SECURITY LABEL FOR anon ON SCHEMA bar IS 'TRUSTED';
+
 SECURITY LABEL FOR anon ON COLUMN player.score
 IS 'MASKED WITH FUNCTION bar.foo()';
 ```
 
-> NOTE: If `anon.restrict_to_trusted_schema` is enabled, then you need to add
-> the `bar` schema in the `anon.trusted_schema` parameter.
+> NOTE: The `bar` schema must be declared as `TRUSTED` by a superuser.
 
 ### Example: Writing a masking function for a JSONB column
 
@@ -456,6 +457,8 @@ through the keys and replace the sensitive values as needed.
 [PostgreSQL JSON functions and operators]: https://www.postgresql.org/docs/current/functions-json.html
 
 ```sql
+SECURITY LABEL FOR anon ON SCHEMA custom_masks IS 'TRUSTED';
+
 CREATE FUNCTION custom_masks.remove_last_name(j JSONB)
 RETURNS JSONB
 VOLATILE
