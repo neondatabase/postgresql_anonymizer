@@ -165,7 +165,7 @@ SELECT anon.set_salt('a_VeRy_SeCReT_SaLT');
 SELECT anon.pseudo_last_name('bob');
  pseudo_last_name 
 ------------------
- Deckow
+ Schumm
 (1 row)
 
 ROLLBACK;
