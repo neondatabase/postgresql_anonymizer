@@ -374,91 +374,151 @@ LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
 -- Fake Data
 -------------------------------------------------------------------------------
 
--- Cities, Regions & Countries
+CREATE TYPE anon_fake_data_tables
+AS ENUM (
+  'address', 'city', 'company', 'country', 'email', 'first_name',
+  'iban', 'last_name', 'lorem_ipsum', 'postcode', 'siret'
+);
+
+-- Address
+DROP TABLE IF EXISTS anon.address;
+CREATE TABLE anon.address (
+  oid SERIAL PRIMARY KEY,
+  val TEXT
+);
+
+ALTER TABLE anon.address CLUSTER ON address_pkey;
+
+SELECT pg_catalog.pg_extension_config_dump('anon.address','');
+SELECT pg_catalog.pg_extension_config_dump('anon.address_oid_seq','');
+
+COMMENT ON TABLE anon.address IS 'Fake Adresses';
+
+-- Cities
 DROP TABLE IF EXISTS anon.city;
 CREATE TABLE anon.city (
   oid SERIAL PRIMARY KEY,
-  name TEXT,
-  country TEXT,
-  subcountry TEXT,
-  geonameid TEXT
+  val TEXT
 );
 
 ALTER TABLE anon.city CLUSTER ON city_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.city','');
+SELECT pg_catalog.pg_extension_config_dump('anon.city_oid_seq','');
 
-COMMENT ON TABLE anon.city IS 'Cities, Regions & Countries';
+COMMENT ON TABLE anon.city IS 'Fake Cities';
 
 -- Companies
 DROP TABLE IF EXISTS anon.company;
 CREATE TABLE anon.company (
   oid SERIAL PRIMARY KEY,
-  name TEXT
+  val TEXT
 );
 
 ALTER TABLE anon.company CLUSTER ON company_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.company','');
+SELECT pg_catalog.pg_extension_config_dump('anon.company_oid_seq','');
+
+COMMENT ON TABLE anon.city IS 'Fake Companies';
+
+-- Country
+DROP TABLE IF EXISTS anon.country;
+CREATE TABLE anon.country (
+  oid SERIAL PRIMARY KEY,
+  val TEXT
+);
+
+ALTER TABLE anon.country CLUSTER ON country_pkey;
+
+SELECT pg_catalog.pg_extension_config_dump('anon.country','');
+SELECT pg_catalog.pg_extension_config_dump('anon.country_oid_seq','');
+
+COMMENT ON TABLE anon.country IS 'Fake Countries';
 
 -- Email
 DROP TABLE IF EXISTS anon.email;
 CREATE TABLE anon.email (
   oid SERIAL PRIMARY KEY,
-  address TEXT
+  val TEXT
 );
 
 ALTER TABLE anon.email CLUSTER ON email_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.email','');
+SELECT pg_catalog.pg_extension_config_dump('anon.email_oid_seq','');
+
+COMMENT ON TABLE anon.email IS 'Fake email adresses';
 
 -- First names
 DROP TABLE IF EXISTS anon.first_name;
 CREATE TABLE anon.first_name (
   oid SERIAL PRIMARY KEY,
-  first_name TEXT,
-  male BOOLEAN,
-  female BOOLEAN,
-  language TEXT
+  val TEXT
 );
 
 ALTER TABLE anon.first_name CLUSTER ON first_name_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.first_name','');
+SELECT pg_catalog.pg_extension_config_dump('anon.first_name_oid_seq','');
+
+COMMENT ON TABLE anon.first_name IS 'Fake first names';
 
 -- IBAN
 DROP TABLE IF EXISTS anon.iban;
 CREATE TABLE anon.iban (
   oid SERIAL PRIMARY KEY,
-  id TEXT
+  val TEXT
 );
 
 ALTER TABLE anon.iban CLUSTER ON iban_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.iban','');
+SELECT pg_catalog.pg_extension_config_dump('anon.iban_oid_seq','');
+
+COMMENT ON TABLE anon.iban IS 'Fake IBAN codes';
 
 -- Last names
 DROP TABLE IF EXISTS anon.last_name;
 CREATE TABLE anon.last_name (
   oid SERIAL PRIMARY KEY,
-  name TEXT
+  val TEXT
 );
 
 ALTER TABLE anon.last_name CLUSTER ON last_name_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.last_name','');
+SELECT pg_catalog.pg_extension_config_dump('anon.last_name_oid_seq','');
+
+COMMENT ON TABLE anon.last_name IS 'Fake last names';
+
+-- Postcode
+DROP TABLE IF EXISTS anon.postcode;
+CREATE TABLE anon.postcode (
+  oid SERIAL PRIMARY KEY,
+  val TEXT
+);
+
+ALTER TABLE anon.postcode CLUSTER ON postcode_pkey;
+
+SELECT pg_catalog.pg_extension_config_dump('anon.postcode','');
+SELECT pg_catalog.pg_extension_config_dump('anon.postcode_oid_seq','');
+
+COMMENT ON TABLE anon.postcode IS 'Fake street post codes';
 
 -- SIRET
 DROP TABLE IF EXISTS anon.siret;
 CREATE TABLE anon.siret (
   oid SERIAL PRIMARY KEY,
-  siren TEXT,
-  nic TEXT
+  val TEXT
 );
 
 ALTER TABLE anon.siret CLUSTER ON siret_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.siret','');
+SELECT pg_catalog.pg_extension_config_dump('anon.siret_oid_seq','');
+
+COMMENT ON TABLE anon.siret IS 'Fake SIRET codes';
 
 -- Lorem Ipsum
 DROP TABLE IF EXISTS anon.lorem_ipsum;
@@ -470,6 +530,9 @@ CREATE TABLE anon.lorem_ipsum (
 ALTER TABLE anon.lorem_ipsum CLUSTER ON lorem_ipsum_pkey;
 
 SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum','');
+SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum_oid_seq','');
+
+COMMENT ON TABLE anon.lorem_ipsum IS 'Fake text';
 
 -- ADD NEW TABLE HERE
 
@@ -655,12 +718,15 @@ BEGIN
     anon.load_csv('anon.identifiers_category',datapath||'/identifiers_category.csv'),
     anon.load_csv('anon.identifier',datapath ||'/identifier_fr_FR.csv'),
     anon.load_csv('anon.identifier',datapath ||'/identifier_en_US.csv'),
+    anon.load_csv('anon.address',datapath ||'/address.csv'),
     anon.load_csv('anon.city',datapath ||'/city.csv'),
     anon.load_csv('anon.company',datapath ||'/company.csv'),
+    anon.load_csv('anon.country',datapath ||'/country.csv'),
     anon.load_csv('anon.email', datapath ||'/email.csv'),
     anon.load_csv('anon.first_name',datapath ||'/first_name.csv'),
     anon.load_csv('anon.iban',datapath ||'/iban.csv'),
     anon.load_csv('anon.last_name',datapath ||'/last_name.csv'),
+    anon.load_csv('anon.postcode',datapath ||'/postcode.csv'),
     anon.load_csv('anon.siret',datapath ||'/siret.csv'),
     anon.load_csv('anon.lorem_ipsum',datapath ||'/lorem_ipsum.csv')
   ]) results;
@@ -750,14 +816,17 @@ CREATE OR REPLACE FUNCTION anon.is_initialized()
 RETURNS BOOLEAN
 AS $$
   SELECT count(*)::INT::BOOLEAN
-  FROM (   SELECT 1 FROM anon.siret
-     UNION SELECT 1 FROM anon.company
-     UNION SELECT 1 FROM anon.last_name
+  FROM (   SELECT 1 FROM anon.address
      UNION SELECT 1 FROM anon.city
+     UNION SELECT 1 FROM anon.company
+     UNION SELECT 1 FROM anon.country
      UNION SELECT 1 FROM anon.email
      UNION SELECT 1 FROM anon.first_name
      UNION SELECT 1 FROM anon.iban
+     UNION SELECT 1 FROM anon.last_name
      UNION SELECT 1 FROM anon.lorem_ipsum
+     UNION SELECT 1 FROM anon.postcode
+     UNION SELECT 1 FROM anon.siret
      -- ADD NEW TABLE HERE
      LIMIT 1
   ) t
@@ -772,14 +841,17 @@ $$
 CREATE OR REPLACE FUNCTION anon.reset()
 RETURNS BOOLEAN AS
 $$
+    TRUNCATE anon.address;
     TRUNCATE anon.city;
     TRUNCATE anon.company;
+    TRUNCATE anon.country;
     TRUNCATE anon.email;
     TRUNCATE anon.first_name;
     TRUNCATE anon.iban;
     TRUNCATE anon.last_name;
-    TRUNCATE anon.siret;
     TRUNCATE anon.lorem_ipsum;
+    TRUNCATE anon.postcode;
+    TRUNCATE anon.siret;
     TRUNCATE anon.secret;
     TRUNCATE anon.identifiers_category CASCADE;
     TRUNCATE anon.identifier;
@@ -1016,7 +1088,7 @@ RETURNS TEXT AS $$
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.first_name_oid_seq
   )
-  SELECT COALESCE(f.first_name,anon.notice_if_not_init())
+  SELECT COALESCE(f.val,anon.notice_if_not_init())
   FROM anon.first_name f
   JOIN random r ON f.oid=r.oid;
 $$
@@ -1032,7 +1104,7 @@ RETURNS TEXT AS $$
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.last_name_oid_seq
   )
-  SELECT COALESCE(l.name,anon.notice_if_not_init())
+  SELECT COALESCE(l.val,anon.notice_if_not_init())
   FROM anon.last_name l
   JOIN random r ON l.oid=r.oid;
 $$
@@ -1048,7 +1120,7 @@ RETURNS TEXT AS $$
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.email_oid_seq
   )
-  SELECT COALESCE(e.address,anon.notice_if_not_init())
+  SELECT COALESCE(e.val,anon.notice_if_not_init())
   FROM anon.email e
   JOIN random r ON e.oid=r.oid;
 $$
@@ -1058,14 +1130,15 @@ $$
   SET search_path=''
 ;
 
-CREATE OR REPLACE FUNCTION anon.fake_city_in_country(
-  country_name TEXT
-)
+CREATE OR REPLACE FUNCTION anon.fake_address()
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.notice_if_not_init())
-  FROM anon.city
-  WHERE country=country_name
-  ORDER BY pg_catalog.random() LIMIT 1;
+  WITH random AS (
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
+    FROM anon.address_oid_seq
+  )
+  SELECT COALESCE(a.val,anon.notice_if_not_init())
+  FROM anon.address a
+  JOIN random r ON a.oid = r.oid
 $$
   LANGUAGE SQL
   VOLATILE
@@ -1079,56 +1152,9 @@ RETURNS TEXT AS $$
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.city_oid_seq
   )
-  SELECT COALESCE(name,anon.notice_if_not_init())
+  SELECT COALESCE(c.val,anon.notice_if_not_init())
   FROM anon.city c
   JOIN random r ON c.oid=r.oid;
-$$
-  LANGUAGE SQL
-  VOLATILE
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.fake_region_in_country(
-  country_name TEXT
-)
-RETURNS TEXT AS $$
-  SELECT COALESCE(subcountry,anon.notice_if_not_init())
-  FROM anon.city
-  WHERE country=country_name
-  ORDER BY pg_catalog.random() LIMIT 1;
-$$
-  LANGUAGE SQL
-  VOLATILE
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.fake_region()
-RETURNS TEXT AS $$
-  WITH random AS (
-    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.city_oid_seq
-  )
-  SELECT COALESCE(c.subcountry,anon.notice_if_not_init())
-  FROM anon.city c
-  JOIN random r ON c.oid = r.oid
-$$
-  LANGUAGE SQL
-  VOLATILE
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.fake_country()
-RETURNS TEXT AS $$
-  WITH random AS (
-    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.city_oid_seq
-  )
-  SELECT COALESCE(c.country,anon.notice_if_not_init())
-  FROM anon.city c
-  JOIN random r ON c.oid = r.oid
 $$
   LANGUAGE SQL
   VOLATILE
@@ -1142,8 +1168,24 @@ RETURNS TEXT AS $$
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.company_oid_seq
   )
-  SELECT COALESCE(c.name,anon.notice_if_not_init())
+  SELECT COALESCE(c.val,anon.notice_if_not_init())
   FROM anon.company c
+  JOIN random r ON c.oid = r.oid
+$$
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+CREATE OR REPLACE FUNCTION anon.fake_country()
+RETURNS TEXT AS $$
+  WITH random AS (
+    SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
+    FROM anon.country_oid_seq
+  )
+  SELECT COALESCE(c.val,anon.notice_if_not_init())
+  FROM anon.country c
   JOIN random r ON c.oid = r.oid
 $$
   LANGUAGE SQL
@@ -1158,7 +1200,7 @@ RETURNS TEXT AS $$
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.iban_oid_seq
   )
-  SELECT COALESCE(i.id,anon.notice_if_not_init())
+  SELECT COALESCE(i.val,anon.notice_if_not_init())
   FROM anon.iban i
   JOIN random r ON i.oid = r.oid;
 $$
@@ -1168,15 +1210,15 @@ $$
   SET search_path=''
 ;
 
-CREATE OR REPLACE FUNCTION anon.fake_siren()
+CREATE OR REPLACE FUNCTION anon.fake_postcode()
 RETURNS TEXT AS $$
   WITH random AS (
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
-    FROM anon.siret_oid_seq
+    FROM anon.postcode_oid_seq
   )
-  SELECT COALESCE(s.siren,anon.notice_if_not_init())
-  FROM anon.siret s
-  JOIN random r ON s.oid = r.oid;
+  SELECT COALESCE(p.val,anon.notice_if_not_init())
+  FROM anon.postcode p
+  JOIN random r ON p.oid = r.oid
 $$
   LANGUAGE SQL
   VOLATILE
@@ -1190,7 +1232,7 @@ RETURNS TEXT AS $$
     SELECT (pg_catalog.random()*last_value)::INTEGER%last_value+1 AS oid
     FROM anon.siret_oid_seq
   )
-  SELECT COALESCE(s.siren||nic,anon.notice_if_not_init())
+  SELECT COALESCE(s.val,anon.notice_if_not_init())
   FROM anon.siret s
   JOIN random r ON s.oid = r.oid;
 $$
@@ -1277,7 +1319,11 @@ FROM
   cte_paragraphs
 ;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 --
 -- Backward compatibility with version 0.2.1 and earlier
@@ -1292,7 +1338,6 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
 
 CREATE OR REPLACE FUNCTION anon.random_last_name()
 RETURNS TEXT AS $$
@@ -1314,46 +1359,12 @@ END;
 $$
 LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
 
-CREATE OR REPLACE FUNCTION anon.random_city_in_country(
-  country_name TEXT
-)
-RETURNS TEXT AS $$
-BEGIN
-  RAISE WARNING 'This function is deprecated'
-    USING HINT = 'Use anon.fake_city_in_country() instead';
-  RETURN  anon.fake_city_in_country(country_name) ;
-END;
-$$
-LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
-
 CREATE OR REPLACE FUNCTION anon.random_city()
 RETURNS TEXT AS $$
 BEGIN
   RAISE WARNING 'This function is deprecated'
     USING HINT = 'Use anon.fake_city() instead';
   RETURN  anon.fake_city() ;
-END;
-$$
-LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
-
-CREATE OR REPLACE FUNCTION anon.random_region_in_country(
-  country_name TEXT
-)
-RETURNS TEXT AS $$
-BEGIN
-  RAISE WARNING 'This function is deprecated'
-    USING HINT = 'Use anon.fake_region_in_country() instead';
-  RETURN  anon.fake_region_in_country(country_name) ;
-END;
-$$
-LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
-
-CREATE OR REPLACE FUNCTION anon.random_region()
-RETURNS TEXT AS $$
-BEGIN
-  RAISE WARNING 'This function is deprecated'
-    USING HINT = 'Use anon.fake_region() instead';
-  RETURN  anon.fake_region() ;
 END;
 $$
 LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
@@ -1384,16 +1395,6 @@ BEGIN
   RAISE WARNING 'This function is deprecated'
     USING HINT = 'Use anon.fake_iban() instead';
   RETURN  anon.fake_iban() ;
-END;
-$$
-LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
-
-CREATE OR REPLACE FUNCTION anon.random_siren()
-RETURNS TEXT AS $$
-BEGIN
-  RAISE WARNING 'This function is deprecated'
-    USING HINT = 'Use anon.fake_siren() instead';
-  RETURN  anon.fake_siren() ;
 END;
 $$
 LANGUAGE plpgsql  VOLATILE SECURITY INVOKER SET search_path='';
@@ -1462,7 +1463,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(first_name,anon.notice_if_not_init())
+  SELECT COALESCE(val,anon.notice_if_not_init())
   FROM anon.first_name
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1481,7 +1482,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_last_name(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.notice_if_not_init())
+  SELECT COALESCE(val,anon.notice_if_not_init())
   FROM anon.last_name
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1501,7 +1502,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_email(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(address,anon.notice_if_not_init())
+  SELECT COALESCE(val,anon.notice_if_not_init())
   FROM anon.email
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1517,7 +1518,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_city(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.notice_if_not_init())
+  SELECT COALESCE(val,anon.notice_if_not_init())
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1527,28 +1528,13 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
-CREATE OR REPLACE FUNCTION anon.pseudo_region(
-  seed TEXT,
-  salt TEXT DEFAULT NULL
-)
-RETURNS TEXT AS $$
-  SELECT COALESCE(subcountry,anon.notice_if_not_init())
-  FROM anon.city
-  WHERE oid = anon.projection_to_oid(
-    seed,
-    COALESCE(salt,anon.get_salt()),
-    (SELECT max(oid) FROM anon.city)
-  );
-$$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
-
 CREATE OR REPLACE FUNCTION anon.pseudo_country(
   seed TEXT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(country,anon.notice_if_not_init())
-  FROM anon.city
+  SELECT COALESCE(val,anon.notice_if_not_init())
+  FROM anon.country
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt,anon.get_salt()),
@@ -1562,7 +1548,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_company(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(name,anon.notice_if_not_init())
+  SELECT COALESCE(val,anon.notice_if_not_init())
   FROM anon.company
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1577,7 +1563,7 @@ CREATE OR REPLACE FUNCTION anon.pseudo_iban(
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(id,anon.notice_if_not_init())
+  SELECT COALESCE(val,anon.notice_if_not_init())
   FROM anon.iban
   WHERE oid = anon.projection_to_oid(
     seed,
@@ -1587,27 +1573,12 @@ RETURNS TEXT AS $$
 $$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
-CREATE OR REPLACE FUNCTION anon.pseudo_siren(
-  seed TEXT,
-  salt TEXT DEFAULT NULL
-)
-RETURNS TEXT AS $$
-  SELECT COALESCE(siren,anon.notice_if_not_init())
-  FROM anon.siret
-  WHERE oid = anon.projection_to_oid(
-    seed,
-    COALESCE(salt,anon.get_salt()),
-    (SELECT MAX(oid) FROM anon.siret)
-  );
-$$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
-
 CREATE OR REPLACE FUNCTION anon.pseudo_siret(
   seed TEXT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
-  SELECT COALESCE(siren||nic,anon.notice_if_not_init())
+  SELECT COALESCE(val,anon.notice_if_not_init())
   FROM anon.siret
   WHERE oid = anon.projection_to_oid(
     seed,

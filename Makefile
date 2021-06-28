@@ -28,7 +28,7 @@ EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/
 DATA = anon/*
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS_TESTS = init extschema detection
+REGRESS_TESTS = init populate extschema detection
 REGRESS_TESTS+= get_function_schema trusted_schemas
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= pseudonymization hashing hashing_and_dynamic_masking
@@ -41,6 +41,8 @@ REGRESS_TESTS+=$(PG_TEST_EXTRA)
 REGRESS?=$(REGRESS_TESTS)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
+
+EXTRA_CLEAN = anon _venv $(ZIPBALL)
 
 OBJS = anon.o
 
@@ -83,21 +85,32 @@ install-bin:
 	install -d $(DESTDIR)$(BINDIR)
 	install -m 0755 bin/pg_dump_anon.sh $(DESTDIR)$(BINDIR)/pg_dump_anon
 
+install-py:
+
 ##
 ## L I N T
 ##
 
-lint: lint-sh lint-md lint-sql
+.PHONY: lint
+lint: lint-sh lint-md lint-sql lint-py
 
+.PHONY: lint-sh
 lint-sh: #: check the shell script syntax
 	shellcheck bin/pg_dump_anon.sh
 
+.PHONY: lint-md
 lint-md: #: check the markdown syntax
 	mdl docs/*.md *.md
 
+.PHONY: lint-sql
 lint-sql: #: check the SQL syntax
 	sqlint anon.sql
 	sqlint demo/*.sql
+
+.PHONY: lint-py
+lint-py: | _venv #: Check the python syntax
+	_venv/bin/pip install -r python/development.txt
+	_venv/bin/python -m flake8 python/*.py
 
 ##
 ## B U I L D
@@ -105,10 +118,13 @@ lint-sql: #: check the SQL syntax
 
 
 .PHONY: extension
-extension: #: build the extension
-	mkdir -p anon
+extension: | anon #: build the extension
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
-	cp data/default/* anon/
+	cp data/*.csv anon/
+	cp python/populate.py anon/
+
+anon:
+	mkdir -p $@
 
 PG_DUMP?=docker exec postgresqlanonymizer_PostgreSQL_1 pg_dump -U postgres --insert --no-owner
 SED1=sed 's/public.//'
@@ -171,17 +187,35 @@ standalone: anon_standalone.sql #: build the standalone script (deprecated)
 anon_standalone.sql: anon.sql
 	echo "The standalone install method is deprecated."
 
-clean_standalone:
-	rm -fr anon_standalone.sql
-
-
 ##
 ## L O A D
 ##
 
-.PHONY: load
-load: #: Load data from CSV files into SQL tables
-	$(PSQL) -f data/load.sql
+FAKE_DATA_TABLES?=address city company country email first_name iban last_name lorem_ipsum postcode siret
+FAKE_DATA_LINES?=1000
+FAKE_DATA_LOCALES?=en
+FAKE_DATA_SEED?=0
+
+FAKE_DATA_CSV_FILES=$(addprefix data/, $(addsuffix .csv, $(FAKE_DATA_TABLES)))
+
+.PHONY: fake_data
+fake_data: $(FAKE_DATA_CSV_FILES) #: generate the fake data tables
+
+data/%.csv: | _venv
+	_venv/bin/python python/populate.py \
+	  --table $* \
+	  --lines $(FAKE_DATA_LINES) \
+	  --locales $(FAKE_DATA_LOCALES) \
+	  --seed $(FAKE_DATA_SEED) \
+	  > $@
+
+_venv:
+	python3 -m venv $@
+	$@/bin/pip install --upgrade pip
+	$@/bin/pip install -r python/requirements.txt
+
+clean_fake_data:
+	rm $(FAKE_DATA_CSV_FILES)
 
 ##
 ## D E M O   &   T E S T S

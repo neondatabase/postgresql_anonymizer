@@ -10,6 +10,7 @@ variables:
     POSTGRES_DB: nice_marmot
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
+    SAST_EXCLUDED_PATHS: '_venv'
 
 stages:
   - lint
@@ -40,6 +41,12 @@ lint-markdown:
     - gem install mdl
     - mdl docs/*.md *.md
 
+lint-py:
+  stage: lint
+  image: python:3.7
+  script:
+    - pip3 install flake8
+    - flake8 python/*.py
 
 ##
 ## B U I L D
@@ -60,8 +67,9 @@ make9.6:
   image: postgres:9.6
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-9.6 pgxnclient
-    - pgxn install ddlx
+    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-9.6 pgxnclient python3 python3-pip
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -80,8 +88,9 @@ make10:
   image: postgres:10
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-10 pgxnclient
-    - pgxn install ddlx
+    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-10 pgxnclient python3 python3-pip
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -101,8 +110,9 @@ make11:
   image: postgres:11
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient
-    - pgxn install ddlx
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient python3 python3-pip
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -121,10 +131,9 @@ make12:
   image: postgres:12
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient
-    - pgxn install ddlx
-#    - git clone https://github.com/lacanoid/pgddl.git
-#    - make -C pgddl && make -C pgddl install
+    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient python3  python3-pip
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -143,7 +152,9 @@ make13:
   image: postgres:13
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 python3  python3-pip
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -161,10 +172,11 @@ make11-centos:
   image: centos:7
   script:
     - yum -y install https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-centos11-11-2.noarch.rpm
-    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools
+    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools  python3  python3-pip
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
     - /usr/pgsql-11/bin/pg_config
     - export PATH="$PATH:/usr/pgsql-11/bin"
-    - pgxn install ddlx
     - cd /tmp
     - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git anonymizer
     - cd anonymizer

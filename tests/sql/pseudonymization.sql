@@ -39,10 +39,6 @@ SELECT  anon.pseudo_email('bob','x') = anon.pseudo_email('bob','x');
 SELECT  anon.pseudo_city(NULL) IS NULL;
 SELECT  anon.pseudo_city('bob','x') = anon.pseudo_city('bob','x');
 
--- Region
-SELECT  anon.pseudo_region(NULL) IS NULL;
-SELECT  anon.pseudo_region('bob','x') = anon.pseudo_region('bob','x');
-
 -- Country
 SELECT  anon.pseudo_country(NULL) IS NULL;
 SELECT  anon.pseudo_country('bob','x') = anon.pseudo_country('bob','x');
@@ -60,7 +56,7 @@ SELECT  anon.pseudo_iban('bob','x') = anon.pseudo_iban('bob','x');
 
 SELECT anon.set_salt('a_VeRy_SeCReT_SaLT');
 
-SELECT  anon.pseudo_last_name('bob') = 'Tribley';
+SELECT anon.pseudo_last_name('bob');
 
 
 ROLLBACK;

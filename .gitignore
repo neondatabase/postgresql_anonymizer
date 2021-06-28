@@ -18,6 +18,8 @@ contrib_regression_test_restore.pgsql
 *.bc
 *.o
 *.so
+# python
+_venv/
 # artefacts
 _pgddl/
 anon/*

@@ -117,26 +117,24 @@ SELECT anon.init();
 The `init()` function will import a default dataset of random data (iban,
 names, cities, etc.).
 
-If you want to use your own dataset, you can import custom CSV files with :
+> This is dataset is in English and very small ( 1000 values for each
+> category ). If you want to use localized data or load a
+> specific dataset, please read the [Custom Fake Data] section.
 
-```sql
-SELECT init('/path/to/custom_csv_files/')
-```
+[Custom Fake Data]: /custom_fake_data
 
-Once the fake data is loaded, you have access to 12 faking functions:
+Once the fake data is loaded, you have access to these faking functions:
 
-* `anon.fake_first_name()` returns a generic first name
-* `anon.fake_last_name()` returns a generic last name
-* `anon.fake_email()` returns a valid email address
+* `anon.fake_address()` returns a complete post address
 * `anon.fake_city()` returns an existing city
-* `anon.fake_city_in_country(c)` returns a city in country `c`
-* `anon.fake_region()` returns an existing region
-* `anon.fake_region_in_country(c)` returns a region in country `c`
 * `anon.fake_country()` returns a country
 * `anon.fake_company()` returns a generic company name
+* `anon.fake_email()` returns a valid email address
+* `anon.fake_first_name()` returns a generic first name
 * `anon.fake_iban()` returns a valid IBAN
+* `anon.fake_last_name()` returns a generic last name
+* `anon.fake_postcode()` returns a valid zipcode
 * `anon.fake_siret()` returns a valid SIRET
-* `anon.fake_siren()` returns a valid SIREN
 
 For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 
@@ -194,12 +192,11 @@ Once the fake data is loaded you have access to 10 pseudo functions:
 * `anon.pseudo_last_name('seed','salt')` returns a generic last name
 * `anon.pseudo_email('seed','salt')` returns a valid email address
 * `anon.pseudo_city('seed','salt')` returns an existing city
-* `anon.pseudo_region('seed','salt')` returns an existing region
 * `anon.pseudo_country('seed','salt')` returns a country
 * `anon.pseudo_company('seed','salt')` returns a generic company name
 * `anon.pseudo_iban('seed','salt')` returns a valid IBAN
 * `anon.pseudo_siret('seed','salt')` returns a valid SIRET
-* `anon.pseudo_siren('seed','salt')` returns a valid SIREN
+
 
 The second argument ("salt") is optional. You can call each function with
 only the seed like this `anon.pseudo_city('bob')`. The salt is here to increase

@@ -12,11 +12,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-server-dev-$PG_MAJOR_VERSION \
     libc6-dev \
     wget \
+    python3 \
+    python3-pip \
  && rm -rf /var/lib/apt/lists/*
 
-# Install anon extension
+# Import source files into the image
 WORKDIR /src
 COPY . .
+
+# Install faker
+RUN pip3 install --no-cache-dir -r python/requirements.txt
+
+# Install anon extension
 RUN make clean && make && make install
 
 # init script
