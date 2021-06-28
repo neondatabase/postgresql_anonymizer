@@ -76,9 +76,9 @@ def siret():
     return [[oid, french_faker.unique.siret()] for oid in range(lines)]
 
 
-generator_methods=[
-  'address','city','company','country','email','first_name','iban','last_name',
-  'lorem_ipsum','postcode', 'siret'
+generator_methods = [
+  'address', 'city', 'company', 'country', 'email', 'first_name', 'iban',
+  'last_name', 'lorem_ipsum', 'postcode', 'siret'
 ]
 
 

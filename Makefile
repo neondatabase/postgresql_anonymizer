@@ -109,6 +109,7 @@ lint-sql: #: check the SQL syntax
 
 .PHONY: lint-py
 lint-py: | _venv #: Check the python syntax
+	_venv/bin/pip install -r python/development.txt
 	_venv/bin/python -m flake8 python/*.py
 
 ##
