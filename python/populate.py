@@ -2,6 +2,7 @@
 
 import sys
 import csv
+import ast
 import argparse
 import random
 import faker
@@ -109,5 +110,5 @@ if args.seed:
     random.seed(args.seed)
     faker.Faker.seed(args.seed)
 
-for row in eval(args.table)():
+for row in ast.literal_eval(args.table)():
     csv.writer(sys.stdout, delimiter='\t').writerow(row)
