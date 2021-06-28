@@ -2,7 +2,6 @@
 
 import sys
 import csv
-import ast
 import argparse
 import random
 import faker
@@ -77,11 +76,18 @@ def siret():
     return [[oid, french_faker.unique.siret()] for oid in range(lines)]
 
 
+generator_methods=[
+  'address','city','company','country','email','first_name','iban','last_name',
+  'lorem_ipsum','postcode', 'siret'
+]
+
+
 # Input
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--table',
-    help='Type of data (city, email, etc.)',
+    help='Type of data ({})'.format(generator_methods),
+    choices=generator_methods,
     required=True
 )
 parser.add_argument(
@@ -110,5 +116,5 @@ if args.seed:
     random.seed(args.seed)
     faker.Faker.seed(args.seed)
 
-for row in ast.literal_eval(args.table)():
+for row in locals().get(args.table)():
     csv.writer(sys.stdout, delimiter='\t').writerow(row)
