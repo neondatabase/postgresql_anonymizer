@@ -270,63 +270,25 @@ LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
 -- "on the fly" noise
 -------------------------------------------------------------------------------
 
+-- for numerical values
 CREATE OR REPLACE FUNCTION anon.noise(
-  noise_value BIGINT,
+  noise_value ANYELEMENT,
   ratio DOUBLE PRECISION
 )
- RETURNS BIGINT
+ RETURNS ANYELEMENT
 AS $func$
-SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::BIGINT
+SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::ANYELEMENT
 $func$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
-CREATE OR REPLACE FUNCTION anon.noise(
-  noise_value INTEGER,
-  ratio DOUBLE PRECISION
-)
- RETURNS INTEGER
-AS $func$
-SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::INTEGER
-$func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
-
-CREATE OR REPLACE FUNCTION anon.noise(
-  noise_value DOUBLE PRECISION,
-  ratio DOUBLE PRECISION
-)
- RETURNS DOUBLE PRECISION
-AS $func$
-SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::FLOAT
-$func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
-
-CREATE OR REPLACE FUNCTION anon.noise(
-  noise_value DATE,
+-- for date/time values
+CREATE OR REPLACE FUNCTION anon.dnoise(
+  noise_value ANYELEMENT,
   noise_range INTERVAL
 )
- RETURNS DATE
+ RETURNS ANYELEMENT
 AS $func$
-SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::DATE
-$func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
-
-CREATE OR REPLACE FUNCTION anon.noise(
-  noise_value TIMESTAMP WITHOUT TIME ZONE,
-  noise_range INTERVAL
-)
- RETURNS TIMESTAMP WITHOUT TIME ZONE
-AS $func$
-SELECT noise_value + (2.0 * random() - 1.0) * noise_range
-$func$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
-
-CREATE OR REPLACE FUNCTION anon.noise(
-  noise_value TIMESTAMP WITH TIME ZONE,
-  noise_range INTERVAL
-)
- RETURNS TIMESTAMP WITH TIME ZONE
-AS $func$
-SELECT noise_value + (2.0 * random() - 1.0) * noise_range
+SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::ANYELEMENT
 $func$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 

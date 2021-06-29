@@ -9,12 +9,13 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.noise(100::BIGINT,0.5) > 50 ;
 SELECT anon.noise(100::INT,0.33) < 133;
 SELECT anon.noise(0.100,0.1) < 0.110;
-SELECT anon.noise('2000-01-01'::DATE,'1 year') < '2001-01-02';
-SELECT anon.noise('2000-01-01'::TIMESTAMP WITH TIME ZONE,'1 month') < '2000-02-02';
-SELECT anon.noise('2000-01-01'::TIMESTAMP WITHOUT TIME ZONE,'1 day') < '2000-02-02';
+SELECT anon.dnoise('2000-01-01'::DATE,'1 year'::INTERVAL) < '2001-01-02';
+SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITH TIME ZONE,'1 month') < '2000-02-02';
+SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITHOUT TIME ZONE,'1 day') < '2000-02-02';
+SELECT anon.dnoise('09:30:00'::TIME,'1 hour') > '08:30:00';
 
 --
--- Noise reductien Attack
+-- Noise reduction Attack
 --
 SELECT ROUND(AVG(anon.noise(42,0.33))) = 42
 FROM generate_series(1,100000);
@@ -49,7 +50,7 @@ VALUES
 
 SELECT anon.add_noise_on_numeric_column('test_noise','int_value', 0.25);
 
-SELECT anon.add_noise_on_numeric_column('test_noise','float_value', 3);
+SELECT anon.add_noise_on_numeric_column('test_noise','float_value', 0.5);
 
 SELECT anon.add_noise_on_datetime_column('test_noise','date_value', '365 days');
 
@@ -63,8 +64,8 @@ FROM test_noise;
 
 
 -- TEST 2 :  float_value is between
-SELECT min(float_value) >=  -66.6
-AND    max(float_value) <= 133.2
+SELECT min(float_value) >= 16.6
+AND    max(float_value) <= 50
 FROM test_noise;
 
 -- TEST 3 :  date_value is between 2018 and 2020
