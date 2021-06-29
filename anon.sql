@@ -224,6 +224,11 @@ BEGIN
     RETURN FALSE;
   END IF;
 
+  IF ratio < 0 OR ratio > 1 THEN
+    RAISE EXCEPTION 'ratio must be between 0 and 1';
+    RETURN FALSE;
+  END IF;
+
   EXECUTE format('
      UPDATE %I
      SET %I = %I *  (1+ (2 * random() - 1 ) * %L) ;
