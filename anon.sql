@@ -97,7 +97,7 @@ $$
   WHERE param = 'salt'
 $$
   LANGUAGE SQL
-  IMMUTABLE
+  STABLE
   STRICT
   SECURITY INVOKER
   SET search_path=''
@@ -130,7 +130,7 @@ $$
   WHERE param = 'algorithm'
 $$
   LANGUAGE SQL
-  IMMUTABLE
+  STABLE
   STRICT
   SECURITY INVOKER
   SET search_path=''
@@ -618,7 +618,7 @@ WHERE fn.lang = dict_lang
 ;
 END;
 $$
-LANGUAGE plpgsql IMMUTABLE;
+LANGUAGE plpgsql STABLE;
 
 
 -------------------------------------------------------------------------------
@@ -766,7 +766,7 @@ BEGIN
 END;
 $$
   LANGUAGE plpgsql
-  IMMUTABLE
+  STABLE
   SECURITY INVOKER
   SET search_path='';
 ;
