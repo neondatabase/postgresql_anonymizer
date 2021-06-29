@@ -683,6 +683,10 @@ EXCEPTION
     RAISE NOTICE 'Data file ''%'' has a bad CSV format. Skipping.', csv_file;
     RETURN FALSE;
 
+  WHEN invalid_text_representation THEN
+    RAISE NOTICE 'Data file ''%'' has a bad CSV format. Skipping.', csv_file;
+    RETURN FALSE;
+
 END;
 $$
   LANGUAGE plpgsql
