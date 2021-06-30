@@ -233,8 +233,11 @@ PG14-rocky8:
     - dnf config-manager --enable pgdg14-updates-testing
     - dnf -y install git make gcc redhat-rpm-config postgresql14 postgresql14-server postgresql14-contrib postgresql14-devel diffutils
     # Package python3-faker-6.1.1-1.rhel8.noarch.rpm is not signed
-    - dnf -y --nogpgcheck install python3-faker python3-dateutil
+    - dnf -y --nogpgcheck install python3 python3-faker python3-dateutil
     - export PATH="$PATH:/usr/pgsql-14/bin"
+    # python3-faker requires python3-text-unidecode in EPEL
+    - dnf -y install epel-release
+    - dnf -y install python3-text-unidecode 
     - make
     - make install
     - mkdir -p $PGDATA
