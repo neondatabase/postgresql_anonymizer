@@ -16,6 +16,7 @@ stages:
   - lint
   - build
   - test
+  - doc
   - deploy
 
 image: postgres:13
@@ -61,13 +62,81 @@ lint-py:
     - gosu postgres initdb
     - gosu postgres pg_ctl start
 
-make9.6:
+PG9.6-debian10:
   <<: *init_PG_instance
   stage: build
-  image: postgres:9.6
+  image: postgres:9.6-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-9.6 pgxnclient python3 python3-pip
+    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-9.6 pgxnclient python3-pip
+    #- pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
+    - make extension
+    - make install
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+    - make installcheck || diff results tests/expected
+  artifacts:
+    paths:
+        - anon*
+        - regression.*
+        - results/
+    expire_in: 1 day
+
+PG10-debian10:
+  <<: *init_PG_instance
+  stage: build
+  image: postgres:10-buster
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-10 pgxnclient python3-pip
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
+    - make extension
+    - make install
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+    - make installcheck || diff results tests/expected
+  when: manual
+  artifacts:
+    paths:
+        - anon*
+        - regression.*
+        - results/
+
+PG10-rocky8:
+  stage: build
+  image: rockylinux/rockylinux:8
+  script:
+    - dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - dnf -qy module disable postgresql
+    - dnf -y install git make gcc redhat-rpm-config postgresql10 postgresql10-server postgresql10-contrib postgresql10-devel python3-pip diffutils
+    - pip3 install --upgrade pip
+    - pip3 install --no-cache-dir -r python/requirements.txt
+    - export PATH="$PATH:/usr/pgsql-10/bin"
+    - make
+    - make install
+    - mkdir -p $PGDATA
+    - chown postgres $PGDATA
+    - su postgres -c 'initdb'
+    - su postgres -c 'pg_ctl start'
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+    - make installcheck || diff results tests/expected
+  artifacts:
+    paths:
+        - anon*
+        - regression.*
+        - results/
+    expire_in: 1 day
+
+PG11-debian10:
+  <<: *init_PG_instance
+  stage: build
+  image: postgres:11-buster
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient python3-pip
     - pip3 install --upgrade pip
     - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
@@ -82,21 +151,31 @@ make9.6:
         - results/
     expire_in: 1 day
 
-make10:
-  <<: *init_PG_instance
+##
+## DOES NOT WORK ?
+##
+PG11-centos7:
   stage: build
-  image: postgres:10
+  image: centos:7
   script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends make gcc gcc-6-multilib postgresql-server-dev-10 pgxnclient python3 python3-pip
+    # http://blog.cloud-mes.com/2020/05/16/fix-yum-update-postgresql12-to-v12-dot-3-require-llvm-toolset-7-clang-equals-4-dot-0-1-dependency-problem/
+    - yum -y install centos-release-scl-rh
+    - yum -y install llvm-toolset-7-clang
+    - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel postgresql11-contrib python3-pip diffutils
     - pip3 install --upgrade pip
     - pip3 install --no-cache-dir -r python/requirements.txt
-    - make extension
+    - export PATH="$PATH:/usr/pgsql-11/bin"
+    - make
     - make install
+    - mkdir -p $PGDATA
+    - chown postgres $PGDATA
+    - su postgres -c 'initdb'
+    - su postgres -c 'pg_ctl start'
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
-    - export PG_TEST_EXTRA=''
     - make installcheck || diff results tests/expected
+  when: manual
   artifacts:
     paths:
         - anon*
@@ -104,34 +183,13 @@ make10:
         - results/
     expire_in: 1 day
 
-make11:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:11
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient python3 python3-pip
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-        - anon*
-        - regression.*
-        - results/
-    expire_in: 1 day
-
-make12:
+PG12-debian10:
   <<: *init_PG_instance
   stage: build
   image: postgres:12
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient python3  python3-pip
+    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient python3-pip
     - pip3 install --upgrade pip
     - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
@@ -146,13 +204,13 @@ make12:
         - results/
     expire_in: 1 day
 
-make13:
+PG13-debian10:
   <<: *init_PG_instance
   stage: build
   image: postgres:13
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 python3  python3-pip
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 python3-pip diffutils
     - pip3 install --upgrade pip
     - pip3 install --no-cache-dir -r python/requirements.txt
     - make extension
@@ -167,22 +225,36 @@ make13:
         - results/
     expire_in: 1 day
 
-make11-centos:
+PG14-rocky8:
   stage: build
-  image: centos:7
+  image: rockylinux/rockylinux:8
   script:
-    - yum -y install https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-centos11-11-2.noarch.rpm
-    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel pgxnclient python-setuptools  python3  python3-pip
+    - dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - dnf -qy module disable postgresql
+    # PG14 is still in beta
+    - dnf -y install 'dnf-command(config-manager)'
+    - dnf config-manager --enable pgdg14-updates-testing
+    - dnf -y install git make gcc redhat-rpm-config postgresql14 postgresql14-server postgresql14-contrib postgresql14-devel python3-pip diffutils
     - pip3 install --upgrade pip
     - pip3 install --no-cache-dir -r python/requirements.txt
-    - /usr/pgsql-11/bin/pg_config
-    - export PATH="$PATH:/usr/pgsql-11/bin"
-    - cd /tmp
-    - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git anonymizer
-    - cd anonymizer
+    - export PATH="$PATH:/usr/pgsql-14/bin"
     - make
     - make install
-  when: manual
+    - mkdir -p $PGDATA
+    - chown postgres $PGDATA
+    - su postgres -c 'initdb'
+    - su postgres -c 'pg_ctl start'
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+    - make installcheck || diff results tests/expected
+  artifacts:
+    paths:
+        - anon*
+        - regression.*
+        - results/
+    expire_in: 1 day
+  allow_failure: true # Waiting for Issue #237
+
 
 blackbox:
   stage: build
@@ -202,9 +274,16 @@ blackbox:
 ## T E S T
 ##
 
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+##
+## D O C
+##
+
 demo:
   <<: *init_PG_instance
-  stage: test
+  stage: doc
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 postgresql-contrib-13  pgxnclient
@@ -219,9 +298,6 @@ demo:
     paths:
         - demo/*.out
     expire_in: 1 day
-
-include:
-  - template: Security/SAST.gitlab-ci.yml
 
 ##
 ## D E P L O Y
