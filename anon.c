@@ -188,7 +188,11 @@ get_function_schema(PG_FUNCTION_ARGS)
     query_string[0] = '\0';
     strlcat(query_string, "SELECT ", sizeof(query_string));
     strlcat(query_string, function_call, sizeof(query_string));
+    #if PG_VERSION_NUM >= 140000
+    raw_parsetree_list = raw_parser(query_string,RAW_PARSE_DEFAULT);
+    #else
     raw_parsetree_list = raw_parser(query_string);
+    #endif
 
     /* walk throught the parse tree, down to the FuncCall node (if present) */
     #if PG_VERSION_NUM >= 100000

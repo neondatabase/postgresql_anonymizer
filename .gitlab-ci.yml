@@ -150,9 +150,7 @@ PG11-debian10:
         - results/
     expire_in: 1 day
 
-##
 ## DOES NOT WORK ?
-##
 PG11-centos7:
   stage: build
   image: centos:7
@@ -233,9 +231,7 @@ PG14-rocky8:
     # PG14 is still in beta
     - dnf -y install 'dnf-command(config-manager)'
     - dnf config-manager --enable pgdg14-updates-testing
-    - dnf -y install git make gcc redhat-rpm-config postgresql14 postgresql14-server postgresql14-contrib postgresql14-devel python3-pip diffutils
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - dnf -y install git make gcc redhat-rpm-config postgresql14 postgresql14-server postgresql14-contrib postgresql14-devel python3-faker python3-dateutil diffutils
     - export PATH="$PATH:/usr/pgsql-14/bin"
     - make
     - make install
@@ -252,7 +248,6 @@ PG14-rocky8:
         - regression.*
         - results/
     expire_in: 1 day
-  allow_failure: true # Waiting for Issue #237
 
 
 blackbox:
