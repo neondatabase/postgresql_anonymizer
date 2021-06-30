@@ -19,7 +19,8 @@ anon.restrict_to_trusted_schemas
 > Default Value : off
 
 By enabling this parameter, masking rules must be defined using functions
-located in a limited list of namespaces (see the `trusted_schemas` parameter).
+located in a limited list of namespaces. By default, `pg_catalog` and `anon`
+are trusted.
 
 This improves security by preventing users from declaring their custom masking
 filters.
@@ -44,16 +45,5 @@ This parameter is kept to `off` in the current version to maintain backward
 compatibility but we highly encourage users to switch to `on` when possible.
 In the forthcoming version, we may define `on` as the default behaviour.
 
-
-anon.trusted_schemas
---------------------------------------------------------------------------------
-
-> Type: List
-> Default Value: pg_catalog, anon
-
-This is the list of schemas that contain the functions that users are allowed to
-use as masking filters.
-
-If `anon.restrict_to_trusted_schemas` is disabled, the parameter is ignored.
 
 

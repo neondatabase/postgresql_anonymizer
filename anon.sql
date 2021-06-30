@@ -19,6 +19,14 @@ REVOKE ALL ON SCHEMA anon FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA anon FROM PUBLIC;
 
 --
+-- By default, masking filter functions must be trusted
+-- and we only trust functions from `pg_catalog` and `anon` namespaces
+-- This can be bypassed by setting `anon.restrict_to_trusted_schemas` to false
+--
+SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
+SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED';
+
+--
 -- This extension will create views based on masking functions. These functions
 -- will be run as with priviledges of the owners of the views. This is prone
 -- to search_path attacks: an untrusted user may be able to overide some
@@ -1649,6 +1657,7 @@ AS $$
 DECLARE
   untrusted_schema TEXT;
 BEGIN
+  -- This will return nothing if the schema is to be trusted
   SELECT anon.get_function_schema(masking_function)
   INTO untrusted_schema
   FROM anon.pg_masking_rules
@@ -1748,11 +1757,14 @@ SELECT * FROM rules_from_seclabels
 SELECT
   DISTINCT ON (attrelid, attnum) *,
   COALESCE(masking_function, masking_value) AS masking_filter,
-  ( anon.get_function_schema(masking_function)
-    = ANY( pg_catalog.string_to_array(
-             pg_catalog.current_setting('anon.trusted_schemas'),
-             ', ')
-         )
+  (
+    -- Aggregate with count and bool_and to handle the cases
+    -- when the schema is not delared
+    SELECT COUNT(label)>0 and bool_and(label='TRUSTED')
+    FROM pg_seclabel sl,
+         anon.get_function_schema(masking_function) f("schema")
+    WHERE f.schema != ''
+    AND   sl.objoid=f.schema::REGNAMESPACE
   ) AS trusted_schema
 
 FROM rules_from_all

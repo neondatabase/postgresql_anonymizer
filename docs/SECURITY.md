@@ -39,11 +39,10 @@ To prevent this, the superusers can configure the parameters below :
 
 ```ini
 anon.restrict_to_trusted_schemas = on
-anon.trusted_schemas = pg_catalog, anon
 ```
 
-With this setting, the database owner can only masking functions that are
-located in the trusted schemas which are controlled by the superusers.
+With this setting, the database owner can only write masking rules with functions
+that are located in the trusted schemas which are controlled by the superusers.
 
 See the [Configure] section for more details.
 
