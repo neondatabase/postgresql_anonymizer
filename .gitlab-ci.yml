@@ -150,9 +150,7 @@ PG11-debian10:
         - results/
     expire_in: 1 day
 
-##
 ## DOES NOT WORK ?
-##
 PG11-centos7:
   stage: build
   image: centos:7
@@ -233,10 +231,13 @@ PG14-rocky8:
     # PG14 is still in beta
     - dnf -y install 'dnf-command(config-manager)'
     - dnf config-manager --enable pgdg14-updates-testing
-    - dnf -y install git make gcc redhat-rpm-config postgresql14 postgresql14-server postgresql14-contrib postgresql14-devel python3-pip diffutils
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - dnf -y install git make gcc redhat-rpm-config postgresql14 postgresql14-server postgresql14-contrib postgresql14-devel diffutils
+    # Package python3-faker-6.1.1-1.rhel8.noarch.rpm is not signed
+    - dnf -y --nogpgcheck install python3 python3-faker python3-dateutil
     - export PATH="$PATH:/usr/pgsql-14/bin"
+    # python3-faker requires python3-text-unidecode in EPEL
+    - dnf -y install epel-release
+    - dnf -y install python3-text-unidecode 
     - make
     - make install
     - mkdir -p $PGDATA
@@ -252,7 +253,6 @@ PG14-rocky8:
         - regression.*
         - results/
     expire_in: 1 day
-  allow_failure: true # Waiting for Issue #237
 
 
 blackbox:
@@ -296,48 +296,6 @@ demo:
         - demo/*.out
     expire_in: 1 day
 
-##
-## D E P L O Y
-##
-
-docker_latest:
-  stage: deploy
-  image: docker:19.03.8
-  services:
-    - docker:19.03.8-dind
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest . --file docker/Dockerfile
-    - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:latest
-  only:
-    - master@dalibo/postgresql_anonymizer
-
-docker_stable:
-  stage: deploy
-  image: docker:19.03.8
-  services:
-    - docker:19.03.8-dind
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:stable . --file docker/Dockerfile
-    - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:stable
-  only:
-    - stable@dalibo/postgresql_anonymizer
-
-
-pgxn:
-  stage: deploy
-  image: alpine
-  script:
-    - apk add -U make git zip
-    - make pgxn
-  artifacts:
-    paths:
-      - anon*
-      - _pgxn/
-    expire_in: 1 day
-  only:
-    - master
 
 ## Test various installation process
 
@@ -402,3 +360,47 @@ install_source_fedora:
     - psql -c "SELECT pg_reload_conf();"
     - make installcheck || diff results tests/expected
   when: manual
+
+
+##
+## D E P L O Y
+##
+
+docker_latest:
+  stage: deploy
+  image: docker:19.03.8
+  services:
+    - docker:19.03.8-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest . --file docker/Dockerfile
+    - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:latest
+  only:
+    - master@dalibo/postgresql_anonymizer
+
+docker_stable:
+  stage: deploy
+  image: docker:19.03.8
+  services:
+    - docker:19.03.8-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:stable . --file docker/Dockerfile
+    - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:stable
+  only:
+    - stable@dalibo/postgresql_anonymizer
+
+
+pgxn:
+  stage: deploy
+  image: alpine
+  script:
+    - apk add -U make git zip
+    - make pgxn
+  artifacts:
+    paths:
+      - anon*
+      - _pgxn/
+    expire_in: 1 day
+  only:
+    - master
