@@ -1,7 +1,31 @@
 CHANGELOG
 ===============================================================================
 
-20200210 : 0.8.1 - bugfix release
+20210702 : Support For PostgreSQL 14
+-------------------------------------------------------------------------------
+
+__Dependencies:__
+
+- pg_crypto
+
+__Changes:__
+
+* [core] Restrict masking filters to trusted schemas
+* [faking] Add a script to populate the fake data tables
+* [doc] Improve documentation wording
+* [core] Add support for PostgreSQL 14
+* [core] Drop support for PostgreSQL 9.5
+* [standalone] Drop support for the standalone version
+* [standalone] Drop support for Amazon RDS
+* [faking] FIX #223 : bad math in the random generator (Carlos Medeiros)
+* [faking] improve performances
+* [faking] Add deprecation warning that the `random_*` functions will be removed
+  in a future version
+* [CI] Add Static application security testing (SAST)
+
+
+
+20210210 : 0.8.1 - bugfix release
 -------------------------------------------------------------------------------
 
 __Dependencies:__
@@ -14,7 +38,7 @@ __Changes:__
 * [standalone] FIX #219 : Update sequences after fake data is loaded
 
 
-20200208 : 0.8.0 - Support for Foreign Tables and Partition
+20210208 : 0.8.0 - Support for Foreign Tables and Partition
 -------------------------------------------------------------------------------
 
 <!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/11 -->

@@ -1,3 +1,135 @@
+PostgreSQL Anonymizer 0.9: Trusted Schemas and Support for PostgreSQL 14
+================================================================================
+
+Paris, France, July 2nd, 2021
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[Static Masking] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
+Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+
+Reject masking filters if they don't belong to a trusted schema
+--------------------------------------------------------------------------------
+
+With `PostgreSQL Anonymizer`, the database owner can define custom masking
+filters that would hide sensitive information based on internal business rules,
+for instance a specific masking function that would remove names and phone numbers
+from a JSON document.
+
+For security reasons, the database administrator may want to restrict this
+feature by accepting only the masking filters located inside a **trusted** schema.
+
+To activate this security barrier, the administrator can simply enable a GUC
+option called `anon.restrict_to_trusted_schemas`:
+
+    ALTER SYSTEM SET anon.restrict_to_trusted_schemas = on;
+
+And then declare which schemas are trusted:
+
+    SECURITY LABEL FOR anon ON SCHEMA foo IS 'TRUSTED';
+
+By default, the schemas `pg_catalog` and `anon` are trusted. The `public` schema
+is not trusted (and it should never be...).
+
+IMPORTANT: Activating this parameter may break some pre-existing masking rules!
+If that's the case, the database administrator may have to move some custom
+masking functions inside a trusted schema. For now, this parameter is disabled
+by default. However it will be set to 'on' by default in future versions.
+
+Users are strongly encouraged to activate this option as soon as possible.
+
+
+Warning:  Support for Amazon RDS is now deprecated
+--------------------------------------------------------------------------------
+
+As announced in the previous version, we made the difficult choice to drop the
+so-called `standalone installation method`. In practice, the `anon_standalone.sql`
+file will not evolve anymore.
+
+As a collateral effect, this means the extension won't work on most of the
+Postgres-as-a-Service platforms, such as Amazon RDS, unless they decide to
+actively support it.
+
+If privacy and anonymity are a concern to you, we encourage you to contact the
+customer services of these platforms and ask them if they plan to add this
+extension to their catalog.
+
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 9.6 and further versions.
+
+On Red Hat, CentOS and Rocky Linux systems, you can install it directly from the
+[official PostgreSQL RPM repository]:
+
+    yum install postgresql_anonymizer12
+
+Then load the extension with:
+
+    ALTER DATABASE foo SET session_preload_libraries = 'anon';
+
+Create the extension inside the database:
+
+    CREATE EXTENSION anon CASCADE;
+
+And finally, initialize the extension
+
+    SELECT anon.init();
+
+
+For other systems, check out the [install] documentation:
+
+https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+> **WARNING:** The project is still under active development and should be
+> used carefully.
+
+[official PostgreSQL RPM repository]: https://yum.postgresql.org/
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+Thanks
+--------------------------------------------------------------------------------
+
+This release includes code, bugfixes and ideas from Carlos Medeiros, Devrim Gündüz,
+Andreas D, Thibaut Madelaine.
+
+Many thanks to them!
+
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard] and [Frédéric Yhuel]
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+[Frédéric Yhuel]: https://www.dalibo.com/equipe#frederic
+
+--------------------------------------------------------------------------------
+
+
 PostgreSQL Anonymizer 0.8: Masking foreign tables and partitions
 ================================================================================
 
@@ -34,7 +166,7 @@ split a table into multiple partitions, you need to declare the masking rules fo
 each partition.
 
 
-Warning :  Support for Amazon RDS will be deprecated in the next version
+Warning:  Support for Amazon RDS will be deprecated in the next version
 --------------------------------------------------------------------------------
 
 This extension was never really intended to work on Database As A Service platforms

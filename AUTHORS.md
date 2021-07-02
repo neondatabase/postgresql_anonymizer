@@ -16,6 +16,9 @@ along with Étienne Bersac (@bersace) and Frédéric Yhuel (@yhuelf).
 Contributors
 -------------------------------------------------------------------------------
 
+* Alice Armand (@alice_) : Proofreading
+* Carlos Medeiros (@cadubsb) : Bug Fix
+* Devrim Gündüz (@devrimgunduz) : RPM Packages
 * Rushal Verma (@rusrushal13) : documentation
 * Paul Bonaud (@paulrbr) : support for foreign tables
 * Dmitry Fomin (@fomin.list) : Bug fix
