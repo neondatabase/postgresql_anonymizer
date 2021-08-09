@@ -1,7 +1,7 @@
 BEGIN;
 
 -- STEP 0 : Basic Example
-CREATE TABLE people ( fisrtname TEXT, lastname TEXT, phone TEXT);
+CREATE TABLE people ( firstname TEXT, lastname TEXT, phone TEXT);
 INSERT INTO people VALUES ('Sarah','Conor','0609110911');
 SELECT * FROM people;
 
