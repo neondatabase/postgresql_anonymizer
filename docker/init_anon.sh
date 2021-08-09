@@ -2,14 +2,16 @@
 
 set -e
 
-echo "shared_preload_libraries = 'anon'" >> /var/lib/postgresql/data/postgresql.conf
-
 # Perform all actions as $POSTGRES_USER
 export PGUSER="$POSTGRES_USER"
 
-SQL="CREATE EXTENSION IF NOT EXISTS anon CASCADE;"
+# this is simpler than updating shared_preload_libraries in postgresql.conf
+echo "Loading extension for all further sessions"
+psql --dbname="postgres" -c "ALTER SYSTEM SET session_preload_libraries = 'anon';"
+psql --dbname="postgres" -c "SELECT pg_reload_conf();"
 
-echo "Loading extension into template1 and postgres database"
+echo "Creating extension inside template1 and postgres databases"
+SQL="CREATE EXTENSION IF NOT EXISTS anon CASCADE;"
 psql --dbname="template1" -c "$SQL"
 psql --dbname="postgres" -c "$SQL"
 
