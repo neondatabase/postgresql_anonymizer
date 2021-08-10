@@ -143,6 +143,7 @@ For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 * `anon.lorem_ipsum( paragraphs := 4 )` returns 4 paragraphs
 * `anon.lorem_ipsum( words := 20 )` returns 20 words
 * `anon.lorem_ipsum( characters := 7 )` returns 7 characters
+* `anon.lorem_ipsum( characters := LENGTH(table.column) )` returns the same amount of characters as the original string
 
 [Lorem Ipsum]: https://lipsum.com
 
