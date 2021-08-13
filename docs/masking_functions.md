@@ -63,9 +63,9 @@ dataset will remain meaningful.
   a `bigint` or a `double precision`. If the ratio is 0.33, the return value
   will be the original value randomly shifted with a ratio of +/- 33%
 
-* `anon.noise(original_value, interval)` where original_value can be a date or a
-  timestamp. If interval = '2 days', the return value will be the original value
-  randomly shifted by +/- 2 days
+* `anon.dnoise(original_value, interval)` where original_value can be a date, a
+  timestamp, or a time. If interval = '2 days', the return value will be the
+  original value randomly shifted by +/- 2 days
 
 **WARNING** : The `noise()` masking functions are vulnerable to a form of
 repeat attack, especially with [Dynamic Masking]. A masked user can guess
