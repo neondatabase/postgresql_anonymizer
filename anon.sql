@@ -281,7 +281,7 @@ SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::ANYELEMENT
 $func$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
--- for date/time values
+-- for time and timestamp values
 CREATE OR REPLACE FUNCTION anon.dnoise(
   noise_value ANYELEMENT,
   noise_range INTERVAL
@@ -289,6 +289,19 @@ CREATE OR REPLACE FUNCTION anon.dnoise(
  RETURNS ANYELEMENT
 AS $func$
 SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::ANYELEMENT
+$func$
+LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+
+-- for DATE values (the polymorphic function doesn't work with DATE and
+-- PostgreSQL versions <= 12). This very function can be removed once we stop
+-- support for these versions.
+CREATE OR REPLACE FUNCTION anon.dnoise(
+  noise_value DATE,
+  noise_range INTERVAL
+)
+ RETURNS DATE
+AS $func$
+SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::DATE
 $func$
 LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
 
