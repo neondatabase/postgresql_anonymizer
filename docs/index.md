@@ -1,4 +1,3 @@
-
 ![PostgreSQL Anonymizer](https://gitlab.com/dalibo/postgresql_anonymizer/raw/master/images/png_RVB/PostgreSQL-Anonymizer_H_couleur.png)
 
 
@@ -71,7 +70,7 @@ Step 2 : Declare a masked user
 Step 3 : Declare the masking rules
 
 ```sql
-=# SECURITY LABEL FOR anonON COLUMN people.lastname
+=# SECURITY LABEL FOR anon ON COLUMN people.lastname
 -# IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 =# SECURITY LABEL FOR anon ON COLUMN people.phone
