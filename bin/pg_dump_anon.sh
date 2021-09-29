@@ -12,6 +12,7 @@ General options:
   --help                        display this message
 
 Options controlling the output content:
+  -E, --encoding=ENCODING       dump the data in encoding ENCODING
   -n, --schema=PATTERN          dump the specified schema(s) only
   -N, --exclude-schema=PATTERN  do NOT dump the specified schema(s)
   -t, --table=PATTERN           dump the specified table(s) only
@@ -96,6 +97,10 @@ while [ $# -gt 0 ]; do
         output="${1#--file=}"
         ;;
     # options pushed only to pg_dump
+    -E|--encoding)
+        pg_dump_opts+=("$1" "$2")
+        shift
+        ;;        
     -n|--schema|-N|--exclude-schema|-t|--table|-T|--exclude-table)
         pg_dump_opts+=("$1" "$2")
         shift
