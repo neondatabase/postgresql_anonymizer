@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     make \
     postgresql-server-dev-$PG_MAJOR_VERSION \
+    postgresql-plpython3-$PG_MAJOR_VERSION \
+    pgxnclient \
     libc6-dev \
     wget \
     python3 \
@@ -20,8 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /src
 COPY . .
 
-# Install faker
-RUN pip3 install --no-cache-dir -r python/requirements.txt
+# Install PostgreSQL Faker
+RUN pip3 install --no-cache-dir -r python/requirements.txt && \
+    pgxn install postgresql_faker
 
 # Install anon extension
 RUN make clean && make && make install
