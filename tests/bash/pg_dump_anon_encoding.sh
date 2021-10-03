@@ -6,7 +6,7 @@ DB_SOURCE=test_12343RDEFSDFSFQCDSFS
 DB_TARGET=test_sFSFdvicsdfea232EDEF
 
 # Prepare
-createdb --encoding=LATIN9 $DB_SOURCE
+createdb --encoding=UTF8 $DB_SOURCE
 
 $PSQL $DB_SOURCE << EOSQL
   CREATE EXTENSION anon CASCADE;
@@ -16,14 +16,14 @@ $PSQL $DB_SOURCE << EOSQL
 EOSQL
 
 # Dump & Restore
-createdb --encoding=UTF8 $DB_TARGET
-./bin/pg_dump_anon.sh --encoding=UTF8 $DB_SOURCE | $PSQL $DB_TARGET
+./bin/pg_dump_anon.sh --encoding=LATIN9 $DB_SOURCE > /tmp/dump_anon.latin9.sql
 
-$PSQL $DB_TARGET << EOSQL
-  SELECT firstname FROM people;
-EOSQL
+file /tmp/dump_anon.latin9.sql
+
+pg_dump --encoding=LATIN9 $DB_SOURCE > /tmp/dump.latin9.sql
+
+file /tmp/dump.latin9.sql
 
 # clean up
 dropdb $DB_SOURCE
-dropdb $DB_TARGET
 
