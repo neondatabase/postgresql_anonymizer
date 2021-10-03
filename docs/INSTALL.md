@@ -161,6 +161,17 @@ make extension
 sudo make install
 ```
 
+**NOTE**: If you have multiple versions of PostgreSQL on the server, you may
+need to specify which version is your target by defining the `PG_CONFIG` env
+variable like this:
+
+```console
+make extension PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config
+sudo make install PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config
+```
+
+
+
 _Step 2:_  Load the extension.
 
 ```sql
