@@ -97,15 +97,11 @@ while [ $# -gt 0 ]; do
         output="${1#--file=}"
         ;;
     # options pushed only to pg_dump
-    -E|--encoding)
-        pg_dump_opts+=("$1" "$2")
-        shift
-        ;;        
-    -n|--schema|-N|--exclude-schema|-t|--table|-T|--exclude-table)
+    -E|-n|--schema|-N|--exclude-schema|-t|--table|-T|--exclude-table)
         pg_dump_opts+=("$1" "$2")
         shift
         ;;
-    --schema=*|--exclude-schema=*|--table=*|--exclude-table=*)
+    --encoding=*|--schema=*|--exclude-schema=*|--table=*|--exclude-table=*)
         pg_dump_opts+=("$1")
         ;;
     # special case for `--exclude-table-data`
