@@ -48,9 +48,25 @@ lint-py:
     - pip3 install flake8
     - flake8 python/*.py
 
+lint-go:
+  stage: lint
+  image: golang:alpine
+  script:
+    - go vet pg_dump_anon/pg_dump_anon.go
+
 ##
 ## B U I L D
 ##
+
+pg_dump_anon:
+  stage: build
+  image: golang:alpine
+  script:
+    - apk add --no-cache make
+    - make pg_dump_anon
+  artifacts:
+    paths:
+        - _build
 
 # We need to launch manually the instance because the entrypoint is skipped.
 .init_PG_instance: &init_PG_instance
@@ -96,7 +112,6 @@ PG10-debian10:
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
     - make installcheck || diff results tests/expected
-  when: manual
   artifacts:
     paths:
         - anon*
@@ -237,7 +252,7 @@ PG14-rocky8:
     - export PATH="$PATH:/usr/pgsql-14/bin"
     # python3-faker requires python3-text-unidecode in EPEL
     - dnf -y install epel-release
-    - dnf -y install python3-text-unidecode 
+    - dnf -y install python3-text-unidecode
     - make
     - make install
     - mkdir -p $PGDATA
