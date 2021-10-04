@@ -50,7 +50,7 @@ OBJS = anon.o
 ## Mandatory PGXS stuff
 ## see https://github.com/postgres/postgres/blob/master/src/makefiles/pgxs.mk
 ##
-PG_CONFIG = pg_config
+PG_CONFIG ?= pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
