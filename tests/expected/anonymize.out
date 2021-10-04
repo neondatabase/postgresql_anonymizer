@@ -99,8 +99,6 @@ IS 'MASKED WITH VALUE ''xxxH'' ';
 SELECT anon.anonymize_column('employee','lastname');
 NOTICE:  The faking data is not present.
 HINT:  You probably need to run 'SELECT anon.init()' 
-NOTICE:  The anon extension is not initialized.
-HINT:  Use 'SELECT anon.init()' before running this function
  anonymize_column 
 ------------------
  t
