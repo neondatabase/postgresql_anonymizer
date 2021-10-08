@@ -12,7 +12,7 @@ Other technologies
 
 * [pgsodium and postgresql-anonymizer](https://github.com/michelp/pgsodium/blob/michelp/anonymizer-example/example/PgSodiumAnonymizer.ipynb)
 
-Similar Implemntations
+Similar Implementations
 --------------------------------------------------------------------------------
 
 * [Dynamic Data Masking With MS SQL Server](https://docs.microsoft.com/en-us/sql/relational-databases/security/dynamic-data-masking)
