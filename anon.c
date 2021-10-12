@@ -20,13 +20,13 @@ PG_MODULE_MAGIC;
 /*
  * Declarations
  */
-void    _PG_init(void);
-
-PG_FUNCTION_INFO_V1(anon_seclabel_anon);
-
 #ifdef _WIN64
-PGDLLEXPORT Datum get_function_schema(PG_FUNCTION_ARGS);
-#endif // _WIN64
+PGDLLEXPORT void    _PG_init(void);
+PGDLLEXPORT Datum   get_function_schema(PG_FUNCTION_ARGS);
+#else
+void    _PG_init(void);
+Datum   get_function_schema(PG_FUNCTION_ARGS);
+#endif
 
 PG_FUNCTION_INFO_V1(get_function_schema);
 
@@ -145,17 +145,6 @@ _PG_init(void)
     NULL
   );
 }
-
-/*
- * This function is here just so that the extension is not completely empty
- * and the dynamic library is loaded when CREATE EXTENSION runs.
- */
-Datum
-anon_seclabel_anon(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_VOID();
-}
-
 
 /*
  * get_function_schema
