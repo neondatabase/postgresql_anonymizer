@@ -83,7 +83,7 @@ install: install-bin
 
 install-bin:
 	install -d $(DESTDIR)$(BINDIR)
-	install -m 0755 bin/pg_dump_anon.sh $(DESTDIR)$(BINDIR)/pg_dump_anon
+	install -m 0755 bin/pg_dump_anon.sh $(DESTDIR)$(BINDIR)
 
 install-py:
 
@@ -112,10 +112,24 @@ lint-py: | _venv #: Check the python syntax
 	_venv/bin/pip install -r python/development.txt
 	_venv/bin/python -m flake8 python/*.py
 
+
+##
+## pg_dump_anon
+##
+
+.PHONY: pg_dump_anon
+pg_dump_anon: _build/linux/amd64/pg_dump_anon/pg_dump_anon _build/windows/amd64/pg_dump_anon/pg_dump_anon.exe
+
+_build/linux/amd64/pg_dump_anon/pg_dump_anon: pg_dump_anon/pg_dump_anon.go
+	env GOOS=linux GOARCH=amd64 go build -o $@ $^
+
+_build/windows/amd64/pg_dump_anon/pg_dump_anon.exe: pg_dump_anon/pg_dump_anon.go
+	env GOOS=windows GOARCH=amd64 go build -o $@ $^
+
+
 ##
 ## B U I L D
 ##
-
 
 .PHONY: extension
 extension: | anon #: build the extension

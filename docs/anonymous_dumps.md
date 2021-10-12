@@ -3,25 +3,25 @@ Anonymous Dumps
 
 Due to the core design of this extension, you cannot use `pg_dump` with a masked
 user. If you want to export the entire database with the anonymized data, you
-must use the `pg_dump_anon` command.
+must use the `pg_dump_anon.sh` command.
 
 
-pg_dump_anon
+pg_dump_anon.sh
 ------------------------------------------------------------------------------
 
-The `pg_dump_anon` wrapper is designed to export the masked data. You can use
+The `pg_dump_anon.sh` wrapper is designed to export the masked data. You can use
 it like the regular `pg_dump` command.
 
 ```bash
-pg_dump_anon -h localhost -U bob mydb > anonymous_dump.sql
+pg_dump_anon.sh -h localhost -U bob mydb > anonymous_dump.sql
 ```
 
 It uses the same connections parameters that `pg_dump` :
 
 ```bash
-$ pg_dump_anon --help
+$ pg_dump_anon.sh --help
 
-Usage: pg_dump_anon [OPTION]... [DBNAME]
+Usage: pg_dump_anon.sh [OPTION]... [DBNAME]
 
 General options:
   -f, --file=FILENAME           output file
@@ -60,7 +60,7 @@ variable value is used.
 TIP: Avoid multiple password prompts
 ------------------------------------------------------------------------------
 
-If you don't provide the connection password to `pg_dump_anon` using the
+If you don't provide the connection password to `pg_dump_anon.sh` using the
 `--password` option, you may have to type the password multiple times.To
 avoid this, you can either [define the $PGPASS variable] or place your
 password in a [.pgpass] file.
@@ -79,4 +79,4 @@ The function is kept as is for backward compatibility. It will probably be
 removed from one of the forthcoming versions.
 
 Again: do not use this function ! To dump the masked data, use the
-`pg_dump_anon` command line tool as described above.
+`pg_dump_anon.sh` command line tool as described above.

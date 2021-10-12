@@ -101,7 +101,7 @@ CYCLE;
 --
 
 -- A1. Dump into a file
-\! pg_dump_anon --dbname=contrib_regression > tests/tmp/_pg_dump_anon_A1.sql
+\! pg_dump_anon.sh --dbname=contrib_regression > tests/tmp/_pg_dump_anon_A1.sql
 
 -- A2. Clean up the database
 DROP SCHEMA test_pg_dump_anon CASCADE;
@@ -114,7 +114,7 @@ DROP SCHEMA "FoO" CASCADE;
 
 -- A4. Dump again into a second file
 -- /!\ This time the masking rules are not applied !
-\! pg_dump_anon -d contrib_regression > tests/tmp/_pg_dump_anon_A4.sql
+\! pg_dump_anon.sh -d contrib_regression > tests/tmp/_pg_dump_anon_A4.sql
 
 
 -- A5. Check that both dump files are identical
@@ -123,7 +123,7 @@ DROP SCHEMA "FoO" CASCADE;
 
 
 -- A6. Dump a third file, this time with the `--file` option
-\! pg_dump_anon -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
+\! pg_dump_anon.sh -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
 
 -- A7. Check that dump files are identical
 \! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
@@ -133,36 +133,36 @@ DROP SCHEMA "FoO" CASCADE;
 -- All this tests should not return anything
 --
 
-\! pg_dump_anon contrib_regression --exclude-schema='"FoO"' -N z | grep 'FoO'
+\! pg_dump_anon.sh contrib_regression --exclude-schema='"FoO"' -N z | grep 'FoO'
 
-\! pg_dump_anon contrib_regression --schema=pub* -n test_pg_dump_anon |grep 'FoO'
+\! pg_dump_anon.sh contrib_regression --schema=pub* -n test_pg_dump_anon |grep 'FoO'
 
 --
 -- C. Exclude some tables
 -- All these command lines should produce the same output
 --
-\! pg_dump_anon contrib_regression --table=test_pg_dump_anon.* | grep "vendor"
+\! pg_dump_anon.sh contrib_regression --table=test_pg_dump_anon.* | grep "vendor"
 
-\! pg_dump_anon contrib_regression -t test_pg_dump_anon.no_masks | grep 'vendor'
+\! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon.no_masks | grep 'vendor'
 
-\! pg_dump_anon contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
+\! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
 
-\! pg_dump_anon contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
+\! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
 
-\! pg_dump_anon contrib_regression --exclude-table='"FoO".*' | grep 'vendor'
+\! pg_dump_anon.sh contrib_regression --exclude-table='"FoO".*' | grep 'vendor'
 
-\! pg_dump_anon contrib_regression -T '"FoO".v?nd*r' | grep 'vendor'
+\! pg_dump_anon.sh contrib_regression -T '"FoO".v?nd*r' | grep 'vendor'
 
 --
 -- D. Exclude data
 --
-\! pg_dump_anon contrib_regression --exclude-data=v?nd?r | grep 'Hamm'
+\! pg_dump_anon.sh contrib_regression --exclude-data=v?nd?r | grep 'Hamm'
 
 --
 -- E. Remove Anon extension
 -- All these command lines should produce the same output
 --
-\! pg_dump_anon contrib_regression | grep 'ddlx'
+\! pg_dump_anon.sh contrib_regression | grep 'ddlx'
 
 
 --
