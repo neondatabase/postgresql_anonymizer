@@ -10,7 +10,7 @@ variables:
     POSTGRES_DB: nice_marmot
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
-    SAST_EXCLUDED_PATHS: '_venv'
+    SAST_EXCLUDED_PATHS: '_venv, docs/howto/_venv'
 
 stages:
   - lint
@@ -305,6 +305,22 @@ blackbox:
     - sed -i 's/^--.*$//' results/blackbox.out
     - diff tests/expected/blackbox.out results/blackbox.out
 
+how-to:
+  image:
+    name: dalibo/pandocker:latest
+    entrypoint: [""]
+  stage: build
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends python3-venv
+    - cd docs/how-to
+    - make how-to
+#  when: manual
+  artifacts:
+    paths:
+      - docs/how-to
+    expire_in: 1 day
+
 ##
 ## T E S T
 ##
@@ -440,3 +456,20 @@ pgxn:
     expire_in: 1 day
   only:
     - master
+
+pages:
+  stage: deploy
+  image: alpine
+  script:
+    - apk add tree
+    - mkdir public
+    - cp docs/how-to/_build/* public
+    - tree ./public -H '.' -T "$title" -I "" --noreport --charset utf-8 > ./public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    refs:
+      - master
+    variables:
+      - $CI_PUBLISH_PAGES  # git push -o ci.variable="CI_PUBLISH_PAGES=1"
