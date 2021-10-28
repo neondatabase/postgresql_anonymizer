@@ -32,3 +32,7 @@ anon_standalone_PG*
 # jupyter
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
+docs/how-to/_venv
+docs/how-to/_build
+docs/how-to/_tmp
+docs/how-to/*.tsv
