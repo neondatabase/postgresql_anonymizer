@@ -1434,6 +1434,7 @@ RETURNS INT AS $$
   -- which give a deterministic oid inside the range
   --
   -- This works because MD5 signatures values have a uniform distribution
+  -- see https://crypto.stackexchange.com/questions/14967/distribution-for-a-subset-of-md5
   --
   SELECT CAST(
     -- we use only the 6 first characters of the md5 signature
