@@ -109,17 +109,17 @@ SECURITY LABEL FOR anon ON ROLE bob IS NULL
 Limitations
 ------------------------------------------------------------------------------
 
-### Listing the tables 
+### Listing the tables
 
-Due to how the dynamic masking engine works, when a masked role will try to 
-display the tables in psql with the `\dt` comment, then psql will not show any 
+Due to how the dynamic masking engine works, when a masked role will try to
+display the tables in psql with the `\dt` comment, then psql will not show any
 tables.
 
 This is because the `search_path` of the masked role is rigged.
 
-You can try adding explicit schema you want to search, for instance: 
+You can try adding explicit schema you want to search, for instance:
 
-```
+```sql
 \dt *.*
 \dt public.*
 ```

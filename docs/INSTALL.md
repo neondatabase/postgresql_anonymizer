@@ -67,10 +67,10 @@ sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
 _Step 1:_ Deploy
 
 ```console
-sudo yum install postgresql_anonymizer12
+sudo yum install postgresql_anonymizer_14
 ```
 
-(Replace `12` with the major version of your PostgreSQL instance.)
+(Replace `14` with the major version of your PostgreSQL instance.)
 
 _Step 2:_  Load the extension.
 
