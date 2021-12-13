@@ -30,6 +30,43 @@ SECURITY LABEL FOR anon ON COLUMN player.id
   IS 'MASKED WITH VALUE NULL';
 ```
 
+Escaping String literals
+------------------------------------------------------------------------------
+
+As you may have notice the masking rule definitions are placed between single
+quotes. Therefore if you need to use a string inside a masking rule, you need
+to use [C-Style escapes] like this:
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN player.name
+  IS E'MASKED WITH VALUE \'CONFIDENTIAL\'';
+```
+
+Or use [dollar quoting] which is easier to read
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN player.name
+  IS 'MASKED WITH VALUE $$CONFIDENTIAL$$';
+```
+
+[C-Style escapes]: https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-STRINGS-ESCAPE
+[dollar quoting]: https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
+
+
+Using Expressions
+------------------------------------------------------------------------------
+
+You can use more advanced expressions with the `MASKED WITH VALUE` syntax:
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN player.name
+  IS 'MASKED WITH VALUE CASE WHEN name IS NULL
+                             THEN $$John$$
+                             ELSE anon.random_string(LENGTH(name))
+                             END';
+```
+
+
 Removing a masking rule
 ------------------------------------------------------------------------------
 
