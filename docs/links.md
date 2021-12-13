@@ -11,10 +11,13 @@ Other technologies
 --------------------------------------------------------------------------------
 
 * [pgsodium and postgresql-anonymizer](https://github.com/michelp/pgsodium/blob/michelp/anonymizer-example/example/PgSodiumAnonymizer.ipynb)
+  Pseudononymous Access To Encrypted Table
 
-* [pganonymize](https://github.com/rheinwerk-verlag/pganonymize) A commandline tool for anonymizing PostgreSQL databases
+* [pganonymize](https://github.com/rheinwerk-verlag/pganonymize)
+  A commandline tool for anonymizing PostgreSQL databases
 
-* [pg-anonymizer](https://github.com/rap2hpoutre/pg-anonymizer) Dump anonymized PostgreSQL database with a NodeJS CLI
+* [pg-anonymizer](https://github.com/rap2hpoutre/pg-anonymizer)
+  Dump anonymized PostgreSQL database with a NodeJS CLI
 
 
 Similar Implementations
