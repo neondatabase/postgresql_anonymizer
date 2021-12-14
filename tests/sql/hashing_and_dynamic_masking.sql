@@ -82,7 +82,6 @@ DROP TABLE phonecall CASCADE;
 DROP TABLE phone CASCADE;
 
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION tsm_system_rows;
 DROP EXTENSION pgcrypto;
 
 REASSIGN OWNED BY jimmy_mcnulty TO postgres;
