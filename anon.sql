@@ -142,7 +142,7 @@ REVOKE EXECUTE ON FUNCTION anon.get_algorithm()  FROM PUBLIC;
 CREATE OR REPLACE FUNCTION anon.version()
 RETURNS TEXT AS
 $func$
-  SELECT '0.8'::text AS version
+  SELECT '0.10.0'::text AS version
 $func$
   LANGUAGE SQL
   SECURITY INVOKER
