@@ -95,9 +95,34 @@ so that the masking view will be dropped too:
 DROP TABLE people CASCADE;
 ```
 
+How to unmask a role
+------------------------------------------------------------------------------
+
+Simply remove the security label like this:
+
+```sql
+SECURITY LABEL FOR anon ON ROLE bob IS NULL
+```
+
+
 
 Limitations
 ------------------------------------------------------------------------------
+
+### Listing the tables
+
+Due to how the dynamic masking engine works, when a masked role will try to
+display the tables in psql with the `\dt` comment, then psql will not show any
+tables.
+
+This is because the `search_path` of the masked role is rigged.
+
+You can try adding explicit schema you want to search, for instance:
+
+```sql
+\dt *.*
+\dt public.*
+```
 
 ### Only one schema
 
