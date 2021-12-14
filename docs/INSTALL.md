@@ -154,7 +154,16 @@ _Step 0:_ First you need to install the postgresql development libraries.
 On most distributions, this is available through a package called
 `postgresql-devel` or `postgresql-server-dev`.
 
-_Step 1:_  Build the project like any other PostgreSQL extension:
+_Step 1:_ Download the source from the
+[official repository on Gitlab](https://gitlab.com/dalibo/postgresql_anonymizer/),
+either the archive of the [latest release](https://gitlab.com/dalibo/postgresql_anonymizer/-/releases),
+or the latest version from the `master` branch:
+
+```console
+git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
+```
+
+_Step 2:_  Build the project like any other PostgreSQL extension:
 
 ```console
 make extension
@@ -170,23 +179,22 @@ make extension PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config
 sudo make install PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config
 ```
 
-
-
-_Step 2:_  Load the extension.
+_Step 3:_  Load the extension:
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-(If you already loading extensions that way, just add `anon` the current list)
+(If some extensions are already loaded that way,
+just add a comma and `anon` to the current list.)
 
-_Step 3:_  Create the extension
+_Step 4:_  Create the extension:
 
 ```sql
 CREATE EXTENSION anon CASCADE;
 ```
 
-_Step 4:_  Initialize the extension
+_Step 5:_  Initialize the extension:
 
 ```sql
 SELECT anon.init();
