@@ -1,7 +1,7 @@
 How To Contribute
 ===============================================================================
 
-This project is an **experiment**. Any comment or idea is more than welcome.
+This project is an **open project**. Any comment or idea is more than welcome.
 
 Here's a few tips to get started if you want to get involved
 
