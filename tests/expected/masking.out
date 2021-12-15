@@ -142,6 +142,13 @@ ERROR:  permission denied
  t
 (1 row)
 
+-- Bug #254 - A masked role can use pseudonymizing functions
+\! psql contrib_regression -U skynet -c "SELECT anon.pseudo_company('seed','salt');"
+     pseudo_company      
+-------------------------
+ Powers, Lewis and Garza
+(1 row)
+
 --  CLEAN
 --DROP SCHEMA mask CASCADE;
 DROP TABLE test_type_casts CASCADE;
