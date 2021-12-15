@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 --
 -- Testing noise() functions
 --
-
+SELECT setseed(0.42);
 SELECT anon.noise(100::BIGINT,0.5) > 50 ;
 SELECT anon.noise(100::INT,0.33) < 133;
 SELECT anon.noise(0.100,0.1) < 0.110;
