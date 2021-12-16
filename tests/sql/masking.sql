@@ -115,6 +115,10 @@ SELECT anon.mask_update();
 -- A masked role cannot access the stats of a masked column
 \! psql contrib_regression -U skynet -c "SELECT count(histogram_bounds)=0 FROM pg_stats WHERE tablename='people' AND attname='name';"
 
+-- Bug #254 - A masked role can use pseudonymizing functions
+\! psql contrib_regression -U skynet -c "SELECT anon.pseudo_company('seed','salt');"
+
+
 --  CLEAN
 
 --DROP SCHEMA mask CASCADE;

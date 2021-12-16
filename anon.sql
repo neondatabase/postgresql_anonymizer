@@ -1501,7 +1501,11 @@ RETURNS TEXT AS $$
     (SELECT MAX(oid) FROM anon.email)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY DEFINER
+  SET search_path=''
+;
 
 
 CREATE OR REPLACE FUNCTION anon.pseudo_city(
@@ -1517,7 +1521,11 @@ RETURNS TEXT AS $$
     (SELECT MAX(oid) FROM anon.city)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY DEFINER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_country(
   seed TEXT,
@@ -1532,7 +1540,11 @@ RETURNS TEXT AS $$
     (SELECT MAX(oid) FROM anon.city)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY DEFINER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_company(
   seed TEXT,
@@ -1547,7 +1559,11 @@ RETURNS TEXT AS $$
     (SELECT MAX(oid) FROM anon.company)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY DEFINER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_iban(
   seed TEXT,
@@ -1562,7 +1578,11 @@ RETURNS TEXT AS $$
     (SELECT MAX(oid) FROM anon.iban)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY DEFINER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_siret(
   seed TEXT,
@@ -1577,7 +1597,11 @@ RETURNS TEXT AS $$
     (SELECT MAX(oid) FROM anon.siret)
   );
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  SECURITY DEFINER
+  SET search_path=''
+;
 
 
 
