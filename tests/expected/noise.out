@@ -4,6 +4,12 @@ NOTICE:  installing required extension "pgcrypto"
 --
 -- Testing noise() functions
 --
+SELECT setseed(0.42);
+ setseed 
+---------
+ 
+(1 row)
+
 SELECT anon.noise(100::BIGINT,0.5) > 50 ;
  ?column? 
 ----------
