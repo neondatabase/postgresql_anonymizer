@@ -1,5 +1,4 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "tsm_system_rows"
 SELECT anon.load();
  load 
 ------

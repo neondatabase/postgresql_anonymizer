@@ -1,6 +1,5 @@
 -- this test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "pgcrypto"
 -- INIT
 SELECT anon.init();
@@ -166,5 +165,4 @@ DETAIL:  drop cascades to table "FoO".customer
 drop cascades to table "FoO".vendeur
 drop cascades to table "FoO".vendor
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION tsm_system_rows;
 DROP EXTENSION pgcrypto;

@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "pgcrypto"
 SELECT anon.start_dynamic_masking();
  start_dynamic_masking 

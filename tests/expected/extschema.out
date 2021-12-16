@@ -19,7 +19,6 @@ LANGUAGE SQL IMMUTABLE;
 SAVEPOINT before_error;
 -- This should fail
 CREATE EXTENSION IF NOT EXISTS anon CASCADE SCHEMA common;
-NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "pgcrypto"
 ERROR:  function "digest" already exists with same argument types
 ROLLBACK TO SAVEPOINT before_error;
@@ -28,7 +27,6 @@ ROLLBACK TO SAVEPOINT before_error;
 --
 CREATE SCHEMA application;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE SCHEMA application;
-NOTICE:  installing required extension "tsm_system_rows"
 NOTICE:  installing required extension "pgcrypto"
 SELECT anon.is_initialized() IS FALSE;
  ?column? 

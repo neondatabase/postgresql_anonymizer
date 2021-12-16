@@ -175,5 +175,4 @@ SELECT pg_catalog.nextval('test_pg_dump_anon.three');
 DROP SCHEMA test_pg_dump_anon CASCADE;
 DROP SCHEMA "FoO" CASCADE;
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION tsm_system_rows;
 DROP EXTENSION pgcrypto;
