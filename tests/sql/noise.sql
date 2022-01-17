@@ -14,6 +14,18 @@ SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITH TIME ZONE,'1 month') < '2000-02-
 SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITHOUT TIME ZONE,'1 day') < '2000-02-02';
 SELECT anon.dnoise('09:30:00'::TIME,'1 hour') > '08:30:00';
 
+-- Noise functions should not fail on min/max values
+SELECT MAX(anon.noise(2147483647,0.27)) < 2147483647
+FROM generate_series(1,10);
+
+SELECT MIN(anon.noise(-2147483648,0.27)) > -2147483648
+FROM generate_series(1,10);
+
+SELECT MIN(anon.dnoise('4713-01-01 BC'::DATE,'1 year'::INTERVAL)) > '4713-01-01 BC'
+FROM generate_series(1,10);
+
+SELECT MAX(anon.dnoise('294276-01-01'::DATE,'1 year'::INTERVAL)) > '294276-01-01'
+FROM generate_series(1,10);
 --
 -- Noise reduction Attack
 --

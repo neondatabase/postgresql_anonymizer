@@ -52,6 +52,35 @@ SELECT anon.dnoise('09:30:00'::TIME,'1 hour') > '08:30:00';
  t
 (1 row)
 
+-- Noise functions should not fail on min/max values
+SELECT MAX(anon.noise(2147483647,0.27)) < 2147483647
+FROM generate_series(1,10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT MIN(anon.noise(-2147483648,0.27)) > -2147483648
+FROM generate_series(1,10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT MIN(anon.dnoise('4713-01-01 BC'::DATE,'1 year'::INTERVAL)) > '4713-01-01 BC'
+FROM generate_series(1,10);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT MAX(anon.dnoise('294276-01-01'::DATE,'1 year'::INTERVAL)) > '294276-01-01'
+FROM generate_series(1,10);
+ ?column? 
+----------
+ t
+(1 row)
+
 --
 -- Noise reduction Attack
 --
