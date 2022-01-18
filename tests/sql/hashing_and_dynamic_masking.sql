@@ -70,6 +70,8 @@ SELECT anon.mask_update();
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM anon.secret' 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
 
 
+-- Bug #259 - anon should not interact with other extensions
+CREATE EXTENSION pg_stat_statements;
 
 
 -- STOP
@@ -88,3 +90,7 @@ REASSIGN OWNED BY jimmy_mcnulty TO postgres;
 DROP OWNED BY jimmy_mcnulty CASCADE;
 DROP ROLE jimmy_mcnulty;
 
+-- Bug #259
+SELECT TRUE AS pg_stat_statements_is_still_here
+FROM pg_extension
+WHERE extname = 'pg_stat_statements';
