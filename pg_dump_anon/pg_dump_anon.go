@@ -31,13 +31,13 @@ var psql_opts []string = []string {
 
 // Return the masking schema
 func get_maskschema() string {
-  return string(psql("SELECT anon.maskschema();"))
+  return psql_to_string("SELECT anon.maskschema();")
 }
 
 // Return the masking filters based on the table name
 func get_mask_filters(tablename string) string {
   query := fmt.Sprintf("SELECT anon.mask_filters('%s'::REGCLASS);", tablename)
-  return string(psql(query))
+  return psql_to_string(query)
 }
 
 // There's no clean way to exclude an extension from a dump
@@ -57,7 +57,7 @@ func filter_out_extension(ddl_lines string, extension string) string {
   return ddl_lines
 }
 
-func psql(query string) []byte {
+func psql_to_string(query string) string {
   args := []string { fmt.Sprintf("--command=%s", query) }
 //  if runtime.GOOS == "windows" {
 //    args[0] = fmt.Sprintf("--command=\"%s\"",query)
@@ -69,7 +69,15 @@ func psql(query string) []byte {
     log.Println(cmd.Args)
     log.Fatal(string(err.(*exec.ExitError).Stderr))
   }
-  return output
+  return string(output)
+}
+
+func psql(query string, output *os.File) {
+  args := []string { fmt.Sprintf("--command=%s", query) }
+  args=append(args,psql_opts...)
+  cmd := exec.Command("psql",args...)  // #nosec G204
+  cmd.Stdout = output
+  _ = cmd.Run()
 }
 
 func pg_dump(options []string) []byte {
@@ -142,7 +150,7 @@ func main() {
 // specific treatment ( especially the `--file` option)
 //
 
-//output=/dev/stdout      # by default, use standard ouput
+  output := os.Stdout       // by default, use standard ouput
 
 
   exclude_table_data := ""  // dump the ddl, but ignore the data
@@ -229,7 +237,7 @@ func main() {
 
 
   // Stop if the extension is not installed in the database
-  version := string(psql("SELECT anon.version()"))
+  version := psql_to_string("SELECT anon.version()")
   if version == "" {
     log.Fatal("Anon extension is not installed in this database.")
   }
@@ -292,7 +300,7 @@ func main() {
       "\\copy (SELECT %s FROM %s) TO STDOUT WITH CSV",
       get_mask_filters(tablename),
       tablename)
-    fmt.Print(string(psql(copy_query))) // no newline required
+    psql(copy_query, output) // no newline required
     // close the stdin stream
     fmt.Println("\\.")
     fmt.Println("")
