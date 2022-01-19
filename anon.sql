@@ -279,10 +279,17 @@ CREATE OR REPLACE FUNCTION anon.noise(
 AS $func$
 DECLARE
   res ALIAS FOR $0;
+  ran float;
 BEGIN
-  SELECT (noise_value * (1.0-(2.0 * random() - 1.0 ) * ratio))::ANYELEMENT
+  ran = (2.0 * random() - 1.0) * ratio;
+  SELECT (noise_value * (1.0 - ran))::ANYELEMENT
     INTO res;
   RETURN res;
+EXCEPTION
+  WHEN numeric_value_out_of_range THEN
+    SELECT (noise_value * (1.0 + ran))::ANYELEMENT
+      INTO res;
+    RETURN res;
 END;
 $func$
 LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
@@ -296,10 +303,17 @@ CREATE OR REPLACE FUNCTION anon.dnoise(
 AS $func$
 DECLARE
   res ALIAS FOR $0;
+  ran INTERVAL;
 BEGIN
-  SELECT (noise_value + (2.0 * random() - 1.0 ) * noise_range)::ANYELEMENT
+  ran = (2.0 * random() - 1.0) * noise_range;
+  SELECT (noise_value + ran)::ANYELEMENT
     INTO res;
   RETURN res;
+EXCEPTION
+  WHEN datetime_field_overflow THEN
+    SELECT (noise_value - ran)::ANYELEMENT
+      INTO res;
+    RETURN res;
 END;
 $func$
 LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
