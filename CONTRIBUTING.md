@@ -154,6 +154,17 @@ make installcheck
 psql
 ```
 
+The entire test suite take a few minutes to run. When developping a feature,
+usually you only want to check one test in particular. You can limit the scope
+of the test run with the `REGRESS` variable.
+
+For instance, if you want to run only the `noise.sql` test:
+
+```bash
+make installcheck REGRESS=noise
+```
+
+
 
 Security
 --------------------------------------------------------------------------------

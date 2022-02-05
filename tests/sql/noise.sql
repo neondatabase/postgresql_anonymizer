@@ -6,26 +6,27 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- Testing noise() functions
 --
 SELECT setseed(0.42);
-SELECT anon.noise(100::BIGINT,0.5) > 50 ;
-SELECT anon.noise(100::INT,0.33) < 133;
-SELECT anon.noise(0.100,0.1) < 0.110;
-SELECT anon.dnoise('2000-01-01'::DATE,'1 year'::INTERVAL) < '2001-01-02';
-SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITH TIME ZONE,'1 month') < '2000-02-02';
-SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITHOUT TIME ZONE,'1 day') < '2000-02-02';
-SELECT anon.dnoise('09:30:00'::TIME,'1 hour') > '08:30:00';
+SELECT anon.noise(100::BIGINT,0.5) >= 50 ;
+SELECT anon.noise(100::INT,0.33) <= 133;
+SELECT anon.noise(0.100,0.1) <= 0.110;
+SELECT anon.dnoise('2000-01-01'::DATE,'1 year'::INTERVAL) <= '2001-01-02';
+SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITH TIME ZONE,'1 month') <= '2000-02-02';
+SELECT anon.dnoise('2000-01-01'::TIMESTAMP WITHOUT TIME ZONE,'1 day') <= '2000-02-02';
+SELECT anon.dnoise('09:30:00'::TIME,'1 hour') >= '08:30:00';
 
 -- Noise functions should not fail on min/max values
-SELECT MAX(anon.noise(2147483647,0.27)) < 2147483647
+SELECT MAX(anon.noise(2147483647,0.27)) <= 2147483647
 FROM generate_series(1,10);
 
-SELECT MIN(anon.noise(-2147483648,0.27)) > -2147483648
+SELECT MIN(anon.noise(-2147483648,0.27)) >= -2147483648
 FROM generate_series(1,10);
 
-SELECT MIN(anon.dnoise('4713-01-01 BC'::DATE,'1 year'::INTERVAL)) > '4713-01-01 BC'
+SELECT MIN(anon.dnoise('4714-11-24 BC'::DATE,'1 year'::INTERVAL)) >= '4714-11-24 BC'
 FROM generate_series(1,10);
 
-SELECT MAX(anon.dnoise('294276-01-01'::DATE,'1 year'::INTERVAL)) > '294276-01-01'
+SELECT MAX(anon.dnoise('294276-01-01'::DATE,'1 year'::INTERVAL)) >= '294276-01-01'
 FROM generate_series(1,10);
+
 --
 -- Noise reduction Attack
 --
