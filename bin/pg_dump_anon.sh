@@ -208,11 +208,18 @@ done
 ## 3. Dump the sequences data
 ################################################################################
 
-# The trick here is to use `--exclude-table-data=*` instead of `--schema-only`
+IFS=" " read -r -a seq_table_opts <<< "$( \
+  psql "${psql_opts[@]}" \
+    -c "SELECT sequence_name \
+        FROM information_schema.sequences \
+        WHERE sequence_schema != 'anon';" \
+  | sed 's/^/--table /' \
+  | tr '\n' ' '
+)"
+
 seq_data_dump_opt=(
-  "${pg_dump_opts[@]}"      # options from the commande line
-  "--exclude-schema=anon"  # do not dump the anon sequences
-  "--exclude-table-data=*" # get the sequences data without the tables data
+  "${seq_table_opts[@]}"   # options to select sequence tables only
+  "${pg_dump_opts[@]}"     # options from the commande line
 )
 
 pg_dump "${seq_data_dump_opt[@]}"   \
