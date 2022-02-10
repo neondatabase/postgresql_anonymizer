@@ -340,12 +340,17 @@ if you which to fund this effort.
 Install in the cloud
 ------------------------------------------------------------------------------
 
-> **WARNING** In previous versons, this extension could be installed on various
+> **WARNING** In previous versions, this extension could be installed on various
 > Database As A Service platforms (such as Amazon RDS). Starting with version 0.9,
 > this is not possible anymore. We do not support the former `standalone` method.
 > If privacy and anonymity are a concern to you, we encourage you to contact the
 > customer services of these platforms and ask them if they plan to add this
 > extension to their catalog.
+
+At the time we are writing this (February 2022), a few cloud operators embed
+PostgreSQL Anonymizer in their offering. Here's a non-exhaustive list:
+
+* [Postgres.ai](https://postgres.ai/docs/database-lab/masking)
 
 
 Addendum: Alternative ways to load the extension

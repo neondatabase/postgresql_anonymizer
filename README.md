@@ -7,11 +7,11 @@ Anonymization & Data Masking for PostgreSQL
 [personally identifiable information] (PII) or commercially sensitive data from
 a PostgreSQL database.
 
-The project is aiming toward a **declarative approach** of anonymization. This
-means we're trying to extend PostgreSQL Data Definition Language (DDL) in
-order to specify the anonymization strategy inside the table definition itself.
+The project relies on a **declarative approach** of anonymization. This means
+we're using the PostgreSQL Data Definition Language (DDL) in order to specify
+the anonymization strategy inside the table definition itself.
 
-Once the maskings rules are defined, you can access the anonymized data in 3
+Once the masking rules are defined, you can access the anonymized data in 3
 different ways :
 
 * [Anonymous Dumps] : Simply export the masked data into an SQL file
@@ -99,7 +99,7 @@ You can permanently remove the PII from a database with
  id  |     full_name     |   birth    |     employer     | zipcode | fk_shop
 -----+-------------------+------------+------------------+---------+---------
  911 | michel Duffus     | 1970-03-24 | Body Expressions | 63824   | 12
- 112 | andromache Tulip  | 1921-03-24 | Dot Darcy        | 38199   | 423
+ 112 | andromach Tulip  | 1921-03-24 | Dot Darcy        | 38199   | 423
 
 ```
 
@@ -178,7 +178,7 @@ For more details, please read the [Anonymous Dumps] section.
 Warning
 ------------------------------------------------------------------------------
 
-*This is project is at an early stage of development and should be used carefully.*
+*This project is still in beta phase and should be used carefully.*
 
 We need your feedback and ideas! Let us know what you think of this tool, how it
 fits your needs and what features are missing.
@@ -230,9 +230,12 @@ Limitations
 * The dynamic masking system only works with one schema (by default `public`).
   When you start the masking engine with `start_dynamic_masking()`, you can
   specify the schema that will be masked with `SELECT start_dynamic_masking('sales');`.
-  **However** static masking with `anon.anonymize()`and anonymous
-  export with `anon.dump()` will work fine with multiple schemas.
+  **However** static masking with `anon.anonymize()`and [Anonymous Dumps] will
+  work fine with multiple schemas.
 
+* The [Anonymous Dumps] may not be consistent. Use [Static Masking] combined
+  with `pg_dump` if you can't fence off your database from `DML` or `DDL`
+  commands during the export.
 
 
 Performance

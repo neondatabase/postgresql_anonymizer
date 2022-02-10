@@ -57,6 +57,23 @@ variable value is used.
 [.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 
+Consistent Backups
+------------------------------------------------------------------------------
+
+> IMPORTANT: due to its internal design, `pg_dump_anon.sh` MAY NOT produce a
+> consistent backup.
+
+Especially if you are running `DML` or `DDL` commands during the anonymous export,
+you will end up with a broken dump file.
+
+If backup consistency is required, you can simply use [static masking] and then
+export the data with `pg_dump`. Here's a practical example of this approach:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/266#note_817261637
+
+[static masking]: static_masking/
+
+
 TIP: Avoid multiple password prompts
 ------------------------------------------------------------------------------
 
