@@ -134,9 +134,13 @@ LINE 1: ...ject_via_init (i int);--".a AS SELECT i,d,CAST(foo; CREATE T...
                                                              ^
 QUERY:  CREATE OR REPLACE VIEW "foo; CREATE TABLE inject_via_init (i int);--".a AS SELECT i,d,CAST(foo; CREATE TABLE inject_via_rule (i int);-- AS integer) AS x FROM public.a
 CONTEXT:  PL/pgSQL function anon.mask_create_view(oid) line 3 at EXECUTE
-SQL function "mask_update" statement 2
+SQL statement "SELECT anon.mask_create_view(oid)
+  FROM pg_catalog.pg_class
+  WHERE relnamespace=anon.sourceschema()::regnamespace
+  AND relkind IN ('r','p','f') -- relations or partitions or foreign tables"
+PL/pgSQL function anon.mask_update() line 18 at PERFORM
 SQL statement "SELECT anon.mask_update()"
-PL/pgSQL function anon.mask_trigger() line 5 at PERFORM
+PL/pgSQL function anon.trg_mask_update() line 5 at PERFORM
 ROLLBACK TO seclabel_1;
 SELECT COUNT(*) = 0
 FROM pg_tables

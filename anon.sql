@@ -1701,9 +1701,12 @@ $$
   SET search_path=''
 ;
 
-CREATE EVENT TRIGGER trg_check_trusted_schemas ON ddl_command_end
-WHEN TAG IN ('SECURITY LABEL', 'COMMENT')
-EXECUTE PROCEDURE anon.trg_check_trusted_schemas();
+-- Check each new masking rule
+CREATE EVENT TRIGGER anon_trg_check_trusted_schemas
+  ON ddl_command_end
+  WHEN TAG IN ('SECURITY LABEL', 'COMMENT')
+  EXECUTE PROCEDURE anon.trg_check_trusted_schemas();
+  -- EXECUTE FUNCTION is not supported by PG10 and below
 
 -- List of all the masked columns
 CREATE OR REPLACE VIEW anon.pg_masking_rules AS
@@ -2100,8 +2103,6 @@ CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  PERFORM anon.mask_disable();
-
   -- Walk through all tables in the source schema and drop the masking view
   PERFORM anon.mask_drop_view(oid)
   FROM pg_catalog.pg_class
@@ -2128,8 +2129,8 @@ LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
 
 
 
--- This is run after all DDL query
-CREATE OR REPLACE FUNCTION anon.mask_trigger()
+-- This is run after any changes in the data model
+CREATE OR REPLACE FUNCTION anon.trg_mask_update()
 RETURNS EVENT_TRIGGER AS
 $$
 -- SQL Functions cannot return EVENT_TRIGGER,
@@ -2138,7 +2139,10 @@ BEGIN
   PERFORM anon.mask_update();
 END
 $$
-LANGUAGE plpgsql SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 -- Mask a specific role
@@ -2189,76 +2193,62 @@ END
 $$
 LANGUAGE plpgsql SECURITY INVOKER SET search_path='';
 
-
--- load the event trigger
-CREATE OR REPLACE FUNCTION anon.mask_enable()
-RETURNS BOOLEAN AS
-$$
-BEGIN
-  IF NOT EXISTS (
-    SELECT
-      FROM pg_catalog.pg_event_trigger
-      WHERE evtname='anon_mask_update'
-  )
-  THEN
-    CREATE EVENT TRIGGER anon_mask_update ON ddl_command_end
-    EXECUTE PROCEDURE anon.mask_trigger();
-  ELSE
-    RAISE DEBUG 'event trigger "anon_mask_update" already exists: skipping';
-    RETURN FALSE;
-  END IF;
-  RETURN TRUE;
-END
-$$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
--- unload the event trigger
-CREATE OR REPLACE FUNCTION anon.mask_disable()
-RETURNS BOOLEAN AS
-$$
-BEGIN
-  IF EXISTS (
-    SELECT
-      FROM pg_catalog.pg_event_trigger
-      WHERE evtname='anon_mask_update'
-  )
-  THEN
-    DROP EVENT TRIGGER IF EXISTS anon_mask_update;
-  ELSE
-    RAISE DEBUG 'event trigger "anon_mask_update" does not exist: skipping';
-  RETURN FALSE;
-  END IF;
-  RETURN TRUE;
-END
-$$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
--- Rebuild the dynamic masking views and masked roles from scratch
 CREATE OR REPLACE FUNCTION anon.mask_update()
 RETURNS BOOLEAN AS
 $$
-  -- This DDL EVENT TRIGGER will launch new DDL statements
-  -- therefor we have disable the EVENT TRIGGER first
-  -- in order to avoid an infinite triggering loop :-)
-  SELECT anon.mask_disable();
+DECLARE
+  conf TEXT;
+BEGIN
+  -- Check if dynamic masking is enabled
+  SELECT *
+  INTO conf
+  FROM anon.config
+  WHERE param IN ( 'sourceschema', 'maskschema' );
+
+  IF NOT found THEN
+    -- Dynamic masking is disabled, no need to go further
+    RETURN FALSE;
+  END IF;
 
   -- Walk through all tables in the source schema
   -- and build a dynamic masking view
-  SELECT anon.mask_create_view(oid)
+  PERFORM anon.mask_create_view(oid)
   FROM pg_catalog.pg_class
   WHERE relnamespace=anon.sourceschema()::regnamespace
   AND relkind IN ('r','p','f') -- relations or partitions or foreign tables
   ;
 
   -- Walk through all masked roles and apply the restrictions
-  SELECT anon.mask_role(oid::REGROLE)
+  PERFORM anon.mask_role(oid::REGROLE)
   FROM pg_catalog.pg_roles
   WHERE anon.hasmask(oid::REGROLE);
 
-  -- Restore the mighty DDL EVENT TRIGGER
-  SELECT anon.mask_enable();
+  RETURN TRUE;
+END
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+--
+-- Trigger the mask_update on any major schema changes
+--
+-- Complete list of TAGs is available here:
+-- https://www.postgresql.org/docs/current/event-trigger-matrix.html
+--
+CREATE EVENT TRIGGER anon_trg_mask_update
+  ON ddl_command_end
+  WHEN TAG IN (
+    'ALTER TABLE', 'CREATE TABLE', 'CREATE TABLE AS', 'DROP TABLE',
+    'ALTER MATERIALIZED VIEW', 'CREATE MATERIALIZED VIEW', 'DROP MATERIALIZED VIEW',
+    'ALTER FOREIGN TABLE', 'CREATE FOREIGN TABLE', 'DROP FOREIGN TABLE',
+    'SECURITY LABEL', 'SELECT INTO'
+  )
+  EXECUTE PROCEDURE anon.trg_mask_update()
+  -- EXECUTE FUNCTION not supported by PG10 and below
+;
+
 
 -------------------------------------------------------------------------------
 -- Anonymous Dumps
