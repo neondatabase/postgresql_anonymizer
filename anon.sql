@@ -1437,7 +1437,7 @@ $$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER SET search_path='';
 -- Return a deterministic value inside a range of OID for a given seed+salt
 --
 CREATE OR REPLACE FUNCTION anon.projection_to_oid(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT,
   last_oid BIGINT
 )
@@ -1453,7 +1453,7 @@ RETURNS INT AS $$
   SELECT CAST(
     -- we use only the 6 first characters of the md5 signature
     -- and we divide by the max value : x'FFFFFF' = 16777215
-    last_oid * anon.hex_to_int(md5(seed||salt)::char(6)) / 16777215.0
+    last_oid * anon.hex_to_int(md5(seed::TEXT||salt)::char(6)) / 16777215.0
   AS INT )
 $$
   LANGUAGE SQL
@@ -1464,7 +1464,7 @@ $$
 ;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
@@ -1483,7 +1483,7 @@ $$
 ;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_last_name(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
@@ -1503,7 +1503,7 @@ $$
 
 
 CREATE OR REPLACE FUNCTION anon.pseudo_email(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
@@ -1523,7 +1523,7 @@ $$
 
 
 CREATE OR REPLACE FUNCTION anon.pseudo_city(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
@@ -1542,7 +1542,7 @@ $$
 ;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_country(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
@@ -1561,7 +1561,7 @@ $$
 ;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_company(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
@@ -1580,7 +1580,7 @@ $$
 ;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_iban(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
@@ -1599,7 +1599,7 @@ $$
 ;
 
 CREATE OR REPLACE FUNCTION anon.pseudo_siret(
-  seed TEXT,
+  seed ANYELEMENT,
   salt TEXT DEFAULT NULL
 )
 RETURNS TEXT AS $$
