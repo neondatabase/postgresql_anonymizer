@@ -12,6 +12,7 @@ General options:
   --help                        display this message
 
 Options controlling the output content:
+  -a, --data-only               Dump only the data, not the schema
   -E, --encoding=ENCODING       dump the data in encoding ENCODING
   -n, --schema=PATTERN          dump the specified schema(s) only
   -N, --exclude-schema=PATTERN  do NOT dump the specified schema(s)
@@ -73,16 +74,18 @@ psql_opts=(
   "--no-align"
   "--no-psqlrc"
 )                       # connections options
-exclude_table_data=()   # dump the ddl, but ignore the data
+exclude_table_data=()   # dump the DDL, ignore the data
+data_only=              # dump the data, ignore the DDL
 
 while [ $# -gt 0 ]; do
     case "$1" in
-    # options pushed to pg_dump and psql
+    # 2-parts options pushed to pg_dump and psql
     -d|--dbname|-h|--host|-p|--port|-U|--username)
         pg_dump_opts+=("$1" "$2")
         psql_opts+=("$1" "$2")
         shift
         ;;
+    # 1-part options pushed to pg_dump and psql
     --dbname=*|--host=*|--port=*|--username=*|-w|--no-password|-W|--password)
         pg_dump_opts+=("$1")
         psql_opts+=("$1")
@@ -96,11 +99,12 @@ while [ $# -gt 0 ]; do
     --file=*)
         output="${1#--file=}"
         ;;
-    # options pushed only to pg_dump
+    # 2-parts options pushed only to pg_dump
     -E|-n|--schema|-N|--exclude-schema|-t|--table|-T|--exclude-table)
         pg_dump_opts+=("$1" "$2")
         shift
         ;;
+    # 1-part options pushed only to pg_dump
     --encoding=*|--schema=*|--exclude-schema=*|--table=*|--exclude-table=*)
         pg_dump_opts+=("$1")
         ;;
@@ -108,6 +112,10 @@ while [ $# -gt 0 ]; do
     --exclude-table-data=*)
         pg_dump_opts+=("$1")
         exclude_table_data+=("$1")
+        ;;
+    # special case for `--data-only`
+    -a|--data-only)
+        data_only="$1"
         ;;
     # general options and fallback
     --help)
@@ -153,16 +161,22 @@ EOF
 ################################################################################
 
 # gather all options needed to dump the DDL
-ddl_dump_opt=(
-  "${pg_dump_opts[@]}"     # options from the command line
-  "--section=pre-data"         # data will be dumped later
+pre_data_dump_opt=(
+  "${pg_dump_opts[@]}"    # options from the command line
+  "--section=pre-data"    # data will be dumped later
   "--no-security-labels"  # masking rules are confidential
   "--exclude-schema=anon" # do not dump the extension schema
   "--exclude-schema=$(get_maskschema)" # idem
 )
 
+# This will be used in step 2
+tables_dump_opt=("${pre_data_dump_opt[@]}")
+
+# add the --data-only flag if defined
+[ -z "$data_only" ] || pre_data_dump_opt+=("$data_only")
+
 # we need to remove some `CREATE EXTENSION` commands
-pg_dump "${ddl_dump_opt[@]}" \
+pg_dump "${pre_data_dump_opt[@]}" \
 | filter_out_extension anon  \
 | filter_out_extension pgcrypto  \
 | filter_out_extension tsm_system_rows \
@@ -233,7 +247,7 @@ fi
 ################################################################################
 
 # gather all options needed to dump the DDL
-ddl_dump_opt=(
+post_data_dump_opt=(
   "${pg_dump_opts[@]}"    # options from the command line
   "--section=post-data"
   "--no-security-labels"  # masking rules are confidential
@@ -241,7 +255,9 @@ ddl_dump_opt=(
   "--exclude-schema=$(get_maskschema)" # idem
 )
 
-# we need to remove some `CREATE EXTENSION` commands
+# add the --data-only flag if defined
+[ -z "$data_only" ] || post_data_dump_opt+=("$data_only")
+
 pg_dump "${ddl_dump_opt[@]}" >> "$output"
 
 exit 0

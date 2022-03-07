@@ -169,9 +169,13 @@ DROP SEQUENCE public.seq42;
 --
 \! pg_dump_anon.sh contrib_regression | grep 'CREATE EXTENSION' | grep anon
 
+--
+-- F. Data Only
+--
+\! pg_dump_anon.sh contrib_regression --data-only | grep 'CREATE TABLE'
 
 --
--- F. Check the sequence values
+-- H. Check the sequence values
 --
 SELECT pg_catalog.nextval('test_pg_dump_anon.customer_id_seq');
 SELECT pg_catalog.nextval('test_pg_dump_anon.three');
