@@ -125,14 +125,14 @@ DROP SEQUENCE public.seq42;
 
 -- A5. Check that both dump files are identical
 -- ignore the plpgsql error on PG10 and PG9.6
-\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
+\! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
 
 
 -- A6. Dump a third file, this time with the `--file` option
 \! pg_dump_anon.sh -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
 
 -- A7. Check that dump files are identical
-\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
+\! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
 
 --
 -- B. Exclude some schemas
