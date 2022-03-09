@@ -79,6 +79,8 @@ MINVALUE 1
 MAXVALUE 3
 START 3
 CYCLE;
+CREATE SEQUENCE public.seq42;
+ALTER SEQUENCE public.seq42 RESTART WITH 42;
 --
 -- A. Dump and Restore and Dump again and compare
 --
@@ -97,6 +99,7 @@ NOTICE:  drop cascades to 3 other objects
 DETAIL:  drop cascades to table "FoO".customer
 drop cascades to table "FoO".vendor
 drop cascades to table "FoO".vendeur
+DROP SEQUENCE public.seq42;
 -- A3. Restore with the dump file
 -- output will vary a lot between PG versions
 -- So have to disable it to pass this test
@@ -142,13 +145,19 @@ drop cascades to table "FoO".vendeur
 SELECT pg_catalog.nextval('test_pg_dump_anon.customer_id_seq');
  nextval 
 ---------
-       4
+       1
 (1 row)
 
 SELECT pg_catalog.nextval('test_pg_dump_anon.three');
  nextval 
 ---------
        3
+(1 row)
+
+SELECT pg_catalog.nextval('public.seq42');
+ nextval 
+---------
+      42
 (1 row)
 
 --  CLEAN
@@ -164,5 +173,6 @@ NOTICE:  drop cascades to 3 other objects
 DETAIL:  drop cascades to table "FoO".customer
 drop cascades to table "FoO".vendeur
 drop cascades to table "FoO".vendor
+DROP SEQUENCE public.seq42;
 DROP EXTENSION anon CASCADE;
 DROP EXTENSION pgcrypto;

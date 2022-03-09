@@ -96,6 +96,9 @@ MAXVALUE 3
 START 3
 CYCLE;
 
+CREATE SEQUENCE public.seq42;
+ALTER SEQUENCE public.seq42 RESTART WITH 42;
+
 --
 -- A. Dump and Restore and Dump again and compare
 --
@@ -106,6 +109,7 @@ CYCLE;
 -- A2. Clean up the database
 DROP SCHEMA test_pg_dump_anon CASCADE;
 DROP SCHEMA "FoO" CASCADE;
+DROP SEQUENCE public.seq42;
 
 -- A3. Restore with the dump file
 -- output will vary a lot between PG versions
@@ -170,9 +174,11 @@ DROP SCHEMA "FoO" CASCADE;
 --
 SELECT pg_catalog.nextval('test_pg_dump_anon.customer_id_seq');
 SELECT pg_catalog.nextval('test_pg_dump_anon.three');
+SELECT pg_catalog.nextval('public.seq42');
 
 --  CLEAN
 DROP SCHEMA test_pg_dump_anon CASCADE;
 DROP SCHEMA "FoO" CASCADE;
+DROP SEQUENCE public.seq42;
 DROP EXTENSION anon CASCADE;
 DROP EXTENSION pgcrypto;
