@@ -11,7 +11,8 @@ import (
   "os"
   "os/exec"
   "regexp"
-//  "runtime"
+  "strings"
+  "runtime"
 )
 
 //
@@ -31,13 +32,13 @@ var psql_opts []string = []string {
 
 // Return the masking schema
 func get_maskschema() string {
-  return psql_to_string("SELECT anon.maskschema();")
+  return string(psql_to_string("SELECT anon.maskschema();"))
 }
 
 // Return the masking filters based on the table name
 func get_mask_filters(tablename string) string {
   query := fmt.Sprintf("SELECT anon.mask_filters('%s'::REGCLASS);", tablename)
-  return psql_to_string(query)
+  return string(psql_to_string(query))
 }
 
 // There's no clean way to exclude an extension from a dump
@@ -80,7 +81,7 @@ func psql(query string, output *os.File) {
   _ = cmd.Run()
 }
 
-func pg_dump(options []string) []byte {
+func pg_dump_to_array(options []string) []byte {
   cmd := exec.Command("pg_dump",options...)  // #nosec G204
   output, err := cmd.Output()
   if err != nil {
@@ -88,6 +89,13 @@ func pg_dump(options []string) []byte {
     log.Fatal(string(err.(*exec.ExitError).Stderr))
   }
   return output
+}
+
+func pg_dump(options []string, output *os.File) {
+  cmd := exec.Command("pg_dump",options...)  // #nosec G204
+  cmd.Stdout = output
+  cmd.Stderr = output
+  _ = cmd.Run()
 }
 
 // option_value is optional
@@ -175,23 +183,23 @@ func main() {
   flag.Parse()
 
   // DBNAME
-  append_option("-d ",*dPtr)
+  append_option("--dbname=",*dPtr)
   append_option("--dbname=",*dbnamePtr)
 
   // Encoding
-  append_pg_dump_option("-E ",*EPtr)
+  append_pg_dump_option("--encoding=",*EPtr)
   append_pg_dump_option("--encoding=",*encodingPtr)
 
   // PGHOST
-  append_option("-h ",*hPtr)
+  append_option("--host=",*hPtr)
   append_option("--host=",*hostPtr)
 
   // PORT
-  append_option("-p ",*pPtr)
+  append_option("--port=",*pPtr)
   append_option("--port=",*portPtr)
 
   // USER
-  append_option("-U",*UPtr)
+  append_option("--username",*UPtr)
   append_option("--username",*usernamePtr)
 
   if *wPtr || *no_passwordPtr {
@@ -237,7 +245,7 @@ func main() {
 
 
   // Stop if the extension is not installed in the database
-  version := psql_to_string("SELECT anon.version()")
+  version := string(psql_to_string("SELECT anon.version()"))
   if version == "" {
     log.Fatal("Anon extension is not installed in this database.")
   }
@@ -260,7 +268,7 @@ func main() {
     "--no-security-labels",               // masking rules are confidential
     "--exclude-schema=anon",              // do not dump the extension schema
     exclude_mask_schema }
-  pre_data := pg_dump(append(ddl_dump_opt,pg_dump_opts...))
+  pre_data := pg_dump_to_array(append(ddl_dump_opt,pg_dump_opts...))
 
   // We need to remove some `CREATE EXTENSION` commands
   pre_data_filtered := string(pre_data)
@@ -311,17 +319,31 @@ func main() {
 //## 3. Dump the sequences data
 //##############################################################################
 
-  // The trick here is to use `--exclude-table-data=*` instead of `--schema-only`
-  seq_data_dump_opts := []string{
-    "--exclude-schema=anon",  // do not dump the anon sequences
-    "--exclude-table-data=*"} // get the sequences data without the tables data
+  // extract the names of all sequences
+  seq_query := `
+    SELECT '--table='||sequence_name
+    FROM information_schema.sequences
+    WHERE sequence_schema != 'anon';`
 
-  sequences := pg_dump(append(seq_data_dump_opts,pg_dump_opts...))
-  re = regexp.MustCompile(`SELECT pg_catalog.setval.*`)
-  setval_queries := re.FindAll(sequences,-1)
-  for i := range setval_queries {
-    fmt.Println(string(setval_queries[i]))
+  // Split the psql output line by line
+  linebreak := "\n"
+  if runtime.GOOS == "windows" {
+    linebreak = "\r\n"
   }
+  seq_table_opts := strings.Split(psql_to_string(seq_query),linebreak)
+
+  seq_data_dump_opts := []string{
+    "--data-only"}   // we only want the `setval` lines
+
+  if len(seq_table_opts) > 0 {
+    // the last output line is empty, let's remove it
+    seq_table_opts=seq_table_opts[:len(seq_table_opts)-1]
+    seq_data_dump_opts = append(seq_data_dump_opts,seq_table_opts...)
+  }
+  seq_data_dump_opts = append(seq_data_dump_opts,pg_dump_opts...)
+
+  pg_dump(seq_data_dump_opts, output)
+
 
 //##############################################################################
 //## 4. Dump the DDL (post-data section)
@@ -333,8 +355,7 @@ func main() {
     "--exclude-schema=anon", // do not dump the extension schema
     exclude_mask_schema }    // define at the pre-data step
 
-  fmt.Println(string(pg_dump(append(post_data_dump_opts,pg_dump_opts...))))
-
+  pg_dump(append(post_data_dump_opts,pg_dump_opts...), output)
   os.Exit(0)
 }
 

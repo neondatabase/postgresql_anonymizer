@@ -219,12 +219,11 @@ IFS=" " read -r -a seq_table_opts <<< "$( \
 
 seq_data_dump_opt=(
   "${seq_table_opts[@]}"   # options to select sequence tables only
-  "${pg_dump_opts[@]}"     # options from the commande line
+  "${pg_dump_opts[@]}"     # options from the command line
+  "--data-only"            # we only want the `setval` lines
 )
 
-pg_dump "${seq_data_dump_opt[@]}"   \
-| grep '^SELECT pg_catalog.setval'  \
->> "$output"
+pg_dump "${seq_data_dump_opt[@]}" >> "$output"
 
 
 ################################################################################

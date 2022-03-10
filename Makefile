@@ -85,7 +85,9 @@ install-bin:
 	install -d $(DESTDIR)$(BINDIR)
 	install -m 0755 bin/pg_dump_anon.sh $(DESTDIR)$(BINDIR)
 
-install-py:
+install-go:  _build/linux/amd64/pg_dump_anon/pg_dump_anon
+	install -d $(DESTDIR)$(BINDIR)
+	install -m 0755 $^ $(DESTDIR)$(BINDIR)
 
 ##
 ## L I N T
