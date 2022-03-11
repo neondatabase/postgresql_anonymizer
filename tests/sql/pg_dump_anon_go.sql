@@ -99,76 +99,83 @@ CYCLE;
 CREATE SEQUENCE public.seq42;
 ALTER SEQUENCE public.seq42 RESTART WITH 42;
 
+-- the golang pg_dump_anon wrapper is not installed by default
+\! make install-go
+
 --
 -- A. Dump and Restore and Dump again and compare
 --
 
 -- A1. Dump into a file
-\! pg_dump_anon.sh --dbname=contrib_regression > tests/tmp/_pg_dump_anon_A1.sql
+\! pg_dump_anon --dbname=contrib_regression > tests/tmp/_pg_dump_anon_go_A1.sql
 
 -- A2. Clean up the database and dump an empty database
 DROP SCHEMA test_pg_dump_anon CASCADE;
 DROP SCHEMA "FoO" CASCADE;
 DROP SEQUENCE public.seq42;
 
-\! pg_dump_anon.sh -d contrib_regression > /dev/null
+\! pg_dump_anon -d contrib_regression > /dev/null
 
 -- A3. Restore with the dump file
--- output will vary a lot between PG versions
--- So have to disable it to pass this test
-\! psql -f tests/tmp/_pg_dump_anon_A1.sql contrib_regression >/dev/null
+\! psql -f tests/tmp/_pg_dump_anon_go_A1.sql contrib_regression >/dev/null
 
 -- A4. Dump again into a second file
 -- /!\ This time the masking rules are not applied !
-\! pg_dump_anon.sh -d contrib_regression > tests/tmp/_pg_dump_anon_A4.sql
+\! pg_dump_anon -d contrib_regression > tests/tmp/_pg_dump_anon_go_A4.sql
 
 
 -- A5. Check that both dump files are identical
 -- ignore the plpgsql error on PG10 and PG9.6
-\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
+\! diff tests/tmp/_pg_dump_anon_go_A1.sql tests/tmp/_pg_dump_anon_go_A4.sql
 
 
 -- A6. Dump a third file, this time with the `--file` option
-\! pg_dump_anon.sh -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
+-- `-f` is not implemented yet
+--\! pg_dump_anon -d contrib_regression -f tests/tmp/_pg_dump_anon_go_A6.sql
 
 -- A7. Check that dump files are identical
-\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
+--\! diff tests/tmp/_pg_dump_anon_go_A1.sql tests/tmp/_pg_dump_anon_go_A6.sql
 
 --
 -- B. Exclude some schemas
 -- All this tests should not return anything
 --
 
-\! pg_dump_anon.sh contrib_regression --exclude-schema='"FoO"' -N z | grep 'FoO'
+-- NOT IMPLEMENTED YET
+--\! pg_dump_anon contrib_regression --exclude-schema='"FoO"' -N z | grep 'FoO'
 
-\! pg_dump_anon.sh contrib_regression --schema=pub* -n test_pg_dump_anon |grep 'FoO'
+-- NOT IMPLEMENTED YET
+--\! pg_dump_anon contrib_regression --schema=pub* -n test_pg_dump_anon |grep 'FoO'
 
 --
 -- C. Exclude some tables
 -- All these command lines should produce the same output
 --
-\! pg_dump_anon.sh contrib_regression --table=test_pg_dump_anon.* | grep "vendor"
 
-\! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon.no_masks | grep 'vendor'
+-- NOT IMPLEMENTED YET
+--\! pg_dump_anon contrib_regression --table=test_pg_dump_anon.* | grep "vendor"
 
-\! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
+--\! pg_dump_anon contrib_regression -t test_pg_dump_anon.no_masks | grep 'vendor'
 
-\! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
+--\! pg_dump_anon contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
 
-\! pg_dump_anon.sh contrib_regression --exclude-table='"FoO".*' | grep 'vendor'
+--\! pg_dump_anon contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
 
-\! pg_dump_anon.sh contrib_regression -T '"FoO".v?nd*r' | grep 'vendor'
+--\! pg_dump_anon contrib_regression --exclude-table='"FoO".*' | grep 'vendor'
+
+--\! pg_dump_anon contrib_regression -T '"FoO".v?nd*r' | grep 'vendor'
 
 --
 -- D. Exclude data
 --
-\! pg_dump_anon.sh contrib_regression --exclude-data=v?nd?r | grep 'Hamm'
+
+-- NOT IMPLEMENTED YET
+--\! pg_dump_anon contrib_regression --exclude-data=v?nd?r | grep 'Hamm'
 
 --
 -- E. Remove Anon extension
 --
-\! pg_dump_anon.sh contrib_regression | grep 'CREATE EXTENSION' | grep anon
-
+\! pg_dump_anon contrib_regression | grep 'CREATE EXTENSION' | grep anon
 
 --
 -- F. Check the sequence values

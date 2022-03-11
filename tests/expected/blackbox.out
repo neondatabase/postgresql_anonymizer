@@ -12,6 +12,7 @@
 
 
 
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -68,17 +69,6 @@ COPY public.cluedo FROM STDIN WITH CSV;
 ,Candlestick,Kitchen
 \.
 
-SELECT pg_catalog.setval('anon.address_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.city_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.company_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.country_oid_seq', 242, true);
-SELECT pg_catalog.setval('anon.email_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.first_name_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.iban_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.last_name_oid_seq', 472, true);
-SELECT pg_catalog.setval('anon.lorem_ipsum_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.postcode_oid_seq', 999, true);
-SELECT pg_catalog.setval('anon.siret_oid_seq', 999, true);
 
 
 
