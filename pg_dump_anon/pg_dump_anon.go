@@ -12,7 +12,7 @@ import (
   "os/exec"
   "regexp"
   "strings"
-  "runtime"
+//  "runtime"
 )
 
 //
@@ -32,13 +32,13 @@ var psql_opts []string = []string {
 
 // Return the masking schema
 func get_maskschema() string {
-  return string(psql_to_string("SELECT anon.maskschema();"))
+  return psql_to_string("SELECT anon.maskschema();")
 }
 
 // Return the masking filters based on the table name
 func get_mask_filters(tablename string) string {
   query := fmt.Sprintf("SELECT anon.mask_filters('%s'::REGCLASS);", tablename)
-  return string(psql_to_string(query))
+  return psql_to_string(query)
 }
 
 // There's no clean way to exclude an extension from a dump
@@ -70,7 +70,10 @@ func psql_to_string(query string) string {
     log.Println(cmd.Args)
     log.Fatal(string(err.(*exec.ExitError).Stderr))
   }
-  return string(output)
+  result := string(output)
+  result = strings.TrimSuffix(result,"\r\n"); // windows
+  result = strings.TrimSuffix(result,"\n");   // linux
+  return result
 }
 
 func psql(query string, output *os.File) {
@@ -321,29 +324,20 @@ func main() {
 
   // extract the names of all sequences
   seq_query := `
-    SELECT '--table='||sequence_name
+    SELECT string_agg('--table='||sequence_name,',')
     FROM information_schema.sequences
     WHERE sequence_schema != 'anon';`
 
-  // Split the psql output line by line
-  linebreak := "\n"
-  if runtime.GOOS == "windows" {
-    linebreak = "\r\n"
-  }
-  seq_table_opts := strings.Split(psql_to_string(seq_query),linebreak)
+  seq_table_opts := strings.Split(psql_to_string(seq_query),",")
 
-  seq_data_dump_opts := []string{
-    "--data-only"}   // we only want the `setval` lines
-
-  if len(seq_table_opts) > 0 {
-    // the last output line is empty, let's remove it
-    seq_table_opts=seq_table_opts[:len(seq_table_opts)-1]
+  // strings.Split returns {""} when nothings is found
+  if seq_table_opts[0] != "" {
+    // we only want the `setval` lines
+    seq_data_dump_opts := []string{"--data-only"}
     seq_data_dump_opts = append(seq_data_dump_opts,seq_table_opts...)
+    seq_data_dump_opts = append(seq_data_dump_opts,pg_dump_opts...)
+    pg_dump(seq_data_dump_opts, output)
   }
-  seq_data_dump_opts = append(seq_data_dump_opts,pg_dump_opts...)
-
-  pg_dump(seq_data_dump_opts, output)
-
 
 //##############################################################################
 //## 4. Dump the DDL (post-data section)

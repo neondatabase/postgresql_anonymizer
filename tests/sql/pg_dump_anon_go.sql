@@ -109,10 +109,12 @@ ALTER SEQUENCE public.seq42 RESTART WITH 42;
 -- A1. Dump into a file
 \! pg_dump_anon --dbname=contrib_regression > tests/tmp/_pg_dump_anon_go_A1.sql
 
--- A2. Clean up the database
+-- A2. Clean up the database and dump an empty database
 DROP SCHEMA test_pg_dump_anon CASCADE;
 DROP SCHEMA "FoO" CASCADE;
 DROP SEQUENCE public.seq42;
+
+\! pg_dump_anon -d contrib_regression > /dev/null
 
 -- A3. Restore with the dump file
 \! psql -f tests/tmp/_pg_dump_anon_go_A1.sql contrib_regression >/dev/null
@@ -172,10 +174,8 @@ DROP SEQUENCE public.seq42;
 
 --
 -- E. Remove Anon extension
--- All these command lines should produce the same output
 --
-\! pg_dump_anon contrib_regression | grep 'ddlx'
-
+\! pg_dump_anon contrib_regression | grep 'CREATE EXTENSION' | grep anon
 
 --
 -- F. Check the sequence values
