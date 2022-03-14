@@ -16,6 +16,16 @@ along with Étienne Bersac (@bersace) and Frédéric Yhuel (@yhuelf).
 Contributors
 -------------------------------------------------------------------------------
 
+* Be Hai Tran : How-To
+* Florent Jardin : How-To
+* Yann B. (@ybycode) : fix for pg_dump_anon
+* Christophe Courtois (@Krysztophe) : Documentation
+* Vito Botta (@vitobotta) : Documentation
+* Cristiano (@stresser) : Documentation
+* Adrien S. (@adriens) : Documentation
+* Justin Wei : Documentation
+* Frédéric Yhuel (@yhuelf) : code review and refactoring
+* Jakob Serlier : documentation
 * Alice Armand (@alice_) : Proofreading
 * Carlos Medeiros (@cadubsb) : Bug Fix
 * Devrim Gündüz (@devrimgunduz) : RPM Packages

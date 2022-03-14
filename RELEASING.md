@@ -9,7 +9,7 @@ Publishing a new Release
 
 * [ ] Write the announcement in [NEWS.md]
 
-* [ ]  Rebuild the docker image and upload it
+* [ ] Rebuild the docker image and upload it (`make docker_image docker_push`)
 
 * [ ] Upload the zipball to PGXN
 

@@ -1,8 +1,11 @@
 CHANGELOG
 ===============================================================================
 
-2021FIXME : 0.10.0 - WIP
+20220314 : 0.10.0 - An improved engine and a brand new tutorial
 -------------------------------------------------------------------------------
+
+<!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/15 -->
+<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
 __Dependencies:__
 
@@ -10,6 +13,39 @@ __Dependencies:__
 
 __Changes:__
 
+* [noise] anon.noise my fail with an error 22003
+* [core] support CASE in masking rules
+* [doc] How To
+* [core] Remove depency to tsm_system_rows
+* [doc] Multiple documentation improvements
+* [core] Add support for PostgreSQL 15
+* [dump] Many pg_dump_anon improvements
+* [pg_dump_anon] FIX #213 dump the sequences values (@ybycode))
+* [core] Simplify the main masking event trigger
+* [doc] Warning about backups consistency
+* [tests] noise tests can hit extreme values
+* [noise] Fix numeric_value_out_of_range and datetime_field_overflow errors (@sebastien-helbert)
+* [docker] add postgresql faker
+* [pseudo] FIX #254: masked roles can use pseudo functions
+* [doc] missing URL for source install (@Krysztophe)
+* [doc] escaping string + value expression
+* [doc] additional details about dynamic masking (thanks to @vitobotta)
+* [doc] MD5 signatures values have a uniform distribution
+* [doc] Update to the Adding Noise section (@Cristiano)
+* [docs] How-To
+* [Windows] Fix the register process
+* [pg_dump_anon] Introduce a Golang port of pg_dump_anon (beta)
+* [doc] Update links.md : typo (@SALES)
+* [core] Review the plpgsql code (@fyhuel)
+* [doc] install from source with multiple versions
+* [pg_dump_anon] Support for --encoding
+* [dod] Fix typos (Justin Wei)
+* [core] use polymorphism when possible plpgsql (@fyhuel)
+* [core] some STABLE functions were incorrectly declared as IMMUTABLE (@fyhuel)
+* [core] anon.sql: fix UPSERTS (@fyhuel)
+* [doc] Added extra lorem ipsum example (Jakob Serlier)
+* [docker] FIX #241: Load the extension at the session level
+* [doc] Removed typo (Jakob Serlier)
 
 
 20210702 : 0.9.0 - Support For PostgreSQL 14
