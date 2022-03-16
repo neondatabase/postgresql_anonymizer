@@ -36,3 +36,4 @@ docs/how-to/_venv
 docs/how-to/_build
 docs/how-to/_tmp
 docs/how-to/*.tsv
+docs/how-to/*.log

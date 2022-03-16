@@ -27,6 +27,7 @@ PANDOC+= $(PANDOC_ARGS)
 ##
 SOURCE_FILES = $(sort $(wildcard *.ipynb)) # the order is important
 MAIN_FILE = _build/how-to.md
+LOG_FILES = $(patsubst %.ipynb,%.log, $(SOURCE_FILES))
 MD_FILES = $(patsubst %.ipynb,$(BUILDIR)/%.md, $(SOURCE_FILES))
 RAW_MD_FILES = $(MD_FILES:.md=.raw.md)
 SLIDES_FILES = $(MD_FILES:.md=.slides.html)
@@ -58,6 +59,18 @@ slides: $(SLIDES_FILES) #: build all presentations
 handout: $(HANDOUT_FILES) #: build all handouts in PDF
 handout2_pdf: $(HANDOUT2_PDF_FILES)
 handout_html: $(HANDOUT_HTML_FILES) #: build all intermediate HTML files
+
+##
+##
+##
+
+.PHONY: run
+
+run: $(LOG_FILES)
+	
+%.log: %.ipynb	
+	ipython $^ > $@
+
 
 ##
 ## Build
@@ -159,6 +172,7 @@ _venv:
 clean: #: remove all built objects
 	rm -fr _venv
 	rm -fr $(BUILDIR)
+	rm -fr $(LOG_FILES)
 
 ##
 ## H E L P
