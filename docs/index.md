@@ -49,8 +49,8 @@ Example
 ```sql
 =# SELECT * FROM people;
  id | firstname | lastname |   phone
-----+----------+----------+------------
- T1 | Sarah    | Conor    | 0609110911
+----+-----------+----------+------------
+ T1 | Sarah     | Conor    | 0609110911
 ```
 
 Step 1 : Activate the dynamic masking engine
@@ -80,18 +80,16 @@ Step 3 : Declare the masking rules
 Step 4 : Connect with the masked user
 
 ```sql
-=# \c - skynet
+=# \connect - skynet
 => SELECT * FROM people;
  id | firstname | lastname  |   phone
-----+----------+-----------+------------
- T1 | Sarah    | Stranahan | 06******11
+----+-----------+-----------+------------
+ T1 | Sarah     | Stranahan | 06******11
 ```
 
 
-Warning
+Support
 ------------------------------------------------------------------------------
-
-> *This project is at an early stage of development, and should be used carefully.*
 
 We need your feedback and ideas ! Let us know what you think of this tool, how it
 fits your needs and what features are missing.
