@@ -258,6 +258,6 @@ post_data_dump_opt=(
 # add the --data-only flag if defined
 [ -z "$data_only" ] || post_data_dump_opt+=("$data_only")
 
-pg_dump "${ddl_dump_opt[@]}" >> "$output"
+pg_dump "${post_data_dump_opt[@]}" >> "$output"
 
 exit 0
