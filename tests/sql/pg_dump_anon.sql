@@ -125,14 +125,14 @@ DROP SEQUENCE public.seq42;
 
 -- A5. Check that both dump files are identical
 -- ignore the plpgsql error on PG10 and PG9.6
-\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
+\! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
 
 
 -- A6. Dump a third file, this time with the `--file` option
 \! pg_dump_anon.sh -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
 
 -- A7. Check that dump files are identical
-\! diff tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
+\! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
 
 --
 -- B. Exclude some schemas
@@ -169,9 +169,13 @@ DROP SEQUENCE public.seq42;
 --
 \! pg_dump_anon.sh contrib_regression | grep 'CREATE EXTENSION' | grep anon
 
+--
+-- F. Data Only
+--
+\! pg_dump_anon.sh contrib_regression --data-only | grep 'CREATE TABLE'
 
 --
--- F. Check the sequence values
+-- H. Check the sequence values
 --
 SELECT pg_catalog.nextval('test_pg_dump_anon.customer_id_seq');
 SELECT pg_catalog.nextval('test_pg_dump_anon.three');

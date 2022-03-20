@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-PGDATA=/var/lib/postgresql/data/
+export PGDATA=/var/lib/postgresql/data/
+export PGDATABASE=postgres
+export PGUSER=postgres
 
 {
 mkdir -p $PGDATA
