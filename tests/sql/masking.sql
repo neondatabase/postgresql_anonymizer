@@ -116,7 +116,7 @@ SELECT anon.mask_update();
 \! psql contrib_regression -U skynet -c "SELECT count(histogram_bounds)=0 FROM pg_stats WHERE tablename='people' AND attname='name';"
 
 -- Bug #254 - A masked role can use pseudonymizing functions
-\! psql contrib_regression -U skynet -c "SELECT anon.pseudo_company('seed','salt');"
+\! psql contrib_regression -U skynet -c "SELECT anon.pseudo_company(0,'salt');"
 
 
 --  CLEAN

@@ -142,10 +142,10 @@ ERROR:  permission denied
 (1 row)
 
 -- Bug #254 - A masked role can use pseudonymizing functions
-\! psql contrib_regression -U skynet -c "SELECT anon.pseudo_company('seed','salt');"
-     pseudo_company      
--------------------------
- Powers, Lewis and Garza
+\! psql contrib_regression -U skynet -c "SELECT anon.pseudo_company(0,'salt');"
+ pseudo_company 
+----------------
+ Key-Bates
 (1 row)
 
 --  CLEAN
