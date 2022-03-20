@@ -39,14 +39,6 @@ SELECT pg_typeof(anon.fake_email()) = 'TEXT'::REGTYPE;
 (1 row)
 
 -- City
-SELECT pg_typeof(anon.random_city()) = 'TEXT'::REGTYPE;
-WARNING:  This function is deprecated
-HINT:  Use anon.fake_city() instead
- ?column? 
-----------
- t
-(1 row)
-
 SELECT pg_typeof(anon.fake_city()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
@@ -54,14 +46,6 @@ SELECT pg_typeof(anon.fake_city()) = 'TEXT'::REGTYPE;
 (1 row)
 
 -- Company
-SELECT pg_typeof(anon.random_company()) = 'TEXT'::REGTYPE;
-WARNING:  This function is deprecated
-HINT:  Use anon.fake_company() instead
- ?column? 
-----------
- t
-(1 row)
-
 SELECT pg_typeof(anon.fake_company()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
@@ -76,14 +60,6 @@ SELECT pg_typeof(anon.fake_country()) = 'TEXT'::REGTYPE;
 (1 row)
 
 -- IBAN
-SELECT pg_typeof(anon.random_iban()) = 'TEXT'::REGTYPE;
-WARNING:  This function is deprecated
-HINT:  Use anon.fake_iban() instead
- ?column? 
-----------
- t
-(1 row)
-
 SELECT pg_typeof(anon.fake_iban()) = 'TEXT'::REGTYPE;
  ?column? 
 ----------
