@@ -18,6 +18,7 @@ nav:
   - 'Detecting Identifiers': 'detection.md'
   - 'Custom Fake Data': 'custom_fake_data.md'
   - 'Concepts': 'concepts.md'
+  - 'Performances': performances.md
   - 'Upgrade': 'UPGRADE.md'
   - 'Security': 'SECURITY.md'
   - 'Links': 'links.md'
