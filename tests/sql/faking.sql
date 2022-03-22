@@ -21,18 +21,15 @@ SELECT pg_typeof(anon.fake_last_name()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_email()) = 'TEXT'::REGTYPE;
 
 -- City
-SELECT pg_typeof(anon.random_city()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_city()) = 'TEXT'::REGTYPE;
 
 -- Company
-SELECT pg_typeof(anon.random_company()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_company()) = 'TEXT'::REGTYPE;
 
 -- Country
 SELECT pg_typeof(anon.fake_country()) = 'TEXT'::REGTYPE;
 
 -- IBAN
-SELECT pg_typeof(anon.random_iban()) = 'TEXT'::REGTYPE;
 SELECT pg_typeof(anon.fake_iban()) = 'TEXT'::REGTYPE;
 
 -- postcode

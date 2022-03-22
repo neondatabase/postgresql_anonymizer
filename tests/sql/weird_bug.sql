@@ -9,7 +9,7 @@ CREATE TABLE t1 (
 );
 
 -- remove one the 2 comments will fix the problem
-COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.random_last_name() ';
+COMMENT ON COLUMN t1.name IS '  MASKED WITH FUNCTION anon.fake_last_name() ';
 COMMENT ON COLUMN t1.creditcard IS '  MASKED    WITH    FUNCTION         anon.random_string(12)';
 
 CREATE TABLE "T2" (

@@ -29,14 +29,14 @@ SELECT pg_typeof(anon.random_int_between(1,3)) = 'INTEGER'::REGTYPE;
 --
 
 -- First Name
-SELECT pg_typeof(anon.random_first_name()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.fake_first_name()) = 'TEXT'::REGTYPE;
 
 -- Last Name
-SELECT pg_typeof(anon.random_last_name()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.fake_last_name()) = 'TEXT'::REGTYPE;
 
 
 -- Email
-SELECT pg_typeof(anon.random_email()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.fake_email()) = 'TEXT'::REGTYPE;
 
 -- Phone
 SELECT pg_typeof(anon.random_phone('0033')) = 'TEXT'::REGTYPE;
@@ -58,18 +58,18 @@ SELECT pg_typeof(anon.random_country()) = 'TEXT'::REGTYPE;
 --
 -- Company
 --
-SELECT pg_typeof(anon.random_company()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.fake_company()) = 'TEXT'::REGTYPE;
 
 --
 -- IBAN
 --
-SELECT pg_typeof(anon.random_iban()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.fake_iban()) = 'TEXT'::REGTYPE;
 
 --
 -- SIRET
 --
-SELECT pg_typeof(anon.random_siret()) = 'TEXT'::REGTYPE;
-SELECT pg_typeof(anon.random_siren()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.fake_siret()) = 'TEXT'::REGTYPE;
+SELECT pg_typeof(anon.fake_siren()) = 'TEXT'::REGTYPE;
 
 
 -------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ CREATE TEMPORARY TABLE t1 (
 	fk_company INTEGER
 );
 
-INSERT INTO t1 
+INSERT INTO t1
 VALUES (1,'Schwarzenegger','1234567812345678', 1991);
 
 
@@ -111,7 +111,7 @@ SELECT anon.anonymize_all_the_things();
 
 SELECT company != 'skynet' FROM "T2" WHERE id_company=1991;
 
-SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1; 
+SELECT name != 'Schwarzenegger' FROM t1 WHERE id = 1;
 
 -------------------------------------------------------------------------------
 -- End
