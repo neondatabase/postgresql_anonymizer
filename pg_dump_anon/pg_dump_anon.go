@@ -202,8 +202,8 @@ func main() {
   append_option("--port=",*portPtr)
 
   // USER
-  append_option("--username",*UPtr)
-  append_option("--username",*usernamePtr)
+  append_option("--username=",*UPtr)
+  append_option("--username=",*usernamePtr)
 
   if *wPtr || *no_passwordPtr {
     append_option("--no-password")
