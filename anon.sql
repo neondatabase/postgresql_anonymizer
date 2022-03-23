@@ -84,6 +84,7 @@ $$
 $$
   LANGUAGE SQL
   RETURNS NULL ON NULL INPUT
+  PARALLEL UNSAFE -- the function updates value
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -99,6 +100,7 @@ $$
   LANGUAGE SQL
   STABLE
   STRICT
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -117,6 +119,7 @@ $$
 $$
   LANGUAGE SQL
   RETURNS NULL ON NULL INPUT
+  PARALLEL UNSAFE -- the function upserts a value
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -132,6 +135,7 @@ $$
   LANGUAGE SQL
   STABLE
   STRICT
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -145,6 +149,7 @@ $func$
   SELECT '0.11.0'::text AS version
 $func$
   LANGUAGE SQL
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -162,7 +167,12 @@ FROM default_config d
 LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
 ;
 $$
-LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  STABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- name of the masking schema
 -- default value: 'mask'
@@ -177,7 +187,12 @@ FROM default_config d
 LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
 ;
 $$
-LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  STABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 -- Common functions
@@ -199,6 +214,7 @@ AS $func$
 $func$
   LANGUAGE SQL
   STABLE
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -237,7 +253,11 @@ BEGIN
 RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER; -- SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of the EXCEPTION
+  SECURITY INVOKER
+; -- SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.add_noise_on_datetime_column(
   noise_table regclass,
@@ -264,7 +284,11 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of the EXCEPTION
+  SECURITY INVOKER
+; --SET search_path='';
 
 -------------------------------------------------------------------------------
 -- "on the fly" noise
@@ -292,7 +316,11 @@ EXCEPTION
     RETURN res;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of the EXCEPTION
+  SECURITY INVOKER
+  SET search_path='';
 
 -- for time and timestamp values
 CREATE OR REPLACE FUNCTION anon.dnoise(
@@ -316,7 +344,12 @@ EXCEPTION
     RETURN res;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of the EXCEPTION
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 -------------------------------------------------------------------------------
@@ -368,7 +401,11 @@ BEGIN
   RETURN TRUE;
 END;
 $func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER; --SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+; --SET search_path='';
 
 -------------------------------------------------------------------------------
 -- Fake Data
@@ -612,7 +649,10 @@ WHERE fn.lang = dict_lang
 ;
 END;
 $$
-LANGUAGE plpgsql STABLE;
+  LANGUAGE plpgsql
+  PARALLEL SAFE
+  STABLE
+;
 
 
 -------------------------------------------------------------------------------
@@ -684,6 +724,7 @@ $$
   LANGUAGE plpgsql
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL UNSAFE -- because of the EXCEPTION
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -741,6 +782,7 @@ $$
   LANGUAGE PLPGSQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL UNSAFE -- because load_csv is unsafe
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -761,6 +803,7 @@ END;
 $$
   LANGUAGE plpgsql
   STABLE
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path='';
 ;
@@ -775,6 +818,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL UNSAFE -- because init() is unsafe
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -795,6 +839,7 @@ AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL UNSAFE -- because init is unsafe
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -811,6 +856,7 @@ END;
 $$
   LANGUAGE plpgsql
   VOLATILE
+  PARALLEL UNSAFE -- because init is unsafe
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -837,6 +883,7 @@ AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -864,6 +911,7 @@ $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL UNSAFE -- because of TRUNCATE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -876,6 +924,7 @@ $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL UNSAFE -- because reset is unsafe
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -899,6 +948,7 @@ $$
   LANGUAGE SQL
   IMMUTABLE
   RETURNS NULL ON NULL INPUT
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -917,6 +967,7 @@ $$
   LANGUAGE SQL
   STABLE
   RETURNS NULL ON NULL INPUT
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path = ''
 ;
@@ -943,6 +994,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -961,6 +1013,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -978,6 +1031,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -989,6 +1043,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1006,6 +1061,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1020,6 +1076,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1035,6 +1092,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1056,6 +1114,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   SECURITY DEFINER
+  PARALLEL RESTRICTED -- because random
   SET search_path = ''
   RETURNS NULL ON NULL INPUT
 ;
@@ -1071,6 +1130,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1098,6 +1158,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1114,6 +1175,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1130,6 +1192,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1146,6 +1209,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1162,6 +1226,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1178,6 +1243,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1194,6 +1260,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1210,6 +1277,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1226,6 +1294,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1242,6 +1311,7 @@ RETURNS TEXT AS $$
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1325,6 +1395,7 @@ FROM
 $$
   LANGUAGE SQL
   VOLATILE
+  PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1431,7 +1502,14 @@ BEGIN
     EXECUTE 'SELECT x' || quote_literal(hexval) || '::INT' INTO result;
     RETURN result;
 END;
-$$ LANGUAGE plpgsql IMMUTABLE STRICT SECURITY INVOKER SET search_path='';
+$$
+  LANGUAGE plpgsql
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 --
 -- Return a deterministic value inside a range of OID for a given seed+salt
@@ -1459,6 +1537,7 @@ $$
   LANGUAGE SQL
   IMMUTABLE
   RETURNS NULL ON NULL INPUT
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1477,7 +1556,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  IMMUTABLE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path = pg_catalog,pg_temp
 ;
@@ -1496,7 +1576,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  IMMUTABLE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path = pg_catalog,pg_temp
 ;
@@ -1516,7 +1597,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  VOLATILE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path=''
 ;
@@ -1536,7 +1618,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  VOLATILE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path=''
 ;
@@ -1555,7 +1638,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  VOLATILE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path=''
 ;
@@ -1574,7 +1658,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  VOLATILE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path=''
 ;
@@ -1593,7 +1678,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  VOLATILE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path=''
 ;
@@ -1612,7 +1698,8 @@ RETURNS TEXT AS $$
   );
 $$
   LANGUAGE SQL
-  VOLATILE
+  STABLE
+  PARALLEL SAFE
   SECURITY DEFINER
   SET search_path=''
 ;
@@ -1636,7 +1723,12 @@ RETURNS TEXT AS $$
       || padding
       || substring(ov FROM (length(ov)-suffix+1) FOR suffix);
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 --
 -- partial_email('daamien@gmail.com') will becomme 'da******@gm******.com'
@@ -1657,7 +1749,12 @@ RETURNS TEXT AS $$
       || regexp_replace(ov, '.*\.', '') -- com
   ;
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 -------------------------------------------------------------------------------
@@ -1670,7 +1767,11 @@ LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
 -- See tests in tests/sql/get_function_schema.sql
 CREATE OR REPLACE FUNCTION anon.get_function_schema(text) RETURNS text
 AS 'MODULE_PATHNAME', 'get_function_schema'
-LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
+;
 
 CREATE OR REPLACE FUNCTION anon.trg_check_trusted_schemas()
 RETURNS event_trigger
@@ -1697,6 +1798,7 @@ BEGIN
 END;
 $$
   LANGUAGE plpgsql
+  PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -1838,8 +1940,12 @@ BEGIN
   RETURN format('%I = %s', colname, mf);
 END;
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER
-SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Replace masked data in a column
 CREATE OR REPLACE FUNCTION anon.anonymize_column(
@@ -1861,8 +1967,12 @@ BEGIN
   RETURN TRUE;
 END;
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER
-SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Replace masked data in a table
 CREATE OR REPLACE FUNCTION anon.anonymize_table(tablename REGCLASS)
@@ -1882,8 +1992,13 @@ BEGIN
 
   RETURN NULL;
 END;
-$$ LANGUAGE plpgsql VOLATILE SECURITY INVOKER
-SET search_path = '';
+$$
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+  SET search_path = ''
+;
 
 -- Walk through all tables with masked columns and execute anonymize_table on them
 CREATE OR REPLACE FUNCTION anon.anonymize_database()
@@ -1895,7 +2010,12 @@ $$
       FROM anon.pg_masking_rules
   ) as t;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION anon.static_substitution()
@@ -1903,7 +2023,12 @@ RETURNS BOOLEAN AS
 $$
   SELECT anon.anonymize_database();
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 -- Dynamic Masking
@@ -1936,7 +2061,12 @@ FROM (
   SELECT FALSE as masked --
 ) AS m
 $$
-LANGUAGE SQL STABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  STABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- DEPRECATED : use directly `hasmask(oid::REGROLE)` instead
 -- Adds a `hasmask` column to the pg_roles catalog
@@ -1969,7 +2099,12 @@ AND    NOT a.attisdropped
 ORDER BY a.attnum
 ;
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- get the "select filters" that will mask the real data of a table
 CREATE OR REPLACE FUNCTION anon.mask_filters(
@@ -2004,7 +2139,12 @@ BEGIN
   RETURN expression;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Build a masked view for a table
 CREATE OR REPLACE FUNCTION anon.mask_create_view(
@@ -2025,7 +2165,12 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of CREATE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Remove a masked view for a given table
 CREATE OR REPLACE FUNCTION anon.mask_drop_view(
@@ -2044,7 +2189,12 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of DROP
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Activate the masking engine
 CREATE OR REPLACE FUNCTION anon.start_dynamic_masking(
@@ -2084,7 +2234,12 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Backward compatibility with version 0.2
 CREATE OR REPLACE FUNCTION anon.mask_init(
@@ -2096,7 +2251,12 @@ RETURNS BOOLEAN AS
 $$
 SELECT anon.start_dynamic_masking(sourceschema,maskschema,autoload);
 $$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  VOLATILE
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- this is opposite of start_dynamic_masking()
 CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
@@ -2125,7 +2285,12 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL UNSAFE -- because of DROP
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 
 
@@ -2140,6 +2305,7 @@ BEGIN
 END
 $$
   LANGUAGE plpgsql
+  PARALLEL UNSAFE -- because of UPDATE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -2173,7 +2339,11 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  PARALLEL UNSAFE -- because of ALTER
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Remove (partially) the mask of a specific role
 CREATE OR REPLACE FUNCTION anon.unmask_role(
@@ -2191,7 +2361,11 @@ BEGIN
   RETURN TRUE;
 END
 $$
-LANGUAGE plpgsql SECURITY INVOKER SET search_path='';
+  LANGUAGE plpgsql
+  PARALLEL UNSAFE -- because of UPDATE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 CREATE OR REPLACE FUNCTION anon.mask_update()
 RETURNS BOOLEAN AS
@@ -2227,6 +2401,7 @@ BEGIN
 END
 $$
   LANGUAGE plpgsql
+  PARALLEL UNSAFE -- because of UPDATE
   SECURITY INVOKER
   SET search_path=''
 ;
@@ -2360,7 +2535,12 @@ SELECT int4range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Transform a bigint into a range of bigint
 CREATE OR REPLACE FUNCTION anon.generalize_int8range(
@@ -2374,7 +2554,12 @@ SELECT int8range(
     ((val / step)+1) * step
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Transform a numeric into a range of numeric
 CREATE OR REPLACE FUNCTION anon.generalize_numrange(
@@ -2393,7 +2578,12 @@ SELECT numrange(
 FROM i
 ;
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Transform a timestamp with out timezone (ts) into a range of ts
 -- the `step` option can have the following values
@@ -2410,7 +2600,12 @@ SELECT tsrange(
     date_trunc(step, val)::TIMESTAMP WITHOUT TIME ZONE + ('1 '|| step)::INTERVAL
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- tstzrange
 CREATE OR REPLACE FUNCTION anon.generalize_tstzrange(
@@ -2426,7 +2621,12 @@ SELECT tstzrange( d, d + ('1 '|| step)::INTERVAL )
 FROM lowerbound
 ;
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- daterange — Range of date
 CREATE OR REPLACE FUNCTION anon.generalize_daterange(
@@ -2440,7 +2640,12 @@ SELECT daterange(
     (date_trunc(step, val) + ('1 '|| step)::INTERVAL)::DATE
   );
 $$
-LANGUAGE SQL IMMUTABLE SECURITY INVOKER SET search_path='';
+  LANGUAGE SQL
+  PARALLEL SAFE
+  IMMUTABLE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 -- Risk Evaluation
@@ -2516,7 +2721,11 @@ BEGIN
   RETURN result;
 END
 $$
-LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER; --SET search_path='';
+  LANGUAGE plpgsql
+  IMMUTABLE
+  PARALLEL SAFE
+  SECURITY INVOKER
+; --SET search_path='';
 
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
