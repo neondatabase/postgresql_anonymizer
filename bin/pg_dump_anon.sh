@@ -151,11 +151,10 @@ then
 fi
 
 # Stop if the output is not writable
-if [ ! -w "$output" ]
-then
-  echo "ERROR: $output is not writable" >&2
+touch "$output" || {
+  echo "ERROR: $output is not writable." >&2
   exit 2
-fi
+}
 
 # Header
 cat > "$output" <<EOF
