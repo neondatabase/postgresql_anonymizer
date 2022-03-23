@@ -151,4 +151,5 @@ WHERE tablename='inject_via_rule';
 (1 row)
 
 -- CLEAN UP
+DROP EXTENSION anon CASCADE;
 ROLLBACK;

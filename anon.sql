@@ -1619,7 +1619,7 @@ $$
 -- Check each new masking rule
 CREATE EVENT TRIGGER anon_trg_check_trusted_schemas
   ON ddl_command_end
-  WHEN TAG IN ('SECURITY LABEL', 'COMMENT')
+  WHEN TAG IN ('SECURITY LABEL')
   EXECUTE PROCEDURE anon.trg_check_trusted_schemas();
   -- EXECUTE FUNCTION is not supported by PG10 and below
 
@@ -1632,34 +1632,6 @@ WITH const AS (
       AS pattern_mask_column_function,
     'MASKED +WITH +VALUE +#"%#" ?'::TEXT
       AS pattern_mask_column_value
-),
-rules_from_comments AS (
-SELECT
-  a.attrelid,
-  a.attnum,
-  c.relnamespace::REGNAMESPACE,
-  c.relname,
-  a.attname,
-  pg_catalog.format_type(a.atttypid, a.atttypmod),
-  pg_catalog.col_description(a.attrelid, a.attnum),
-  trim(substring( pg_catalog.col_description(a.attrelid, a.attnum)
-                  FROM k.pattern_mask_column_function FOR '#'))
-    AS masking_function,
-  trim(substring( pg_catalog.col_description(a.attrelid, a.attnum)
-                  FROM k.pattern_mask_column_value FOR '#'))
-    AS masking_value,
-  0 AS priority --low priority for the comment syntax
-FROM const k,
-     pg_catalog.pg_attribute a
-JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
-WHERE a.attnum > 0
---  TODO : Filter out the catalog tables
-AND NOT a.attisdropped
-AND (   pg_catalog.col_description(a.attrelid, a.attnum)
-          SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
-    OR  pg_catalog.col_description(a.attrelid, a.attnum)
-          SIMILAR TO k.pattern_mask_column_value ESCAPE '#'
-    )
 ),
 rules_from_seclabels AS (
 SELECT
@@ -1686,11 +1658,6 @@ AND (   sl.label SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
     OR  sl.label SIMILAR TO k.pattern_mask_column_value ESCAPE '#'
     )
 AND sl.provider = 'anon' -- this is hard-coded in anon.c
-),
-rules_from_all AS (
-SELECT * FROM rules_from_comments
-UNION
-SELECT * FROM rules_from_seclabels
 )
 -- DISTINCT will keep just the 1st rule for each column based on priority,
 SELECT
@@ -1706,7 +1673,7 @@ SELECT
     AND   sl.objoid=f.schema::REGNAMESPACE
   ) AS trusted_schema
 
-FROM rules_from_all
+FROM rules_from_seclabels
 ORDER BY attrelid, attnum, priority DESC
 ;
 
@@ -1836,18 +1803,13 @@ RETURNS BOOLEAN AS
 $$
 SELECT bool_or(m.masked)
 FROM (
-  -- Rule from COMMENT
-  -- /!\ `pg_catalog.pg_authid` does not work with shobj_description()
-  SELECT pg_catalog.shobj_description(role,'pg_authid')
-          SIMILAR TO '%MASKED%' AS masked
-  UNION
   -- Rule from SECURITY LABEL
   SELECT label ILIKE 'MASKED' AS masked
   FROM pg_catalog.pg_shseclabel
   WHERE  objoid = role
   AND provider = 'anon' -- this is hard coded in anon.c
   UNION
-  -- return FALSE if the 2 SELECT above are empty
+  -- return FALSE if the SELECT above is empty
   SELECT FALSE as masked --
 ) AS m
 $$

@@ -100,6 +100,7 @@ FROM pg_tables
 WHERE tablename='inject_via_rule';
 
 -- CLEAN UP
+DROP EXTENSION anon CASCADE;
 ROLLBACK;
 
 

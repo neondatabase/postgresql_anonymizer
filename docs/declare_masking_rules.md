@@ -83,19 +83,14 @@ Limitations
   multiple partitions, you need to declare the masking rules for each partition.
 
 
-Declaring Rules with COMMENTs
+Declaring Rules with COMMENTs is deprecated
 ------------------------------------------------------------------------------
 
-> **WARNING** : This method is not supported anymore and will be fully
-> deprecated in future versions.
+Previous version of the extension allowed users to declare masking rules using
+the `COMMENT` syntax.
 
-There is an alternative way for declaring masking rules, using the
-COMMENT syntax:
-
-```sql
-COMMENT ON COLUMN player.name
-IS 'MASKED WITH FUNCTION anon.fake_last_name()'
-```
+This is not suppported any more. `SECURITY LABELS` are now the only way to
+declare rules.
 
 
 
