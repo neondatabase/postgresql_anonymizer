@@ -181,6 +181,11 @@ SELECT pg_catalog.nextval('test_pg_dump_anon.customer_id_seq');
 SELECT pg_catalog.nextval('test_pg_dump_anon.three');
 SELECT pg_catalog.nextval('public.seq42');
 
+--
+-- I. Errors
+--
+\! pg_dump_anon.sh contrib_regression -f /does/not/exists.sql
+
 --  CLEAN
 DROP SCHEMA test_pg_dump_anon CASCADE;
 DROP SCHEMA "FoO" CASCADE;

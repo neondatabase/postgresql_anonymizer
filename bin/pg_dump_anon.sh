@@ -67,6 +67,12 @@ grep -v -E "^COMMENT ON EXTENSION $1"
 ################################################################################
 
 output=/dev/stdout      # by default, use standard ouput
+
+if [ ! -w "$output" ]
+then
+  output=/dev/tty       # when using sudo, /dev/stdout is not writable
+fi
+
 pg_dump_opts=()         # export options
 psql_opts=(
   "--quiet"
@@ -143,6 +149,12 @@ then
   echo 'ERROR: Anon extension is not installed in this database.' >&2
   exit 1
 fi
+
+# Stop if the output is not writable
+touch "$output" || {
+  echo "ERROR: $output is not writable." >&2
+  exit 2
+}
 
 # Header
 cat > "$output" <<EOF

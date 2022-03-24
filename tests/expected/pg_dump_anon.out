@@ -164,6 +164,12 @@ SELECT pg_catalog.nextval('public.seq42');
       42
 (1 row)
 
+--
+-- I. Errors
+--
+\! pg_dump_anon.sh contrib_regression -f /does/not/exists.sql
+touch: cannot touch '/does/not/exists.sql': No such file or directory
+ERROR: /does/not/exists.sql is not writable.
 --  CLEAN
 DROP SCHEMA test_pg_dump_anon CASCADE;
 NOTICE:  drop cascades to 5 other objects
