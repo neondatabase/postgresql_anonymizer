@@ -192,14 +192,14 @@ pg_dump "${pre_data_dump_opt[@]}" \
 
 # Only this time, we exclude the tables listed in `--exclude-table-data`
 # shellcheck disable=SC2206
-tables_dump_opt=(
-  "${ddl_dump_opt[@]}"  # same as previously
+data_dump_opt=(
+  "${tables_dump_opt[@]}"  # same as previously
   ${exclude_table_data//--exclude-table-data=/--exclude-table=}
 )
 
 # List the tables whose data must be dumped
 dumped_tables=$(
-  pg_dump "${tables_dump_opt[@]}" \
+  pg_dump "${data_dump_opt[@]}" \
   | awk '/^CREATE TABLE /{ print $3 }'
 )
 
