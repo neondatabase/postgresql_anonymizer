@@ -13,10 +13,10 @@ INSERT INTO heroes VALUES
 
 CREATE EXTENSION anon CASCADE;
 
-COMMENT ON COLUMN heroes.lastname
+SECURITY LABEL FOR anon ON COLUMN heroes.lastname
 IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
-COMMENT ON COLUMN heroes.birth
+SECURITY LABEL FOR anon ON COLUMN heroes.birth
 IS 'MASKED WITH FUNCTION anon.random_date()';
 
 SELECT anon.start_dynamic_masking();

@@ -25,7 +25,7 @@ SELECT anon.mask_update();
 (1 row)
 
 CREATE ROLE hal LOGIN;
-COMMENT ON ROLE hal IS 'MASKED';
+SECURITY LABEL FOR anon ON ROLE hal IS 'MASKED';
 SELECT anon.mask_update();
  mask_update 
 -------------

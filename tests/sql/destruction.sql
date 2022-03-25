@@ -21,7 +21,7 @@ IS 'MASKED WITH VALUE $$REDACTED$$ ';
 SECURITY LABEL FOR anon ON COLUMN employee.phone
 IS 'MASKED WITH VALUE NULL ';
 
-COMMENT ON COLUMN employee.zipcode
+SECURITY LABEL FOR anon ON COLUMN employee.zipcode
 IS 'MASKED WITH VALUE 100';
 
 SELECT anon.anonymize_table('employee');
