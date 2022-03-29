@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 -- INIT
 
-SELECT anon.mask_init();
+SELECT anon.start_dynamic_masking();
 
 SELECT anon.start_dynamic_masking();
 
