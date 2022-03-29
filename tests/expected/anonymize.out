@@ -244,4 +244,17 @@ WARNING:  There is no masking rule for column xxxxxxxxxxxxxxxx in table public.e
  t
 (1 row)
 
+-- Remove all masking rules
+SELECT anon.remove_masks_for_all_columns();
+ remove_masks_for_all_columns 
+------------------------------
+ t
+(1 row)
+
+SELECT COUNT(*)=0 FROM anon.pg_masking_rules;
+ ?column? 
+----------
+ t
+(1 row)
+
 ROLLBACK;

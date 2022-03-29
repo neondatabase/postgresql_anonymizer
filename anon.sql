@@ -1779,6 +1779,34 @@ FROM rules_from_seclabels
 ORDER BY attrelid, attnum, priority DESC
 ;
 
+--
+-- Unmask all the role at once
+--
+CREATE OR REPLACE FUNCTION anon.remove_masks_for_all_columns()
+RETURNS BOOLEAN AS
+$$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN SELECT relnamespace, relname, attname
+           FROM anon.pg_masking_rules
+  LOOP
+    EXECUTE format('SECURITY LABEL FOR anon ON COLUMN %I.%I.%I IS NULL',
+                    r.relnamespace,
+                    r.relname,
+                    r.attname
+    );
+  END LOOP;
+  RETURN TRUE;
+END
+$$
+  LANGUAGE plpgsql
+  PARALLEL UNSAFE -- because of SECURITY LABEL
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
 -- Compatibility with version 0.3 and earlier
 CREATE OR REPLACE VIEW anon.pg_masks AS
 SELECT * FROM anon.pg_masking_rules
@@ -2282,6 +2310,32 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+
+--
+-- Unmask all the role at once
+--
+CREATE OR REPLACE FUNCTION anon.remove_masks_for_all_roles()
+RETURNS BOOLEAN AS
+$$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN SELECT rolname
+           FROM anon.pg_masked_roles
+           WHERE hasmask
+  LOOP
+    EXECUTE format('SECURITY LABEL FOR anon ON ROLE %I IS NULL', r.rolname);
+  END LOOP;
+  RETURN TRUE;
+END
+$$
+  LANGUAGE plpgsql
+  PARALLEL UNSAFE -- because of SECURITY LABEL
+  SECURITY INVOKER
+  SET search_path=''
+;
+
 
 --
 -- Trigger the mask_update on any major schema changes

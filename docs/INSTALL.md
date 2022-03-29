@@ -18,6 +18,7 @@ There are multiple ways to install the extension :
 * [Install on MacOS]
 * [Install on Windows]
 * [Install in the cloud]
+* [Uninstall]
 
 In the examples below, we load the extension (step2) using a parameter called
 `session_preload_libraries` but there are other ways to load it.
@@ -35,6 +36,7 @@ If you're having any problem, check the [Troubleshooting] section.
 [Install on Windows]: #install-on-windows
 [Load the extension]: #addendum--load-the-extension
 [Troubleshooting]: #addendum--troubleshooting
+[Uninstall]: #uninstall
 
 Choose your version : `Stable` or `Latest` ?
 ------------------------------------------------------------------------------
@@ -454,3 +456,41 @@ SELECT anon.is_initialized();
 
 If the result is not `t`, the extension data is not present.
 Go back to step 4.
+
+
+Uninstall
+-------------------------------------------------------------------------------
+
+_Step 1:_ Remove all rules
+
+```sql
+SELECT anon.remove_masks_for_all_columns();
+SELECT anon.remove_masks_for_all_roles();
+```
+
+**THIS IS NOT MANDATORY !**  It is possible to keep the masking rules inside
+the database schema even if the anon extension is removed !
+
+_Step 2:_ Drop the extension
+
+```sql
+DROP EXTENSION anon CASCADE;
+```
+
+_Step 3:_ Unload the extension
+
+
+```sql
+ALTER DATABASE foo RESET session_preload_libraries;
+```
+
+
+_Step 4:_ Uninstall the extension
+
+For Redhat / CentOS / Rocky:
+
+```console
+sudo yum remove postgresql_anonymizer_14
+```
+
+Replace 14 by the version of your postgresql instance.

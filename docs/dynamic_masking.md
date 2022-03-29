@@ -101,7 +101,13 @@ How to unmask a role
 Simply remove the security label like this:
 
 ```sql
-SECURITY LABEL FOR anon ON ROLE bob IS NULL
+SECURITY LABEL FOR anon ON ROLE bob IS NULL;
+```
+
+To unmask all masked roles at once you can type:
+
+```sql
+SELECT anon.remove_masks_for_all_roles();
 ```
 
 
