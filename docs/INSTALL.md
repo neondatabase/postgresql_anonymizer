@@ -461,7 +461,7 @@ Go back to step 4.
 Uninstall
 -------------------------------------------------------------------------------
 
-1. Remove all rules
+_Step 1:_ Remove all rules
 
 ```sql
 SELECT anon.remove_masks_for_all_columns();
@@ -471,13 +471,13 @@ SELECT anon.remove_masks_for_all_roles();
 **THIS IS NOT MANDATORY !**  It is possible to keep the masking rules inside
 the database schema even if the anon extension is removed !
 
-2. Drop the extension
+_Step 2:_ Drop the extension
 
 ```sql
 DROP EXTENSION anon CASCADE;
 ```
 
-3. Unload the extension
+_Step 3:_ Unload the extension
 
 
 ```sql
@@ -485,9 +485,11 @@ ALTER DATABASE foo RESET session_preload_libraries;
 ```
 
 
-4. Uninstall the extension
+_Step 4:_ Uninstall the extension
 
-```
+For Redhat / CentOS / Rocky:
+
+```console
 sudo yum remove postgresql_anonymizer_14
 ```
 
