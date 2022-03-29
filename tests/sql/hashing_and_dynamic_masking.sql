@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- Dynamic masking
 SELECT anon.start_dynamic_masking();
 
-SELECT anon.set_salt('x');
+SET anon.salt TO 'x';
 
 CREATE TABLE phone (
   phone_owner  TEXT,
@@ -58,17 +58,17 @@ SELECT anon.mask_update();
 \! psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
 
 -- Jimmy tries to find the salt :-)
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT anon.get_salt();'
+SET ROLE jimmy_mcnulty;
 
+-- We can't use SHOW because the error message changes between PG major versions
+--SHOW anon.salt;
+--SHOW anon.algorithm;
+SELECT COUNT(name) = 0 FROM pg_settings WHERE name='anon.salt';
+SELECT COUNT(name) = 0 FROM pg_settings WHERE name='anon.algorithm';
+SELECT COUNT(name)=3 FROM pg_settings WHERE name LIKE 'anon.%';
+RESET ROLE;
 
--- Jimmy cant read the secrets
---
--- Here we use a trick to catch to output because the error message is different
--- between versions of PostgreSQL...
--- see tests/sql/masking.sql for more details
---
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM anon.secret' 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
-
+SELECT COUNT(name)=5 FROM pg_settings WHERE name LIKE 'anon.%';
 
 -- Bug #259 - anon should not interact with other extensions
 CREATE EXTENSION pg_stat_statements;

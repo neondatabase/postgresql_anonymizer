@@ -65,7 +65,7 @@ SELECT  anon.pseudo_iban('bob'::TEXT,'x')
 
 -- Use a predefined secret salt
 
-SELECT anon.set_salt('a_VeRy_SeCReT_SaLT');
+SET anon.salt TO 'a_VeRy_SeCReT_SaLT';
 
 SELECT anon.pseudo_last_name('bob'::TEXT);
 

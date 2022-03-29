@@ -137,7 +137,13 @@ When you start the masking engine with `start_dynamic_masking()`, you can
 specify the schema that will be masked with:
 
 ```sql
-SELECT start_dynamic_masking('sales');
+ALTER DATABASE foo SET anon.sourceschema TO 'sales';
+```
+
+Then open a new session to the database and type:
+
+```sql
+SELECT start_dynamic_masking();
 ```
 
 **However** static masking with `anon.anonymize()`and anonymous export

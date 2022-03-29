@@ -40,155 +40,12 @@ SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED';
 -- https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
 --
 
-
--------------------------------------------------------------------------------
--- Config
--------------------------------------------------------------------------------
-
-DROP TABLE IF EXISTS anon.config;
-CREATE TABLE anon.config (
-    param TEXT UNIQUE NOT NULL,
-    value TEXT
-);
-
-SELECT pg_catalog.pg_extension_config_dump('anon.config','');
-
-COMMENT ON TABLE anon.config IS 'Anonymization and Masking settings';
-
--- We also use a secret table to store the hash salt and algorithm
-DROP TABLE IF EXISTS anon.secret;
-CREATE TABLE anon.secret (
-    param TEXT UNIQUE NOT NULL,
-    value TEXT
-);
-REVOKE ALL ON TABLE anon.secret FROM PUBLIC;
-
-SELECT pg_catalog.pg_extension_config_dump('anon.secret','');
-
-COMMENT ON TABLE anon.secret IS 'Hashing secrets';
-
---
--- We use access methods to read/write the content of the `secret` table
--- The `get_salt()` function can be used with the security definer option
---
-CREATE OR REPLACE FUNCTION anon.set_salt(v TEXT)
-RETURNS TEXT AS
-$$
-  INSERT INTO anon.secret(param,value)
-  VALUES('salt',v)
-  ON CONFLICT (param)
-  DO
-    UPDATE
-    SET value=EXCLUDED.value
-  RETURNING value
-$$
-  LANGUAGE SQL
-  RETURNS NULL ON NULL INPUT
-  PARALLEL UNSAFE -- the function updates value
-  SECURITY INVOKER
-  SET search_path=''
-;
-REVOKE EXECUTE ON FUNCTION anon.set_salt(TEXT)  FROM PUBLIC;
-
-CREATE OR REPLACE FUNCTION anon.get_salt()
-RETURNS TEXT AS
-$$
-  SELECT value
-  FROM anon.secret
-  WHERE param = 'salt'
-$$
-  LANGUAGE SQL
-  STABLE
-  STRICT
-  PARALLEL SAFE
-  SECURITY INVOKER
-  SET search_path=''
-;
-REVOKE EXECUTE ON FUNCTION anon.get_salt()  FROM PUBLIC;
-
-CREATE OR REPLACE FUNCTION anon.set_algorithm(v TEXT)
-RETURNS TEXT AS
-$$
-  INSERT INTO anon.secret(param,value)
-  VALUES('algorithm',v)
-  ON CONFLICT (param)
-  DO
-    UPDATE
-    SET value=EXCLUDED.value
-  RETURNING value
-$$
-  LANGUAGE SQL
-  RETURNS NULL ON NULL INPUT
-  PARALLEL UNSAFE -- the function upserts a value
-  SECURITY INVOKER
-  SET search_path=''
-;
-REVOKE EXECUTE ON FUNCTION anon.set_algorithm(TEXT)  FROM PUBLIC;
-
-CREATE OR REPLACE FUNCTION anon.get_algorithm()
-RETURNS TEXT AS
-$$
-  SELECT value
-  FROM anon.secret
-  WHERE param = 'algorithm'
-$$
-  LANGUAGE SQL
-  STABLE
-  STRICT
-  PARALLEL SAFE
-  SECURITY INVOKER
-  SET search_path=''
-;
-REVOKE EXECUTE ON FUNCTION anon.get_algorithm()  FROM PUBLIC;
-
-
-
 CREATE OR REPLACE FUNCTION anon.version()
 RETURNS TEXT AS
 $func$
-  SELECT '0.12.0'::text AS version
+  SELECT extversion FROM pg_extension WHERE extname='anon';
 $func$
   LANGUAGE SQL
-  PARALLEL SAFE
-  SECURITY INVOKER
-  SET search_path=''
-;
-
--- name of the source schema
--- default value: 'public'
-CREATE OR REPLACE FUNCTION anon.sourceschema()
-RETURNS TEXT AS
-$$
-WITH default_config(value) AS (
-  VALUES ('public')
-)
-SELECT COALESCE(c.value, d.value)
-FROM default_config d
-LEFT JOIN anon.config AS c ON (c.param = 'sourceschema')
-;
-$$
-  LANGUAGE SQL
-  STABLE
-  PARALLEL SAFE
-  SECURITY INVOKER
-  SET search_path=''
-;
-
--- name of the masking schema
--- default value: 'mask'
-CREATE OR REPLACE FUNCTION anon.maskschema()
-RETURNS TEXT AS
-$$
-WITH default_config(value) AS (
-  VALUES ('mask')
-)
-SELECT COALESCE(c.value, d.value)
-FROM default_config d
-LEFT JOIN anon.config AS c ON (c.param = 'maskschema')
-;
-$$
-  LANGUAGE SQL
-  STABLE
   PARALLEL SAFE
   SECURITY INVOKER
   SET search_path=''
@@ -641,10 +498,11 @@ WHERE fn.lang = dict_lang
         SELECT oid
         FROM pg_catalog.pg_namespace
         WHERE nspname NOT LIKE 'pg_%'
-        AND nspname NOT IN  ( 'information_schema',
-                              'anon',
-                              anon.maskschema()
-                            )
+        AND nspname NOT IN  (
+          'information_schema',
+          'anon',
+          pg_catalog.current_setting('anon.maskschema')::NAME
+        )
       )
 ;
 END;
@@ -744,19 +602,6 @@ BEGIN
     RAISE NOTICE 'The anon extension is already initialized.';
     RETURN TRUE;
   END IF;
-
-  -- Initialize the hashing secrets
-  PERFORM
-      -- if the secret salt is NULL, generate a random salt
-      COALESCE(
-          anon.get_salt(),
-          anon.set_salt(md5(random()::TEXT))
-      ),
-      -- if the secret hash algo is NULL, we use sha512 by default
-      COALESCE(
-          anon.get_algorithm(),
-          anon.set_algorithm('sha512')
-      );
 
   SELECT bool_or(results) INTO success
   FROM unnest(array[
@@ -903,7 +748,6 @@ $$
     TRUNCATE anon.lorem_ipsum;
     TRUNCATE anon.postcode;
     TRUNCATE anon.siret;
-    TRUNCATE anon.secret;
     TRUNCATE anon.identifiers_category CASCADE;
     TRUNCATE anon.identifier;
     -- ADD NEW TABLE HERE
@@ -953,15 +797,20 @@ $$
   SET search_path=''
 ;
 
-
+--
+-- Return a hash value for a seed
+--
+-- The function is a SECURIY DEFINER because `anon.salt` and `anon.algorithm`
+-- are visible only to superusers.
+--
 CREATE OR REPLACE FUNCTION anon.hash(
   seed TEXT
 )
 RETURNS TEXT AS $$
   SELECT anon.digest(
     seed,
-    anon.get_salt(),
-    anon.get_algorithm()
+    pg_catalog.current_setting('anon.salt'),
+    pg_catalog.current_setting('anon.algorithm')
   );
 $$
   LANGUAGE SQL
@@ -1108,7 +957,7 @@ $$
   SELECT anon.digest(
     seed,
     anon.random_string(6),
-    anon.get_algorithm()
+    pg_catalog.current_setting('anon.algorithm')
   );
 $$
   LANGUAGE SQL
@@ -1457,6 +1306,15 @@ $$
   SET search_path=''
 ;
 
+
+--
+-- the pseudo function are declared as SECURTY DEFINER because the access
+-- the anon.salt which is only visible to superusers.
+--
+-- If a masked role can read the salt, he/she can run a brute force attack to
+-- retrieve the original data based on the pseudonymized data
+--
+
 CREATE OR REPLACE FUNCTION anon.pseudo_first_name(
   seed ANYELEMENT,
   salt TEXT DEFAULT NULL
@@ -1466,7 +1324,7 @@ RETURNS TEXT AS $$
   FROM anon.first_name
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT max(oid) FROM anon.first_name)
   );
 $$
@@ -1486,7 +1344,7 @@ RETURNS TEXT AS $$
   FROM anon.last_name
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT max(oid) FROM anon.last_name)
   );
 $$
@@ -1507,7 +1365,7 @@ RETURNS TEXT AS $$
   FROM anon.email
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT MAX(oid) FROM anon.email)
   );
 $$
@@ -1528,7 +1386,7 @@ RETURNS TEXT AS $$
   FROM anon.city
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT MAX(oid) FROM anon.city)
   );
 $$
@@ -1548,7 +1406,7 @@ RETURNS TEXT AS $$
   FROM anon.country
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT MAX(oid) FROM anon.city)
   );
 $$
@@ -1568,7 +1426,7 @@ RETURNS TEXT AS $$
   FROM anon.company
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT MAX(oid) FROM anon.company)
   );
 $$
@@ -1588,7 +1446,7 @@ RETURNS TEXT AS $$
   FROM anon.iban
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT MAX(oid) FROM anon.iban)
   );
 $$
@@ -1608,7 +1466,7 @@ RETURNS TEXT AS $$
   FROM anon.siret
   WHERE oid = anon.projection_to_oid(
     seed,
-    COALESCE(salt,anon.get_salt()),
+    COALESCE(salt, pg_catalog.current_setting('anon.salt')),
     (SELECT MAX(oid) FROM anon.siret)
   );
 $$
@@ -1708,7 +1566,7 @@ BEGIN
       USING HINT = 'Check the anon.restrict_to_trusted_schemas parameter';
   ELSIF length(untrusted_schema) > 0 THEN
     RAISE '% is not a trusted schema.', untrusted_schema
-      USING HINT = 'Check the anon.trusted_schemas parameter';
+      USING HINT = 'You must add a TRUSTED security label to this schema.';
   END IF;
 END;
 $$
@@ -2047,15 +1905,16 @@ CREATE OR REPLACE FUNCTION anon.mask_create_view(
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  EXECUTE format('CREATE OR REPLACE VIEW "%s".%s AS SELECT %s FROM %s',
-                                  anon.maskschema(),
-                                  -- FIXME quote_ident(relid::REGCLASS::TEXT) ?
-                                  ( SELECT quote_ident(relname)
-                                    FROM pg_catalog.pg_class
-                                    WHERE relid = oid
-                                  ),
-                                  anon.mask_filters(relid),
-                                  relid::REGCLASS);
+  EXECUTE format( 'CREATE OR REPLACE VIEW %I.%s AS SELECT %s FROM %s',
+                  pg_catalog.current_setting('anon.maskschema'),
+                  -- FIXME quote_ident(relid::REGCLASS::TEXT) ?
+                  ( SELECT quote_ident(relname)
+                    FROM pg_catalog.pg_class
+                    WHERE relid = oid
+                  ),
+                  anon.mask_filters(relid),
+                  relid::REGCLASS
+  );
   RETURN TRUE;
 END
 $$
@@ -2073,7 +1932,8 @@ CREATE OR REPLACE FUNCTION anon.mask_drop_view(
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  EXECUTE format('DROP VIEW "%s".%s;', anon.maskschema(),
+  EXECUTE format('DROP VIEW %I.%s;',
+                  pg_catalog.current_setting('anon.maskschema'),
                   -- FIXME quote_ident(relid::REGCLASS::TEXT) ?
                   ( SELECT quote_ident(relname)
                     FROM pg_catalog.pg_class
@@ -2092,8 +1952,6 @@ $$
 
 -- Activate the masking engine
 CREATE OR REPLACE FUNCTION anon.start_dynamic_masking(
-  sourceschema TEXT DEFAULT 'public',
-  maskschema TEXT DEFAULT 'mask',
   autoload BOOLEAN DEFAULT TRUE
 )
 RETURNS BOOLEAN AS
@@ -2101,14 +1959,6 @@ $$
 DECLARE
   r RECORD;
 BEGIN
-  -- Load default config values
-  INSERT INTO anon.config
-  VALUES
-  ('sourceschema','public'),
-  ('maskschema', 'mask')
-  ON CONFLICT DO NOTHING
-  ;
-
   -- Load faking data
   SELECT anon.is_initialized() AS init INTO r;
   IF NOT autoload THEN
@@ -2119,13 +1969,19 @@ BEGIN
     PERFORM anon.init();
   END IF;
 
-  EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', maskschema);
-  EXECUTE format('UPDATE anon.config SET value=''%s'' WHERE param=''sourceschema'';', sourceschema);
-  EXECUTE format('UPDATE anon.config SET value=''%s'' WHERE param=''maskschema'';', maskschema);
+  EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I',
+                  pg_catalog.current_setting('anon.maskschema')::NAME
+  );
 
   PERFORM anon.mask_update();
 
   RETURN TRUE;
+
+  EXCEPTION
+    WHEN invalid_name THEN
+       RAISE EXCEPTION '% is not a valid name',
+                        pg_catalog.current_setting('anon.maskschema')::NAME;
+
 END
 $$
   LANGUAGE plpgsql
@@ -2144,7 +2000,7 @@ BEGIN
   -- Walk through all tables in the source schema and drop the masking view
   PERFORM anon.mask_drop_view(oid)
   FROM pg_catalog.pg_class
-  WHERE relnamespace=anon.sourceschema()::regnamespace
+  WHERE relnamespace=quote_ident(pg_catalog.current_setting('anon.sourceschema'))::REGNAMESPACE
   AND relkind IN ('r','p','f') -- relations or partitions or foreign tables
   ;
 
@@ -2154,11 +2010,9 @@ BEGIN
   WHERE anon.hasmask(oid::REGROLE);
 
   -- Drop the masking schema, it should be empty
-  EXECUTE format('DROP SCHEMA %I', anon.maskschema()::REGNAMESPACE);
-
-  -- Erase the config
-  DELETE FROM anon.config WHERE param='sourceschema';
-  DELETE FROM anon.config WHERE param='maskschema';
+  EXECUTE format('DROP SCHEMA %I',
+                  pg_catalog.current_setting('anon.maskschema')
+  );
 
   RETURN TRUE;
 END
@@ -2199,16 +2053,17 @@ DECLARE
   sourceschema REGNAMESPACE;
   maskschema REGNAMESPACE;
 BEGIN
-  SELECT anon.sourceschema()::REGNAMESPACE INTO sourceschema;
-  SELECT anon.maskschema()::REGNAMESPACE INTO maskschema;
+  SELECT quote_ident(pg_catalog.current_setting('anon.sourceschema'))::REGNAMESPACE
+    INTO sourceschema;
+  SELECT quote_ident(pg_catalog.current_setting('anon.maskschema'))::REGNAMESPACE
+    INTO maskschema;
   RAISE DEBUG 'Mask role % (% -> %)', maskedrole, sourceschema, maskschema;
   -- The masked role cannot read the authentic data in the source schema
   EXECUTE format('REVOKE ALL ON SCHEMA %s FROM %s', sourceschema, maskedrole);
-  -- The masked role can use the anon schema (except the secrets)
+  -- The masked role can use the anon schema
   EXECUTE format('GRANT USAGE ON SCHEMA anon TO %s', maskedrole);
   EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA anon TO %s', maskedrole);
   EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA anon TO %s', maskedrole);
-  EXECUTE format('REVOKE ALL ON TABLE anon.secret FROM %s',  maskedrole);
   -- The masked role can use the masking schema
   EXECUTE format('GRANT USAGE ON SCHEMA %s TO %s', maskschema, maskedrole);
   EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %s TO %s', maskschema, maskedrole);
@@ -2248,16 +2103,13 @@ $$
 CREATE OR REPLACE FUNCTION anon.mask_update()
 RETURNS BOOLEAN AS
 $$
-DECLARE
-  conf TEXT;
 BEGIN
   -- Check if dynamic masking is enabled
-  SELECT *
-  INTO conf
-  FROM anon.config
-  WHERE param IN ( 'sourceschema', 'maskschema' );
+  PERFORM nspname
+  FROM pg_catalog.pg_namespace
+  WHERE nspname = pg_catalog.current_setting('anon.maskschema')::NAME;
 
-  IF NOT found THEN
+  IF NOT FOUND THEN
     -- Dynamic masking is disabled, no need to go further
     RETURN FALSE;
   END IF;
@@ -2266,7 +2118,7 @@ BEGIN
   -- and build a dynamic masking view
   PERFORM anon.mask_create_view(oid)
   FROM pg_catalog.pg_class
-  WHERE relnamespace=anon.sourceschema()::regnamespace
+  WHERE relnamespace=quote_ident(pg_catalog.current_setting('anon.sourceschema'))::REGNAMESPACE
   AND relkind IN ('r','p','f') -- relations or partitions or foreign tables
   ;
 

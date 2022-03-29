@@ -37,7 +37,7 @@ END
 ## Return the masking schema
 get_maskschema() {
 psql "${psql_opts[@]}" << EOSQL
-  SELECT anon.maskschema();
+  SELECT pg_catalog.current_setting('anon.maskschema');
 EOSQL
 }
 

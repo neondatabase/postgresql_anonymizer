@@ -32,7 +32,7 @@ var psql_opts []string = []string {
 
 // Return the masking schema
 func get_maskschema() string {
-  return psql_to_string("SELECT anon.maskschema();")
+  return psql_to_string("SELECT pg_catalog.current_setting('anon.maskschema');")
 }
 
 // Return the masking filters based on the table name

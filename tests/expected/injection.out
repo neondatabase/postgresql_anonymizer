@@ -5,7 +5,8 @@ NOTICE:  installing required extension "pgcrypto"
 CREATE TABLE a (
     i SERIAL,
     d TIMESTAMP,
-    x INTEGER
+    x INTEGER,
+    t TEXT
 );
 --
 -- random_phone
@@ -74,21 +75,21 @@ ROLLBACK TO shuffle_3;
 -- load
 --
 -- returns a WARNING and FALSE
-SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--') IS FALSE;
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/identifiers_category.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/identifier_fr_FR.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/identifier_en_US.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/address.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/city.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/company.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/country.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/email.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/first_name.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/iban.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/last_name.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/postcode.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/siret.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load (i int);--/lorem_ipsum.csv' is not present. Skipping.
+SELECT anon.load('base/''; CREATE TABLE inject_via_load(i int);--') IS FALSE;
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/identifiers_category.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/identifier_fr_FR.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/identifier_en_US.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/address.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/city.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/company.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/country.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/email.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/first_name.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/iban.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/last_name.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/postcode.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/siret.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/lorem_ipsum.csv' is not present. Skipping.
  ?column? 
 ----------
  t
@@ -105,11 +106,8 @@ WHERE tablename='inject_via_load';
 --
 -- Dynamic Masking
 --
--- returns TRUE
-SELECT anon.start_dynamic_masking(
-  'public',
-  'foo; CREATE TABLE inject_via_init (i int);--'
-);
+SET anon.maskschema TO 'foo; CREATE TABLE inject_via_guc(i int);--';
+SELECT anon.start_dynamic_masking();
  start_dynamic_masking 
 -----------------------
  t
@@ -117,7 +115,7 @@ SELECT anon.start_dynamic_masking(
 
 SELECT COUNT(*) = 0
 FROM pg_tables
-WHERE tablename='inject_via_init';
+WHERE tablename='inject_via_guc';
  ?column? 
 ----------
  t
@@ -126,22 +124,8 @@ WHERE tablename='inject_via_init';
 --
 -- Masking Rule Syntax
 --
-SAVEPOINT seclabel_1;
-SECURITY LABEL FOR anon ON COLUMN a.x
-IS 'MASKED WITH VALUE foo; CREATE TABLE inject_via_rule (i int);--';
-ERROR:  syntax error at or near ";"
-LINE 1: ...ject_via_init (i int);--".a AS SELECT i,d,CAST(foo; CREATE T...
-                                                             ^
-QUERY:  CREATE OR REPLACE VIEW "foo; CREATE TABLE inject_via_init (i int);--".a AS SELECT i,d,CAST(foo; CREATE TABLE inject_via_rule (i int);-- AS integer) AS x FROM public.a
-CONTEXT:  PL/pgSQL function anon.mask_create_view(oid) line 3 at EXECUTE
-SQL statement "SELECT anon.mask_create_view(oid)
-  FROM pg_catalog.pg_class
-  WHERE relnamespace=anon.sourceschema()::regnamespace
-  AND relkind IN ('r','p','f') -- relations or partitions or foreign tables"
-PL/pgSQL function anon.mask_update() line 18 at PERFORM
-SQL statement "SELECT anon.mask_update()"
-PL/pgSQL function anon.trg_mask_update() line 5 at PERFORM
-ROLLBACK TO seclabel_1;
+SECURITY LABEL FOR anon ON COLUMN a.t
+IS 'MASKED WITH VALUE $$foo; CREATE TABLE inject_via_rule(i int);--$$';
 SELECT COUNT(*) = 0
 FROM pg_tables
 WHERE tablename='inject_via_rule';
