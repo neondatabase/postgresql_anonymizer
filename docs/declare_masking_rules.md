@@ -73,7 +73,13 @@ Removing a masking rule
 You can simply erase a masking rule like this:
 
 ```sql
-SECURITY LABEL FOR anon ON COLUMN player.name IS NULL
+SECURITY LABEL FOR anon ON COLUMN player.name IS NULL;
+```
+
+To remove all rules at once, you can use:
+
+```sql
+SELECT anon.remove_masks_for_all_columns();
 ```
 
 Limitations

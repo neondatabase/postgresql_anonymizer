@@ -48,6 +48,19 @@ NOTICE:  The previous priviledges of 'hal' are not restored. You need to grant t
  t
 (1 row)
 
+-- REMOVE MASKS
+SELECT anon.remove_masks_for_all_roles();
+ remove_masks_for_all_roles 
+----------------------------
+ t
+(1 row)
+
+SELECT COUNT(*)=0 FROM anon.pg_masked_roles WHERE hasmask;
+ ?column? 
+----------
+ t
+(1 row)
+
 --  CLEAN
 DROP EXTENSION anon CASCADE;
 DROP EXTENSION pgcrypto;

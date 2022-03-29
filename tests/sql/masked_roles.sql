@@ -30,6 +30,10 @@ SELECT anon.mask_update();
 
 SELECT anon.stop_dynamic_masking();
 
+-- REMOVE MASKS
+SELECT anon.remove_masks_for_all_roles();
+SELECT COUNT(*)=0 FROM anon.pg_masked_roles WHERE hasmask;
+
 --  CLEAN
 
 DROP EXTENSION anon CASCADE;
