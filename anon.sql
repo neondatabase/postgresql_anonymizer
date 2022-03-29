@@ -1927,18 +1927,7 @@ $$
   SET search_path=''
 ;
 
--- Backward compatibility with version 0.2
-CREATE OR REPLACE FUNCTION anon.static_substitution()
-RETURNS BOOLEAN AS
-$$
-  SELECT anon.anonymize_database();
-$$
-  LANGUAGE SQL
-  VOLATILE
-  PARALLEL UNSAFE -- because of UPDATE
-  SECURITY INVOKER
-  SET search_path=''
-;
+
 
 -------------------------------------------------------------------------------
 -- Dynamic Masking
@@ -2146,22 +2135,6 @@ $$
   SET search_path=''
 ;
 
--- Backward compatibility with version 0.2
-CREATE OR REPLACE FUNCTION anon.mask_init(
-  sourceschema TEXT DEFAULT 'public',
-  maskschema TEXT DEFAULT 'mask',
-  autoload BOOLEAN DEFAULT TRUE
-)
-RETURNS BOOLEAN AS
-$$
-SELECT anon.start_dynamic_masking(sourceschema,maskschema,autoload);
-$$
-  LANGUAGE SQL
-  VOLATILE
-  PARALLEL UNSAFE -- because of UPDATE
-  SECURITY INVOKER
-  SET search_path=''
-;
 
 -- this is opposite of start_dynamic_masking()
 CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
@@ -2354,97 +2327,6 @@ CREATE EVENT TRIGGER anon_trg_mask_update
   EXECUTE PROCEDURE anon.trg_mask_update()
   -- EXECUTE FUNCTION not supported by PG10 and below
 ;
-
-
--------------------------------------------------------------------------------
--- Anonymous Dumps
--------------------------------------------------------------------------------
-
--- WARNING : this entire section is deprecated ! It kept for backward
--- compatibility and will probably be remove before version 1.0 is released
-
-
-CREATE OR REPLACE FUNCTION anon.dump_ddl()
-RETURNS TABLE (
-    ddl TEXT
-) AS
-$$
-    SELECT E'anon.dump_dll() is deprecated. Please use pg_dump_anon instead.'::TEXT
-$$
-LANGUAGE SQL SECURITY INVOKER SET search_path='';
-
--- generate the "COPY ... FROM STDIN" statement for a table
-CREATE OR REPLACE FUNCTION anon.get_copy_statement(relid OID)
-RETURNS TEXT AS
-$$
-DECLARE
-  empty_table BOOLEAN;
-  copy_statement TEXT;
-  val TEXT;
-  rec RECORD;
-BEGIN
--- Stop right now if the table is empty
-  EXECUTE format(E'SELECT true WHERE NOT EXISTS (SELECT 1 FROM %s);',
-                                                    relid::REGCLASS)
-  INTO empty_table;
-  IF empty_table THEN
-    RETURN '';
-  END IF;
-
-  --  /!\ cannot use COPY TO STDOUT in PL/pgSQL
-  copy_statement := format(E' COPY %s
-                              FROM STDIN
-                              CSV QUOTE AS ''"''
-                              DELIMITER '',''; \n',
-                          relid::REGCLASS);
-  FOR rec IN
-    EXECUTE format(E'SELECT tmp::TEXT AS r FROM (SELECT %s FROM %s) AS tmp;',
-                          anon.mask_filters(relid),
-                          relid::REGCLASS
-  )
-  LOOP
-  val := ltrim(rec.r,'(');
-  val := rtrim(val,')');
-  copy_statement := copy_statement || val || E'\n';
-  END LOOP;
-  copy_statement := copy_statement || E'\\.\n';
-  RETURN copy_statement;
-END
-$$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
-
--- export content of all the tables as COPY statements
-CREATE OR REPLACE FUNCTION anon.dump_data()
-RETURNS TABLE (
-    data TEXT
-) AS
-$$
-  SELECT anon.get_copy_statement(relid)
-  FROM pg_catalog.pg_stat_user_tables
-  WHERE schemaname NOT IN ( 'anon' , anon.maskschema() )
-  ORDER BY  relid::regclass -- sort by name to force the dump order
-$$
-LANGUAGE SQL VOLATILE SECURITY INVOKER SET search_path='';
-
--- export the database schema + anonymized data
-CREATE OR REPLACE FUNCTION anon.dump()
-RETURNS TABLE (
-  dump TEXT
-) AS
-$func$
-BEGIN
-  RAISE NOTICE 'This function is deprecated !'
-    USING HINT = 'Use the pg_dump_anon command line instead.';
-
-  RETURN QUERY
-    SELECT anon.dump_ddl()
-    UNION ALL -- ALL is required to maintain the lines order as appended
-    SELECT anon.dump_data();
-END;
-$func$
-LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path='';
-
 
 
 -------------------------------------------------------------------------------
