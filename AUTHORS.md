@@ -10,12 +10,15 @@ how you can get involved, please read [CONTRIBUTING.md].
 Maintainer
 -------------------------------------------------------------------------------
 
-This software is mainly developed and maintained by Damien Clochard (@daamien)
-along with Étienne Bersac (@bersace) and Frédéric Yhuel (@yhuelf).
+This software is mainly developed and maintained by Damien Clochard with the
+help of many contributors.
 
 Contributors
 -------------------------------------------------------------------------------
 
+* Cristian Gomez Portes: Bug report
+* Mike Tefft: Feature request
+* Hrvoje Pavlinovic : Bug fix
 * Be Hai Tran : How-To
 * Florent Jardin : How-To
 * Yann B. (@ybycode) : fix for pg_dump_anon

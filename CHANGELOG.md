@@ -1,6 +1,34 @@
 CHANGELOG
 ===============================================================================
 
+
+20220331 : 0.11.0 - Release Candidate 1
+-------------------------------------------------------------------------------
+
+<!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/16 -->
+<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
+
+__Dependencies:__
+
+- pg_crypto
+
+__Changes:__
+
+* [core] Remove obsolete functions
+* [dump] FIX #282 pg_dump_anon.sh step 2 is broken
+* [dump] Regression on -U option
+* [core] declaring masking rules with COMMENT is now deprecated
+* [core] Add parallel safety for each function
+* [dump] FIX #272: pg_dump_anon throws a stdout error when used with sudo
+* [doc] Quick notes about perfomance
+* [dump] FIX #281 - Regression on pg_dump_anon -U
+* [docker] fix the entrypoint env vars
+* [dump] add --data-only option
+* [pseudo] Allow any type of seeds for the pseudonymizing functions
+* [doc] remove warnings
+* [how-to] improvements
+
+
 20220314 : 0.10.0 - An improved engine and a brand new tutorial
 -------------------------------------------------------------------------------
 
