@@ -273,7 +273,7 @@ ci_local:
 ## P G X N
 ##
 
-ZIPBALL:=$(EXTENSION)-$(EXTENSION_VERSION).zip
+ZIPBALL:=_build/linux/$(EXTENSION)-$(EXTENSION_VERSION).zip
 
 .PHONY: pgxn
 
@@ -298,4 +298,15 @@ pgxn: #: build the PGXN package
 	# clean up
 	rm -fr ./$(EXTENSION)_$(EXTENSION_VERSION) ./postgresql_anonymizer.git/
 
+##
+## Windows ZIP
+##
 
+WINZIPBALL:=_build/windows/$(EXTENSION)-$(EXTENSION_VERSION)-win2016.zip
+
+.PHONY: windows_zip
+
+$WINZIPBALL: windows_zip
+
+windows_zip: #: build the Windows package
+	zip -r ($WINZIPBALL) . -x "./git/*"
