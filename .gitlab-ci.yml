@@ -11,6 +11,8 @@ variables:
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
     SAST_EXCLUDED_PATHS: '_venv, docs/howto/_venv'
+    ## Uncomment this to run only windows specific jobs
+    #WINDOWS_ONLY: "True"  
 
 stages:
   - lint
@@ -33,6 +35,9 @@ lint-bash:
     - shellcheck bin/standalone.sh
     - shellcheck bin/pg_dump_anon.sh
     - shellcheck docker/anon.sh
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 lint-markdown:
   stage: lint
@@ -40,6 +45,9 @@ lint-markdown:
   script:
     - gem install mdl
     - mdl docs/*.md *.md
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 lint-py:
   stage: lint
@@ -47,12 +55,18 @@ lint-py:
   script:
     - pip3 install flake8
     - flake8 python/*.py
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 lint-go:
   stage: lint
   image: golang:alpine
   script:
     - go vet pg_dump_anon/pg_dump_anon.go
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 ##
 ## B U I L D
@@ -68,6 +82,20 @@ pg_dump_anon:
     paths:
         - _build
 
+windows-2016:
+  stage: build
+  tags:
+    - windows  # run this job inside a windows gitlab runner
+  script:
+    - .\build.bat
+  artifacts:
+    paths:
+      - '*'
+    expire_in: 1 day
+  only:
+    variables:
+      - $WINDOWS
+      
 # We need to launch manually the instance because the entrypoint is skipped.
 .init_PG_instance: &init_PG_instance
   before_script:
@@ -97,6 +125,9 @@ PG9.6-debian10:
         - regression.*
         - results/
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 PG10-debian10:
   <<: *init_PG_instance
@@ -117,6 +148,9 @@ PG10-debian10:
         - anon*
         - regression.*
         - results/
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 PG10-rocky8:
   stage: build
@@ -143,6 +177,9 @@ PG10-rocky8:
         - regression.*
         - results/
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 PG11-debian10:
   <<: *init_PG_instance
@@ -164,6 +201,9 @@ PG11-debian10:
         - regression.*
         - results/
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 ## DOES NOT WORK ?
 PG11-centos7:
@@ -194,6 +234,9 @@ PG11-centos7:
         - regression.*
         - results/
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 PG12-debian10:
   <<: *init_PG_instance
@@ -215,6 +258,9 @@ PG12-debian10:
         - regression.*
         - results/
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 PG13-debian10:
   <<: *init_PG_instance
@@ -236,6 +282,9 @@ PG13-debian10:
         - regression.*
         - results/
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 PG14-debian10:
   <<: *init_PG_instance
@@ -257,6 +306,9 @@ PG14-debian10:
         - regression.*
         - results/
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 PG15-rocky8:
   stage: build
@@ -289,7 +341,9 @@ PG15-rocky8:
         - regression.*
         - results/
     expire_in: 1 day
-
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 blackbox:
   stage: build
@@ -304,6 +358,9 @@ blackbox:
     # this test to break every time a new minor version is released
     - sed -i 's/^--.*$//' results/blackbox.out
     - diff tests/expected/blackbox.out results/blackbox.out
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 how-to:
   image:
@@ -320,6 +377,9 @@ how-to:
     paths:
       - docs/how-to
     expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 ##
 ## T E S T
@@ -457,6 +517,16 @@ pgxn:
   only:
     - master
 
+windows_zip:
+  stage: deploy
+  image: alpine
+  script:
+    - apk add -U make git zip  
+    - make windows_zip
+  only:
+    variables:
+      - $WINDOWS_ONLY    
+
 pages:
   stage: deploy
   image: alpine
@@ -469,7 +539,5 @@ pages:
     paths:
       - public
   only:
-    refs:
-      - master
     variables:
-      - $CI_PUBLISH_PAGES  # git push -o ci.variable="CI_PUBLISH_PAGES=1"
+      - $CI_COMMIT_BRANCH == 'master' || $CI_PUBLISH_PAGES  # git push -o ci.variable="CI_PUBLISH_PAGES=1"
