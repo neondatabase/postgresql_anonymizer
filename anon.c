@@ -31,7 +31,13 @@ Datum   get_function_schema(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(get_function_schema);
 
 static bool guc_anon_restrict_to_trusted_schemas;
-static char *guc_anon_trusted_schemas;
+// The GUC vars below are not used in the C code
+// but they are used in the plpgsql code
+// compile with `-Wno-unused-variable` to avoid warnings
+static char *guc_anon_algorithm;
+static char *guc_anon_mask_schema;
+static char *guc_anon_salt;
+static char *guc_anon_source_schema;
 
 /*
  * Checking the syntax of the masking rules
@@ -117,6 +123,34 @@ _PG_init(void)
   register_label_provider("anon",anon_object_relabel);
 
   /* GUC parameters */
+  DefineCustomStringVariable
+  (
+    "anon.algorithm",
+    "The hash method used for pseudonymizing functions",
+    "",
+    &guc_anon_algorithm,
+    "sha256",
+    PGC_SUSET,
+    GUC_SUPERUSER_ONLY,
+    NULL,
+    NULL,
+    NULL
+  );
+
+  DefineCustomStringVariable
+  (
+    "anon.maskschema",
+    "The schema where the dynamic masking views are stored",
+    "",
+    &guc_anon_mask_schema,
+    "mask",
+    PGC_SUSET,
+    0,
+    NULL,
+    NULL,
+    NULL
+  );
+
   DefineCustomBoolVariable
   (
     "anon.restrict_to_trusted_schemas",
@@ -133,13 +167,27 @@ _PG_init(void)
 
   DefineCustomStringVariable
   (
-    "anon.trusted_schemas",
-    "List of schemas containing secure masking filters",
-    "This value is considered only if anon.restrict_to_trusted_schemas is enabled",
-    &guc_anon_trusted_schemas,
-    "pg_catalog, anon",
+    "anon.salt",
+    "The salt value used for the pseudonymizing functions",
+    "",
+    &guc_anon_salt,
+    "",
     PGC_SUSET,
-    GUC_LIST_INPUT,
+    GUC_SUPERUSER_ONLY,
+    NULL,
+    NULL,
+    NULL
+  );
+
+  DefineCustomStringVariable
+  (
+    "anon.sourceschema",
+    "The schema where the table are masked by the dynamic masking engine",
+    "",
+    &guc_anon_source_schema,
+    "public",
+    PGC_SUSET,
+    0,
     NULL,
     NULL,
     NULL

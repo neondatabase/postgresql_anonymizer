@@ -5,7 +5,9 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 -- INIT
 
-SELECT anon.start_dynamic_masking('public','foo');
+SET anon.maskschema TO 'foo';
+
+SELECT anon.start_dynamic_masking();
 
 CREATE ROLE skynet LOGIN;
 

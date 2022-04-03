@@ -25,7 +25,9 @@ SELECT lastname = 'Doe' FROM dbo.tbl1;
 
 SET search_path=dbo,public;
 
-SELECT anon.start_dynamic_masking('dbo', 'dbo_mask');
+SET anon.sourceschema TO 'dbo';
+SET anon.maskschema TO 'dbo_mask';
+SELECT anon.start_dynamic_masking();
 
 SELECT lastname != 'Doe' FROM dbo_mask.tbl1;
 
@@ -37,13 +39,15 @@ SELECT COUNT(*)=0 FROM pg_namespace WHERE nspname='dbo_mask';
 
 SET search_path=public;
 
-SELECT anon.start_dynamic_masking('dbo', 'dbo_mask_2');
+SET anon.sourceschema TO 'dbo';
+SET anon.maskschema TO 'dbo_MASK_2';
+SELECT anon.start_dynamic_masking();
 
-SELECT lastname != 'Doe' FROM dbo_mask_2.tbl1;
+SELECT lastname != 'Doe' FROM "dbo_MASK_2".tbl1;
 
 SELECT anon.stop_dynamic_masking();
 
-SELECT COUNT(*)=0 FROM pg_namespace WHERE nspname='dbo_mask_2';
+SELECT COUNT(*)=0 FROM pg_namespace WHERE nspname='dbo_MASK_2';
 
 ROLLBACK;
 

@@ -6,7 +6,8 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 CREATE TABLE a (
     i SERIAL,
     d TIMESTAMP,
-    x INTEGER
+    x INTEGER,
+    t TEXT
 );
 
 
@@ -67,7 +68,7 @@ ROLLBACK TO shuffle_3;
 --
 
 -- returns a WARNING and FALSE
-SELECT anon.load('base/''; CREATE TABLE inject_via_load (i int);--') IS FALSE;
+SELECT anon.load('base/''; CREATE TABLE inject_via_load(i int);--') IS FALSE;
 
 SELECT COUNT(*) = 0
 FROM pg_tables
@@ -77,23 +78,18 @@ WHERE tablename='inject_via_load';
 -- Dynamic Masking
 --
 
--- returns TRUE
-SELECT anon.start_dynamic_masking(
-  'public',
-  'foo; CREATE TABLE inject_via_init (i int);--'
-);
+SET anon.maskschema TO 'foo; CREATE TABLE inject_via_guc(i int);--';
+SELECT anon.start_dynamic_masking();
 
 SELECT COUNT(*) = 0
 FROM pg_tables
-WHERE tablename='inject_via_init';
+WHERE tablename='inject_via_guc';
 
 --
 -- Masking Rule Syntax
 --
-SAVEPOINT seclabel_1;
-SECURITY LABEL FOR anon ON COLUMN a.x
-IS 'MASKED WITH VALUE foo; CREATE TABLE inject_via_rule (i int);--';
-ROLLBACK TO seclabel_1;
+SECURITY LABEL FOR anon ON COLUMN a.t
+IS 'MASKED WITH VALUE $$foo; CREATE TABLE inject_via_rule(i int);--$$';
 
 SELECT COUNT(*) = 0
 FROM pg_tables

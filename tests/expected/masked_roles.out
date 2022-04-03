@@ -3,7 +3,8 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 NOTICE:  installing required extension "pgcrypto"
 -- INIT
-SELECT anon.start_dynamic_masking('public','foo');
+SET anon.maskschema TO 'foo';
+SELECT anon.start_dynamic_masking();
  start_dynamic_masking 
 -----------------------
  t

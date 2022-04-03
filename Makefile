@@ -26,6 +26,7 @@ MODULES = anon
 EXTENSION = anon
 EXTENSION_VERSION=$(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 DATA = anon/*
+PG_CFLAGS = -Wno-unused-variable
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
 REGRESS_TESTS = init populate extschema detection
