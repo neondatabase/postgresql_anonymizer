@@ -3,8 +3,8 @@
 
 --
 -- Dependencies :
---  * tms_system_rows (should be available with all distributions of postgres)
 --  * pgcrypto ( because PG10 does not include hashing functions )
+--
 
 -- This cannot be done using `schema = anon` in anon.control
 -- because we want to be able to put the dependencies in a different schema
@@ -14,9 +14,13 @@ CREATE SCHEMA IF NOT EXISTS anon;
 -- Security First
 --------------------------------------------------------------------------------
 
--- Untrusted users cannot write inside the anon schema
+-- Untrusted users cannot do anything inside the anon schema
 REVOKE ALL ON SCHEMA anon FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA anon FROM PUBLIC;
+-- ...except calling the functions
+GRANT USAGE ON SCHEMA anon TO PUBLIC;
+-- other priviledge will be granted below on a case-by-case basis
+
 
 --
 -- By default, masking filter functions must be trusted
@@ -729,7 +733,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   PARALLEL SAFE
-  SECURITY INVOKER
+  SECURITY DEFINER
   SET search_path=''
 ;
 
@@ -1572,7 +1576,7 @@ END;
 $$
   LANGUAGE plpgsql
   PARALLEL SAFE
-  SECURITY INVOKER
+  SECURITY DEFINER
   SET search_path=''
 ;
 
@@ -1636,6 +1640,8 @@ SELECT
 FROM rules_from_seclabels
 ORDER BY attrelid, attnum, priority DESC
 ;
+
+GRANT SELECT ON anon.pg_masking_rules TO PUBLIC;
 
 --
 -- Unmask all the role at once
@@ -1959,6 +1965,12 @@ $$
 DECLARE
   r RECORD;
 BEGIN
+
+  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+  IF NOT r.su THEN
+    RAISE EXCEPTION 'Only supersusers can start the dynamic masking engine.';
+  END IF;
+
   -- Load faking data
   SELECT anon.is_initialized() AS init INTO r;
   IF NOT autoload THEN
@@ -1996,7 +2008,15 @@ $$
 CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
 RETURNS BOOLEAN AS
 $$
+DECLARE
+  r RECORD;
 BEGIN
+
+  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+  IF NOT r.su THEN
+    RAISE EXCEPTION 'Only supersusers can stop the dynamic masking engine.';
+  END IF;
+
   -- Walk through all tables in the source schema and drop the masking view
   PERFORM anon.mask_drop_view(oid)
   FROM pg_catalog.pg_class
@@ -2132,7 +2152,7 @@ END
 $$
   LANGUAGE plpgsql
   PARALLEL UNSAFE -- because of UPDATE
-  SECURITY INVOKER
+  SECURITY DEFINER
   SET search_path=''
 ;
 
@@ -2395,3 +2415,4 @@ $$
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
 -- TODO : https://en.wikipedia.org/wiki/T-closeness
+

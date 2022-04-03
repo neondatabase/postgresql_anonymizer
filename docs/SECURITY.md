@@ -5,7 +5,7 @@ Security
 Permissions
 ------------------------------------------------------------------------------
 
-Here's an overview of what users can do depending on the role they have:
+Here's an overview of what users can do depending on the priviledge they have:
 
 | Action                                   | Superuser | Owner | Masked Role |
 | :--------------------------------------- | :-------: | :---: | :---------: |
@@ -13,9 +13,10 @@ Here's an overview of what users can do depending on the role they have:
 | Drop the extension                       |    Yes    |       |             |
 | Init the extension                       |    Yes    |       |             |
 | Reset the extension                      |    Yes    |       |             |
-| Configure the extension                  |    Yes    |  Yes  |             |
-| Start dynamic masking                    |    Yes    |  Yes  |             |
-| Stop  dynamic masking                    |    Yes    |  Yes  |             |
+| Configure the extension                  |    Yes    |       |             |
+| Put a mask upon a role                   |    Yes    |       |             |
+| Start dynamic masking                    |    Yes    |       |             |
+| Stop  dynamic masking                    |    Yes    |       |             |
 | Create a table                           |    Yes    |  Yes  |             |
 | Declare a masking rule                   |    Yes    |  Yes  |             |
 | Insert, delete, update a row             |    Yes    |  Yes  |             |
