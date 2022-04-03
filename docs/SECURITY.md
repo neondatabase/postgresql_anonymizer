@@ -23,8 +23,10 @@ Here's an overview of what users can do depending on the priviledge they have:
 | Static Masking                           |    Yes    |  Yes  |             |
 | Select the real data                     |    Yes    |  Yes  |             |
 | Regular Dump                             |    Yes    |  Yes  |             |
+| Anonymous Dump                           |    Yes    |  Yes  |             |
+| Use the masking functions                |    Yes    |  Yes  |     Yes     |
 | Select the masked data                   |    Yes    |  Yes  |     Yes     |
-| Anonymous Dump                           |    Yes    |  Yes  |     Yes     |
+| View the masking rules                   |    Yes    |  Yes  |     Yes     |
 
 
 

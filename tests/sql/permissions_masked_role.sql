@@ -3,31 +3,8 @@ BEGIN;
 CREATE EXTENSION anon CASCADE;
 SELECT anon.init();
 
-CREATE ROLE oscar_the_owner;
-ALTER DATABASE :DBNAME OWNER TO oscar_the_owner;
-
 CREATE ROLE mallory_the_masked_user;
 SECURITY LABEL FOR anon ON ROLE mallory_the_masked_user IS 'MASKED';
-
---
--- We're checking the owner's permissions
---
--- see
--- https://postgresql-anonymizer.readthedocs.io/en/latest/SECURITY/#permissions
---
-
-SET ROLE oscar_the_owner;
-
-SELECT anon.pseudo_first_name(0) IS NOT NULL;
-
-
--- SHOULD FAIL
-DO $$
-BEGIN
-  PERFORM anon.init();
-  EXCEPTION WHEN insufficient_privilege
-  THEN RAISE NOTICE 'insufficient_privilege';
-END$$;
 
 CREATE TABLE t1(i INT);
 ALTER TABLE t1 ADD COLUMN t TEXT;
@@ -37,11 +14,33 @@ IS 'MASKED WITH VALUE NULL';
 
 INSERT INTO t1 VALUES (1,'test');
 
-SELECT anon.anonymize_table('t1');
+--
+-- We're checking the owner's permissions
+--
+-- see
+-- https://postgresql-anonymizer.readthedocs.io/en/latest/SECURITY/#permissions
+--
 
-SELECT * FROM t1;
+SET ROLE mallory_the_masked_user;
 
-UPDATE t1 SET t='test' WHERE i=1;
+SELECT anon.pseudo_first_name(0) IS NOT NULL;
+
+-- SHOULD FAIL
+DO $$
+BEGIN
+  PERFORM anon.init();
+  EXCEPTION WHEN insufficient_privilege
+  THEN RAISE NOTICE 'insufficient_privilege';
+END$$;
+
+
+-- SHOULD FAIL
+DO $$
+BEGIN
+  PERFORM anon.anonymize_table('t1');
+  EXCEPTION WHEN insufficient_privilege
+  THEN RAISE NOTICE 'insufficient_privilege';
+END$$;
 
 -- SHOULD FAIL
 SAVEPOINT fail_start_engine;
@@ -50,11 +49,17 @@ ROLLBACK TO fail_start_engine;
 
 RESET ROLE;
 SELECT anon.start_dynamic_masking();
-SET ROLE oscar_the_owner;
+SET ROLE mallory_the_masked_user;
 
-SELECT * FROM t1;
+SELECT * FROM mask.t1;
 
---SELECT * FROM mask.t1;
+-- SHOULD FAIL
+DO $$
+BEGIN
+  SELECT * FROM public.t1;
+  EXCEPTION WHEN insufficient_privilege
+  THEN RAISE NOTICE 'insufficient_privilege';
+END$$;
 
 -- SHOULD FAIL
 SAVEPOINT fail_stop_engine;
@@ -63,7 +68,9 @@ ROLLBACK TO fail_stop_engine;
 
 RESET ROLE;
 SELECT anon.stop_dynamic_masking();
-SET ROLE oscar_the_owner;
+SET ROLE mallory_the_masked_user;
+
+SELECT COUNT(*)=1 FROM anon.pg_masking_rules;
 
 -- SHOULD FAIL
 SAVEPOINT fail_seclabel_on_role;

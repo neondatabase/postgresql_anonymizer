@@ -60,12 +60,23 @@ SELECT anon.mask_update();
 -- Jimmy tries to find the salt :-)
 SET ROLE jimmy_mcnulty;
 
--- We can't use SHOW because the error message changes between PG major versions
---SHOW anon.salt;
---SHOW anon.algorithm;
-SELECT COUNT(name) = 0 FROM pg_settings WHERE name='anon.salt';
-SELECT COUNT(name) = 0 FROM pg_settings WHERE name='anon.algorithm';
+-- SHOULD FAIL
+DO $$
+BEGIN
+  SHOW anon.salt;
+  EXCEPTION WHEN insufficient_privilege
+  THEN RAISE NOTICE 'insufficient_privilege';
+END$$;
+
+DO $$
+BEGIN
+  SHOW anon.algorithm;
+  EXCEPTION WHEN insufficient_privilege
+  THEN RAISE NOTICE 'insufficient_privilege';
+END$$;
+
 SELECT COUNT(name)=3 FROM pg_settings WHERE name LIKE 'anon.%';
+
 RESET ROLE;
 
 SELECT COUNT(name)=5 FROM pg_settings WHERE name LIKE 'anon.%';

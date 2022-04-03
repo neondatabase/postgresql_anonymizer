@@ -5,6 +5,14 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.init();
 
+CREATE ROLE oscar_the_owner LOGIN;
+ALTER DATABASE :DBNAME OWNER TO oscar_the_owner;
+
+CREATE ROLE mallory_the_masked_user LOGIN;
+SECURITY LABEL FOR anon ON ROLE mallory_the_masked_user IS 'MASKED';
+
+SET ROLE oscar_the_owner;
+
 CREATE SCHEMA test_pg_dump_anon;
 
 CREATE TABLE test_pg_dump_anon.no_masks AS SELECT 1 ;
@@ -130,9 +138,12 @@ DROP SEQUENCE public.seq42;
 
 -- A6. Dump a third file, this time with the `--file` option
 \! pg_dump_anon.sh -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
-
--- A7. Check that dump files are identical
 \! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
+
+-- A7. Dump as the owner
+\! pg_dump_anon.sh -U oscar_the_owner -d contrib_regression -f tests/tmp/_pg_dump_anon_A7.sql
+\! diff tests/tmp/_pg_dump_anon_A6.sql tests/tmp/_pg_dump_anon_A7.sql
+
 
 --
 -- B. Exclude some schemas
@@ -187,8 +198,12 @@ SELECT pg_catalog.nextval('public.seq42');
 \! pg_dump_anon.sh contrib_regression -f /does/not/exists.sql
 
 --  CLEAN
+RESET ROLE;
 DROP SCHEMA test_pg_dump_anon CASCADE;
 DROP SCHEMA "FoO" CASCADE;
 DROP SEQUENCE public.seq42;
+DROP ROLE mallory_the_masked_user;
+REASSIGN OWNED BY oscar_the_owner TO postgres;
+DROP ROLE oscar_the_owner;
 DROP EXTENSION anon CASCADE;
 DROP EXTENSION pgcrypto;
