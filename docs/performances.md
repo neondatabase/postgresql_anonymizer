@@ -66,3 +66,44 @@ take 2 hours.
 
 > In this case, the cost of anonymization is "paid" by the user asking for the
 > anonymous export. Other users of the database will not be affected.
+
+
+How to speed things up ?
+------------------------------------------------------------------------------
+
+### Prefer `MASKED WITH VALUE` whenever possible
+
+It is always faster to replace the original data with a static value instead
+of calling a masking function.
+
+### Sampling
+
+If you need to anonymize data for testing purpose, chances are that a smaller
+subset of your database will be enough. In that case, you can easily speed up
+the anonymization by downsizing the volume of data. There are multiple ways to
+extract a sample of database:
+
+* [TABLESAMPLE](https://www.postgresql.org/docs/current/static/sql-select.html)
+* [pg_sample](https://github.com/mla/pg_sample)
+
+
+
+### Materialized Views
+
+Dynamic masking is not always required! In some cases, it is more efficient
+to build [Materialized Views] instead.
+
+For instance:
+
+```sql
+CREATE MATERIALIZED VIEW masked_customer AS
+SELECT
+    id,
+    anon.random_last_name() AS name,
+    anon.random_date_between('1920-01-01'::DATE,now()) AS birth,
+    fk_last_order,
+    store_id
+FROM customer;
+```
+
+[Materialized Views]: https://www.postgresql.org/docs/current/static/sql-creatematerializedview.html
