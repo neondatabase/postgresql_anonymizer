@@ -3,8 +3,8 @@
 
 --
 -- Dependencies :
---  * tms_system_rows (should be available with all distributions of postgres)
 --  * pgcrypto ( because PG10 does not include hashing functions )
+--
 
 -- This cannot be done using `schema = anon` in anon.control
 -- because we want to be able to put the dependencies in a different schema
@@ -14,9 +14,13 @@ CREATE SCHEMA IF NOT EXISTS anon;
 -- Security First
 --------------------------------------------------------------------------------
 
--- Untrusted users cannot write inside the anon schema
+-- Untrusted users cannot do anything inside the anon schema
 REVOKE ALL ON SCHEMA anon FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA anon FROM PUBLIC;
+-- ...except calling the functions
+GRANT USAGE ON SCHEMA anon TO PUBLIC;
+-- other priviledge will be granted below on a case-by-case basis
+
 
 --
 -- By default, masking filter functions must be trusted
@@ -282,7 +286,7 @@ CREATE TABLE anon.address (
 );
 
 ALTER TABLE anon.address CLUSTER ON address_pkey;
-
+GRANT SELECT ON TABLE anon.address TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.address','');
 SELECT pg_catalog.pg_extension_config_dump('anon.address_oid_seq','');
 
@@ -296,7 +300,7 @@ CREATE TABLE anon.city (
 );
 
 ALTER TABLE anon.city CLUSTER ON city_pkey;
-
+GRANT SELECT ON TABLE anon.city TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.city','');
 SELECT pg_catalog.pg_extension_config_dump('anon.city_oid_seq','');
 
@@ -310,7 +314,7 @@ CREATE TABLE anon.company (
 );
 
 ALTER TABLE anon.company CLUSTER ON company_pkey;
-
+GRANT SELECT ON TABLE anon.company TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.company','');
 SELECT pg_catalog.pg_extension_config_dump('anon.company_oid_seq','');
 
@@ -324,7 +328,7 @@ CREATE TABLE anon.country (
 );
 
 ALTER TABLE anon.country CLUSTER ON country_pkey;
-
+GRANT SELECT ON TABLE anon.country TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.country','');
 SELECT pg_catalog.pg_extension_config_dump('anon.country_oid_seq','');
 
@@ -338,7 +342,7 @@ CREATE TABLE anon.email (
 );
 
 ALTER TABLE anon.email CLUSTER ON email_pkey;
-
+GRANT SELECT ON TABLE anon.email TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.email','');
 SELECT pg_catalog.pg_extension_config_dump('anon.email_oid_seq','');
 
@@ -352,7 +356,7 @@ CREATE TABLE anon.first_name (
 );
 
 ALTER TABLE anon.first_name CLUSTER ON first_name_pkey;
-
+GRANT SELECT ON TABLE anon.first_name TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.first_name','');
 SELECT pg_catalog.pg_extension_config_dump('anon.first_name_oid_seq','');
 
@@ -366,7 +370,7 @@ CREATE TABLE anon.iban (
 );
 
 ALTER TABLE anon.iban CLUSTER ON iban_pkey;
-
+GRANT SELECT ON TABLE anon.iban TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.iban','');
 SELECT pg_catalog.pg_extension_config_dump('anon.iban_oid_seq','');
 
@@ -380,7 +384,7 @@ CREATE TABLE anon.last_name (
 );
 
 ALTER TABLE anon.last_name CLUSTER ON last_name_pkey;
-
+GRANT SELECT ON TABLE anon.last_name TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.last_name','');
 SELECT pg_catalog.pg_extension_config_dump('anon.last_name_oid_seq','');
 
@@ -394,7 +398,7 @@ CREATE TABLE anon.postcode (
 );
 
 ALTER TABLE anon.postcode CLUSTER ON postcode_pkey;
-
+GRANT SELECT ON TABLE anon.postcode TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.postcode','');
 SELECT pg_catalog.pg_extension_config_dump('anon.postcode_oid_seq','');
 
@@ -408,7 +412,7 @@ CREATE TABLE anon.siret (
 );
 
 ALTER TABLE anon.siret CLUSTER ON siret_pkey;
-
+GRANT SELECT ON TABLE anon.siret TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.siret','');
 SELECT pg_catalog.pg_extension_config_dump('anon.siret_oid_seq','');
 
@@ -422,7 +426,7 @@ CREATE TABLE anon.lorem_ipsum (
 );
 
 ALTER TABLE anon.lorem_ipsum CLUSTER ON lorem_ipsum_pkey;
-
+GRANT SELECT ON TABLE anon.lorem_ipsum TO PUBLIC;
 SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum','');
 SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum_oid_seq','');
 
@@ -445,7 +449,7 @@ CREATE TABLE anon.identifiers_category(
 
 ALTER TABLE anon.identifiers_category
   CLUSTER ON identifiers_category_name_key;
-
+GRANT SELECT ON TABLE anon.identifiers_category TO PUBLIC;
 COMMENT ON TABLE anon.identifiers_category
 IS 'Generic identifiers categories based the HIPAA classification';
 
@@ -461,7 +465,7 @@ CREATE TABLE anon.identifier(
 
 ALTER TABLE anon.identifier
   CLUSTER ON identifier_pkey;
-
+GRANT SELECT ON TABLE anon.identifier TO PUBLIC;
 COMMENT ON TABLE anon.identifier
 IS 'Dictionnary of common identifiers field names';
 
@@ -729,7 +733,7 @@ $$
   LANGUAGE SQL
   VOLATILE
   PARALLEL SAFE
-  SECURITY INVOKER
+  SECURITY DEFINER
   SET search_path=''
 ;
 
@@ -1572,7 +1576,7 @@ END;
 $$
   LANGUAGE plpgsql
   PARALLEL SAFE
-  SECURITY INVOKER
+  SECURITY DEFINER
   SET search_path=''
 ;
 
@@ -1636,6 +1640,8 @@ SELECT
 FROM rules_from_seclabels
 ORDER BY attrelid, attnum, priority DESC
 ;
+
+GRANT SELECT ON anon.pg_masking_rules TO PUBLIC;
 
 --
 -- Unmask all the role at once
@@ -1959,6 +1965,12 @@ $$
 DECLARE
   r RECORD;
 BEGIN
+
+  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+  IF NOT r.su THEN
+    RAISE EXCEPTION 'Only supersusers can start the dynamic masking engine.';
+  END IF;
+
   -- Load faking data
   SELECT anon.is_initialized() AS init INTO r;
   IF NOT autoload THEN
@@ -1996,7 +2008,15 @@ $$
 CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
 RETURNS BOOLEAN AS
 $$
+DECLARE
+  r RECORD;
 BEGIN
+
+  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+  IF NOT r.su THEN
+    RAISE EXCEPTION 'Only supersusers can stop the dynamic masking engine.';
+  END IF;
+
   -- Walk through all tables in the source schema and drop the masking view
   PERFORM anon.mask_drop_view(oid)
   FROM pg_catalog.pg_class
@@ -2132,7 +2152,7 @@ END
 $$
   LANGUAGE plpgsql
   PARALLEL UNSAFE -- because of UPDATE
-  SECURITY INVOKER
+  SECURITY DEFINER
   SET search_path=''
 ;
 
@@ -2395,3 +2415,4 @@ $$
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
 -- TODO : https://en.wikipedia.org/wiki/T-closeness
+

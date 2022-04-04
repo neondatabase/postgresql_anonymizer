@@ -12,7 +12,7 @@ variables:
     POSTGRES_PASSWORD: plop
     SAST_EXCLUDED_PATHS: '_venv, docs/howto/_venv'
     ## Uncomment this to run only windows specific jobs
-    #WINDOWS_ONLY: "True"  
+    #WINDOWS_ONLY: "True"
 
 stages:
   - lint
@@ -95,7 +95,7 @@ windows-2016:
   only:
     variables:
       - $WINDOWS
-      
+
 # We need to launch manually the instance because the entrypoint is skipped.
 .init_PG_instance: &init_PG_instance
   before_script:
@@ -128,6 +128,7 @@ PG9.6-debian10:
   except:
     variables:
       - $WINDOWS_ONLY
+  when: manual # PostgreSQL 9.6 is EOL
 
 PG10-debian10:
   <<: *init_PG_instance
@@ -521,11 +522,11 @@ windows_zip:
   stage: deploy
   image: alpine
   script:
-    - apk add -U make git zip  
+    - apk add -U make git zip
     - make windows_zip
   only:
     variables:
-      - $WINDOWS_ONLY    
+      - $WINDOWS_ONLY
 
 pages:
   stage: deploy
