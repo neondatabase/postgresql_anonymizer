@@ -16,6 +16,7 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Radek Salač : Bug report
 * Cristian Gomez Portes: Bug report
 * Mike Tefft: Feature request
 * Hrvoje Pavlinovic : Bug fix
@@ -39,7 +40,7 @@ Contributors
 * Rodrigo Otsuka (@rodrigo.otsuka) : Bug reports
 * Nicolas Peltier (@npeltier) : Bug reports
 * Matthieu Larcher (@somatt) : Bug reports
-* Nikolay Samokhvalov (@NikolayS) : Bug fix
+* Nikolay Samokhvalov (@NikolayS) : Bug fix + Documentation
 * Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
 * Yann ROBIN (@me.show) : version() function and DBAAS install
 * Ilya Gorbunov (@dAverk) : Bug fixes
@@ -52,7 +53,6 @@ Contributors
 * Bernie Caessens (@bcaessens) : Feedback on the black box method
 * Sam Buckingham (@sam.buckingham) : Feedback on the black box method
 * Sebastien Delobel (@sdelobel) : Typos
-* Nikolay Samokhvalov (@NikolayS) : Documentation
 * Travis Miller (@travismiller) : MacOS support
 * Jan Birk (@jabi27) : Install on Ubuntu
 * Olleg Samoylov (@Splarv) : Issue #87, Bug fixes, Documentation

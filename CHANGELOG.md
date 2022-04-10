@@ -2,6 +2,25 @@ CHANGELOG
 ===============================================================================
 
 
+20220331 : 0.12.0 - Release Candidate 2
+-------------------------------------------------------------------------------
+
+<!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/17 -->
+<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
+
+* [doc] Academic research bibliography
+* [doc] update the README
+* [pg_dump_anon] support --table and --schema in the golang wrapper
+* [CI] disable PG 9.6 tests
+* [core] FIX #290 improve the permissions system
+* [CI] FIX #273 check database owner's permissions
+* [core] FIX #165 Database owner cannot create table
+* [core] FIX #171 pg_dump_anon: lack of permissions to work with "anon"
+* [core] FIX #290 permission denied for schema anon after running some DDL
+* [core] New GUC parameters : maskschema and sourcechema
+* [docker] bump to PG14o
+* [CI] improve windows job
+
 20220331 : 0.11.0 - Release Candidate 1
 -------------------------------------------------------------------------------
 
