@@ -50,3 +50,16 @@ Concepts
 * [Differential_Privacy](https://en.wikipedia.org/wiki/Differential_Privacy)
 
 * [K-Anonymity](https://en.wikipedia.org/wiki/K-anonymity)
+
+
+Academic Research
+--------------------------------------------------------------------------------
+
+* L. Sweeney. k-anonymity: a model for protecting privacy. International Journal
+  on Uncertainty, Fuzziness and Knowledge-based Systems, 10 (5), 2002,
+  pp. 557-570.
+  <https://epic.org/wp-content/uploads/privacy/reidentification/Sweeney_Article.pdf>
+
+* A. Narayanan and V. Shmatikov, “Robust de-anonymization of large sparse
+  datasets,” in 29th IEEE Symposium on Security and Privacy, 2008, pp. 111–125.
+  <https://www.cs.cornell.edu/~shmat/shmat_oak08netflix.pdf>
