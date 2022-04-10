@@ -19,7 +19,6 @@ different ways :
 * [Static Masking] : Remove the PII according to the rules
 * [Dynamic Masking] : Hide PII only for the masked users
 
-
 In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shuffling, noise or even your own custom function!
 
