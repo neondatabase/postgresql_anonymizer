@@ -169,20 +169,40 @@ func main() {
   // all allowed flags
   exclude_table_dataPtr := flag.String("exclude-table-data","",
                                 "do NOT dump data for the specified table(s)")
+
   dPtr := flag.String("d","","database to dump")
   dbnamePtr := flag.String("dbname", "", "database to dump")
+
   EPtr := flag.String("E","","dump the data in encoding ENCODING")
   encodingPtr := flag.String("encoding","","dump the data in encoding ENCODING")
+
   hPtr := flag.String("h", "", "hostname")
   hostPtr := flag.String("host", "", "hostname")
+
   pPtr := flag.String("p", "", "port")
   portPtr := flag.String("port", "", "port")
+
   UPtr := flag.String("U","","username")
   usernamePtr := flag.String("username","","username")
+
   wPtr := flag.Bool("w",false,"never prompt for password")
   no_passwordPtr := flag.Bool("no-password",false,"never prompt for password")
+
   WPtr := flag.Bool("W",false,"force password prompt")
   passwordPtr := flag.Bool("password",false,"force password prompt")
+
+  nPtr := flag.String("n","","Dump the specified schema(s) only")
+  schemaPtr := flag.String("schema","","Dump the specified schema(s) only")
+
+  NPtr := flag.String("N","","Exclude the specified schema(s)")
+  excludeschemaPtr := flag.String("exclude-schema","","Exclude the specified schema(s)")
+
+  tPtr := flag.String("t","","Dump the specified table(s) only")
+  tablePtr := flag.String("table","","Dump the specified table(s) only")
+
+  TPtr := flag.String("T","","Exclude the specified table(s)")
+  excludetablePtr := flag.String("exclude-table","","Exclude the specified schema(s)")
+
   flag.Parse()
 
   // DBNAME
@@ -222,19 +242,15 @@ func main() {
 //    --file=*)
 //        output="${1#--file=}"
 //        ;;
-//    # options pushed only to pg_dump
-//    -n|--schema|-N|--exclude-schema|-t|--table|-T|--exclude-table)
-//        pg_dump_opts+=("$1" "$2")
-//        shift
-//        ;;
-//    --schema=*|--exclude-schema=*|--table=*|--exclude-table=*)
-//        pg_dump_opts+=("$1")
-//        ;;
-//    # special case for `--exclude-table-data`
-//    --exclude-table-data=*)
-//        pg_dump_opts+=("$1")
-//        exclude_table_data+=("$1")
-//        ;;
+  append_pg_dump_option("--schema=",*nPtr)
+  append_pg_dump_option("--schema=",*schemaPtr)
+  append_pg_dump_option("--exclude-schema=",*NPtr)
+  append_pg_dump_option("--exclude-schema=",*excludeschemaPtr)
+  append_pg_dump_option("--table=",*tPtr)
+  append_pg_dump_option("--table=",*tablePtr)
+  append_pg_dump_option("--exclude-table=",*TPtr)
+  append_pg_dump_option("--exclude-table=",*excludetablePtr)
+
   if *exclude_table_dataPtr != "" {
     exclude_table_data = *exclude_table_dataPtr
     pg_dump_opts = append(pg_dump_opts,
