@@ -1,3 +1,159 @@
+PostgreSQL Anonymizer 1.0: Privacy By Design For Postgres
+================================================================================
+
+Limoges, France, May 17th, 2022
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[Static Masking] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
+Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+NOTE: **This release is considered ready for production**
+
+
+Implementing "Privacy By Design" with PostgreSQL
+--------------------------------------------------------------------------------
+
+4 years after the introduction of the GDPR, its application remains complex for
+many companies and organizations. In particular, implementing the "privacy by
+design" principle remains a headache... How can we write the data protection
+rules directly during the design of an application ?
+
+The vast majority of the current anonymization tools work outside the database,
+using the same approach that ETL tools. As a result, the responsibility for
+writing anonymization policy is usually assigned to production DBAs.
+
+The PostgreSQL Anonymizer extension introduces a different approach as it seeks
+to involve developers and architects early on, during the preliminary design
+steps, by declaring the masking rules using SQL, directly inside the database
+model itself, in the same way as an integrity constraint or an index !
+
+When a developper wants to add a new column to a table, she/he usually
+defines a few rules and restrictions that are enforced for this column.
+With PostgreSQL Anonymizer, she/he can also declare that this column contains
+personnal information and write a masking rule to describe how the data
+will be transformed during the anonymization process.
+
+The extension offers a panel of masking techniques: randomization, noise,
+faking, partial destruction, pseudonymization, generalization, etc.
+
+For Thierry Aimé who works at the Office of Architecture and Standards in the
+French Public Finances Directorate General (DGFiP), the extensions plays a key
+role in the data protection policy :
+
+> « With PostgreSQL Anonymizer we integrate, from the design of the database,
+> the principle that outside production the data must be anonymized. Thus we can
+> inforce the RGPD rules, without affecting the quality of the tests during
+> version upgrades for example. »
+
+Here's a basic example:
+
+  CREATE TABLE player(
+    id SERIAL,
+    lastname TEXT,
+    birth DATE,
+    points INT
+  );
+
+  SECURITY LABEL FOR anon ON COLUMN player.lastname
+  IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+  SECURITY LABEL FOR anon ON COLUMN player.birth
+  IS 'MASKED WITH VALUE NULL';
+
+Alternatively, if the column can be declared as an [indirect identifier], then
+the production DBA will be able to use a [K Anonymity] function to check that
+there's no risk of [singling out] an individual inside the dataset.
+
+[indirect identifier]: https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
+[K Anonymity]: https://postgresql-anonymizer.readthedocs.io/en/latest/generalization/#k-anonymity
+[singling out]: https://www.cnil.fr/en/sheet-ndeg1-identify-personal-data
+
+Data protection is a team effort ! Every person involved in the lifecycle
+of application should be concerned. With that mindset, the PostgreSQL
+Anonymizer extension provides tools for developpers and DBAs and help them
+to implement the data masking rules early on, thus respecting the
+"Privacy by Design" principle.
+
+
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 9.6 and further versions.
+
+On Red Hat, CentOS and Rocky Linux systems, you can install it directly from the
+[official PostgreSQL RPM repository]:
+
+    dnf install postgresql_anonymizer14
+
+Then load the extension with:
+
+    ALTER DATABASE foo SET session_preload_libraries = 'anon';
+
+Create the extension inside the database:
+
+    CREATE EXTENSION anon CASCADE;
+
+And finally, initialize the extension
+
+    SELECT anon.init();
+
+
+For other systems, check out the [install] documentation:
+
+https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+[official PostgreSQL RPM repository]: https://yum.postgresql.org/
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+Thanks
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer was backed financially by the following entities :
+
+* The French Public Finances Directorate General (DGFiP)
+* BioMerieux, a world leader in the field of in vitro diagnostics
+
+Many thanks to them for their help and feedback.
+
+This project includes code, bugfixes, documentation, code reviews and ideas from
+[dozens of contributors]. This version 1.0 is a great occasion to show our
+gratitude to them!
+
+[dozens of contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+--------------------------------------------------------------------------------
+
+
 PostgreSQL Anonymizer 0.12: Release Candidate 2
 ================================================================================
 

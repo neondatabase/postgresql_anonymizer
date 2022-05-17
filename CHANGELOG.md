@@ -1,12 +1,33 @@
 CHANGELOG
 ===============================================================================
 
+20220517 : 1.0.0 - Production Ready
+-------------------------------------------------------------------------------
+
+<!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/18 -->
+<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
+
+
+__Dependencies:__
+
+- pg_crypto
+
+__Changes:__
+
+* No changes :)
+
 
 20220331 : 0.12.0 - Release Candidate 2
 -------------------------------------------------------------------------------
 
 <!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/17 -->
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
+
+__Dependencies:__
+
+- pg_crypto
+
+__Changes:__
 
 * [doc] Academic research bibliography
 * [doc] update the README
