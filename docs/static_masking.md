@@ -58,13 +58,13 @@ SELECT anon.init();
 Step 2: Declare the masking rules
 
 ```sql
-COMMENT ON COLUMN customer.full_name
+SECURITY LABEL FOR anon ON COLUMN customer.full_name
 IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
 
-COMMENT ON COLUMN customer.employer
+SECURITY LABEL FOR anon ON COLUMN customer.employer
 IS 'MASKED WITH FUNCTION anon.fake_company()';
 
-COMMENT ON COLUMN customer.zipcode
+SECURITY LABEL FOR anon ON COLUMN customer.zipcode
 IS 'MASKED WITH FUNCTION anon.random_zip()';
 ```
 

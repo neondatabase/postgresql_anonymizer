@@ -118,7 +118,7 @@ Limitations
 ### Listing the tables
 
 Due to how the dynamic masking engine works, when a masked role will try to
-display the tables in psql with the `\dt` comment, then psql will not show any
+display the tables in psql with the `\dt` command, then psql will not show any
 tables.
 
 This is because the `search_path` of the masked role is rigged.
