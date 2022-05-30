@@ -229,16 +229,17 @@ You can run the docker image like the regular [postgres docker image].
 
 For example:
 
-Launch start a postgres docker container
+Launch a postgres docker container
 
 ```console
-docker run -d --name anon -p 6543:5432 registry.gitlab.com/dalibo/postgresql_anonymizer
+docker run -d -e POSTGRES_PASSWORD=x -p 6543:5432 registry.gitlab.com/dalibo/postgresql_anonymizer
 ```
 
-Connect :
+then connect:
 
 ```console
-psql -h localhost -p6543 -U postgres
+export PGPASSWORD=x
+psql --host=localhost --port=6543 --user=postgres
 ```
 
 The extension is already created and initialized, you can use it directly:
