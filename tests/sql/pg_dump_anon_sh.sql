@@ -107,6 +107,9 @@ CYCLE;
 CREATE SEQUENCE public.seq42;
 ALTER SEQUENCE public.seq42 RESTART WITH 42;
 
+CREATE SEQUENCE "FoO"."BuG_298";
+ALTER SEQUENCE "FoO"."BuG_298" RESTART WITH 298;
+
 --
 -- A. Dump and Restore and Dump again and compare
 --
