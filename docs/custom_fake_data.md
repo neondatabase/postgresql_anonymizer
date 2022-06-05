@@ -1,23 +1,23 @@
 Custom Fake Data
 ==============================================================================
 
-By default, this extension delivered with a small set of fake data. For each
-fake function ( `fake_email()`, `fake_first_name()`) we provide pnly 1000 unique
-values and they are only in English.
+This extension is delivered with a small set of fake data by default. For each
+fake function ( `fake_email()`, `fake_first_name()`) we provide only 1000 unique
+values, and they are only in English.
 
-Here's how you can create your own set of fake data !
+Here's how you can create your own set of fake data!
 
 Localized fake data
 ------------------------------------------------------------------------------
 
 We provide a python script that will generate fake data for you. This script
-is located in the anon extension directory usually something like
+is located in the anon extension directory, usually something like
 
 ```shell
 /usr/share/postgresql/13/extension/anon/populate.py
 ```
 
-If you want to produce 5000 emails in French & German, you simply call the
+If you want to produce 5000 emails in French & German, you call the
 scripts like this:
 
 ``` shell
@@ -28,9 +28,9 @@ $ python3 $(pg_config --sharedir)/extension/anon/populate.py --table email \
 
 This will output the fake data in `CSV` format.
 
-Use `populate.py --help` for more details about the script parameters
+Use `populate.py --help` for more details about the script parameters.
 
-You can load directly the fake data into the extension like this:
+You can load the fake data directly into the extension like this:
 
 ```sql
 TRUNCATE anon.email;
