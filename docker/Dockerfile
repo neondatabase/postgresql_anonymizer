@@ -1,5 +1,21 @@
+
+# This instructions must be declared before any FROM
+# You can override it and build your own image based another version
+# like this: `PG_MAJOR_VERSION=11 make docker_image`
 ARG PG_MAJOR_VERSION=14
 
+##
+## First Stage: build pg_dump_anon
+##
+FROM golang:latest AS gobuilder
+WORKDIR /go/src
+COPY pg_dump_anon .
+RUN CGO_ENABLED=0 GOOS=linux go build .
+
+##
+## Second Stage
+##
+ARG PG_MAJOR_VERSION=14
 FROM postgres:$PG_MAJOR_VERSION
 
 # An ARG declared before a FROM is outside of a build stage, so it can’t be
@@ -28,6 +44,9 @@ RUN pip3 install --no-cache-dir -r python/requirements.txt && \
 
 # Install anon extension
 RUN make clean && make && make install
+
+# Install pg_dump_anon from the previous stage
+COPY --from=gobuilder /go/src/pg_dump_anon /usr/bin/
 
 # init script
 RUN mkdir -p /docker-entrypoint-initdb.d

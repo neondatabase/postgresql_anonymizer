@@ -1,6 +1,7 @@
 -- This test cannot be run in a single transcation
 -- This test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+NOTICE:  installing required extension "pgcrypto"
 -- Dynamic masking
 SELECT anon.start_dynamic_masking();
  start_dynamic_masking 

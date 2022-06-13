@@ -33,7 +33,7 @@ REGRESS_TESTS = init populate extschema detection
 REGRESS_TESTS+= get_function_schema trusted_schemas
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= pseudonymization hashing dynamic_masking
-REGRESS_TESTS+= anonymize privacy_by_default pg_dump_anon restore
+REGRESS_TESTS+= anonymize privacy_by_default pg_dump_anon_sh restore
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path masking_foreign_tables
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= permissions_owner permissions_masked_role injection syntax_checks
@@ -115,20 +115,17 @@ lint-py: | _venv #: Check the python syntax
 	_venv/bin/pip install -r python/development.txt
 	_venv/bin/python -m flake8 python/*.py
 
+.PHONY: lint-go
+lint-go: #: Check the golang syntax
+	 $(MAKE) -C pg_dump_anon lint-go
 
 ##
 ## pg_dump_anon
 ##
 
 .PHONY: pg_dump_anon
-pg_dump_anon: _build/linux/amd64/pg_dump_anon/pg_dump_anon _build/windows/amd64/pg_dump_anon/pg_dump_anon.exe
-
-_build/linux/amd64/pg_dump_anon/pg_dump_anon: pg_dump_anon/pg_dump_anon.go
-	env GOOS=linux GOARCH=amd64 go build -o $@ $^
-
-_build/windows/amd64/pg_dump_anon/pg_dump_anon.exe: pg_dump_anon/pg_dump_anon.go
-	env GOOS=windows GOARCH=amd64 go build -o $@ $^
-
+pg_dump_anon: #: Build the pg_dump_anon command
+	$(MAKE) -C pg_dump_anon DEST=../_build
 
 ##
 ## B U I L D

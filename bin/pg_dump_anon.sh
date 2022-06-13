@@ -2,6 +2,12 @@
 #    pg_dump_anon
 #    A basic wrapper to export anonymized data with pg_dump and psql
 
+echo "WARNING:" >&2
+echo "This script is deprecated and replaced by a new version." >&2
+echo "It will be removed in a future version" >&2
+echo "Please read the doc below for more details" >&2
+echo "https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh" >&2
+
 usage()
 {
 cat << END
