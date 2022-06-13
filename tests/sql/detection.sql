@@ -39,7 +39,7 @@ SELECT anon.detect() IS NOT NULL LIMIT 1;
 
 SELECT count(*) = 6  FROM anon.detect('fr_FR');
 
-SELECT count(*) = 3  FROM anon.detect('en_US');
+SELECT count(*) = 5  FROM anon.detect('en_US');
 
 SELECT count(*) = 0  FROM anon.detect('fnkgfdlg,sdkf,vkvsld');
 
