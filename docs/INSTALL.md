@@ -321,8 +321,9 @@ _NB:_ You can also gather _step 1_ and _step 3_ in a single command:
 Install on MacOS
 ------------------------------------------------------------------------------
 
-Although the extension is not officially supported on MacOS systems, it should
-be possible to build the extension with the following lines:
+**WE DO NOT PROVIDE COMMUNITY SUPPORT FOR THIS EXTENSION ON MACOS SYSTEMS.**
+
+However it should be possible to build the extension with the following lines:
 
 ```console
 export C_INCLUDE_PATH="$(xcrun --show-sdk-path)/usr/include"
@@ -333,11 +334,13 @@ make install
 Install on Windows
 ------------------------------------------------------------------------------
 
-This extension is not supported on Windows.
+**WE DO NOT PROVIDE COMMUNITY SUPPORT FOR THIS EXTENSION ON WINDOWS.**
 
-However in theory it should be possible to compile it using Visual Studio.
-we simply lack the time and resource to work on this topic. You can contact us
-if you which to fund this effort.
+However it is possible to compile it using Visual Studio and the `build.bat`
+file.
+
+We provide Windows binaries and install files as part of our commercial
+support.
 
 
 Install in the cloud
