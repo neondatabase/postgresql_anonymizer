@@ -48,7 +48,7 @@ SELECT count(*) = 6  FROM anon.detect('fr_FR');
  t
 (1 row)
 
-SELECT count(*) = 3  FROM anon.detect('en_US');
+SELECT count(*) = 5  FROM anon.detect('en_US');
  ?column? 
 ----------
  t
