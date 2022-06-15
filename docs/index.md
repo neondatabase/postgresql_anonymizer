@@ -87,11 +87,41 @@ Step 4 : Connect with the masked user
 ```
 
 
+Success Stories
+------------------------------------------------------------------------------
+
+> With PostgreSQL Anonymizer we integrate, from the design of the database,
+> the principle that outside production the data must be anonymized. Thus we
+> can reinforce the GDPR rules, without affecting the quality of the tests
+> during version upgrades for example.
+
+— **Thierry Aimé, Office of Architecture and Standards in the French
+Public Finances Directorate General (DGFiP)**
+
+---
+
+> Thanks to PostgreSQL Anonymizer we were able to define complex masking rules
+> in order to implement full pseudonymization of our databases without losing
+> functionality. Testing on realistic data while guaranteeing the
+> confidentiality of patient data is a key point to improve the robustness of
+> our functionalities and the quality of our customer service.
+
+— **Julien Biaggi, Product Owner at bioMérieux**
+
+---
+
+> I just discovered your postgresql_anonymizer extension and used it at
+> my company for anonymizing our user for local development. Nice work!
+
+— **Max Metcalfe**
+
+If this extension is useful to you, please let us know !
+
 Support
 ------------------------------------------------------------------------------
 
-We need your feedback and ideas ! Let us know what you think of this tool, how it
-fits your needs and what features are missing.
+We need your feedback and ideas ! Let us know what you think of this tool, how
+it fits your needs and what features are missing.
 
 You can either [open an issue] or send a message at <contact@dalibo.com>.
 
