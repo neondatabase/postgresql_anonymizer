@@ -44,3 +44,20 @@ especially:
 The second one is of course more problematic. In any case, you should only
 consider this function as an helping tool, and acknowledge that you still need
 to review the entire database model in search of hidden identifiers.
+
+Contribute to the dictionnaries
+---------------------------------------------------------------------------------
+
+This detection tool is based on dictionnaries of identifiers. Currently these
+dictionnaries contain only a few entries.
+
+For instance, you can see the english idenfier dictionnary here:
+
+<https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/data/identifier_en_US.csv>
+
+You can help us improve this feature by sending us a list of direct and
+indirect identifiers you have found in your own data models ! Send us an
+email at <contact@dalibo.com> or [open an issue] in the project.
+
+[open an issue]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues
+
