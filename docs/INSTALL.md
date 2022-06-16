@@ -275,16 +275,18 @@ Here's an example in 4 steps:
 _Step 1:_  Dump your original data (for instance `dump.sql`)
 
 ```console
-pg_dump [...] my_db > dump.sql
+pg_dump --format=plain [...] my_db > dump.sql
 ```
+
+Note this method only works with plain sql format (`-Fp`). You **cannot**
+use the custom format (`-Fc`) and the directory format (`-Fd`) here.
 
 If you want to maintain the owners and grants, you need export them with
 `pg_dumpall --roles-only` like this:
 
 ```console
-(pg_dumpall [...] --roles-only && pg_dump [...] my_db ) > dump.sql
+(pg_dumpall -Fp [...] --roles-only && pg_dump -Fp [...] my_db ) > dump.sql
 ```
-
 
 _Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`)
 
@@ -347,8 +349,9 @@ Install in the cloud
 ------------------------------------------------------------------------------
 
 > **WARNING** In previous versions, this extension could be installed on various
-> Database As A Service platforms (such as Amazon RDS). Starting with version 0.9,
-> this is not possible anymore. We do not support the former `standalone` method.
+> Database As A Service platforms (such as Amazon RDS). Starting with version
+> 0.9, this is not possible anymore. We do not support the former `standalone`
+> method.
 > If privacy and anonymity are a concern to you, we encourage you to contact the
 > customer services of these platforms and ask them if they plan to add this
 > extension to their catalog.
