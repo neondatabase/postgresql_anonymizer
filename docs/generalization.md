@@ -138,7 +138,7 @@ is changed.
 This means that the transformation is not transparent, and therefore it cannot
 be used with [dynamic masking].
 
-[dynamic masking]: dynamic_masking/
+[dynamic masking]: dynamic_masking.md
 
 k-anonymity
 --------------------------------------------------------------------------------
@@ -152,8 +152,8 @@ of re-identification using linkage with other data sources.
 
 You can evaluate the k-anonymity factor of a table in 2 steps :
 
-Step 1: First defined the columns that are [indirect identifiers] (also known
-as "quasi identifers") like this:
+Step 1: First defined the columns that are indirect identifiers (also known
+as [quasi identifiers]) like this:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN patient.firstname IS 'INDIRECT IDENTIFIER';
@@ -169,7 +169,7 @@ SELECT anon.k_anonymity('generalized_patient')
 
 The higher the value, the better...
 
-[indirect identifiers]: https://labkey.med.ualberta.ca/labkey/_webdav/REDCap%20Support/@wiki/identifiers/identifiers.html?listing=html
+[quasi identifiers]: https://en.wikipedia.org/wiki/Quasi-identifier
 
 References
 --------------------------------------------------------------------------------

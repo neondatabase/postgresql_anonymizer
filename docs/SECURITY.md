@@ -49,7 +49,7 @@ that are located in the trusted schemas which are controlled by the superusers.
 
 See the [Configure] section for more details.
 
-[Configure]: configure/
+[Configure]: configure.md
 
 Security context of the functions
 ------------------------------------------------------------------------------

@@ -28,17 +28,15 @@ which is perfect for statistics and data analytics.
 Finally, the extension offers a panel of [detection] functions that will try to
 guess which columns need to be anonymized.
 
-[INSTALL.md]: INSTALL/
-[Concepts]: concepts/
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
-[declare the masking rules]: declare_masking_rules/
+[declare the masking rules]: declare_masking_rules.md
 
-[Anonymous Dumps]: anonymous_dumps/
-[Static Masking]: static_masking/
-[Dynamic Masking]: dynamic_masking/
-[Masking Functions]: masking_functions/
-[Generalization]: generalization/
-[detection]: detection/
+[Anonymous Dumps]: anonymous_dumps.md
+[Static Masking]: static_masking.md
+[Dynamic Masking]: dynamic_masking.md
+[Masking Functions]: masking_functions.md
+[Generalization]: generalization.md
+[detection]: detection.md
 
 
 
