@@ -65,4 +65,4 @@ Using the PostgreSQL Faker extension
 If you need more specialized fake data sets, please read the [Advanced Faking]
 section.
 
-[Advanced Faking]: /masking_functions/#advanced-faking
+[Advanced Faking]: masking_functions.md#advanced-faking

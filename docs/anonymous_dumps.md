@@ -53,7 +53,7 @@ variable value is used.
 * The `plain` format is the only supported format. The other formats (`custom`, `dir`
   and `tar`) are not supported
 
-[PostgreSQL environement variables]: https://www.postgresql.org/docs/current/libpq-envars.html
+[PostgreSQL environment variables]: https://www.postgresql.org/docs/current/libpq-envars.html
 [.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 
@@ -71,7 +71,7 @@ export the data with `pg_dump`. Here's a practical example of this approach:
 
 https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/266#note_817261637
 
-[static masking]: static_masking/
+[static masking]: static_masking.md
 
 
 TIP: Avoid multiple password prompts

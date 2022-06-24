@@ -29,14 +29,14 @@ If you're having any problem, check the [Troubleshooting] section.
 [Install on RedHat / CentOS]: #install-on-redhat-centos
 [Install with PGXN]: #install-with-pgxn
 [Install from source]: #install-from-source
-[Install in the cloud]: #install-in-the-cloud
 [Install with docker]: #install-with-docker
 [Install as a black box]: #install-as-a-black-box
 [Install on MacOS]: #install-on-macos
 [Install on Windows]: #install-on-windows
-[Load the extension]: #addendum--load-the-extension
-[Troubleshooting]: #addendum--troubleshooting
+[Install in the cloud]: #install-in-the-cloud
 [Uninstall]: #uninstall
+[Load the extension]: #addendum-alternative-ways-to-load-the-extension
+[Troubleshooting]: #addendum-troubleshooting
 
 Choose your version : `Stable` or `Latest` ?
 ------------------------------------------------------------------------------

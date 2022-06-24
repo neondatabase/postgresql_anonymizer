@@ -22,7 +22,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Generic Hashing]: #generic-hashing
 [Partial scrambling]: #partial-scrambling
 [Generalization]: #generalization
-[Shuffling]: /static_masking#shuffling
+[Shuffling]: static_masking.md#shuffling
 
 Depending on your data, you may need to use different strategies on different
 columns :
@@ -75,9 +75,9 @@ use the `AVG()` function to get a close approximation. (See
 functions are best fitted for [Anonymous Dumps] and [Static Masking].
 They should be avoided when using [Dynamic Masking].
 
-[Anonymous Dumps]: anonymous_dumps/
-[Static Masking]: static_masking/
-[Dynamic Masking]: dynamic_masking/
+[Anonymous Dumps]: anonymous_dumps.md
+[Static Masking]: static_masking.md
+[Dynamic Masking]: dynamic_masking.md
 
 
 
@@ -121,7 +121,7 @@ names, cities, etc.).
 > category ). If you want to use localized data or load a
 > specific dataset, please read the [Custom Fake Data] section.
 
-[Custom Fake Data]: /custom_fake_data
+[Custom Fake Data]: custom_fake_data.md
 
 Once the fake data is loaded, you have access to these faking functions:
 

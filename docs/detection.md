@@ -6,7 +6,7 @@ Searching for Identifiers
 As we've seen previously, this extension makes it very easy to
 [declare masking rules].
 
-[declare masking rules]: declare_masking_rules/
+[declare masking rules]: declare_masking_rules.md
 
 However, when you create an anonymization strategy, the hard part is
 scanning the database model to find which columns contains direct and indirect
@@ -51,9 +51,9 @@ Contribute to the dictionnaries
 This detection tool is based on dictionnaries of identifiers. Currently these
 dictionnaries contain only a few entries.
 
-For instance, you can see the english idenfier dictionnary here:
+For instance, you can see the english identifier dictionary [here].
 
-<https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/data/identifier_en_US.csv>
+[here]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/data/identifier_en_US.csv
 
 You can help us improve this feature by sending us a list of direct and
 indirect identifiers you have found in your own data models ! Send us an
