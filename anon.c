@@ -11,6 +11,7 @@
 #include "fmgr.h"
 #include "utils/guc.h"
 #include "catalog/pg_class.h"
+#include "catalog/pg_database.h"
 #include "catalog/pg_namespace.h"
 #include "catalog/pg_authid.h"
 #include "miscadmin.h"
@@ -52,22 +53,43 @@ static char *guc_anon_source_schema;
 static void
 anon_object_relabel(const ObjectAddress *object, const char *seclabel)
 {
+  char *checksemicolon;
+
   /* SECURITY LABEL FOR anon ON COLUMN foo.bar IS NULL */
   if (seclabel == NULL) return;
 
- // ereport(ERROR,
- //       (errcode(ERRCODE_INVALID_NAME),
- //       errmsg("classId = %d + SubId = %d", object->classId, object->objectSubId)));
+  /* Prevent SQL injection attacks inside the security label */
+  checksemicolon = strchr(seclabel, ';');
 
   switch (object->classId)
   {
+    /* SECURITY LABEL FOR anon ON DATABASE d IS 'TABLESAMPLE SYSTEM(10)' */
+    case DatabaseRelationId:
+
+      if ( pg_strncasecmp(seclabel, "TABLESAMPLE", 11) == 0
+        && checksemicolon == NULL
+      )
+        return;
+
+      ereport(ERROR,
+        (errcode(ERRCODE_INVALID_NAME),
+         errmsg("'%s' is not a valid label for a database", seclabel)));
+      break;
+
     case RelationRelationId:
 
-      /* SECURITY LABEL FOR anon ON TABLE ...' */
+      /* SECURITY LABEL FOR anon ON TABLE t IS 'TABLESAMPLE SYSTEM(10)' */
       if (object->objectSubId == 0)
+      {
+        if ( pg_strncasecmp(seclabel, "TABLESAMPLE", 11) == 0
+          && checksemicolon == NULL
+        )
+          return;
+
         ereport(ERROR,
-          (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-           errmsg("anon provider does not support labels on this object")));
+          (errcode(ERRCODE_INVALID_NAME),
+           errmsg("'%s' is not a valid label for a table", seclabel)));
+      }
 
       /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
       if ( pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0

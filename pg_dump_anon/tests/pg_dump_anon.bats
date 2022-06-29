@@ -102,6 +102,14 @@ teardown() {
   grep --invert-match --quiet 'CREATE TABLE public.company' $RESULTS/owner.sql
 }
 
+@test "Export 33% of a table" {
+  psql -c "SECURITY LABEL FOR anon ON TABLE http_logs IS 'TABLESAMPLE BERNOULLI(33)';"
+  $PG_DUMP_ANON -t http_logs > $RESULTS/https_logs_sample.sql
+  lines=$(grep 'http'  https_logs_sample.sql|wc -l)
+  psql -c "SECURITY LABEL FOR anon ON TABLE http_logs IS NULL;"
+  [[ "$lines" < "100" ]]
+}
+
 @test "Export a sequence with uppercase letters" {
   $PG_DUMP_ANON | grep BuG_298
 }

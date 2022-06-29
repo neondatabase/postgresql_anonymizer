@@ -8,7 +8,7 @@ SELECT anon.init();
  t
 (1 row)
 
-CREATE ROLE oscar_the_owner LOGIN;
+CREATE ROLE oscar_the_owner LOGIN PASSWORD 'x';
 ALTER DATABASE :DBNAME OWNER TO oscar_the_owner;
 CREATE ROLE mallory_the_masked_user LOGIN;
 SECURITY LABEL FOR anon ON ROLE mallory_the_masked_user IS 'MASKED';
@@ -140,7 +140,7 @@ Please read the doc below for more details
 https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
 -- A7. Dump as the owner
-\! pg_dump_anon.sh -U oscar_the_owner -d contrib_regression -f tests/tmp/_pg_dump_anon_A7.sql
+\! PGPASSWORD=x pg_dump_anon.sh -U oscar_the_owner -d contrib_regression -f tests/tmp/_pg_dump_anon_A7.sql
 WARNING:
 This script is deprecated and replaced by a new version.
 It will be removed in a future version

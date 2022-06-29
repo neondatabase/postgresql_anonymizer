@@ -39,7 +39,7 @@ generally ok because usually masked users are not considered as important as
 the regular ones.
 
 If you apply 3 or 4 rules to a table, the response time for the masked users
-should approx. 20% to 30% slower thant for the normal users.
+should approx. 20% to 30% slower than for the normal users.
 
 As the masking rules are applied for each queries of the masked users, the
 dynamic masking is appropriate when you have a limited number of masked users
@@ -80,11 +80,9 @@ of calling a masking function.
 
 If you need to anonymize data for testing purpose, chances are that a smaller
 subset of your database will be enough. In that case, you can easily speed up
-the anonymization by downsizing the volume of data. There are multiple ways to
-extract a sample of database:
+the anonymization by downsizing the volume of data.
 
-* [TABLESAMPLE](https://www.postgresql.org/docs/current/static/sql-select.html)
-* [pg_sample](https://github.com/mla/pg_sample)
+Checkout the [Sampling] section for more details.
 
 
 

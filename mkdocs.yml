@@ -16,6 +16,7 @@ nav:
   - 'Anonymous Dumps': 'anonymous_dumps.md'
   - 'Generalization': 'generalization.md'
   - 'Privacy By Default': 'privacy_by_default.md'
+  - 'Sampling': 'sampling.md'
   - 'Detecting Identifiers': 'detection.md'
   - 'Custom Fake Data': 'custom_fake_data.md'
   - 'Concepts': 'concepts.md'

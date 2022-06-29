@@ -45,17 +45,17 @@ IS 'MASKED WITH FUNCTION anon.hash(call_receiver)';
 
 -- ROLE
 
-CREATE ROLE jimmy_mcnulty LOGIN;
+CREATE ROLE jimmy_mcnulty LOGIN PASSWORD 'CHANGEME';
 
 SECURITY LABEL FOR anon ON ROLE jimmy_mcnulty IS 'MASKED';
 
 SELECT anon.mask_update();
 
 -- Jimmy reads the phone book
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM phone'
+\! PGPASSWORD=CHANGEME psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM phone'
 
 -- Jimmy joins table to get the call history
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
+\! PGPASSWORD=CHANGEME psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
 
 -- Jimmy tries to find the salt :-)
 SET ROLE jimmy_mcnulty;
