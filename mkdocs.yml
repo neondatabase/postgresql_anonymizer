@@ -15,10 +15,11 @@ nav:
   - 'Dynamic Masking': 'dynamic_masking.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
   - 'Generalization': 'generalization.md'
+  - 'Privacy By Default': 'privacy_by_default.md'
   - 'Detecting Identifiers': 'detection.md'
   - 'Custom Fake Data': 'custom_fake_data.md'
   - 'Concepts': 'concepts.md'
-  - 'Performances': performances.md
+  - 'Performances': 'performances.md'
   - 'Upgrade': 'UPGRADE.md'
   - 'Security': 'SECURITY.md'
   - 'Links': 'links.md'

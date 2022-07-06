@@ -36,8 +36,10 @@ static bool guc_anon_restrict_to_trusted_schemas;
 // compile with `-Wno-unused-variable` to avoid warnings
 static char *guc_anon_algorithm;
 static char *guc_anon_mask_schema;
+static bool guc_anon_privacy_by_default;
 static char *guc_anon_salt;
 static char *guc_anon_source_schema;
+
 
 /*
  * Checking the syntax of the masking rules
@@ -144,6 +146,20 @@ _PG_init(void)
     "",
     &guc_anon_mask_schema,
     "mask",
+    PGC_SUSET,
+    0,
+    NULL,
+    NULL,
+    NULL
+  );
+
+  DefineCustomBoolVariable
+  (
+    "anon.privacy_by_default",
+    "Mask all columns with NULL (or the default value for NOT NULL columns).",
+    "",
+    &guc_anon_privacy_by_default,
+    false,
     PGC_SUSET,
     0,
     NULL,
