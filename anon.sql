@@ -1597,6 +1597,27 @@ WITH const AS (
     'MASKED +WITH +VALUE +#"%#" ?'::TEXT
       AS pattern_mask_column_value
 ),
+rules_from_default AS (
+SELECT
+  c.oid AS attrelid,
+  a.attnum  AS attnum,
+  c.relnamespace::REGNAMESPACE,
+  c.relname,
+  a.attname,
+  pg_catalog.format_type(a.atttypid, a.atttypmod),
+  NULL AS col_description,
+  NULL AS masking_function,
+  COALESCE(pg_catalog.pg_get_expr(d.adbin, d.adrelid),'NULL') AS masking_value,
+  0 AS priority -- lowest priority for the default value
+FROM pg_catalog.pg_class c
+JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid
+LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid, d.adnum)
+WHERE a.attnum > 0
+AND n.nspname NOT IN ('information_schema', 'pg_catalog', 'pg_toast','anon')
+AND NOT a.attisdropped
+AND pg_catalog.current_setting('anon.privacy_by_default')::BOOLEAN
+),
 rules_from_seclabels AS (
 SELECT
   sl.objoid AS attrelid,
@@ -1622,11 +1643,16 @@ AND (   sl.label SIMILAR TO k.pattern_mask_column_function ESCAPE '#'
     OR  sl.label SIMILAR TO k.pattern_mask_column_value ESCAPE '#'
     )
 AND sl.provider = 'anon' -- this is hard-coded in anon.c
+),
+rules_from_all AS (
+SELECT * FROM rules_from_default
+UNION
+SELECT * FROM rules_from_seclabels
 )
 -- DISTINCT will keep just the 1st rule for each column based on priority,
 SELECT
   DISTINCT ON (attrelid, attnum) *,
-  COALESCE(masking_function, masking_value) AS masking_filter,
+  COALESCE(masking_function,masking_value) AS masking_filter,
   (
     -- Aggregate with count and bool_and to handle the cases
     -- when the schema is not delared
@@ -1637,7 +1663,7 @@ SELECT
     AND   sl.objoid=f.schema::REGNAMESPACE
   ) AS trusted_schema
 
-FROM rules_from_seclabels
+FROM rules_from_all
 ORDER BY attrelid, attnum, priority DESC
 ;
 
@@ -1765,6 +1791,11 @@ BEGIN
   END IF;
 
   RETURN NULL;
+
+EXCEPTION
+  WHEN not_null_violation THEN
+    RAISE EXCEPTION 'Cannot mask a "NOT NULL" column with a NULL value'
+          USING HINT = 'If privacy_by_design is enabled, add a default value to the column';
 END;
 $$
   LANGUAGE plpgsql
