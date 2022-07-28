@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+
+override_dh_pgxs_test:
+	pg_buildext -o "shared_preload_libraries=anon" installcheck . . postgresql-%v-anonymizer
+
+%:
+	dh $@ --with pgxs_loop
