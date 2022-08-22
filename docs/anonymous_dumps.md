@@ -3,97 +3,82 @@ Anonymous Dumps
 
 Due to the core design of this extension, you cannot use `pg_dump` with a masked
 user. If you want to export the entire database with the anonymized data, you
-must use the `pg_dump_anon.sh` command.
+must use the `pg_dump_anon` command.
 
-
-pg_dump_anon.sh
+pg_dump_anon
 ------------------------------------------------------------------------------
 
-The `pg_dump_anon.sh` wrapper is designed to export the masked data. You can use
-it like the regular `pg_dump` command.
-
-```bash
-pg_dump_anon.sh -h localhost -U bob mydb > anonymous_dump.sql
-```
-
-It uses the same connections parameters that `pg_dump` :
-
-```bash
-$ pg_dump_anon.sh --help
-
-Usage: pg_dump_anon.sh [OPTION]... [DBNAME]
-
-General options:
-  -f, --file=FILENAME           output file
-  --help                        display this message
-
-Options controlling the output content:
-  -n, --schema=PATTERN          dump the specified schema(s) only
-  -N, --exclude-schema=PATTERN  do NOT dump the specified schema(s)
-  -t, --table=PATTERN           dump the specified table(s) only
-  -T, --exclude-table=PATTERN   do NOT dump the specified table(s)
-  --exclude-table-data=PATTERN  do NOT dump data for the specified table(s)
-
-Connection options:
-  -d, --dbname=DBNAME           database to dump
-  -h, --host=HOSTNAME           database server host or socket directory
-  -p, --port=PORT               database server port number
-  -U, --username=NAME           connect as specified database user
-  -w, --no-password             never prompt for password
-  -W, --password                force password prompt (should happen automatically)
-
-If no database name is supplied, then the PGDATABASE environment
-variable value is used.
-
-```
-
-
-* The [PostgreSQL environment variables] ($PGHOST, PGUSER, etc.) are supported.
-* The [.pgpass] file is also supported.
-* The `plain` format is the only supported format. The other formats (`custom`, `dir`
-  and `tar`) are not supported
+The `pg_dump_anon` command support most of the options of the regular [pg_dump]
+command. The [PostgreSQL environment variables] ($PGHOST, PGUSER, etc.) and
+the [.pgpass] file are also supported.
 
 [PostgreSQL environment variables]: https://www.postgresql.org/docs/current/libpq-envars.html
 [.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 
-Consistent Backups
+Exemple
 ------------------------------------------------------------------------------
 
-> IMPORTANT: due to its internal design, `pg_dump_anon.sh` MAY NOT produce a
-> consistent backup.
+A user named `bob` can export an anonymous dump of the `app` database like
+this:
 
-Especially if you are running `DML` or `DDL` commands during the anonymous export,
-you will end up with a broken dump file.
+```bash
+pg_dump_anon -h localhost -U bob --password --file=anonymous_dump.sql app
+```
 
-If backup consistency is required, you can simply use [static masking] and then
-export the data with `pg_dump`. Here's a practical example of this approach:
+**WARNING**: The name of the database must be the last parameter.
 
-https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/266#note_817261637
-
-[static masking]: static_masking.md
+For more details about the supported options, simply type `pg_dump_anon --help`
 
 
-TIP: Avoid multiple password prompts
+
+Install
 ------------------------------------------------------------------------------
 
-If you don't provide the connection password to `pg_dump_anon.sh` using the
-`--password` option, you may have to type the password multiple times.To
-avoid this, you can either [define the $PGPASS variable] or place your
-password in a [.pgpass] file.
+### With Go
 
-[define the $PGPASS variable]: https://www.postgresql.org/docs/current/libpq-envars.html
+```console
+go install gitlab.com/dalibo/postgresql_anonymizer/pg_dump_anon
+```
+
+### With docker
+
+If you do not want to instal Go on your production servers, you can fetch the
+binary with:
+
+```console
+docker run --rm -v "$PWD":/go/bin golang go get gitlab.com/dalibo/postgresql_anonymizer/pg_dump_anon
+sudo install pg_dump_anon $(pg_config --bindir)
+```
 
 
-DEPRECATED: DO NOT USE anon.dump()
+
+Limitations
 ------------------------------------------------------------------------------
 
-The version 0.3 of PostgreSQL Anonymizer introduced a function called
-`anon.dump()`. This function is extremely slow. Since version 0.6, it has
-been deprecated and it is not supported anymore.
+* The user password is asked automatically. This means you must either add
+  the `--password` option to define it interactively or declare it in the
+  [PGPASSWORD] variable or put it inside the [.pgpass] file ( however on
+  Windows,the [PGPASSFILE] variable must be specified explicitly)
 
-The function is kept as is for backward compatibility. It will probably be
-removed from one of the forthcoming versions.
+* The `plain` format is the only supported format. The other formats (`custom`,
+  `dir` and `tar`) are not supported
 
-Again: do not use this function ! To dump the masked data, use the
-`pg_dump_anon.sh` command line tool as described above.
+
+[PGPASSWORD]: https://www.postgresql.org/docs/current/libpq-envars.html
+[PGPASSFILE]: https://www.postgresql.org/docs/current/libpq-envars.html
+
+
+Obsolete: pg_dump_anon.sh
+------------------------------------------------------------------------------
+
+Before version 1.0, `pg_dump_anon` was a bash script. This script was nice and
+simple, however under certain conditions the backup were not consistent. See
+[issue #266] for more details.
+
+[issue #266]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/266
+
+This script is now renamed to `pg_dump_anon.sh` and it is still available for
+backwards compatibility. But it will be deprecated in version 2.0.
+
+

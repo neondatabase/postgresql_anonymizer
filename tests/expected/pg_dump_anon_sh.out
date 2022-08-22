@@ -91,6 +91,11 @@ ALTER SEQUENCE public.seq42 RESTART WITH 42;
 --
 -- A1. Dump into a file
 \! pg_dump_anon.sh --dbname=contrib_regression > tests/tmp/_pg_dump_anon_A1.sql
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 -- A2. Clean up the database and dump an empty database
 DROP SCHEMA test_pg_dump_anon CASCADE;
 NOTICE:  drop cascades to 5 other objects
@@ -106,6 +111,11 @@ drop cascades to table "FoO".vendor
 drop cascades to table "FoO".vendeur
 DROP SEQUENCE public.seq42;
 \! pg_dump_anon.sh -d contrib_regression > /dev/null
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 -- A3. Restore with the dump file
 -- output will vary a lot between PG versions
 -- So have to disable it to pass this test
@@ -113,43 +123,113 @@ DROP SEQUENCE public.seq42;
 -- A4. Dump again into a second file
 -- /!\ This time the masking rules are not applied !
 \! pg_dump_anon.sh -d contrib_regression > tests/tmp/_pg_dump_anon_A4.sql
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 -- A5. Check that both dump files are identical
 -- ignore the plpgsql error on PG10 and PG9.6
 \! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A4.sql
 -- A6. Dump a third file, this time with the `--file` option
 \! pg_dump_anon.sh -d contrib_regression -f tests/tmp/_pg_dump_anon_A6.sql
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
 -- A7. Dump as the owner
 \! pg_dump_anon.sh -U oscar_the_owner -d contrib_regression -f tests/tmp/_pg_dump_anon_A7.sql
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! diff tests/tmp/_pg_dump_anon_A6.sql tests/tmp/_pg_dump_anon_A7.sql
 --
 -- B. Exclude some schemas
 -- All this tests should not return anything
 --
 \! pg_dump_anon.sh contrib_regression --exclude-schema='"FoO"' -N z | grep 'FoO'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! pg_dump_anon.sh contrib_regression --schema=pub* -n test_pg_dump_anon |grep 'FoO'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 --
 -- C. Exclude some tables
 -- All these command lines should produce the same output
 --
 \! pg_dump_anon.sh contrib_regression --table=test_pg_dump_anon.* | grep "vendor"
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon.no_masks | grep 'vendor'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! pg_dump_anon.sh contrib_regression -t test_pg_dump_anon."c*" | grep 'vendor'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! pg_dump_anon.sh contrib_regression --exclude-table='"FoO".*' | grep 'vendor'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 \! pg_dump_anon.sh contrib_regression -T '"FoO".v?nd*r' | grep 'vendor'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 --
 -- D. Exclude data
 --
 \! pg_dump_anon.sh contrib_regression --exclude-data=v?nd?r | grep 'Hamm'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 --
 -- E. Remove Anon extension
 --
 \! pg_dump_anon.sh contrib_regression | grep 'CREATE EXTENSION' | grep anon
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 --
 -- F. Data Only
 --
 \! pg_dump_anon.sh contrib_regression --data-only | grep 'CREATE TABLE'
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 --
 -- H. Check the sequence values
 --
@@ -175,6 +255,11 @@ SELECT pg_catalog.nextval('public.seq42');
 -- I. Errors
 --
 \! pg_dump_anon.sh contrib_regression -f /does/not/exists.sql
+WARNING:
+This script is deprecated and replaced by a new version.
+It will be removed in a future version
+Please read the doc below for more details
+https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/#pg_dump_anonsh
 touch: cannot touch '/does/not/exists.sql': No such file or directory
 ERROR: /does/not/exists.sql is not writable.
 --  CLEAN

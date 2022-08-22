@@ -1,6 +1,8 @@
+BEGIN;
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
--- TEST 1 : partial 
+-- TEST 1 : partial
 SELECT anon.partial('abcdefgh',1,'xxxxxx',1) = 'axxxxxxh';
 
 SELECT anon.partial(NULL,1,'xxxxxx',1) IS NULL;
@@ -18,4 +20,5 @@ SELECT anon.partial_email('big@ben.co.uk') = 'bi******@be******.uk';
 SELECT anon.partial_email(NULL) IS NULL;
 
 
-DROP EXTENSION anon CASCADE;
+ROLLBACK;
+

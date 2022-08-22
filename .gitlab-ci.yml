@@ -10,7 +10,9 @@ variables:
     POSTGRES_DB: nice_marmot
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: plop
+    PGPASSWORD: CHANGEME
     SAST_EXCLUDED_PATHS: '_venv, docs/howto/_venv'
+    GIT_SUBMODULE_STRATEGY: recursive
     ## Uncomment this to run only windows specific jobs
     #WINDOWS_ONLY: "True"
 
@@ -19,6 +21,7 @@ stages:
   - build
   - test
   - deploy
+  - release
 
 image: postgres:13
 
@@ -63,7 +66,10 @@ lint-go:
   stage: lint
   image: golang:alpine
   script:
-    - go vet pg_dump_anon/pg_dump_anon.go
+    - apk add --no-cache gcc musl-dev
+    - cd ./pg_dump_anon/
+    - go mod download github.com/lib/pq
+    - go vet main.go
   except:
     variables:
       - $WINDOWS_ONLY
@@ -74,10 +80,15 @@ lint-go:
 
 pg_dump_anon:
   stage: build
-  image: golang:alpine
+  image: golang:bullseye
   script:
-    - apk add --no-cache make
-    - make pg_dump_anon
+    - apt-get update
+    - apt-get install -y --no-install-recommends sudo make gcc postgresql-13 postgresql-server-dev-13 python3-pip diffutils
+    - make && make install
+    - pg_ctlcluster -o "-c client_encoding='UTF8' -c hba_file=$PWD/pg_dump_anon/tests/pg_hba.conf -c shared_preload_libraries='anon'" 13 main start
+    - psql -f $PWD/pg_dump_anon/tests/sql/roles.sql
+    - make -C pg_dump_anon
+    - make -C pg_dump_anon test
   artifacts:
     paths:
         - _build
@@ -397,7 +408,6 @@ demo:
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 postgresql-contrib-13  pgxnclient
-    - pgxn install ddlx
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -542,3 +552,22 @@ pages:
   only:
     variables:
       - $CI_COMMIT_BRANCH == 'master' || $CI_PUBLISH_PAGES  # git push -o ci.variable="CI_PUBLISH_PAGES=1"
+
+##
+## R E L E A S E
+##
+release_pg_dump_anon:
+  stage: release
+  image:
+    name: goreleaser/goreleaser
+    entrypoint: ['']
+  only:
+    - tags
+  variables:
+    # Disable shallow cloning so that goreleaser can diff between tags to
+    # generate a changelog.
+    GIT_DEPTH: 0
+  script:
+    - cd pg_dump_anon
+    - goreleaser release --rm-dist
+
