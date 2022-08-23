@@ -102,6 +102,10 @@ teardown() {
   grep --invert-match --quiet 'CREATE TABLE public.company' $RESULTS/owner.sql
 }
 
+@test "Export a sequence with uppercase letters" {
+  $PG_DUMP_ANON | grep BuG_298
+}
+
 @test "Export to a file" {
   export PGUSER=maddy
   export PGPASSWORD=CHANGEME
