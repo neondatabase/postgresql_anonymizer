@@ -42,7 +42,7 @@ especially:
 * `false negative`: a column contains identifiers, but it is not reported
 
 The second one is of course more problematic. In any case, you should only
-consider this function as an helping tool, and acknowledge that you still need
+consider this function as a helping tool, and acknowledge that you still need
 to review the entire database model in search of hidden identifiers.
 
 Contribute to the dictionnaries
