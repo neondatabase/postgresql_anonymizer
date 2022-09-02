@@ -11,7 +11,7 @@ Localized fake data
 ------------------------------------------------------------------------------
 
 We provide a python script that will generate fake data for you. This script
-is located in the anon extension directory, usually something like
+is located in the anon extension directory, usually something like:
 
 ```shell
 /usr/share/postgresql/13/extension/anon/populate.py

@@ -85,7 +85,7 @@ They should be avoided when using [Dynamic Masking].
 Randomization
 ------------------------------------------------------------------------------
 
-The extension provides a large choice of function to generate purely random
+The extension provides a large choice of functions to generate purely random
 data :
 
 * `anon.random_date()` returns a date
@@ -117,7 +117,7 @@ SELECT anon.init();
 The `init()` function will import a default dataset of random data (iban,
 names, cities, etc.).
 
-> This is dataset is in English and very small ( 1000 values for each
+> This dataset is in English and very small ( 1000 values for each
 > category ). If you want to use localized data or load a
 > specific dataset, please read the [Custom Fake Data] section.
 
@@ -154,12 +154,12 @@ Advanced Faking
 Generating fake data is a complex topic. The functions provided here are
 limited to basic use case. For more advanced faking methods, in particular
 if you are looking for **localized fake data**, take a look at
-[PostgreSQL Faker], a extension based upon the well-known [Faker python library].
+[PostgreSQL Faker], an extension based upon the well-known [Faker python library].
 
 [PostgreSQL Faker]: https://gitlab.com/dalibo/postgresql_faker
 [Faker python library]: https://faker.readthedocs.io
 
-This extension provides an advanced faking engine with localisation support
+This extension provides an advanced faking engine with localisation support.
 
 For example:
 
@@ -204,7 +204,7 @@ The second argument ("salt") is optional. You can call each function with
 only the seed like this `anon.pseudo_city('bob')`. The salt is here to increase
 complexity and avoid dictionary and brute force attacks (see warning below).
 If a salt is not given, a random secret salt is used instead
-(see the [Generic Hashing] section for more details)
+(see the [Generic Hashing] section for more details).
 
 The seed can be any information related to the subject. For instance, we can
 consistently generate the same fake email address for a given person by using
@@ -314,14 +314,14 @@ Generalization
 -------------------------------------------------------------------------------
 
 Generalization is the principle of replacing the original value by a range
-containing this values. For instance, instead of saying 'Paul is 42 years old',
+containing this value. For instance, instead of saying 'Paul is 42 years old',
 you would say 'Paul is between 40 and 50 years old'.
 
 > The generalization functions are a data type transformation. Therefore it is
 > not possible to use them with the dynamic masking engine. However they are
-> useful to create anonymized views. See example below
+> useful to create anonymized views. See example below.
 
-Let's imagine a table containing health information
+Let's imagine a table containing health information:
 
 ```sql
 SELECT * FROM patient;
@@ -377,7 +377,7 @@ re-identification.
 PostgreSQL offers several [RANGE] data types which are perfect for dates and
 numeric values.
 
-For numeric values, 3 functions are available
+For numeric values, 3 functions are available:
 
 * `generalize_int4range(value, step)`
 * `generalize_int8range(value, step)`
@@ -413,7 +413,7 @@ IS 'MASKED WITH FUNCTION bar.foo()';
 
 <!-- cf. demo/writing_your_own_mask.sql -->
 
-For complex data types, you may have to write you own function. This will be
+For complex data types, you may have to write your own function. This will be
 a common use case if you have to hide certain parts of a JSON field.
 
 For example:

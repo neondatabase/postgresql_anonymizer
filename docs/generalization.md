@@ -152,7 +152,7 @@ of re-identification using linkage with other data sources.
 
 You can evaluate the k-anonymity factor of a table in 2 steps :
 
-Step 1: First defined the columns that are indirect identifiers (also known
+Step 1: First define the columns that are indirect identifiers (also known
 as [quasi identifiers]) like this:
 
 ```sql

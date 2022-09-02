@@ -33,7 +33,7 @@ SECURITY LABEL FOR anon ON COLUMN player.id
 Escaping String literals
 ------------------------------------------------------------------------------
 
-As you may have notice the masking rule definitions are placed between single
+As you may have noticed the masking rule definitions are placed between single
 quotes. Therefore if you need to use a string inside a masking rule, you need
 to use [C-Style escapes] like this:
 
@@ -42,7 +42,7 @@ SECURITY LABEL FOR anon ON COLUMN player.name
   IS E'MASKED WITH VALUE \'CONFIDENTIAL\'';
 ```
 
-Or use [dollar quoting] which is easier to read
+Or use [dollar quoting] which is easier to read:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN player.name
@@ -89,7 +89,7 @@ Limitations
   multiple partitions, you need to declare the masking rules for each partition.
 
 
-Declaring Rules with COMMENTs is deprecated
+Declaring Rules with COMMENTs is deprecated.
 ------------------------------------------------------------------------------
 
 Previous version of the extension allowed users to declare masking rules using
