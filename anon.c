@@ -31,10 +31,11 @@ Datum   get_function_schema(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(get_function_schema);
 
 static bool guc_anon_restrict_to_trusted_schemas;
-// The GUC vars below are not used in the C code
+// Some GUC vars below are not used in the C code
 // but they are used in the plpgsql code
 // compile with `-Wno-unused-variable` to avoid warnings
 static char *guc_anon_algorithm;
+static char *guc_anon_masking_policies;
 static char *guc_anon_mask_schema;
 static bool guc_anon_privacy_by_default;
 static char *guc_anon_salt;
@@ -116,14 +117,26 @@ anon_object_relabel(const ObjectAddress *object, const char *seclabel)
 }
 
 /*
+ * Trim whitespaces from a string
+ */
+static void
+remove_spaces(char *s)
+{
+    int writer = 0, reader = 0;
+    while (s[reader])
+    {
+        if (s[reader]!=' ') s[writer++] = s[reader];
+        reader++;
+    }
+    s[writer]=0;
+}
+
+/*
  * Register the extension and declare its GUC variables
  */
 void
 _PG_init(void)
 {
-  /* Security label provider hook */
-  register_label_provider("anon",anon_object_relabel);
-
   /* GUC parameters */
   DefineCustomStringVariable
   (
@@ -133,6 +146,20 @@ _PG_init(void)
     &guc_anon_algorithm,
     "sha256",
     PGC_SUSET,
+    GUC_SUPERUSER_ONLY,
+    NULL,
+    NULL,
+    NULL
+  );
+
+  DefineCustomStringVariable
+  (
+    "anon.masking_policies",
+    "Define multiple masking policies (NOT IMPLEMENTED YET)",
+    "",
+    &guc_anon_masking_policies,
+    "",
+    PGC_SIGHUP,
     GUC_SUPERUSER_ONLY,
     NULL,
     NULL,
@@ -208,6 +235,21 @@ _PG_init(void)
     NULL,
     NULL
   );
+
+  /* Security label provider hook */
+  /* 'anon' is always used as the default policy */
+  register_label_provider("anon",anon_object_relabel);
+  /* Additional providers for multiple masking policies */
+  if (strlen(guc_anon_masking_policies)>0)
+  {
+    char * policy = strtok(guc_anon_masking_policies, ",");
+    while( policy != NULL )
+    {
+      remove_spaces(policy);
+      register_label_provider(policy,anon_object_relabel);
+      policy = strtok(NULL, ",");
+    }
+  }
 }
 
 /*

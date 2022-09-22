@@ -1834,7 +1834,8 @@ $$
 
 -- True if the role is masked
 CREATE OR REPLACE FUNCTION anon.hasmask(
-  role REGROLE
+  role REGROLE,
+  masking_policy TEXT DEFAULT 'anon'
 )
 RETURNS BOOLEAN AS
 $$
@@ -1844,7 +1845,7 @@ FROM (
   SELECT label ILIKE 'MASKED' AS masked
   FROM pg_catalog.pg_shseclabel
   WHERE  objoid = role
-  AND provider = 'anon' -- this is hard coded in anon.c
+  AND provider = masking_policy
   UNION
   -- return FALSE if the SELECT above is empty
   SELECT FALSE as masked --
