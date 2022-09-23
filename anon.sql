@@ -1542,13 +1542,51 @@ $$
 
 
 -- See tests in tests/sql/get_function_schema.sql
-CREATE OR REPLACE FUNCTION anon.get_function_schema(text) RETURNS text
+CREATE OR REPLACE FUNCTION anon.get_function_schema(text)
+RETURNS TEXT
 AS 'MODULE_PATHNAME', 'get_function_schema'
   LANGUAGE C
   IMMUTABLE
   STRICT
   PARALLEL SAFE
 ;
+
+-- Register a SECURITY LABEL provider
+-- /!\ there's no way to "unregister" a label, the label will remain forever in
+-- the database.
+CREATE OR REPLACE FUNCTION anon.register_label(TEXT)
+RETURNS BOOLEAN
+AS 'MODULE_PATHNAME', 'register_label'
+  LANGUAGE C
+  VOLATILE
+  STRICT
+  PARALLEL UNSAFE
+;
+
+--
+-- Create an additional masking policy
+--
+CREATE OR REPLACE FUNCTION anon.register_masking_policy(
+  policy TEXT
+)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+  PERFORM anon.register_label(policy);
+  EXECUTE format('SECURITY LABEL FOR %I ON SCHEMA pg_catalog IS ''TRUSTED'';',
+                    policy);
+  EXECUTE format('SECURITY LABEL FOR %I ON SCHEMA anon IS ''TRUSTED'';',
+                    policy);
+  RETURN True;
+END;
+$$
+  LANGUAGE plpgsql
+  VOLATILE
+  STRICT
+  PARALLEL UNSAFE
+;
+
+
 
 CREATE OR REPLACE FUNCTION anon.trg_check_trusted_schemas()
 RETURNS event_trigger

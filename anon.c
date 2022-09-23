@@ -23,12 +23,16 @@ PG_MODULE_MAGIC;
 #ifdef _WIN64
 PGDLLEXPORT void    _PG_init(void);
 PGDLLEXPORT Datum   get_function_schema(PG_FUNCTION_ARGS);
+PGDLLEXPORT void    register_label(PG_FUNCTION_ARGS);
 #else
 void    _PG_init(void);
 Datum   get_function_schema(PG_FUNCTION_ARGS);
+Datum   register_label(PG_FUNCTION_ARGS);
 #endif
 
+
 PG_FUNCTION_INFO_V1(get_function_schema);
+PG_FUNCTION_INFO_V1(register_label);
 
 static bool guc_anon_restrict_to_trusted_schemas;
 // Some GUC vars below are not used in the C code
@@ -311,4 +315,15 @@ get_function_schema(PG_FUNCTION_ARGS)
     }
 
     PG_RETURN_TEXT_P(cstring_to_text(""));
+}
+
+Datum
+register_label(PG_FUNCTION_ARGS)
+{
+    bool input_is_null = PG_ARGISNULL(0);
+    char* policy= text_to_cstring(PG_GETARG_TEXT_PP(0));
+
+    if (input_is_null) PG_RETURN_NULL();
+    register_label_provider(policy,anon_object_relabel);
+    return true;
 }

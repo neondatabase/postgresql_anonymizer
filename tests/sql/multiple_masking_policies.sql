@@ -1,20 +1,22 @@
---
--- This test requires to modify`anon.masking_policies` AND restart the instance
--- It is hard to achieve with pg_regress
--- So we keep this test out of the `installcheck` target
---
--- To test it manually, run the command
--- make installcheck REGRESS=multiple_masking_policies
---
-
-ALTER SYSTEM SET anon.masking_policies = 'foo, bar';
+-- This cant be done in a transaction
+ALTER SYSTEM SET anon.masking_policies = 'anon, rgpd';
 
 BEGIN;
 
 CREATE EXTENSION anon CASCADE;
 
-SECURITY LABEL FOR foo ON ROLE postgres IS NULL;
-SECURITY LABEL FOR bar ON ROLE postgres IS NULL;
+-- ALTER SYSTEM requires to restart the instance for the change to take effect
+-- So we force the registration
+SELECT anon.register_masking_policy('gdpr');
+
+SELECT COUNT(*)=2 FROM pg_seclabels WHERE provider='gdpr';
+
+CREATE ROLE zoe;
+SECURITY LABEL FOR gdpr ON ROLE zoe IS 'MASKED';
+
+SELECT COUNT(*)=3 FROM pg_seclabels WHERE provider='gdpr';
+
+SELECT anon.register_masking_policy('foo; CREATE ROLE alex SUPERUSER LOGIN;');
 
 ROLLBACK;
 
