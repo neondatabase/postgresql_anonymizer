@@ -5,8 +5,6 @@ PostgreSQL:
   environment:
     - POSTGRES_PASSWORD=CHANGEME
     - PGUSER=postgres # required for `make installcheck`
-#  command: >
-#    postgres -c shared_preload_libraries='anon' -c hba_file=/var/lib/postgresql/data/pg_hba.conf
   working_dir: /tmp/source
   volumes:
     - $PWD:/tmp/source

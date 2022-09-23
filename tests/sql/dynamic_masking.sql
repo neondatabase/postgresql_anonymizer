@@ -79,7 +79,7 @@ SELECT COUNT(name)=4 FROM pg_settings WHERE name LIKE 'anon.%';
 
 RESET ROLE;
 
-SELECT COUNT(name)=6 FROM pg_settings WHERE name LIKE 'anon.%';
+SELECT COUNT(name)=7 FROM pg_settings WHERE name LIKE 'anon.%';
 
 -- Bug #259 - anon should not interact with other extensions
 CREATE EXTENSION pg_stat_statements;
