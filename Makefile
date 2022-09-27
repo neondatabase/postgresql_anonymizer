@@ -44,7 +44,7 @@ REGRESS?=$(REGRESS_TESTS)
 MODULEDIR=extension/anon
 REGRESS_OPTS = --inputdir=tests
 
-EXTRA_CLEAN = anon _venv $(ZIPBALL)
+EXTRA_CLEAN = anon _build _venv $(ZIPBALL)
 
 OBJS = anon.o
 
@@ -55,6 +55,8 @@ OBJS = anon.o
 PG_CONFIG ?= pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
+
+BUILD?= _build
 
 all: extension
 
@@ -192,6 +194,7 @@ tests/expected/unit.out:
 ## S T A N D A L O N E
 ##
 
+
 # This is the schema the required extension (for instance tsm_system_rows)
 # will be installed
 EXTSCHEMA?=public
@@ -309,3 +312,32 @@ $WINZIPBALL: windows_zip
 
 windows_zip: #: build the Windows package
 	zip -r ($WINZIPBALL) . -x "./git/*"
+
+##
+## Debian Packages
+##
+
+
+
+PG_MAJOR_VERSION ?= $(shell pg_config --sharedir | sed s,.*/,,)
+
+DEBIAN_PACKAGE ?= $(BUILD)/postgresql-$(PG_MAJOR_VERSION)-anonymizer_$(EXTENSION_VERSION)-1.deb
+DEBIAN_BUILD_DIR ?=  $(basename $(DEBIAN_PACKAGE))
+
+.PHONY: debian
+debian: $(DEBIAN_PACKAGE)
+
+$(DEBIAN_PACKAGE): $(DEBIAN_BUILD_DIR)/DEBIAN $(DEBIAN_BUILD_DIR)
+	dpkg-deb --build $(DEBIAN_BUILD_DIR) $@
+
+$(DEBIAN_BUILD_DIR)/DEBIAN:
+	mkdir -p $@
+	cp debian/control $@
+	mkdir -p $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/
+	cp debian/changelog $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/changelog.Debian
+	gzip -9 -n $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/changelog.Debian
+	cp debian/copyright $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/
+
+$(DEBIAN_BUILD_DIR): DESTDIR=$(DEBIAN_BUILD_DIR)
+$(DEBIAN_BUILD_DIR): install
+	strip $(DEBIAN_BUILD_DIR)/usr/lib/postgresql/14/lib/anon.so

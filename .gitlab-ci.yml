@@ -312,8 +312,10 @@ PG14-debian10:
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
     - make installcheck || diff results tests/expected
+    - make debian
   artifacts:
     paths:
+        - _build
         - anon*
         - regression.*
         - results/
