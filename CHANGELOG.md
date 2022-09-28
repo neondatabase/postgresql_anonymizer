@@ -1,6 +1,41 @@
 CHANGELOG
 ===============================================================================
 
+20220928 : 1.1.0 - Privacy By Default
+-------------------------------------------------------------------------------
+
+<!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/18 -->
+<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
+
+__Dependencies:__
+
+- pg_crypto
+
+__Changes:__
+
+* [debian] initial draft for a package
+* [docker] switch to pg_dump_anon
+* [core] register a new masking policy
+* [core] New GUC param: anon.masking_policies
+* [CI] add test for sequences with uppercase letters
+* [pg_dump_anon] FIX #298: export value for uppercase sequences
+* [pg_dump_anon] Consistent backups
+* [meta] Update copyright date (Gergő Rubint)
+* [blackbox] FIX Anon extension is not installed
+* [data] update the dictionnary of english identifiers
+* [doc] Updates on masking rules (Mahesh Moturu)
+* [doc] Fix howto: grant select on supplier (Christophe Courtois)
+* [doc] how to contribute to the detect
+* [doc] Update to improve document clarity and spelling error
+* [doc] Update docker example in INSTALL.md (@bojan40)
+* [doc] Fix doc for dnoise masking_functions.md
+* [doc] FIX #297: remove COMMENT
+* [doc] Fix links in the how-to (Christophe Courtois )
+* [doc] Remove unused links, fix dead ones, fix typos (Gergő Rubint)
+* [doc] Deleted an unfinished redundant sentence (Christophe Courtois)
+* [doc] success stories
+* [doc] Clarify support for Windows binaries
+
 20220517 : 1.0.0 - Production Ready
 -------------------------------------------------------------------------------
 

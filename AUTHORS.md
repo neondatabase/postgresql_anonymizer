@@ -16,6 +16,10 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Michel Pelletier : Consistent backups
+* Gergő Rubint : Documentation
+* Mahesh Moturu : Documentation
+* Greg pringle : Bug Report
 * Radek Salač : Bug report
 * Cristian Gomez Portes: Bug report
 * Mike Tefft: Feature request

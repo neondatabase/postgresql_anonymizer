@@ -1,3 +1,132 @@
+PostgreSQL Anonymizer 1.1: Privacy By Default For Postgres
+================================================================================
+
+Tour, France, September 28th, 2022
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[Static Masking] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
+Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+Privacy By Default
+--------------------------------------------------------------------------------
+
+The GDPR regulation (and other privacy laws) introduces the concept of data
+protection by default. In a nutshell, it means that by default, organisations
+should ensure that data is processed with the highest privacy protection so that
+by default personal data isn’t made accessible to an indefinite number of
+persons.
+
+By applying this principle to anonymization, we end up with the idea of `privacy
+by default` which basically means that all columns of all tables should be masked
+by default, without having to declare a masking rule for each of them.
+
+To enable this feature, simply set the option `anon.privacy_by_default` to `on`.
+
+    ALTER DATABASE foo SET anon.privacy_by_default = True;
+
+Now all the columns of the `foo` database will be anonymized with the default
+value of the column (if defined) or with NULL.
+
+Caveat: If you have columns declared as `NOT NULL`, you will have to define
+a default value, otherwise you will end up with a constraint violation when
+you will anonymize the database.
+
+For more details about this feature, please follow the link below:
+
+<https://postgresql-anonymizer.readthedocs.io/en/latest/privacy_by_default/>
+
+
+Consistent Anonymous Dumps
+--------------------------------------------------------------------------------
+
+Before version 1.0, pg_dump_anon was a bash script. This script was nice and
+simple. However under certain conditions the anonymous backups were not
+consistent.
+
+There's now a brand new version of pg_dump_anon (rewitten in Golang) that
+will always produce consistent exports.
+
+The previous script is now renamed to pg_dump_anon.sh and it is still
+available for backwards compatibility. But it will be deprecated in
+version 2.0.
+
+<https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/>
+
+
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 9.6 and further versions.
+
+On Red Hat, CentOS and Rocky Linux systems, you can install it directly from the
+[official PostgreSQL RPM repository]:
+
+    dnf install postgresql_anonymizer14
+
+Then load the extension with:
+
+    ALTER DATABASE foo SET session_preload_libraries = 'anon';
+
+Create the extension inside the database:
+
+    CREATE EXTENSION anon CASCADE;
+
+And finally, initialize the extension
+
+    SELECT anon.init();
+
+
+For other systems, check out the [install] documentation:
+
+https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+[official PostgreSQL RPM repository]: https://yum.postgresql.org/
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+Thanks
+--------------------------------------------------------------------------------
+
+This release includes code, bugfixes, documentation, code reviews and ideas
+from Michel Pelletier, Gergő Rubint, Mahesh Moturu, Greg pringle, Christophe
+Courtois and any other [contributors].
+
+Many thanks to them for their help and feedback.
+
+[contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+--------------------------------------------------------------------------------
+
+
 PostgreSQL Anonymizer 1.0: Privacy By Design For Postgres
 ================================================================================
 
