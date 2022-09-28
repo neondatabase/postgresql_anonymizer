@@ -1,6 +1,6 @@
 # PostgreSQL Anonymizer (anon) extension
 comment = 'Data anonymization tools'
-default_version = '1.1.0'
+default_version = '1.2.0'
 directory='extension/anon'
 relocatable = false
 requires = 'pgcrypto'
