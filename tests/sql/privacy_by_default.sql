@@ -39,6 +39,8 @@ ALTER TABLE public.access_logs
   SET NOT NULL;
 
 SELECT 'test4 must fail';
+-- Hide the CONTEXT message
+\set VERBOSITY terse
 SELECT anon.anonymize_table('public.access_logs') as test4;
 
 ROLLBACK TO initial_state;

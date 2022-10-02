@@ -77,7 +77,7 @@ SELECT name != 'Schwarzenegger' FROM mask.people WHERE id = 1;
 
 -- ROLE
 
-CREATE ROLE skynet LOGIN;
+CREATE ROLE skynet LOGIN PASSWORD 'x';
 SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 
 -- FORCE update because SECURITY LABEL doesn't trigger the Event Trigger
@@ -86,7 +86,7 @@ SELECT anon.mask_update();
 
 -- We're using an external connection instead of `SET ROLE`
 -- Because we need the tricky search_path
-\! psql contrib_regression -U skynet -c 'SHOW search_path;'
+\! PGPASSWORD=x psql contrib_regression -U skynet -c 'SHOW search_path;'
 
 -- This test should fail
 --
@@ -94,34 +94,32 @@ SELECT anon.mask_update();
 -- PG10 would say "ERROR:  permission denied for relation people"
 -- PG11 would say "ERROR:  permission denied for table people"
 --
-\! psql contrib_regression -U skynet -c "SELECT * FROM public.people;"  2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "SELECT * FROM public.people;"  2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
 
-\! psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM people WHERE id = 1;"
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "SELECT name != 'Schwarzenegger' FROM people WHERE id = 1;"
 
-\! psql contrib_regression -U skynet -c "SELECT name != 'Cyberdyne Systems' FROM \"CoMPaNy\" WHERE id_company=1991;"
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "SELECT name != 'Cyberdyne Systems' FROM \"CoMPaNy\" WHERE id_company=1991;"
 
 
 -- A maked role cannot modify a table containing a mask column
 
-\! psql contrib_regression -U skynet -c "DELETE FROM people;" 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "DELETE FROM people;" 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
 
-\! psql contrib_regression -U skynet -c "UPDATE people SET name = 'check' WHERE name ='Schwarzenegger';"
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "UPDATE people SET name = 'check' WHERE name ='Schwarzenegger';"
 
-\! psql contrib_regression -U skynet -c "INSERT INTO people VALUES (1,'Schwarzenegger','1234567812345678', 1991);" ;
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "INSERT INTO people VALUES (1,'Schwarzenegger','1234567812345678', 1991);" ;
 
-\! psql contrib_regression -U skynet -c "DELETE FROM work;" 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "DELETE FROM work;" 2>&1 | grep --silent 'ERROR:  permission denied' && echo 'ERROR:  permission denied'
 
 
 -- A masked role cannot access the stats of a masked column
-\! psql contrib_regression -U skynet -c "SELECT count(histogram_bounds)=0 FROM pg_stats WHERE tablename='people' AND attname='name';"
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "SELECT count(histogram_bounds)=0 FROM pg_stats WHERE tablename='people' AND attname='name';"
 
 -- Bug #254 - A masked role can use pseudonymizing functions
-\! psql contrib_regression -U skynet -c "SELECT anon.pseudo_company(0,'salt');"
+\! PGPASSWORD=x psql contrib_regression -U skynet -c "SELECT anon.pseudo_company(0,'salt');"
 
 
 --  CLEAN
-
---DROP SCHEMA mask CASCADE;
 
 DROP TABLE test_type_casts CASCADE;
 DROP TABLE work CASCADE;

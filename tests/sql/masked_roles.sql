@@ -9,24 +9,24 @@ SET anon.maskschema TO 'foo';
 
 SELECT anon.start_dynamic_masking();
 
-CREATE ROLE skynet LOGIN;
+CREATE ROLE skynet LOGIN PASSWORD 'x';
 
 SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 
 SELECT anon.mask_update();
 
 -- search_path must be 'foo,public'
-\! psql contrib_regression -U skynet -c 'SHOW search_path;'
+\! PGPASSWORD=x psql contrib_regression -U skynet -c 'SHOW search_path;'
 
 
-CREATE ROLE hal LOGIN;
+CREATE ROLE hal LOGIN PASSWORD 'x';
 
 SECURITY LABEL FOR anon ON ROLE hal IS 'MASKED';
 
 SELECT anon.mask_update();
 
 -- search_path must be 'foo,public'
-\! psql contrib_regression -U hal -c 'SHOW search_path;'
+\! PGPASSWORD=x psql contrib_regression -U hal -c 'SHOW search_path;'
 
 -- STOP
 

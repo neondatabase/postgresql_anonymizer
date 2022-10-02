@@ -37,7 +37,7 @@ IS 'MASKED WITH FUNCTION anon.hash(call_sender)';
 SECURITY LABEL FOR anon ON COLUMN phonecall.call_receiver
 IS 'MASKED WITH FUNCTION anon.hash(call_receiver)';
 -- ROLE
-CREATE ROLE jimmy_mcnulty LOGIN;
+CREATE ROLE jimmy_mcnulty LOGIN PASSWORD 'CHANGEME';
 SECURITY LABEL FOR anon ON ROLE jimmy_mcnulty IS 'MASKED';
 SELECT anon.mask_update();
  mask_update 
@@ -46,7 +46,7 @@ SELECT anon.mask_update();
 (1 row)
 
 -- Jimmy reads the phone book
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM phone'
+\! PGPASSWORD=CHANGEME psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM phone'
    phone_owner   |                           phone_number                           
 -----------------+------------------------------------------------------------------
  Honora Crist    | 1c807c29e41f1427077052c70a7d6e50e7ae881363937176a3b79536d6c3dd06
@@ -55,7 +55,7 @@ SELECT anon.mask_update();
 (3 rows)
 
 -- Jimmy joins table to get the call history
-\! psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
+\! PGPASSWORD=CHANGEME psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
       from       |       to        |           call_start_time           
 -----------------+-----------------+-------------------------------------
  Florencio Hyatt | Honora Crist    | Mon May 17 04:22:51.859137 2004 PDT

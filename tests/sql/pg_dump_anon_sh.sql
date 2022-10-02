@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.init();
 
-CREATE ROLE oscar_the_owner LOGIN;
+CREATE ROLE oscar_the_owner LOGIN PASSWORD 'x';
 ALTER DATABASE :DBNAME OWNER TO oscar_the_owner;
 
 CREATE ROLE mallory_the_masked_user LOGIN;
@@ -141,7 +141,7 @@ DROP SEQUENCE public.seq42;
 \! diff --ignore-matching-lines='^--.*'  --ignore-blank-lines tests/tmp/_pg_dump_anon_A1.sql tests/tmp/_pg_dump_anon_A6.sql
 
 -- A7. Dump as the owner
-\! pg_dump_anon.sh -U oscar_the_owner -d contrib_regression -f tests/tmp/_pg_dump_anon_A7.sql
+\! PGPASSWORD=x pg_dump_anon.sh -U oscar_the_owner -d contrib_regression -f tests/tmp/_pg_dump_anon_A7.sql
 \! diff tests/tmp/_pg_dump_anon_A6.sql tests/tmp/_pg_dump_anon_A7.sql
 
 

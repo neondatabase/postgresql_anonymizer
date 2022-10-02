@@ -1587,6 +1587,30 @@ $$
 ;
 
 
+CREATE OR REPLACE FUNCTION anon.get_schema(t TEXT)
+RETURNS TEXT
+AS $$
+  SELECT quote_ident(a[array_upper(a, 1)-1])
+  FROM parse_ident(t) AS a;
+$$
+  LANGUAGE SQL
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
+;
+
+
+CREATE OR REPLACE FUNCTION anon.get_relname(t TEXT)
+RETURNS TEXT
+AS $$
+  SELECT quote_ident(a[array_upper(a, 1)])
+  FROM parse_ident(t) AS a;
+$$
+  LANGUAGE SQL
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
+;
 
 CREATE OR REPLACE FUNCTION anon.trg_check_trusted_schemas()
 RETURNS event_trigger
@@ -1707,6 +1731,34 @@ ORDER BY attrelid, attnum, priority DESC
 
 GRANT SELECT ON anon.pg_masking_rules TO PUBLIC;
 
+-- get the TABLESAMPLE ratio declared for this table, if any
+CREATE OR REPLACE FUNCTION anon.get_tablesample_ratio(relid OID)
+RETURNS TEXT
+AS $$
+  SELECT COALESCE(
+    (
+    SELECT sl.label
+    FROM pg_catalog.pg_seclabel sl
+    WHERE sl.objoid = relid
+    AND sl.objsubid = 0
+    AND sl.provider = 'anon'
+    ),
+    (
+    SELECT sl.label
+    FROM pg_catalog.pg_seclabels sl
+    WHERE sl.provider = 'anon'
+    AND objtype='database'
+    AND objoid = (SELECT oid FROM pg_database WHERE datname=current_database())
+    )
+  )
+  ;
+$$
+  LANGUAGE SQL
+  PARALLEL SAFE
+  SECURITY DEFINER
+  SET search_path=''
+;
+
 --
 -- Unmask all the role at once
 --
@@ -1793,8 +1845,17 @@ CREATE OR REPLACE FUNCTION anon.anonymize_column(
 RETURNS BOOLEAN AS
 $$
 DECLARE
+  ratio TEXT;
   sql TEXT;
 BEGIN
+  SELECT anon.get_tablesample_ratio(tablename::OID) INTO ratio;
+  IF ratio IS NOT NULL
+  -- We can't apply a tablesample rules to just a column
+  THEN
+    RAISE NOTICE 'The TABLESAMPLE rule will be ignored.'
+      USING HINT = 'Only anonymize_table() and anonymize_database() can apply sampling rules';
+  END IF;
+
   SET CONSTRAINTS ALL DEFERRED;
   sql := anon.build_anonymize_column_assignment(tablename, colname);
   IF sql IS NULL THEN
@@ -1816,16 +1877,45 @@ $$
 CREATE OR REPLACE FUNCTION anon.anonymize_table(tablename REGCLASS)
 RETURNS BOOLEAN AS
 $$
-DECLARE sql TEXT;
+DECLARE
+  sql TEXT;
+  ratio TEXT;
 BEGIN
-  SELECT string_agg(anon.build_anonymize_column_assignment(tablename, attname), ',') INTO sql
-  FROM anon.pg_masking_rules
-  WHERE attrelid::regclass = tablename;
+  SELECT anon.get_tablesample_ratio(tablename::OID) INTO ratio;
+  IF ratio IS NOT NULL
+  THEN
+      -- If there's a tablesample ratio then we can't simply update the table.
+      -- we have to rewrite it completely.
+      -- NOTE: If the table has a foregin Key, this will likely fail
+      RAISE DEBUG 'Anonymize table % with TRUNCATE/INSERT', tablename;
+      EXECUTE format(
+                'CREATE TEMPORARY TABLE "anon_swap_%s" AS %s',
+                tablename::OID,
+                anon.mask_select(tablename::OID)
+              );
+      EXECUTE format('TRUNCATE TABLE %s', tablename);
+      EXECUTE format(
+                'INSERT INTO %s SELECT * FROM "anon_swap_%s"',
+                tablename,
+                tablename::OID
+              );
+      EXECUTE format('DROP TABLE "anon_swap_%s"',tablename::OID);
+      RETURN TRUE;
+  ELSE
+      -- If no sampling is required, we use UPDATE which is a safer approach
+      SELECT string_agg(
+                anon.build_anonymize_column_assignment(tablename, attname),
+                ','
+              )
+      INTO sql
+      FROM anon.pg_masking_rules
+      WHERE attrelid::regclass = tablename;
 
-  IF sql != '' THEN
-    RAISE DEBUG 'Anonymize table % with %', tablename, sql;
-    EXECUTE format('UPDATE %s SET %s', tablename, sql);
-    RETURN true;
+      IF sql != '' THEN
+        RAISE DEBUG 'Anonymize table % with %', tablename, sql;
+        EXECUTE format('UPDATE %s SET %s', tablename, sql);
+        RETURN TRUE;
+      END IF;
   END IF;
 
   RETURN NULL;
@@ -1974,6 +2064,25 @@ $$
   SET search_path=''
 ;
 
+-- Build a SELECT query masking the real data
+CREATE OR REPLACE FUNCTION anon.mask_select(
+  relid OID
+)
+RETURNS TEXT AS
+$$
+  SELECT format(  'SELECT %s FROM %s %s',
+                  anon.mask_filters(relid),
+                  relid::REGCLASS,
+                  anon.get_tablesample_ratio(relid)
+  );
+$$
+  LANGUAGE SQL
+  VOLATILE
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
+
 -- Build a masked view for a table
 CREATE OR REPLACE FUNCTION anon.mask_create_view(
   relid OID
@@ -1981,15 +2090,14 @@ CREATE OR REPLACE FUNCTION anon.mask_create_view(
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  EXECUTE format( 'CREATE OR REPLACE VIEW %I.%s AS SELECT %s FROM %s',
+  EXECUTE format( 'CREATE OR REPLACE VIEW %I.%s AS %s',
                   pg_catalog.current_setting('anon.maskschema'),
                   -- FIXME quote_ident(relid::REGCLASS::TEXT) ?
                   ( SELECT quote_ident(relname)
                     FROM pg_catalog.pg_class
                     WHERE relid = oid
                   ),
-                  anon.mask_filters(relid),
-                  relid::REGCLASS
+                  anon.mask_select(relid)
   );
   RETURN TRUE;
 END

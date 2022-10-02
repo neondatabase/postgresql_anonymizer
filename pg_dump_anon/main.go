@@ -32,10 +32,11 @@ const error_pq_ssl_not_enabled = "pq: SSL is not enabled on the server"
 // arg1 is snapshotname
 // arg2 is the filters
 // arg3 is the table name
+// arg4 is the tablesample (if any)
 const sql_copy_to = `
 BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 SET TRANSACTION SNAPSHOT '%s';
-COPY (SELECT %s FROM %s) TO STDOUT WITH CSV;
+COPY (SELECT %s FROM %s %s) TO STDOUT WITH CSV;
 ROLLBACK;
 `
 
@@ -62,6 +63,10 @@ SELECT
   '--table='||quote_ident(sequence_schema)||'.'||quote_ident(sequence_name)
 FROM information_schema.sequences
 WHERE sequence_schema != 'anon';
+`
+// arg1 is the table name
+const sql_tablesample =`
+SELECT anon.get_tablesample_ratio('%s'::REGCLASS::OID);
 `
 
 const sql_anon_version = `
@@ -457,6 +462,7 @@ func main() {
 
   // For each dumped table, we export the data by applying the masking rules
   var filters string
+  var sample string
   for _, t := range dumped_tables {
 
     // 3a- get the table name
@@ -471,7 +477,9 @@ func main() {
     sql_mask_filters_for_table := fmt.Sprintf(sql_mask_filters, tablename)
     err = tx.QueryRow(sql_mask_filters_for_table).Scan(&filters)
     // write the data extraction statement
-    copy_to := fmt.Sprintf(sql_copy_to,snapshotname,filters,tablename)
+    sql_get_tablesample_ratio := fmt.Sprintf(sql_tablesample, tablename)
+    err = tx.QueryRow(sql_get_tablesample_ratio).Scan(&sample)
+    copy_to := fmt.Sprintf(sql_copy_to,snapshotname,filters,tablename,sample)
     copy_opt:=fmt.Sprintf("--command=%s", strings.ReplaceAll(copy_to, "\n", ""))
     // We're calling psql directly instead of using the opened transaction
     // because the output may be huge (potentially several TB)

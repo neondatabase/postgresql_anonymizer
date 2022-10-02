@@ -54,10 +54,10 @@ SELECT 'test4 must fail';
  test4 must fail
 (1 row)
 
+-- Hide the CONTEXT message
+\set VERBOSITY terse
 SELECT anon.anonymize_table('public.access_logs') as test4;
 ERROR:  Cannot mask a "NOT NULL" column with a NULL value
-HINT:  If privacy_by_design is enabled, add a default value to the column
-CONTEXT:  PL/pgSQL function anon.anonymize_table(regclass) line 18 at RAISE
 ROLLBACK TO initial_state;
 -- 5: foreign_key_violation
 CREATE TABLE public.os (name TEXT UNIQUE NOT NULL);
