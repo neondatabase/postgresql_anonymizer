@@ -39,3 +39,8 @@ docs/how-to/*.tsv
 docs/how-to/*.log
 # Vagrant
 .vagrant
+# debian
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/postgresql-??-anonymizer.substvars
+debian/postgresql-??-anonymizer/

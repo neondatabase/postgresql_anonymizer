@@ -37,7 +37,8 @@ REGRESS_TESTS+= masking_expressions
 REGRESS_TESTS+= sampling
 REGRESS_TESTS+= destruction noise shuffle random faking partial
 REGRESS_TESTS+= pseudonymization hashing dynamic_masking
-REGRESS_TESTS+= anonymize privacy_by_default restore
+REGRESS_TESTS+= anonymize privacy_by_default
+#REGRESS_TESTS+= restore
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path masking_foreign_tables
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= permissions_owner permissions_masked_role injection syntax_checks
@@ -307,33 +308,19 @@ WINZIPBALL:=_build/windows/$(EXTENSION)-$(EXTENSION_VERSION)-win2016.zip
 $WINZIPBALL: windows_zip
 
 windows_zip: #: build the Windows package
-	zip -r ($WINZIPBALL) . -x "./git/*"
+	zip -r $(WINZIPBALL) . -x "./git/*"
 
 ##
 ## Debian Packages
 ##
-
-
-
 PG_MAJOR_VERSION ?= $(shell pg_config --sharedir | sed s,.*/,,)
 
-DEBIAN_PACKAGE ?= $(BUILD)/postgresql-$(PG_MAJOR_VERSION)-anonymizer_$(EXTENSION_VERSION)-1.deb
-DEBIAN_BUILD_DIR ?=  $(basename $(DEBIAN_PACKAGE))
-
 .PHONY: debian
-debian: $(DEBIAN_PACKAGE)
+debian: debian/control
+	dpkg-buildpackage --build=binary --no-check-builddeps
+	mkdir -p $(BUILD)/debian
+	cp ../postgresql-*.deb $(BUILD)/debian
+	lintian
 
-$(DEBIAN_PACKAGE): $(DEBIAN_BUILD_DIR)/DEBIAN $(DEBIAN_BUILD_DIR)
-	dpkg-deb --build $(DEBIAN_BUILD_DIR) $@
-
-$(DEBIAN_BUILD_DIR)/DEBIAN:
-	mkdir -p $@
-	cp debian/control $@
-	mkdir -p $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/
-	cp debian/changelog $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/changelog.Debian
-	gzip -9 -n $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/changelog.Debian
-	cp debian/copyright $(DEBIAN_BUILD_DIR)/usr/share/doc/postgresql-14-anonymizer/
-
-$(DEBIAN_BUILD_DIR): DESTDIR=$(DEBIAN_BUILD_DIR)
-$(DEBIAN_BUILD_DIR): install
-	strip $(DEBIAN_BUILD_DIR)/usr/lib/postgresql/14/lib/anon.so
+debian/control: debian/control.in
+	pg_buildext updatecontrol

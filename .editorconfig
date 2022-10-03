@@ -28,7 +28,7 @@ indent_style = tab
 [*.md]
 #trim_trailing_whitespace = false
 
-[{Makefile,**.mk}]
+[{Makefile,**.mk,debian/rules}]
 # Use tabs for indentation (Makefiles require tabs)
 indent_style = tab
 

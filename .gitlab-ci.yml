@@ -83,9 +83,15 @@ pg_dump_anon:
   image: golang:bullseye
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends sudo make gcc postgresql-13 postgresql-server-dev-13 python3-pip diffutils
+    - apt-get install -y --no-install-recommends
+        sudo make gcc postgresql-13 postgresql-server-dev-13 python3-pip
+        diffutils
     - make && make install
-    - pg_ctlcluster -o "-c client_encoding='UTF8' -c hba_file=$PWD/pg_dump_anon/tests/pg_hba.conf -c shared_preload_libraries='anon'" 13 main start
+    - pg_ctlcluster -o
+        "-c client_encoding='UTF8'
+         -c hba_file=$PWD/pg_dump_anon/tests/pg_hba.conf
+         -c shared_preload_libraries='anon'"
+        13 main start
     - psql -f $PWD/pg_dump_anon/tests/sql/roles.sql
     - make -C pg_dump_anon
     - make -C pg_dump_anon test
@@ -122,7 +128,8 @@ PG9.6-debian10:
   image: postgres:9.6-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-9.6 pgxnclient
+    - apt-get install -y --no-install-recommends
+        build-essential postgresql-server-dev-9.6 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -130,14 +137,14 @@ PG9.6-debian10:
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
-        - anon*
-        - regression.*
-        - results/
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
       - $WINDOWS_ONLY
-  when: manual # PostgreSQL 9.6 is EOL
+  when: manual  # PostgreSQL 9.6 is EOL
 
 PG10-debian10:
   <<: *init_PG_instance
@@ -145,7 +152,8 @@ PG10-debian10:
   image: postgres:10-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-10 pgxnclient
+    - apt-get install -y --no-install-recommends
+        build-essential postgresql-server-dev-10 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -166,7 +174,8 @@ PG11-debian10:
   image: postgres:11-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient
+    - apt-get install -y --no-install-recommends
+        make gcc postgresql-server-dev-11 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -190,8 +199,11 @@ PG11-centos7:
     # http://blog.cloud-mes.com/2020/05/16/fix-yum-update-postgresql12-to-v12-dot-3-require-llvm-toolset-7-clang-equals-4-dot-0-1-dependency-problem/
     - yum -y install centos-release-scl-rh
     - yum -y install llvm-toolset-7-clang
-    - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel postgresql11-contrib diffutils
+    - yum -y install
+        https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - yum -y install
+        git make gcc postgresql11 postgresql11-server postgresql11-devel
+        postgresql11-contrib diffutils
     - export PATH="$PATH:/usr/pgsql-11/bin"
     - make
     - make install
@@ -219,7 +231,8 @@ PG12-debian11:
   image: postgres:12
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient
+    - apt-get install -y --no-install-recommends
+        make gcc git postgresql-server-dev-12 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -241,7 +254,8 @@ PG13-debian11:
   image: postgres:13
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 diffutils
+    - apt-get install -y --no-install-recommends
+        make gcc postgresql-server-dev-13 diffutils
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -263,13 +277,13 @@ PG14-debian11:
   image: postgres:14
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-14 diffutils
+    - apt-get install -y --no-install-recommends
+        make gcc postgresql-server-dev-14 diffutils
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
     - make installcheck || diff results tests/expected
-    - make debian
   artifacts:
     paths:
       - _build
@@ -284,10 +298,11 @@ PG14-debian11:
 PG15-debian11:
   <<: *init_PG_instance
   stage: build
-  image:  postgres:15
+  image: postgres:15
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-15 diffutils
+    - apt-get install -y --no-install-recommends
+        make gcc postgresql-server-dev-15 diffutils
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -310,9 +325,12 @@ PG16-rocky9:
   script:
     - dnf -y install epel-release
     - dnf -y --enablerepo=crb install perl-IPC-Run
-    - dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - dnf install -y
+        https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
     - yum-config-manager --enable pgdg16-updates-testing
-    - dnf -y --nogpgcheck install gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel diffutils
+    - dnf -y --nogpgcheck install
+        gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel
+        diffutils
     - export PATH="/usr/pgsql-16/bin:$PATH"
     - make
     - make install
@@ -344,7 +362,8 @@ blackbox:
   script:
     - docker build -t blackbox . --file docker/Dockerfile
     - mkdir results
-    - cat tests/sql/blackbox.sql | docker run --rm -i blackbox /anon.sh  > results/blackbox.out
+    - cat tests/sql/blackbox.sql |
+        docker run --rm -i blackbox /anon.sh  > results/blackbox.out
     # we remove comments because pg_dump ouputs the PG version and we don't want
     # this test to break every time a new minor version is released
     - sed -i 's/^--.*$//' results/blackbox.out
@@ -388,7 +407,8 @@ demo:
   stage: test
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 postgresql-contrib-13  pgxnclient
+    - apt-get install -y --no-install-recommends
+        make gcc postgresql-server-dev-13 postgresql-contrib-13  pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -407,35 +427,18 @@ install_pgxn:
   stage: test
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 pgxnclient
+    - apt-get install -y --no-install-recommends make gcc
+                                                 postgresql-server-dev-13
+                                                 pgxnclient
     - pgxn install postgresql_anonymizer
-  when: manual
-
-install_pgxn_ubuntu_pg95:
-  stage: test
-  image: ubuntu:bionic
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-common pgxnclient gnupg ca-cacert
-    - yes '' | sh /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh bionic
-    - apt-get install -y --no-install-recommends postgres-9.5 postgres-9.5-contrib postgresql-server-dev-9.5
-    - export PGDATA=/var/lib/postgresql/data
-    - export PGUSER=postgres
-    - su postgres -c /usr/lib/postgresql/9.5/bin/initdb
-    - su postgres -c "/usr/lib/postgresql/9.5/bin/pg_ctl start" &
-    - pg_config --sharedir
-    - pgxn install --pg_config /usr/lib/postgresql/9.5/bin/pg_config postgresql_anonymizer
-    - psql -c "CREATE EXTENSION tsm_system_rows;"
-    - psql -c "CREATE TEMPORARY TABLE pg_config AS SELECT 'SHAREDIR'::TEXT AS name, '/usr/share/postgresql/9.5'::TEXT AS setting;CREATE EXTENSION anon;"
-    - psql -c "ALTER DATABASE postgres SET session_preload_libraries='anon'"
-    - psql -c "SELECT anon.init();"
   when: manual
 
 install_yum_centos7_pg12:
   stage: test
   image: centos:7
   script:
-    - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - yum -y install
+      https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
     - yum -y install postgresql12-contrib postgresql_anonymizer12
     - mkdir -p $PGDATA
     - chown postgres $PGDATA
@@ -448,7 +451,9 @@ install_source_fedora:
   stage: test
   image: fedora:34
   script:
-    - dnf install --assumeyes postgresql-server postgresql-contrib postgresql-server-devel libpq-devel make git redhat-rpm-config diffutils
+    - dnf install --assumeyes postgresql-server postgresql-contrib
+                              postgresql-server-devel libpq-devel make git
+                              redhat-rpm-config diffutils
     - cd /tmp
     - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
     - cd postgresql_anonymizer
@@ -477,7 +482,8 @@ docker_latest:
     - docker:19.03.8-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest . --file docker/Dockerfile
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest .
+                   --file docker/Dockerfile
     - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:latest
   only:
     - master@dalibo/postgresql_anonymizer
@@ -489,10 +495,27 @@ docker_stable:
     - docker:19.03.8-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:stable . --file docker/Dockerfile
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:stable .
+        --file docker/Dockerfile
     - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:stable
   only:
     - stable@dalibo/postgresql_anonymizer
+
+debian_packages:
+  stage: build
+  image: postgres:14
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends
+        postgresql-server-dev-all debhelper lintian make gcc
+    - make debian
+  artifacts:
+    paths:
+      - _build
+    expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
 
 
 pgxn:
@@ -526,7 +549,8 @@ pages:
     - apk add tree
     - mkdir public
     - cp docs/how-to/_build/* public
-    - tree ./public -H '.' -T "$title" -I "" --noreport --charset utf-8 > ./public/index.html
+    - tree ./public -H '.' -T "$title" -I "" --noreport --charset utf-8
+        > ./public/index.html
   artifacts:
     paths:
       - public
