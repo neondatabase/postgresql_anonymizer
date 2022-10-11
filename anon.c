@@ -24,7 +24,7 @@ PG_MODULE_MAGIC;
 #ifdef _WIN64
 PGDLLEXPORT void    _PG_init(void);
 PGDLLEXPORT Datum   get_function_schema(PG_FUNCTION_ARGS);
-PGDLLEXPORT void    register_label(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum   register_label(PG_FUNCTION_ARGS);
 #else
 void    _PG_init(void);
 Datum   get_function_schema(PG_FUNCTION_ARGS);
