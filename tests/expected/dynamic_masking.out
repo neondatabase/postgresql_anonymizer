@@ -79,6 +79,7 @@ BEGIN
   THEN RAISE NOTICE 'insufficient_privilege';
 END$$;
 NOTICE:  insufficient_privilege
+-- Jimmy can't see GUC_SUPERUSER_ONLY settings
 SELECT COUNT(name)=4 FROM pg_settings WHERE name LIKE 'anon.%';
  ?column? 
 ----------
@@ -86,7 +87,8 @@ SELECT COUNT(name)=4 FROM pg_settings WHERE name LIKE 'anon.%';
 (1 row)
 
 RESET ROLE;
-SELECT COUNT(name)=7 FROM pg_settings WHERE name LIKE 'anon.%';
+-- Super user sees all settings
+SELECT COUNT(name)>4 FROM pg_settings WHERE name LIKE 'anon.%';
  ?column? 
 ----------
  t

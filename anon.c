@@ -40,6 +40,7 @@ static bool guc_anon_restrict_to_trusted_schemas;
 // but they are used in the plpgsql code
 // compile with `-Wno-unused-variable` to avoid warnings
 static char *guc_anon_algorithm;
+static char *guc_anon_k_anonymity_provider;
 static char *guc_anon_masking_policies;
 static char *guc_anon_mask_schema;
 static bool guc_anon_privacy_by_default;
@@ -94,8 +95,6 @@ anon_object_relabel(const ObjectAddress *object, const char *seclabel)
       /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
       if ( pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0
         || pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0
-        || pg_strncasecmp(seclabel, "QUASI IDENTIFIER",17) == 0
-        || pg_strncasecmp(seclabel, "INDIRECT IDENTIFIER",19) == 0
       )
         return;
 
@@ -143,6 +142,40 @@ anon_object_relabel(const ObjectAddress *object, const char *seclabel)
 }
 
 /*
+ * Checking the syntax of the k-anonymity declarations
+ */
+static void
+anon_k_anonymity_object_relabel(const ObjectAddress *object, const char *seclabel)
+{
+  switch (object->classId)
+  {
+
+    case RelationRelationId:
+      /* SECURITY LABEL FOR k_anonymity ON COLUMN t.i IS 'INDIRECT IDENTIFIER' */
+      if ( pg_strncasecmp(seclabel, "QUASI IDENTIFIER",17) == 0
+        || pg_strncasecmp(seclabel, "INDIRECT IDENTIFIER",19) == 0
+      )
+      return;
+
+      ereport(ERROR,
+        (errcode(ERRCODE_INVALID_NAME),
+         errmsg("'%s' is not a valid label for a column", seclabel)));
+      break;
+
+    /* everything else is unsupported */
+    default:
+      ereport(ERROR,
+          (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+           errmsg("The k_anonymity provider does not support labels on this object")));
+      break;
+  }
+
+  ereport(ERROR,
+      (errcode(ERRCODE_INVALID_NAME),
+       errmsg("'%s' is not a valid label", seclabel)));
+}
+
+/*
  * Trim whitespaces from a string
  */
 static void
@@ -171,6 +204,20 @@ _PG_init(void)
     "",
     &guc_anon_algorithm,
     "sha256",
+    PGC_SUSET,
+    GUC_SUPERUSER_ONLY,
+    NULL,
+    NULL,
+    NULL
+  );
+
+  DefineCustomStringVariable
+  (
+    "anon.k_anonymity_provider",
+    "The security label provider used for k-anonymity",
+    "",
+    &guc_anon_k_anonymity_provider,
+    "k_anonymity",
     PGC_SUSET,
     GUC_SUPERUSER_ONLY,
     NULL,
@@ -260,6 +307,11 @@ _PG_init(void)
     NULL,
     NULL,
     NULL
+  );
+
+  // Provider for k-anonimity
+  register_label_provider(guc_anon_k_anonymity_provider,
+                          anon_k_anonymity_object_relabel
   );
 
   /* Security label provider hook */

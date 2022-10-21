@@ -34,9 +34,9 @@ FROM STDIN CSV QUOTE AS '"' DELIMITER ' ';
 
 SELECT * FROM patient;
 
-SECURITY LABEL FOR anon ON COLUMN patient.firstname IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN patient.zipcode IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN patient.birth IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.firstname IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.zipcode IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.birth IS 'INDIRECT IDENTIFIER';
 
 SELECT anon.k_anonymity('patient') = min(kanonymity)
 FROM (
@@ -56,9 +56,9 @@ AS SELECT
 FROM patient
 ;
 
-SECURITY LABEL FOR anon ON COLUMN anon_patient.firstname IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN anon_patient.zipcode IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN anon_patient.birth IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN anon_patient.firstname IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN anon_patient.zipcode IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN anon_patient.birth IS 'INDIRECT IDENTIFIER';
 
 SELECT * FROM anon_patient;
 

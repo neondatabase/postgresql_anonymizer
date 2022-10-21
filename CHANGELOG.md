@@ -1,6 +1,34 @@
 CHANGELOG
 ===============================================================================
 
+2022FIXME : 1.2.0 - ~~WORK IN PROGRESS~~
+-------------------------------------------------------------------------------
+
+
+__Breaking Changes__:
+
+### A new k-anonymity provider
+
+In previous version, the inderect identifiers were declared like this:
+
+  ```sql
+  SECURITY LABEL FOR anon ON COLUMN users.id IS 'INDIRECT IDENTIFIER';
+  ```
+
+This rule must be rewritten as follows:
+
+  ```sql
+  SECURITY LABEL FOR k_anonymity ON COLUMN users.id IS 'INDIRECT IDENTIFIER';
+  ```
+
+For more details, read the "Generalization" section of the doc
+
+<https://postgresql-anonymizer.readthedocs.io/en/latest/generalization/#k-anonymity>
+
+
+
+__Changes:__
+
 20220928 : 1.1.0 - Privacy By Default
 -------------------------------------------------------------------------------
 
