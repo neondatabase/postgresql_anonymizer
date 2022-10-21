@@ -8,7 +8,7 @@ CREATE TABLE disease (
 );
 SELECT anon.k_anonymity('disease');
 WARNING:  There is no identifier declared for relation 'disease'.
-HINT:  Use SECURITY LABEL FOR anon ... to declare which columns are indirect identifiers.
+HINT:  Use `SECURITY LABEL FOR k_anonymity [...]` to declare which columns are indirect identifiers.
  k_anonymity 
 -------------
             
@@ -37,9 +37,9 @@ SELECT * FROM patient;
    9 | Ingrid    |   47607 | 12-12-1991 | Cancer
 (9 rows)
 
-SECURITY LABEL FOR anon ON COLUMN patient.firstname IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN patient.zipcode IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN patient.birth IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.firstname IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.zipcode IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.birth IS 'INDIRECT IDENTIFIER';
 SELECT anon.k_anonymity('patient') = min(kanonymity)
 FROM (
   SELECT COUNT(*) as kanonymity
@@ -60,9 +60,9 @@ AS SELECT
   disease
 FROM patient
 ;
-SECURITY LABEL FOR anon ON COLUMN anon_patient.firstname IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN anon_patient.zipcode IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN anon_patient.birth IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN anon_patient.firstname IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN anon_patient.zipcode IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN anon_patient.birth IS 'INDIRECT IDENTIFIER';
 SELECT * FROM anon_patient;
  firstname |    zipcode    |          birth          |    disease    
 -----------+---------------+-------------------------+---------------

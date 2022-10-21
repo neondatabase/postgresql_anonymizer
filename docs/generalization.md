@@ -156,9 +156,14 @@ Step 1: First define the columns that are indirect identifiers (also known
 as [quasi identifiers]) like this:
 
 ```sql
-SECURITY LABEL FOR anon ON COLUMN patient.firstname IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN patient.zipcode IS 'INDIRECT IDENTIFIER';
-SECURITY LABEL FOR anon ON COLUMN patient.birth IS 'INDIRECT IDENTIFIER';
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.firstname
+IS 'INDIRECT IDENTIFIER';
+
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.zipcode
+IS 'INDIRECT IDENTIFIER';
+
+SECURITY LABEL FOR k_anonymity ON COLUMN patient.birth
+IS 'INDIRECT IDENTIFIER';
 ```
 
 Step 2: Once the indirect identifiers are declared :

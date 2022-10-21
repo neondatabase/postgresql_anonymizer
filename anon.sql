@@ -2542,7 +2542,7 @@ WHERE a.attnum > 0
 --  TODO : Filter out the catalog tables
 AND NOT a.attisdropped
 AND lower(sl.label) SIMILAR TO k.pattern_indirect_identifier ESCAPE '#'
-AND sl.provider = 'anon' -- this is hard-coded in anon.c
+AND sl.provider = pg_catalog.current_setting('anon.k_anonymity_provider')
 ;
 
 
@@ -2564,8 +2564,8 @@ BEGIN
   IF identifiers IS NULL THEN
     RAISE WARNING 'There is no identifier declared for relation ''%''.',
                   relid::REGCLASS
-    USING HINT = 'Use SECURITY LABEL FOR anon ... to declare which columns are '
-              || 'indirect identifiers.';
+    USING HINT = 'Use `SECURITY LABEL FOR k_anonymity [...]` to declare '
+              || 'which columns are indirect identifiers.';
     RETURN NULL;
   END IF;
 
