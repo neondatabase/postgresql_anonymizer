@@ -221,7 +221,7 @@ PG11-centos7:
     variables:
       - $WINDOWS_ONLY
 
-PG12-debian10:
+PG12-debian11:
   <<: *init_PG_instance
   stage: build
   image: postgres:12
@@ -245,7 +245,7 @@ PG12-debian10:
     variables:
       - $WINDOWS_ONLY
 
-PG13-debian10:
+PG13-debian11:
   <<: *init_PG_instance
   stage: build
   image: postgres:13
@@ -269,7 +269,7 @@ PG13-debian10:
     variables:
       - $WINDOWS_ONLY
 
-PG14-debian10:
+PG14-debian11:
   <<: *init_PG_instance
   stage: build
   image:  postgres:14
@@ -294,15 +294,44 @@ PG14-debian10:
     variables:
       - $WINDOWS_ONLY
 
-PG15-rocky9:
+PG15-debian11:
+  <<: *init_PG_instance
+  stage: build
+  image:  postgres:15
+  script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-15 python3-pip diffutils
+    - pip3 install --no-cache-dir -r python/requirements.txt
+    - make extension
+    - make install
+    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
+    - psql -c "SELECT pg_reload_conf();"
+    - make installcheck || diff results tests/expected
+  artifacts:
+    paths:
+        - _build
+        - anon*
+        - regression.*
+        - results/
+    expire_in: 1 day
+  except:
+    variables:
+      - $WINDOWS_ONLY
+
+PG16-rocky9:
   stage: build
   image: dalibo/buildpack-postgres:rockylinux9
   script:
-    - dnf -y install gcc ccache redhat-rpm-config postgresql15-devel diffutils
+    - dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    - yum-config-manager --enable pgdg16-updates-testing
+    - dnf -y install postgresql16-server postgresql16-contrib
+    # Remove lines above when the buildpack image is fixed
+    # https://github.com/dalibo/docker-buildpack-postgres/pull/4
+    - dnf -y install gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel diffutils
     - dnf -y --nogpgcheck install python3 python3-faker python3-dateutil
     # python3-faker requires python3-text-unidecode in EPEL
     - dnf -y install python3-text-unidecode
-    - export PATH="/usr/pgsql-15/bin:$PATH"
+    - export PATH="/usr/pgsql-16/bin:$PATH"
     - make
     - make install
     - mkdir -p $PGDATA
