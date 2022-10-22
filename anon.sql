@@ -1411,7 +1411,7 @@ RETURNS TEXT AS $$
   WHERE oid = anon.projection_to_oid(
     seed,
     COALESCE(salt, pg_catalog.current_setting('anon.salt')),
-    (SELECT MAX(oid) FROM anon.city)
+    (SELECT MAX(oid) FROM anon.country)
   );
 $$
   LANGUAGE SQL
