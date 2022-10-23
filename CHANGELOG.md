@@ -29,6 +29,11 @@ For more details, read the "Generalization" section of the doc
 
 __Changes:__
 
+* [random] Introduce new 'Random in Range' functions
+* [random] Introduce new 'Random in Enum' functions
+
+
+
 20220928 : 1.1.0 - Privacy By Default
 -------------------------------------------------------------------------------
 

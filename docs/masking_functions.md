@@ -88,16 +88,89 @@ Randomization
 The extension provides a large choice of functions to generate purely random
 data :
 
+### Basic Random values
+
+
 * `anon.random_date()` returns a date
-* `anon.random_date_between(d1,d2)` returns a date between `d1` and `d2`
-* `anon.random_int_between(i1,i2)` returns an integer between `i1` and `i2`,
-  (both excluding)
-* `anon.random_bigint_between(b1,b2)` returns a bigint between `b1` and `b2`
 * `anon.random_string(n)` returns a TEXT value containing `n` letters
 * `anon.random_zip()` returns a 5-digit code
 * `anon.random_phone(p)` returns a 8-digit phone with `p` as a prefix
-* `anon.random_in(ARRAY[1,2,3])` returns an element of an INT array
-* `anon.random_in(ARRAY['a','b','c'])` returns an element of a TEXT array
+* `anon.random_hash(seed)` returns a hash of a random string for a given seed
+
+### Random between
+
+To pick any value inside between two bounds:
+
+* `anon.random_date_between(d1,d2)` returns a date between `d1` and `d2`
+* `anon.random_int_between(i1,i2)` returns an integer between `i1` and `i2`
+* `anon.random_bigint_between(b1,b2)` returns a bigint between `b1` and `b2`
+
+**NOTE**: With these functions, the lower and upper bounds are included.
+For instance `anon.random_int_between(1,3)` returns either 1, 2 or 3.
+
+For more advanced interval descriptions, check out the [Random in Range]
+section.
+
+### Random in Array
+
+The `random_in` function returns an element a given array
+
+For example:
+
+* `anon.random_in(ARRAY[1,2,3])` returns an int between 1 and 3
+* `anon.random_in(ARRAY['red','green','blue'])` returns a text
+
+
+### Random in Enum
+
+This is one especially useful when working with `ENUM` types!
+
+* `anon.random_in_enum(variable_of_an_enum_type)` returns any val
+
+
+
+```sql
+CREATE TYPE card AS ENUM ('visa', 'mastercard', ‘amex’);
+
+SELECT anon.random_in_enum(NULL::CARD);
+ random_in_enum
+----------------
+ mastercard
+
+CREATE TABLE customer (
+  id INT,
+  ...
+  credit_card CARD
+);
+
+SECURITY LABEL FOR anon ON COLUMN customer.creditcard
+IS 'MASKED WITH FUNCTION anon.random_in_enum(creditcard)'
+```
+
+
+### Random in Range
+
+[RANGE types] are a powerfull way to describe an interval of values, where can
+define inclusive or excluvive bounds:
+
+<https://www.postgresql.org/docs/current/rangetypes.html#RANGETYPES-EXAMPLES>
+
+There a function for each subtype of range:
+
+* `anon.random_in_int4range('[5,6)')` returns an INT of value 5
+* `anon.random_in_int8range('(6,7]')` returns a BIGINT of value 7
+* `anon.random_in_numrange('[0.1,0.9]') returns a NUMERIC between 0.1 and 0.9
+* `anon.random_in_daterange('[2001-01-01, 2001-12-31)')` returns a date in 2001
+* `anon.random_in_tsrange('[2022-10-01,2022-10-31]')` returns a
+  TIMESTAMP in october 2022
+* `anon.random_in_tstzrange('[2022-10-01,2022-10-31]')` returns a
+  TIMESTAMP WITH TIMEZONE in october 2022
+
+**NOTE:**  It is not possible to get a random value from a RANGE with an
+infinite bound. For example `anon.random_in_int4range('[2022,)')` returns NULL.
+
+
+[RANGE types]: https://www.postgresql.org/docs/current/rangetypes.html
 
 
 

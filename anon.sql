@@ -872,6 +872,107 @@ $$
 ;
 
 
+-- range
+
+CREATE OR REPLACE FUNCTION anon.random_in_daterange(
+  r DATERANGE
+)
+RETURNS DATE
+AS $$
+  SELECT CAST(
+      (random()*(upper(r)::TIMESTAMP-lower(r)::TIMESTAMP))::INTERVAL
+      +lower(r)
+      AS DATE
+  );
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+CREATE OR REPLACE FUNCTION anon.random_in_int4range(
+  r INT4RANGE
+)
+RETURNS INT
+AS $$
+  -- PG12 does not automatically cast the double precision result to INT)
+  SELECT CAST( (random()*(upper(r)-lower(r)-1))+lower(r) AS INT);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+CREATE OR REPLACE FUNCTION anon.random_in_int8range(
+  r INT8RANGE
+)
+RETURNS BIGINT
+AS $$
+  SELECT CAST( (random()*(upper(r)-lower(r)-1))+lower(r) AS BIGINT);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+CREATE OR REPLACE FUNCTION anon.random_in_numrange(
+  r NUMRANGE
+)
+RETURNS NUMERIC
+AS $$
+  SELECT CAST( (random()*(upper(r)-lower(r)))+lower(r) AS NUMERIC);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
+CREATE OR REPLACE FUNCTION anon.random_in_tsrange(
+  r TSRANGE
+)
+RETURNS TIMESTAMP WITHOUT TIME ZONE
+AS $$
+  SELECT  CAST( (random()*(upper(r)-lower(r)))::INTERVAL+lower(r)
+          AS TIMESTAMP WITHOUT TIME ZONE);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+CREATE OR REPLACE FUNCTION anon.random_in_tstzrange(
+  r TSTZRANGE
+)
+RETURNS TIMESTAMP WITH TIME ZONE
+AS $$
+  SELECT  CAST( (random()*(upper(r)-lower(r)))::INTERVAL+lower(r)
+          AS TIMESTAMP WITH TIME ZONE);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
 -- date
 
 CREATE OR REPLACE FUNCTION anon.random_date_between(
@@ -983,6 +1084,25 @@ $$
   LANGUAGE SQL
   VOLATILE
   RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
+-- ENUM
+
+CREATE OR REPLACE FUNCTION anon.random_in_enum(
+  element ANYELEMENT
+)
+RETURNS ANYELEMENT AS
+$$
+  SELECT anon.random_in(enum_range(element));
+$$
+  LANGUAGE SQL
+  VOLATILE
+  -- We need to invoke the function like this anon.random_in_enum(NULL::CARD);
+  --RETURNS NULL ON NULL INPUT
   PARALLEL RESTRICTED -- because random
   SECURITY INVOKER
   SET search_path=''

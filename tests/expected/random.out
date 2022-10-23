@@ -24,6 +24,74 @@ SELECT pg_typeof(anon.random_string(1)) = 'TEXT'::REGTYPE;
  t
 (1 row)
 
+-- Range
+SELECT anon.random_in_int4range('[2001,2002)') = 2001;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.random_in_int4range('(2001,2002)') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.random_in_int4range('[2001,)') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.random_in_int4range('[,2001]') IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.random_in_int4range(NULL) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT bool_and(anon.random_in_int4range('[1,10)') < 10)
+FROM generate_series(1,100);
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT anon.random_in_daterange('[2021-01-01, 2021-01-02)') = '2021-01-01'::DATE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.random_in_int8range('[2001,2002)') = 2001;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.random_in_numrange('[0.1,0.9]') < 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT extract( DAY FROM anon.random_in_tsrange('[2022-10-9,2022-10-31)')) > 8;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT extract( YEAR FROM anon.random_in_tstzrange('[2022-01-01,2022-12-31]')) = 2022;
+ ?column? 
+----------
+ t
+(1 row)
+
 -- Date
 SELECT pg_typeof(anon.random_date_between('1900-01-01'::TIMESTAMP WITH TIME ZONE,now())) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
  ?column? 
@@ -103,6 +171,20 @@ SELECT avg(anon.random_in(ARRAY[1,2,3]))::INT = 2 FROM generate_series(1,100);
 (1 row)
 
 SELECT pg_typeof(anon.random_in(ARRAY['yes','no','maybe'])) = 'TEXT'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- ENUM
+CREATE TYPE CARD AS ENUM ('visa', 'mastercard', 'amex');
+SELECT pg_typeof(anon.random_in(enum_range(null::CARD))) = 'CARD'::REGTYPE;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT pg_typeof(anon.random_in_enum(NULL::CARD)) = 'CARD'::REGTYPE;
  ?column? 
 ----------
  t
