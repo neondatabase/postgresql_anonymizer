@@ -1664,7 +1664,34 @@ $$
 -- See tests in tests/sql/get_function_schema.sql
 CREATE OR REPLACE FUNCTION anon.get_function_schema(text)
 RETURNS TEXT
-AS 'MODULE_PATHNAME', 'get_function_schema'
+AS 'MODULE_PATHNAME', 'anon_get_function_schema'
+  LANGUAGE C
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
+;
+
+
+CREATE OR REPLACE FUNCTION anon.masking_expressions_for_table(
+  OID,
+  TEXT
+)
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'anon_masking_expressions_for_table'
+  LANGUAGE C
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
+;
+
+
+CREATE OR REPLACE FUNCTION anon.masking_value_for_column(
+  OID,
+  INT,
+  TEXT
+)
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'anon_masking_value_for_column'
   LANGUAGE C
   IMMUTABLE
   STRICT
@@ -1692,7 +1719,7 @@ CREATE OR REPLACE FUNCTION anon.register_masking_policy(
 RETURNS BOOLEAN
 AS $$
 BEGIN
-  PERFORM anon.register_label(policy);
+--  PERFORM anon.register_label(policy);
   EXECUTE format('SECURITY LABEL FOR %I ON SCHEMA pg_catalog IS ''TRUSTED'';',
                     policy);
   EXECUTE format('SECURITY LABEL FOR %I ON SCHEMA anon IS ''TRUSTED'';',
@@ -1789,7 +1816,7 @@ SELECT
   pg_catalog.format_type(a.atttypid, a.atttypmod),
   NULL AS col_description,
   NULL AS masking_function,
-  COALESCE(pg_catalog.pg_get_expr(d.adbin, d.adrelid),'NULL') AS masking_value,
+  anon.masking_value_for_column(c.oid,a.attnum,'anon') AS masking_value,
   0 AS priority -- lowest priority for the default value
 FROM pg_catalog.pg_class c
 JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace

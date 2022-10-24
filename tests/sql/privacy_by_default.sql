@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE EXTENSION anon CASCADE;
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SET anon.privacy_by_default = True;
 
@@ -10,7 +10,7 @@ CREATE TABLE public.access_logs (
   ip_addr INET,
   url TEXT,
   browser TEXT DEFAULT 'unkown',
-  operating_system TEXT,
+  operating_system TEXT DEFAULT NULL,
   locale TEXT
 );
 
@@ -19,17 +19,22 @@ INSERT INTO public.access_logs VALUES
 ('2015-07-22', '999', '192.168.42.2', '/index.html', 'Chrome/97','Linux','fr_FR')
 ;
 
+SECURITY LABEL FOR anon ON COLUMN public.access_logs.operating_system
+IS 'NOT MASKED';
+
+
 SAVEPOINT initial_state;
 
--- 1
+-- 1: Before Anonymization
 SELECT count(*)=7 AS test1 FROM anon.pg_masking_rules;
 
--- 2
+-- 2: Authentic data is replaced by NULL or default value
 SELECT anon.anonymize_table('public.access_logs');
-SELECT bool_and(date_open IS NULL) AS test2 FROM public.access_logs;
+SELECT bool_and(date_open IS NULL) AS test2a FROM public.access_logs;
+SELECT bool_and(browser = 'unkown') AS test2b FROM public.access_logs;
 
--- 3
-SELECT bool_and(browser ='unkown') AS test3 FROM public.access_logs;
+-- 3: NOT MASKED
+SELECT bool_or(operating_system = 'Linux') AS test3 FROM public.access_logs;
 
 -- 4: not_null_violation
 ROLLBACK TO initial_state;
@@ -39,6 +44,7 @@ ALTER TABLE public.access_logs
   SET NOT NULL;
 
 SELECT 'test4 must fail';
+
 -- Hide the CONTEXT message
 \set VERBOSITY terse
 SELECT anon.anonymize_table('public.access_logs') as test4;
