@@ -72,8 +72,15 @@ Now instead of writing rules to mask the sensible columns, we will write rules
 to **unmask** the ones we want to allow.
 
 For instance, let's say that we want to keep the authentic value of the `url`
-field, we can simply write a masking rule that will replace the value with
-itself.
+field, we can simply "unmask" the column like this:
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN access_logs.url
+IS 'NOT MASKED';
+```
+
+This can also be achieved by a masking rule that will replace the value with
+itself:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN access_logs.url
