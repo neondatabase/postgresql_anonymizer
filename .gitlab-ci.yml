@@ -122,9 +122,7 @@ PG9.6-debian10:
   image: postgres:9.6-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-9.6 pgxnclient python3-pip
-    #- pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-9.6 pgxnclient 
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -147,9 +145,7 @@ PG10-debian10:
   image: postgres:10-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-10 pgxnclient python3-pip
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-10 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -170,9 +166,7 @@ PG11-debian10:
   image: postgres:11-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient python3-pip
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-11 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -197,9 +191,7 @@ PG11-centos7:
     - yum -y install centos-release-scl-rh
     - yum -y install llvm-toolset-7-clang
     - yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel postgresql11-contrib python3-pip diffutils
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - yum -y install git make gcc postgresql11 postgresql11-server postgresql11-devel postgresql11-contrib diffutils
     - export PATH="$PATH:/usr/pgsql-11/bin"
     - make
     - make install
@@ -227,9 +219,7 @@ PG12-debian11:
   image: postgres:12
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient python3-pip
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient 
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -251,9 +241,7 @@ PG13-debian11:
   image: postgres:13
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 python3-pip diffutils
-    - pip3 install --upgrade pip
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-13 diffutils
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -275,8 +263,7 @@ PG14-debian11:
   image:  postgres:14
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-14 python3-pip diffutils
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-14 diffutils
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -300,8 +287,7 @@ PG15-debian11:
   image:  postgres:15
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-15 python3-pip diffutils
-    - pip3 install --no-cache-dir -r python/requirements.txt
+    - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-15 diffutils
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -328,9 +314,6 @@ PG16-rocky9:
     # Remove lines above when the buildpack image is fixed
     # https://github.com/dalibo/docker-buildpack-postgres/pull/4
     - dnf -y install gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel diffutils
-    - dnf -y --nogpgcheck install python3 python3-faker python3-dateutil
-    # python3-faker requires python3-text-unidecode in EPEL
-    - dnf -y install python3-text-unidecode
     - export PATH="/usr/pgsql-16/bin:$PATH"
     - make
     - make install
@@ -462,7 +445,7 @@ install_source_fedora:
   stage: test
   image: fedora:34
   script:
-    - dnf install --assumeyes postgresql-server postgresql-contrib postgresql-server-devel libpq-devel make git redhat-rpm-config diffutils python3-faker
+    - dnf install --assumeyes postgresql-server postgresql-contrib postgresql-server-devel libpq-devel make git redhat-rpm-config diffutils 
     - cd /tmp
     - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
     - cd postgresql_anonymizer

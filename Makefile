@@ -29,7 +29,7 @@ DATA = anon/*
 PG_CFLAGS = -Wno-unused-variable
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS_TESTS = init populate extschema detection
+REGRESS_TESTS = init extschema detection
 REGRESS_TESTS+= get_function_schema trusted_schemas
 REGRESS_TESTS+= masking_expressions
 #REGRESS_TESTS+= multiple_masking_policies
@@ -140,7 +140,6 @@ pg_dump_anon: #: Build the pg_dump_anon command
 extension: | anon #: build the extension
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/*.csv anon/
-	cp python/populate.py anon/
 
 anon:
 	mkdir -p $@
