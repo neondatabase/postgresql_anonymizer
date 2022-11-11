@@ -10,20 +10,14 @@ Here's how you can create your own set of fake data!
 Localized fake data
 ------------------------------------------------------------------------------
 
-We provide a python script that will generate fake data for you. This script
-is located in the anon extension directory, usually something like:
+As an example, here's a python script that will generate fake data for you:
+
+<https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/python/populate.py>
+
+To produce 5000 emails in French & German, you'd call the scripts like this:
 
 ```shell
-/usr/share/postgresql/13/extension/anon/populate.py
-```
-
-If you want to produce 5000 emails in French & German, you call the
-scripts like this:
-
-``` shell
-$ python3 $(pg_config --sharedir)/extension/anon/populate.py --table email \
-                                                             --locales fr,de \
-                                                             --lines 5000
+populate.py --table email --locales fr,de --lines 5000
 ```
 
 This will output the fake data in `CSV` format.
@@ -37,13 +31,16 @@ TRUNCATE anon.email;
 
 COPY anon.email
 FROM
-PROGRAM 'python3 [...]/populate.py --table email --locales fr,de --lines 5000';
+PROGRAM 'populate.py --table email --locales fr,de --lines 5000';
 
 SELECT setval('anon.email_oid_seq', max(oid))
 FROM anon.email;
 
 CLUSTER anon.email;
 ```
+
+> **IMPORTANT** : This script is provided as an example, it is not
+> officially supported.
 
 
 Load your own fake data
