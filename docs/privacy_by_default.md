@@ -87,8 +87,8 @@ SECURITY LABEL FOR anon ON COLUMN access_logs.url
 IS 'MASKED WITH VALUE url';
 ```
 
-Now we'd like to date in the anonymized dataset but we need to generalize the
-dates to keep only the year.
+Now we'd like to unmask the `date_open` field in the anonymized dataset but
+we need to generalize the dates to keep only the year:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN access_logs.date_open
