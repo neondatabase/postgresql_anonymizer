@@ -16,7 +16,7 @@ the [.pgpass] file are also supported.
 [.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 
-Exemple
+Example
 ------------------------------------------------------------------------------
 
 A user named `bob` can export an anonymous dump of the `app` database like
