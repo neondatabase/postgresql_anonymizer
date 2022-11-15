@@ -602,6 +602,8 @@ DECLARE
   datapath_check TEXT;
   success BOOLEAN;
 BEGIN
+  PERFORM anon.init_masking_policies();
+
   IF anon.is_initialized() THEN
     RAISE NOTICE 'The anon extension is already initialized.';
     RETURN TRUE;
@@ -1661,6 +1663,15 @@ $$
 -------------------------------------------------------------------------------
 
 
+CREATE OR REPLACE FUNCTION anon.init_masking_policies()
+RETURNS BOOLEAN
+AS 'MODULE_PATHNAME', 'anon_init'
+  LANGUAGE C
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
+;
+
 -- See tests in tests/sql/get_function_schema.sql
 CREATE OR REPLACE FUNCTION anon.get_function_schema(text)
 RETURNS TEXT
@@ -1698,16 +1709,31 @@ AS 'MODULE_PATHNAME', 'anon_masking_value_for_column'
   PARALLEL SAFE
 ;
 
--- Register a SECURITY LABEL provider
--- /!\ there's no way to "unregister" a label, the label will remain forever in
--- the database.
-CREATE OR REPLACE FUNCTION anon.register_label(TEXT)
-RETURNS BOOLEAN
-AS 'MODULE_PATHNAME', 'register_label'
+
+CREATE OR REPLACE FUNCTION anon.masking_expressions_for_table(
+  OID,
+  TEXT
+)
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'anon_masking_expressions_for_table'
   LANGUAGE C
-  VOLATILE
+  IMMUTABLE
   STRICT
-  PARALLEL UNSAFE
+  PARALLEL SAFE
+;
+
+
+CREATE OR REPLACE FUNCTION anon.masking_value_for_column(
+  OID,
+  INT,
+  TEXT
+)
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'anon_masking_value_for_column'
+  LANGUAGE C
+  IMMUTABLE
+  STRICT
+  PARALLEL SAFE
 ;
 
 --
