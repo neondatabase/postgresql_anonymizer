@@ -38,6 +38,9 @@
 
 PG_MODULE_MAGIC;
 
+/* Definition */
+#define PA_MAX_SIZE_MASKING_RULE  1024
+
 /* Saved hook values in case of unload */
 static post_parse_analyze_hook_type prev_post_parse_analyze_hook = NULL;
 
@@ -534,7 +537,7 @@ pa_check_masking_policies(char **newval, void **extra, GucSource source)
   char    *rawstring;
   List    *elemlist;
 
-  if (!*newval ||  strlen(*newval) == 0 )
+  if (!*newval ||  strnlen(*newval,PA_MAX_SIZE_MASKING_RULE) == 0 )
   {
     GUC_check_errdetail("anon.masking_policies cannot be NULL or empty");
     return false;
@@ -690,16 +693,16 @@ pa_masking_value_for_att(Relation rel, FormData_pg_attribute * att, char * polic
   // A masking rule was found
   if (seclabel && pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0)
   {
-    char * substr=malloc(strlen(seclabel));
-    strncpy(substr, seclabel+21, strlen(seclabel));
+    char * substr=malloc(strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+    strncpy(substr, seclabel+21, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
     if (guc_anon_strict_mode) return pa_cast_as_regtype(substr, att->atttypid);
     return substr;
   }
 
   if (seclabel && pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0)
   {
-    char * substr=malloc(strlen(seclabel));
-    strncpy(substr, seclabel+18, strlen(seclabel));
+    char * substr=malloc(strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+    strncpy(substr, seclabel+18, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
     if (guc_anon_strict_mode) return pa_cast_as_regtype(substr, att->atttypid);
     return substr;
   }
