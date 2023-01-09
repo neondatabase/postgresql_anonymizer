@@ -310,10 +310,7 @@ PG16-rocky9:
   script:
     - dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
     - yum-config-manager --enable pgdg16-updates-testing
-    - dnf -y install postgresql16-server postgresql16-contrib
-    # Remove lines above when the buildpack image is fixed
-    # https://github.com/dalibo/docker-buildpack-postgres/pull/4
-    - dnf -y install gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel diffutils
+    - dnf -y --nogpgcheck install gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel diffutils
     - export PATH="/usr/pgsql-16/bin:$PATH"
     - make
     - make install
