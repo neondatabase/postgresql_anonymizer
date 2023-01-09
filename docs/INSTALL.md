@@ -484,6 +484,15 @@ _Step 2:_ Drop the extension
 DROP EXTENSION anon CASCADE;
 ```
 
+The `anon` extension also installs [pgcrypto] as a dependency, if you
+don't need it, you can remove it too:
+
+```sql
+DROP EXTENSION pgcrypto;
+```
+
+[pgcrypto]: https://www.postgresql.org/docs/current/pgcrypto.html
+
 _Step 3:_ Unload the extension
 
 
