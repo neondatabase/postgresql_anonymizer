@@ -122,7 +122,7 @@ PG9.6-debian10:
   image: postgres:9.6-buster
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-9.6 pgxnclient 
+    - apt-get install -y --no-install-recommends build-essential postgresql-server-dev-9.6 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -219,7 +219,7 @@ PG12-debian11:
   image: postgres:12
   script:
     - apt-get update
-    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient 
+    - apt-get install -y --no-install-recommends make gcc git postgresql-server-dev-12 pgxnclient
     - make extension
     - make install
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
@@ -355,9 +355,11 @@ how-to:
     entrypoint: [""]
   stage: build
   script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends python3-venv
     - cd docs/how-to
+    - ./init_postgres.sh
+    - export PGUSER=paul
+    - export PGDATABASE=boutique
+    - export PGPASSWORD=CHANGEME
     - make how-to
 #  when: manual
   artifacts:
@@ -442,7 +444,7 @@ install_source_fedora:
   stage: test
   image: fedora:34
   script:
-    - dnf install --assumeyes postgresql-server postgresql-contrib postgresql-server-devel libpq-devel make git redhat-rpm-config diffutils 
+    - dnf install --assumeyes postgresql-server postgresql-contrib postgresql-server-devel libpq-devel make git redhat-rpm-config diffutils
     - cd /tmp
     - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
     - cd postgresql_anonymizer
