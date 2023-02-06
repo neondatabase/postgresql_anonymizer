@@ -31,6 +31,7 @@ PG_CFLAGS = -Wno-unused-variable
 #PG_TEST_EXTRA ?= ""
 REGRESS_TESTS = init extschema detection
 REGRESS_TESTS+= get_function_schema trusted_schemas
+REGRESS_TESTS+= copy pg_dump
 REGRESS_TESTS+= masking_expressions
 #REGRESS_TESTS+= multiple_masking_policies
 REGRESS_TESTS+= sampling

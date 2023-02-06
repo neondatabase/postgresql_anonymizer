@@ -58,15 +58,16 @@ SELECT anon.masking_value_for_column('employees'::REGCLASS,1,'anon')
  t
 (1 row)
 
+;
 SELECT anon.masking_value_for_column('employees'::REGCLASS,2,'anon')
-     = 'CAST(pg_catalog.md5($$ t e s t $$) AS 25::REGTYPE)';
+     = 'CAST(pg_catalog.md5($$ t e s t $$) AS text)';
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT anon.masking_value_for_column('employees'::REGCLASS,3,'anon')
-    = 'CAST(0 AS 23::REGTYPE)';
+    = 'CAST(0 AS integer)';
  ?column? 
 ----------
  t
