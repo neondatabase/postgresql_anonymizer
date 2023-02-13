@@ -310,7 +310,7 @@ PG16-rocky9:
   script:
     - dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
     - yum-config-manager --enable pgdg16-updates-testing
-    - dnf -y --nogpgcheck install gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel diffutils
+    - dnf -y --nogpgcheck --skip-broken install gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel diffutils
     - export PATH="/usr/pgsql-16/bin:$PATH"
     - make
     - make install
@@ -330,6 +330,8 @@ PG16-rocky9:
   except:
     variables:
       - $WINDOWS_ONLY
+  # Remove when PG16 goes beta
+  allow_failure: true
 
 
 blackbox:
