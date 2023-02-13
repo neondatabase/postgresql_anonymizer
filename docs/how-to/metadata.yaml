@@ -13,3 +13,19 @@ listings-disable-line-numbers: true
 table-use-row-colors: true
 links-as-notes: true
 colorlinks: true
+
+header-includes:
+- |
+  ```{=latex}
+  %% Voir la config de pandoc-latex-environment
+  \usepackage{awesomebox}
+  %% Dans les listes, remplacer les tirets par des points
+  \let\labelitemi\labelitemii
+  ```
+
+pandoc-latex-environment:
+  noteblock: [slide-content]
+  tipblock: [tip]
+  warningblock: [warning]
+  cautionblock: [caution]
+  importantblock: [important]
