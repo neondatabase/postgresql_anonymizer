@@ -28,6 +28,8 @@
 #include "catalog/pg_namespace.h"
 #include "catalog/namespace.h"
 #include "miscadmin.h"
+#include "optimizer/planner.h"
+#include "tcop/utility.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
 #include "utils/guc.h"
@@ -43,6 +45,7 @@ PG_MODULE_MAGIC;
 
 /* Saved hook values in case of unload */
 static post_parse_analyze_hook_type prev_post_parse_analyze_hook = NULL;
+static ProcessUtility_hook_type prev_ProcessUtility_hook = NULL;
 
 /*
  * External Functions
@@ -86,13 +89,52 @@ static char * pa_get_masking_policy_for_role(Oid roleid);
 static void   pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclabel);
 static bool   pa_has_mask_in_policy(Oid roleid, char *policy);
 static void   pa_rewrite(Query * query, char * policy);
+static void   pa_rewrite_utility(PlannedStmt *pstmt, char * policy);
 static char * pa_cast_as_regtype(char * value, int atttypid);
 static char * pa_masking_value_for_att(Relation rel, FormData_pg_attribute * att, char * policy);
+static char * pa_masking_expressions_for_table(Oid relid, char * policy);
+Node *        pa_masking_stmt_for_table(Oid relid, char * policy);
 
+/*
+ * Hook functions
+ */
+
+// https://github.com/taminomara/psql-hooks/blob/master/Detailed.md#post_parse_analyze_hook
 #if PG_VERSION_NUM >= 140000
 static void   pa_post_parse_analyze_hook(ParseState *pstate, Query *query, JumbleState *jstate);
 #else
 static void   pa_post_parse_analyze_hook(ParseState *pstate, Query *query);
+#endif
+
+// https://github.com/taminomara/psql-hooks/blob/master/Detailed.md#ProcessUtility_hook
+#if PG_VERSION_NUM >= 140000
+static void
+pa_ProcessUtility_hook( PlannedStmt *pstmt,
+                        const char *queryString,
+                        bool readOnlyTree,
+                        ProcessUtilityContext context,
+                        ParamListInfo params,
+                        QueryEnvironment *queryEnv,
+                        DestReceiver *dest,
+                        QueryCompletion *qc);
+#elif PG_VERSION_NUM >= 130000
+static void
+pa_ProcessUtility_hook( PlannedStmt *pstmt,
+                        const char *queryString,
+                        ProcessUtilityContext context,
+                        ParamListInfo params,
+                        QueryEnvironment *queryEnv,
+                        DestReceiver *dest,
+                        QueryCompletion *qc);
+#else
+static void
+pa_ProcessUtility_hook( PlannedStmt *pstmt,
+                        const char *queryString,
+                        ProcessUtilityContext context,
+                        ParamListInfo params,
+                        QueryEnvironment *queryEnv,
+                        DestReceiver *dest,
+                        char *completionTag);
 #endif
 
 /*
@@ -396,14 +438,18 @@ _PG_init(void)
   /* Install the hooks */
   prev_post_parse_analyze_hook = post_parse_analyze_hook;
   post_parse_analyze_hook = pa_post_parse_analyze_hook;
+
+  prev_ProcessUtility_hook = ProcessUtility_hook;
+  ProcessUtility_hook = pa_ProcessUtility_hook;
 }
 
 /*
- * Unregister and restore the hook
+ * Unregister and restore the hooks
  */
 void
 _PG_fini(void) {
   post_parse_analyze_hook = prev_post_parse_analyze_hook;
+  ProcessUtility_hook = prev_ProcessUtility_hook;
 }
 
 /*
@@ -459,7 +505,11 @@ pa_cast_as_regtype(char * value, int atttypid)
 {
   StringInfoData casted_value;
   initStringInfo(&casted_value);
-  appendStringInfo(&casted_value, "CAST(%s AS %d::REGTYPE)", value, atttypid);
+  appendStringInfo( &casted_value,
+                    "CAST(%s AS %s)",
+                    value,
+                    format_type_be(atttypid)
+  );
   return casted_value.data;
 }
 
@@ -476,7 +526,6 @@ pa_cast_as_regtype(char * value, int atttypid)
  * simply deduce the schema name as it is provided.
  *
  */
-
 Datum
 anon_get_function_schema(PG_FUNCTION_ARGS)
 {
@@ -624,6 +673,32 @@ pa_get_masking_policy_for_role(Oid roleid)
   return NULL;
 }
 
+/*
+ * pa_masking_stmt_for_table
+ *  prepare a Raw Statement object that will replace the authentic relation
+ *
+ */
+Node *
+pa_masking_stmt_for_table(Oid relid, char * policy)
+{
+  const char *    query_format="SELECT %s FROM %s.%s";
+  StringInfoData  query_string;
+  List  *         raw_parsetree_list;
+  Query *         masking_query;
+
+  initStringInfo(&query_string);
+  appendStringInfo( &query_string,
+                    query_format,
+                    pa_masking_expressions_for_table(relid,policy),
+                    quote_identifier(get_namespace_name(get_rel_namespace(relid))),
+                    quote_identifier(get_rel_name(relid))
+  );
+
+  ereport(DEBUG1, (errmsg_internal("%s",query_string.data)));
+
+  raw_parsetree_list = pg_parse_query(query_string.data);
+  return (Node *) linitial_node(RawStmt, raw_parsetree_list)->stmt;
+}
 
 /*
  * Post-parse-analysis hook: mask query
@@ -655,14 +730,125 @@ pa_post_parse_analyze_hook(ParseState *pstate, Query *query)
   return;
 }
 
+/*
+ * pa_ProcessUtility_hook
+ *   rewrites COPY statement for masked roles
+ */
+#if PG_VERSION_NUM >= 140000
+static void
+pa_ProcessUtility_hook( PlannedStmt *pstmt,
+                        const char *queryString,
+                        bool readOnlyTree,
+                        ProcessUtilityContext context,
+                        ParamListInfo params,
+                        QueryEnvironment *queryEnv,
+                        DestReceiver *dest,
+                        QueryCompletion *qc)
+#elif PG_VERSION_NUM >= 130000
+static void
+pa_ProcessUtility_hook( PlannedStmt *pstmt,
+                        const char *queryString,
+                        ProcessUtilityContext context,
+                        ParamListInfo params,
+                        QueryEnvironment *queryEnv,
+                        DestReceiver *dest,
+                        QueryCompletion *qc)
+#else
+static void
+pa_ProcessUtility_hook( PlannedStmt *pstmt,
+                        const char *queryString,
+                        ProcessUtilityContext context,
+                        ParamListInfo params,
+                        QueryEnvironment *queryEnv,
+                        DestReceiver *dest,
+                        char *completionTag)
+#endif
+{
+  char * policy = NULL;
+
+  if (IsTransactionState()) {
+
+    policy = pa_get_masking_policy(GetUserId());
+    if ( guc_anon_transparent_dynamic_masking && policy)
+        pa_rewrite_utility(pstmt,policy);
+  }
+
+#if PG_VERSION_NUM >= 140000
+  if (prev_ProcessUtility_hook)
+      prev_ProcessUtility_hook(pstmt, queryString, readOnlyTree, context, params, queryEnv, dest, qc);
+    else
+      standard_ProcessUtility(pstmt, queryString, readOnlyTree, context, params, queryEnv, dest, qc);
+#elif PG_VERSION_NUM >= 130000
+  if (prev_ProcessUtility_hook)
+      prev_ProcessUtility_hook(pstmt, queryString, context, params, queryEnv, dest, qc);
+    else
+      standard_ProcessUtility(pstmt, queryString, context, params, queryEnv, dest, qc);
+#else
+  if (prev_ProcessUtility_hook)
+      prev_ProcessUtility_hook(pstmt, queryString, context, params, queryEnv, dest, completionTag);
+    else
+      standard_ProcessUtility(pstmt, queryString, context, params, queryEnv, dest, completionTag);
+#endif
+
+}
+
+/*
+ * pa_rewrite
+ */
 static void
 pa_rewrite(Query * query, char * policy)
 {
+/*
       ereport(ERROR,
         (errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
         errmsg("NOT IMPLEMENTED YET")));
+*/
 }
 
+/*
+ * pa_rewrite_utility
+ *   In a COPY statement, substitute a masked relation by its
+ *   masking view
+ */
+static void
+pa_rewrite_utility(PlannedStmt *pstmt, char * policy)
+{
+  Node *    parsetree = pstmt->utilityStmt;
+  int       readonly_flags;
+
+  Assert(IsA(pstmt, PlannedStmt));
+  Assert(pstmt->commandType == CMD_UTILITY);
+
+  if ( IsA(parsetree, ExplainStmt)
+    || IsA(parsetree, TruncateStmt)
+  )
+  {
+    ereport(ERROR,
+            ( errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+              errmsg("role \"%s\" is masked",
+                     GetUserNameFromId(GetUserId(), false)),
+              errdetail("Masked roles are read-only.")
+            ));
+  }
+
+  if (IsA(parsetree, CopyStmt))
+  {
+    /* https://doxygen.postgresql.org/structCopyStmt.html */
+    CopyStmt   * copystmt = (CopyStmt *) parsetree;
+    ereport(DEBUG1, (errmsg_internal("COPY found")));
+    if (! copystmt->is_from)
+    {
+      Oid relid;
+
+      /* replace the relation by the masking subquery */
+      relid=RangeVarGetRelid(copystmt->relation,AccessShareLock,false);
+      copystmt->relation = NULL;
+      copystmt->attlist = NULL;
+      copystmt->query=pa_masking_stmt_for_table(relid,policy);
+      ereport(DEBUG1, (errmsg_internal("COPY rewritten")));
+    }
+  }
+}
 
 /*
  * pa_masking_expression_for_att
@@ -730,6 +916,47 @@ pa_masking_value_for_att(Relation rel, FormData_pg_attribute * att, char * polic
   // No default value, NULL is the last possibility
   return "NULL";
 }
+
+/*
+ * pa_masking_expressions_for_table
+ *   returns the "select clause filters" that will mask the authentic data
+ *   of a table for a given masking policy
+ */
+static char *
+pa_masking_expressions_for_table(Oid relid, char * policy)
+{
+  char            comma[] = " ";
+  Relation        rel;
+  TupleDesc       reldesc;
+  StringInfoData  filters;
+  int             i;
+
+  rel = relation_open(relid, AccessShareLock);
+
+  initStringInfo(&filters);
+  reldesc = RelationGetDescr(rel);
+
+  for (i = 0; i < reldesc->natts; i++)
+  {
+    FormData_pg_attribute * a;
+
+    a = TupleDescAttr(reldesc, i);
+    if (a->attisdropped) continue;
+
+    appendStringInfoString(&filters,comma);
+    appendStringInfo( &filters,
+                      "%s AS %s",
+                      pa_masking_value_for_att(rel,a,policy),
+                      (char *)quote_identifier(NameStr(a->attname))
+                    );
+    comma[0]=',';
+  }
+  relation_close(rel, NoLock);
+
+  return filters.data;
+}
+
+
 
 /*
  * anon_masking_expressions_for_table

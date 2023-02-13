@@ -35,12 +35,14 @@ SELECT anon.masking_expressions_for_table('employees'::REGCLASS,'anon') IS NOT N
 
 SELECT anon.masking_value_for_column('employees'::REGCLASS,1,'anon')
      = '"NAME"';
+;
 
 SELECT anon.masking_value_for_column('employees'::REGCLASS,2,'anon')
-     = 'CAST(pg_catalog.md5($$ t e s t $$) AS 25::REGTYPE)';
+     = 'CAST(pg_catalog.md5($$ t e s t $$) AS text)';
+
 
 SELECT anon.masking_value_for_column('employees'::REGCLASS,3,'anon')
-    = 'CAST(0 AS 23::REGTYPE)';
+    = 'CAST(0 AS integer)';
 
 SET anon.strict_mode TO FALSE;
 

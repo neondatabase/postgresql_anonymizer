@@ -1,9 +1,68 @@
 Anonymous Dumps
 ===============================================================================
 
-Due to the core design of this extension, you cannot use `pg_dump` with a masked
-user. If you want to export the entire database with the anonymized data, you
-must use the `pg_dump_anon` command.
+
+EXPERIMENTAL : Transparent Anonymous Dumps
+------------------------------------------------------------------------------
+
+> WARNING: This feature is under development and will not be officially
+> supported until version 2.0 is released. Use with care. For a more stable
+> solution, see the [pg_dump_anon] section.
+
+To export the anonymized data from a database, follow these 2 steps:
+
+### 1. Create a masked user
+
+```sql
+CREATE ROLE dump_anon LOGIN PASSWORD 'x';
+ALTER ROLE dump_anon SET anon.transparent_dynamic_masking = True;
+SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
+```
+
+__NOTE:__ You can replace the name `dump_anon` by another name.
+
+
+### 2. Grant read access to that user
+
+```sql
+GRANT USAGE ON SCHEMA public TO dump_anon;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO dump_anon;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO dump_anon;
+
+GRANT USAGE ON SCHEMA foo TO dump_anon;
+GRANT SELECT ON ALL TABLES IN SCHEMA foo TO dump_anon;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA foo TO dump_anon;
+```
+
+__NOTE:__ Replace `foo` with any other schema you have inside you database.
+
+### 3. Launch pg_dump with the masked user
+
+Now to export the anonymous data from a database named `foo`, let's use
+`pg_dump`:
+
+```bash
+pg_dump foo \
+        --user dump_anon \
+        --no-security-labels \
+        --extension pgcatalog.plpgsql \
+        --file=foo_anonymized.sql
+```
+
+__NOTES:__
+
+* linebreaks are here for readability
+
+* `--no-security-labels` will remove the masking rules from the anonymous dump.
+  This is really important because masked users should not have access to the
+  masking policy.
+
+* `--extension pgcatalog.plpgsql` will remove the `anon` extension, which
+  useless inside the anonymized dump. This option is only available with
+  `pg_dump 14` and later.
+
+* `--format=custom` is supported
+
 
 pg_dump_anon
 ------------------------------------------------------------------------------
@@ -16,8 +75,7 @@ the [.pgpass] file are also supported.
 [.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 
-Example
-------------------------------------------------------------------------------
+### Example
 
 A user named `bob` can export an anonymous dump of the `app` database like
 this:
@@ -31,17 +89,13 @@ pg_dump_anon -h localhost -U bob --password --file=anonymous_dump.sql app
 For more details about the supported options, simply type `pg_dump_anon --help`
 
 
-
-Install
-------------------------------------------------------------------------------
-
-### With Go
+### Install With Go
 
 ```console
 go install gitlab.com/dalibo/postgresql_anonymizer/pg_dump_anon
 ```
 
-### With docker
+### Install With docker
 
 If you do not want to instal Go on your production servers, you can fetch the
 binary with:
@@ -53,8 +107,7 @@ sudo install pg_dump_anon $(pg_config --bindir)
 
 
 
-Limitations
-------------------------------------------------------------------------------
+### Limitations
 
 * The user password is asked automatically. This means you must either add
   the `--password` option to define it interactively or declare it in the

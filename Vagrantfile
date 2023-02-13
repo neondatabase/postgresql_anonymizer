@@ -1,9 +1,16 @@
 
+$pg12_script = <<SCRIPT
+  add-apt-repository --yes "deb [trusted=yes] https://apt.postgresql.org/pub/repos/apt/ $(lsb_release -s -c)-pgdg-snapshot main 16"
+  apt-get update
+  apt-get install -y postgresql-12 postgresql-server-dev-12 make gcc
+  sudo -u postgres createdb foo
+SCRIPT
+
 $pg14_script = <<SCRIPT
+  add-apt-repository --yes "deb [trusted=yes] https://apt.postgresql.org/pub/repos/apt/ $(lsb_release -s -c)-pgdg-snapshot main 16"
   apt-get update
   apt-get install -y postgresql-14 postgresql-server-dev-14 make gcc
   sudo -u postgres createdb foo
-  add-apt-repository --yes "deb [trusted=yes] https://apt.postgresql.org/pub/repos/apt/ $(lsb_release -s -c)-pgdg-snapshot main 16"
 SCRIPT
 
 $pg16_script = <<SCRIPT
@@ -16,6 +23,13 @@ SCRIPT
 
 
 Vagrant.configure("2") do |config|
+
+  config.vm.define "pg12" do |pg12|
+    pg12.vm.box = "ubuntu/jammy64"
+    pg12.vm.hostname = "pg12"
+    pg12.vm.network :forwarded_port, guest: 5432, host: 54312
+    pg12.vm.provision "shell", inline: $pg12_script
+  end
 
   config.vm.define "pg14" do |pg14|
     pg14.vm.box = "ubuntu/jammy64"
