@@ -66,6 +66,15 @@ SECURITY LABEL FOR anon ON COLUMN player.name
                              END';
 ```
 
+Listing masking rules
+------------------------------------------------------------------------------
+
+To display all the masking rules declared in the current database, check out
+the `anon.pg_masking_rules`:
+
+```sql
+SELECT * FROM anon.pg_masking_rules;
+```
 
 Removing a masking rule
 ------------------------------------------------------------------------------
