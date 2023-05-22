@@ -277,8 +277,8 @@ Once the fake data is loaded you have access to 10 pseudo functions:
 The second argument ("salt") is optional. You can call each function with
 only the seed like this `anon.pseudo_city('bob')`. The salt is here to increase
 complexity and avoid dictionary and brute force attacks (see warning below).
-If a salt is not given, a random secret salt is used instead
-(see the [Generic Hashing] section for more details).
+If a specific salt is not given, the value of the `anon.salt` GUC parameter is
+used instead (see the [Generic Hashing] section for more details).
 
 The seed can be any information related to the subject. For instance, we can
 consistently generate the same fake email address for a given person by using
@@ -318,20 +318,20 @@ date or something similar).
 Hashing such columns allows to keep referential integrity intact even for
 relatively unusual source data. Therefore, the
 
-* `anon.hash(value)`  will return a text hash of the value using a secret salt
-  and hash algorithm (see below)
-
 * `anon.digest(value,salt,algorithm)` lets you choose a salt, and a hash algorithm
   from a pre-defined list
 
-By default, a random secret salt is generated when the extension is
-initialized,
-and the default hash algorithm is `sha512`. You can change these for the entire
-database with two functions:
+* `anon.hash(value)`  will return a text hash of the value using a secret salt
+  (defined by the `anon.salt` parameter) and hash algorithm (defined by the
+  `anon.algorithm` parameter). The default value of `anon.algorithm` is
+  `sha256` and possible values are: md5, sha1, sha224, sha256, sha384 or
+  sha512. The default value of `anon.salt` is an empty string. You can
+  modify these values with:
 
-* `anon.set_secret_salt(value)` to define you own salt
-* `anon.set_algorithm(value)` to select another hash function.
-  Possible values are: md5, sha1, sha224, sha256, sha384 or sha512
+  ```sql
+  ALTER DATABASE foo SET anon.salt TO 'xsfnjefnjsnfjsnf';
+  ALTER DATABASE foo SET anon.algorithm TO 'sha384';
+  ```
 
 Keep in mind that hashing is a form a [Pseudonymization]. This means that the
 data can be "de-anonymized" using the hashed value and the masking function. If an
