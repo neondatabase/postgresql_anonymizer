@@ -287,6 +287,7 @@ CREATE TABLE anon.address (
 
 ALTER TABLE anon.address CLUSTER ON address_pkey;
 GRANT SELECT ON TABLE anon.address TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.address_oid_seq TO PUBLIC;
 --SELECT pg_catalog.pg_extension_config_dump('anon.address','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.address_oid_seq','');
 
@@ -301,6 +302,8 @@ CREATE TABLE anon.city (
 
 ALTER TABLE anon.city CLUSTER ON city_pkey;
 GRANT SELECT ON TABLE anon.city TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.city_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.city','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.city_oid_seq','');
 
@@ -315,6 +318,8 @@ CREATE TABLE anon.company (
 
 ALTER TABLE anon.company CLUSTER ON company_pkey;
 GRANT SELECT ON TABLE anon.company TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.company_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.company','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.company_oid_seq','');
 
@@ -329,6 +334,8 @@ CREATE TABLE anon.country (
 
 ALTER TABLE anon.country CLUSTER ON country_pkey;
 GRANT SELECT ON TABLE anon.country TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.country_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.country','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.country_oid_seq','');
 
@@ -343,6 +350,8 @@ CREATE TABLE anon.email (
 
 ALTER TABLE anon.email CLUSTER ON email_pkey;
 GRANT SELECT ON TABLE anon.email TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.email_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.email','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.email_oid_seq','');
 
@@ -357,6 +366,8 @@ CREATE TABLE anon.first_name (
 
 ALTER TABLE anon.first_name CLUSTER ON first_name_pkey;
 GRANT SELECT ON TABLE anon.first_name TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.first_name_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.first_name','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.first_name_oid_seq','');
 
@@ -371,6 +382,8 @@ CREATE TABLE anon.iban (
 
 ALTER TABLE anon.iban CLUSTER ON iban_pkey;
 GRANT SELECT ON TABLE anon.iban TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.iban_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.iban','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.iban_oid_seq','');
 
@@ -385,6 +398,8 @@ CREATE TABLE anon.last_name (
 
 ALTER TABLE anon.last_name CLUSTER ON last_name_pkey;
 GRANT SELECT ON TABLE anon.last_name TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.last_name_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.last_name','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.last_name_oid_seq','');
 
@@ -399,6 +414,8 @@ CREATE TABLE anon.postcode (
 
 ALTER TABLE anon.postcode CLUSTER ON postcode_pkey;
 GRANT SELECT ON TABLE anon.postcode TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.postcode_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.postcode','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.postcode_oid_seq','');
 
@@ -413,6 +430,8 @@ CREATE TABLE anon.siret (
 
 ALTER TABLE anon.siret CLUSTER ON siret_pkey;
 GRANT SELECT ON TABLE anon.siret TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.siret_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.siret','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.siret_oid_seq','');
 
@@ -427,6 +446,8 @@ CREATE TABLE anon.lorem_ipsum (
 
 ALTER TABLE anon.lorem_ipsum CLUSTER ON lorem_ipsum_pkey;
 GRANT SELECT ON TABLE anon.lorem_ipsum TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.lorem_ipsum_oid_seq TO PUBLIC;
+
 --SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.lorem_ipsum_oid_seq','');
 
