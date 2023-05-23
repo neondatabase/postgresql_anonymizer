@@ -366,7 +366,7 @@ CREATE TABLE anon.first_name (
 
 ALTER TABLE anon.first_name CLUSTER ON first_name_pkey;
 GRANT SELECT ON TABLE anon.first_name TO PUBLIC;
-GRANT SELECT ON SEQUENCE anon.first_name_seq TO PUBLIC;
+GRANT SELECT ON SEQUENCE anon.first_name_oid_seq TO PUBLIC;
 
 --SELECT pg_catalog.pg_extension_config_dump('anon.first_name','');
 --SELECT pg_catalog.pg_extension_config_dump('anon.first_name_oid_seq','');
