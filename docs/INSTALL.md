@@ -362,20 +362,14 @@ PostgreSQL Anonymizer in their offering. Here's a non-exhaustive list:
 * [Postgres.ai](https://postgres.ai/docs/database-lab/masking)
 
 
-Addendum: Alternative ways to load the extension
+Addendum: Alternative way to load the extension
 ------------------------------------------------------------------------------
 
-Here's some additional notes about how you can load the extension:
-
-### 1- Load only for one database
-
-You can load the extension exclusively into a specific database like this:
+It is recommended to load the extension like this:
 
 ```sql
-ALTER DATABASE mydatabase SET session_preload_libraries='anon'
+ALTER DATABASE foo SET session_preload_libraries='anon'
 ```
-
-Then quit your current session and open a new one.
 
 It has several benefits:
 
@@ -386,9 +380,9 @@ It has several benefits:
   Which means you can use the anonymization functions on a read-only clone
   of the database (provided the extension is installed on the standby instance)
 
-### 2- Load for the instance
 
-You can load the extension with the `shared_preload_libraries` parameter.
+However, you can load the extension globally in the instance using the
+`shared_preload_libraries` parameter :
 
 ```sql
 ALTER SYSTEM SET shared_preload_libraries = 'anon'"
@@ -396,20 +390,6 @@ ALTER SYSTEM SET shared_preload_libraries = 'anon'"
 
 Then restart the PostgreSQL instance.
 
-
-### 3- Load on the fly
-
-For a one-time usage, You can the [LOAD] command
-
-```sql
-LOAD '/usr/lib/postgresql/12/lib/anon.so';
-```
-
-You can read the [Shared Library Preloading] section of the PostgreSQL documentation
-for more details.
-
-[LOAD]: https://www.postgresql.org/docs/current/sql-load.html
-[Shared Library Preloading]:https://www.postgresql.org/docs/current/runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD
 
 
 Addendum: Troubleshooting

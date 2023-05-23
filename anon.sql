@@ -2478,7 +2478,7 @@ BEGIN
   -- Check if dynamic masking is enabled
   PERFORM nspname
   FROM pg_catalog.pg_namespace
-  WHERE nspname = pg_catalog.current_setting('anon.maskschema')::NAME;
+  WHERE nspname = pg_catalog.current_setting('anon.maskschema', true)::NAME;
 
   IF NOT FOUND THEN
     -- Dynamic masking is disabled, no need to go further
