@@ -74,7 +74,12 @@ SELECT COUNT(*)=1 FROM anon.pg_masking_rules;
 
 -- SHOULD FAIL
 SAVEPOINT fail_seclabel_on_role;
-SECURITY LABEL FOR anon ON ROLE mallory_the_masked_user IS NULL;
+DO $$
+BEGIN
+  SECURITY LABEL FOR anon ON ROLE mallory_the_masked_user IS NULL;
+  EXCEPTION WHEN insufficient_privilege
+  THEN RAISE NOTICE 'insufficient_privilege';
+END$$;
 ROLLBACK TO fail_seclabel_on_role;
 
 
