@@ -94,9 +94,13 @@ SELECT anon.remove_masks_for_all_columns();
 Limitations
 ------------------------------------------------------------------------------
 
+* The maximum length of a masking rule is 1024 characters. If you need more,
+  you should probably [write a dedicated masking function].
+
 * The masking rules are **NOT INHERITED** ! If you have split a table into
   multiple partitions, you need to declare the masking rules for each partition.
 
+[write a dedicated masking function]: masking_functions.md#write-your-own-masks
 
 Declaring Rules with COMMENTs is deprecated.
 ------------------------------------------------------------------------------
@@ -106,7 +110,3 @@ the `COMMENT` syntax.
 
 This is not suppported any more. `SECURITY LABELS` are now the only way to
 declare rules.
-
-
-
-

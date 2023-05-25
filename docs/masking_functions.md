@@ -12,6 +12,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 * [Generic Hashing]
 * [Partial scrambling]
 * [Generalization]
+* [Write your own Masks !]
 
 [Destruction]: #destruction
 [Adding Noise]: #adding-noise
@@ -23,6 +24,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Partial scrambling]: #partial-scrambling
 [Generalization]: #generalization
 [Shuffling]: static_masking.md#shuffling
+[Write your own Masks !]: #write-your-own-masks
 
 Depending on your data, you may need to use different strategies on different
 columns :
