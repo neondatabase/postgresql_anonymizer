@@ -201,12 +201,6 @@ tests/expected/unit.out:
 # will be installed
 EXTSCHEMA?=public
 
-.PHONY: standalone
-standalone: anon_standalone.sql #: build the standalone script (deprecated)
-
-anon_standalone.sql: anon.sql
-	echo "The standalone install method is deprecated."
-
 ##
 ## L O A D
 ##

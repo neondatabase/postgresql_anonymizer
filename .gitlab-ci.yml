@@ -1,20 +1,21 @@
+---
 ## PRO TIP : Test your modifications locally with:
 ## $ gitlab-ci-multi-runner exec docker {name_of_the_job}
 
 
 variables:
-    PGDATA: /var/lib/postgresql/data
-    PGUSER: postgres
-    EXTDIR: /usr/share/postgresql/13/extension/
-    PSQL: psql -v ON_ERROR_STOP=1
-    POSTGRES_DB: nice_marmot
-    POSTGRES_USER: runner
-    POSTGRES_PASSWORD: plop
-    PGPASSWORD: CHANGEME
-    SAST_EXCLUDED_PATHS: '_venv, docs/howto/_venv'
-    GIT_SUBMODULE_STRATEGY: recursive
-    ## Uncomment this to run only windows specific jobs
-    #WINDOWS_ONLY: "True"
+  PGDATA: /var/lib/postgresql/data
+  PGUSER: postgres
+  EXTDIR: /usr/share/postgresql/13/extension/
+  PSQL: psql -v ON_ERROR_STOP=1
+  POSTGRES_DB: nice_marmot
+  POSTGRES_USER: runner
+  POSTGRES_PASSWORD: plop
+  PGPASSWORD: CHANGEME
+  SAST_EXCLUDED_PATHS: '_venv, docs/howto/_venv'
+  GIT_SUBMODULE_STRATEGY: recursive
+  ## Uncomment this to run only windows specific jobs
+  # WINDOWS_ONLY: "True"
 
 stages:
   - lint
@@ -35,7 +36,6 @@ lint-bash:
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends shellcheck
-    - shellcheck bin/standalone.sh
     - shellcheck bin/pg_dump_anon.sh
     - shellcheck docker/anon.sh
   except:
@@ -91,7 +91,7 @@ pg_dump_anon:
     - make -C pg_dump_anon test
   artifacts:
     paths:
-        - _build
+      - _build
 
 windows-2016:
   stage: build
@@ -153,9 +153,9 @@ PG10-debian10:
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
-        - anon*
-        - regression.*
-        - results/
+      - anon*
+      - regression.*
+      - results/
   except:
     variables:
       - $WINDOWS_ONLY
@@ -174,9 +174,9 @@ PG11-debian10:
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
-        - anon*
-        - regression.*
-        - results/
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
@@ -205,9 +205,9 @@ PG11-centos7:
   when: manual
   artifacts:
     paths:
-        - anon*
-        - regression.*
-        - results/
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
@@ -227,9 +227,9 @@ PG12-debian11:
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
-        - anon*
-        - regression.*
-        - results/
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
@@ -249,9 +249,9 @@ PG13-debian11:
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
-        - anon*
-        - regression.*
-        - results/
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
@@ -260,7 +260,7 @@ PG13-debian11:
 PG14-debian11:
   <<: *init_PG_instance
   stage: build
-  image:  postgres:14
+  image: postgres:14
   script:
     - apt-get update
     - apt-get install -y --no-install-recommends make gcc postgresql-server-dev-14 diffutils
@@ -272,10 +272,10 @@ PG14-debian11:
     - make debian
   artifacts:
     paths:
-        - _build
-        - anon*
-        - regression.*
-        - results/
+      - _build
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
@@ -295,10 +295,10 @@ PG15-debian11:
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
-        - _build
-        - anon*
-        - regression.*
-        - results/
+      - _build
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
@@ -325,9 +325,9 @@ PG16-rocky9:
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
-        - anon*
-        - regression.*
-        - results/
+      - anon*
+      - regression.*
+      - results/
     expire_in: 1 day
   except:
     variables:
@@ -365,7 +365,7 @@ how-to:
     - export PGDATABASE=boutique
     - export PGPASSWORD=CHANGEME
     - make how-to
-#  when: manual
+  # when: manual
   artifacts:
     paths:
       - docs/how-to
@@ -397,7 +397,7 @@ demo:
   when: manual
   artifacts:
     paths:
-        - demo/*.out
+      - demo/*.out
     expire_in: 1 day
 
 
@@ -532,7 +532,8 @@ pages:
       - public
   only:
     variables:
-      - $CI_COMMIT_BRANCH == 'master' || $CI_PUBLISH_PAGES  # git push -o ci.variable="CI_PUBLISH_PAGES=1"
+      # git push -o ci.variable="CI_PUBLISH_PAGES=1"
+      - $CI_COMMIT_BRANCH == 'master' || $CI_PUBLISH_PAGES
 
 ##
 ## R E L E A S E
@@ -551,4 +552,3 @@ release_pg_dump_anon:
   script:
     - cd pg_dump_anon
     - goreleaser release --rm-dist
-
