@@ -356,9 +356,9 @@ PG16-rocky9:
 
 blackbox:
   stage: build
-  image: docker:19.03.8
+  image: docker:24.0
   services:
-    - docker:19.03.8-dind
+    - docker:24.0-dind
   script:
     - docker build -t blackbox . --file docker/Dockerfile
     - mkdir results
@@ -477,9 +477,9 @@ install_source_fedora:
 
 docker_latest:
   stage: deploy
-  image: docker:19.03.8
+  image: docker:24.0
   services:
-    - docker:19.03.8-dind
+    - docker:24.0-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:latest .
@@ -490,9 +490,9 @@ docker_latest:
 
 docker_stable:
   stage: deploy
-  image: docker:19.03.8
+  image: docker:24.0
   services:
-    - docker:19.03.8-dind
+    - docker:24.0-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:stable .

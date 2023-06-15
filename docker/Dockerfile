@@ -24,6 +24,7 @@ ARG PG_MAJOR_VERSION
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    git \
     make \
     postgresql-server-dev-$PG_MAJOR_VERSION \
     postgresql-plpython3-$PG_MAJOR_VERSION \
@@ -39,7 +40,7 @@ WORKDIR /src
 COPY . .
 
 # Install PostgreSQL Faker
-RUN pip3 install --no-cache-dir -r python/requirements.txt && \
+RUN pip3 install --no-cache-dir -r python/requirements.txt --break-system-packages && \
     pgxn install postgresql_faker
 
 # Install anon extension
