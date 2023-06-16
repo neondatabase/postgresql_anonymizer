@@ -18,7 +18,7 @@ organisations should ensure that data is processed with the highest privacy
 protection so that by default personal data isn’t made accessible to an
 indefinite number of persons.
 
-By applying this principe to anonymization, we end up with the idea of **privacy
+By applying this principle to anonymization, we end up with the idea of **privacy
 by default** which basically means that all columns of all tables should be
 masked by default, without having to declare a masking rule for each of them.
 
@@ -46,7 +46,7 @@ ALTER DATABASE foo SET anon.privacy_by_default = True;
 ```
 
 The setting will be applied for the next sessions and we can now anonymize the
-table without writing any masking rule
+table without writing any masking rule.
 
 ```sql
 # SELECT anon.anonymize_database();
@@ -130,7 +130,7 @@ ALTER TABLE public.access_logs
   SET DEFAULT now();
 ```
 
-Other constraints ( foreign keys, UNIQUE, CHECK, etc.) should work fine without
+Other constraints (foreign keys, UNIQUE, CHECK, etc.) should work fine without
 a DEFAULT value.
 
 
