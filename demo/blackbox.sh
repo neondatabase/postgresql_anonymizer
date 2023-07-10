@@ -16,12 +16,12 @@ CREATE TABLE people(
   lastname TEXT
 );
 
-ALTER TABLE people OWNER TO demo_owner;
+ALTER TABLE people OWNER TO blackbox_demo_owner;
 
 INSERT INTO people VALUES ('Sarah', 'Conor');
 
-GRANT SELECT ON TABLE public.people TO demo_reader;
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.people TO demo_writer;
+GRANT SELECT ON TABLE public.people TO blackbox_demo_reader;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.people TO blackbox_demo_writer;
 "
 
 psql blackbox_demo_db -c "$SQL"
