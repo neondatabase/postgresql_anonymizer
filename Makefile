@@ -176,9 +176,9 @@ docker_push: #: push the docker image to the registry
 	docker push registry.gitlab.com/dalibo/postgresql_anonymizer
 
 docker_bash: #: enter the docker image (useful for testing)
-	docker exec -it docker_PostgreSQL_1 bash
+	docker exec -it docker-PostgreSQL-1 bash
 
-COMPOSE=docker-compose --file docker/docker-compose.yml
+COMPOSE=docker compose --file docker/docker-compose.yml
 
 docker_init: #: start a docker container
 	$(COMPOSE) down
