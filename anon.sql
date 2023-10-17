@@ -814,7 +814,7 @@ CREATE OR REPLACE FUNCTION anon.digest(
 )
 RETURNS TEXT AS
 $$
-  SELECT encode(@extschema@.digest(concat(seed,salt),algorithm),'hex');
+  SELECT encode(public.digest(concat(seed,salt),algorithm),'hex');
 $$
   LANGUAGE SQL
   IMMUTABLE
