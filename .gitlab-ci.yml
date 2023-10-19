@@ -319,30 +319,22 @@ PG15-debian11:
     variables:
       - $WINDOWS_ONLY
 
-PG16-rocky9:
+PG16-debian12:
+  <<: *init_PG_instance
   stage: build
-  image: dalibo/buildpack-postgres:rockylinux9
+  image: postgres:16
   script:
-    - dnf -y install epel-release
-    - dnf -y --enablerepo=crb install perl-IPC-Run
-    - dnf install -y
-        https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-    - yum-config-manager --enable pgdg16-updates-testing
-    - dnf -y --nogpgcheck install
-        gcc ccache redhat-rpm-config postgresql16-server postgresql16-devel
-        diffutils
-    - export PATH="/usr/pgsql-16/bin:$PATH"
-    - make
+    - apt-get update
+    - apt-get install -y --no-install-recommends
+        make gcc postgresql-server-dev-16 diffutils
+    - make extension
     - make install
-    - mkdir -p $PGDATA
-    - chown postgres $PGDATA
-    - su postgres -c 'initdb'
-    - su postgres -c 'pg_ctl start'
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
     - make installcheck || diff results tests/expected
   artifacts:
     paths:
+      - _build
       - anon*
       - regression.*
       - results/
@@ -350,8 +342,6 @@ PG16-rocky9:
   except:
     variables:
       - $WINDOWS_ONLY
-  # Remove when PG16 goes beta
-  allow_failure: true
 
 
 blackbox:
