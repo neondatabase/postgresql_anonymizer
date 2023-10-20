@@ -347,12 +347,12 @@ support.
 Install in the cloud
 ------------------------------------------------------------------------------
 
-This extension must be installed with superuser privileges, which most  Database
-As A Service platforms (DBaaS), such as Amazon RDS or Microsoft Azure SQL, do
-not allow you to install it by yourself. They must add the extension to their
-catalog in order for you to use it.
+This extension must be installed with superuser privileges, which is something
+that most Database As A Service platforms (DBaaS), such as Amazon RDS or
+Microsoft Azure SQL, do not allow. They must add the extension to their catalog
+in order for you to use it.
 
-At the time we are writing this (June 2023), the following platforms support
+At the time we are writing this (October 2023), the following platforms support
 PostgreSQL Anonymizer:
 
 * [Google Cloud SQL](https://cloud.google.com/sql/docs/postgres/extensions#postgresql_anonymizer)
@@ -363,11 +363,10 @@ might have a platform-specific install procedure.
 
 If your favorite DBaaS provider is not present in the list above, there is not
 much we can do about it... Although we have open discussions with some major
-actors in this domain, we DO NOT have internal knowledge on wether a given
-company has plans to support it. Especially Amazon RDS. If privacy and
-anonymity are a concern to you, we encourage you to contact the customer
-service of these platforms and ask them directly if they plan to add this
-extension to their catalog.
+actors in this domain, we DO NOT have internal knowledge on wether or not they
+will support it in the near future. If privacy and anonymity are a concern to
+you, we encourage you to contact the customer service of these platforms and
+ask them directly if they plan to add this extension to their catalog.
 
 
 
