@@ -2036,7 +2036,17 @@ DECLARE
   r RECORD;
 BEGIN
 
-  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+  -- allow db_owner to start the masking engine
+  WITH db_owner AS (
+  SELECT u.usename, d.datname
+  FROM pg_database d, pg_user u
+  WHERE d.datdba=u.usesysid
+  AND d.datname=current_database()
+  ) SELECT 
+  current_user = db_owner.usename OR current_setting('is_superuser') = 'on' AS su INTO r
+  FROM db_owner;
+
+  -- SELECT current_setting('is_superuser') = 'on' AS su INTO r;
   IF NOT r.su THEN
     RAISE EXCEPTION 'Only supersusers can start the dynamic masking engine.';
   END IF;
@@ -2082,7 +2092,17 @@ DECLARE
   r RECORD;
 BEGIN
 
-  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+ -- allow db_owner to stop the masking engine
+  WITH db_owner AS (
+  SELECT u.usename, d.datname
+  FROM pg_database d, pg_user u
+  WHERE d.datdba=u.usesysid
+  AND d.datname=current_database()
+  ) SELECT 
+  current_user = db_owner.usename OR current_setting('is_superuser') = 'on' AS su INTO r
+  FROM db_owner;
+
+  -- SELECT current_setting('is_superuser') = 'on' AS su INTO r;
   IF NOT r.su THEN
     RAISE EXCEPTION 'Only supersusers can stop the dynamic masking engine.';
   END IF;
