@@ -266,17 +266,17 @@ SELECT anon.init();
 
 Once the fake data is loaded you have access to 10 pseudo functions:
 
-* `anon.pseudo_first_name('seed','salt')` returns a generic first name
-* `anon.pseudo_last_name('seed','salt')` returns a generic last name
-* `anon.pseudo_email('seed','salt')` returns a valid email address
-* `anon.pseudo_city('seed','salt')` returns an existing city
-* `anon.pseudo_country('seed','salt')` returns a country
-* `anon.pseudo_company('seed','salt')` returns a generic company name
-* `anon.pseudo_iban('seed','salt')` returns a valid IBAN
-* `anon.pseudo_siret('seed','salt')` returns a valid SIRET
+* `anon.pseudo_first_name(seed,salt)` returns a generic first name
+* `anon.pseudo_last_name(seed,salt)` returns a generic last name
+* `anon.pseudo_email(seed,salt)` returns a valid email address
+* `anon.pseudo_city(seed,salt)` returns an existing city
+* `anon.pseudo_country(seed,salt)` returns a country
+* `anon.pseudo_company(seed,salt)` returns a generic company name
+* `anon.pseudo_iban(seed,salt)` returns a valid IBAN
+* `anon.pseudo_siret(seed,salt)` returns a valid SIRET
 
 
-The second argument ("salt") is optional. You can call each function with
+The second argument (`salt`) is optional. You can call each function with
 only the seed like this `anon.pseudo_city('bob')`. The salt is here to increase
 complexity and avoid dictionary and brute force attacks (see warning below).
 If a specific salt is not given, the value of the `anon.salt` GUC parameter is
@@ -302,8 +302,8 @@ the same pseudo value.
 **WARNING** : Pseudonymization is often confused with anonymization but in fact
 they serve 2 different purposes : `pseudonymization` is a way to **protect** the
 personal information but the pseudonymized data is still "linked" to the real data.
-The GDPR makes it very clear that personal data which have undergone
-pseudonymization are still related to a person. (see [GDPR Recital 26])
+The GDPR makes it very clear that personal data which has undergone
+pseudonymization is still related to a person. (see [GDPR Recital 26])
 
 [GDPR Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
 
