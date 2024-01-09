@@ -107,6 +107,25 @@ the `anon.pg_masking_rules`:
 SELECT * FROM anon.pg_masking_rules;
 ```
 
+Debugging masking rules
+------------------------------------------------------------------------------
+
+When an error occurs to due a wrong masking rule, you can get more detailed
+information about the problem by setting `client_min_messages` to `DEBUG` and 
+you will get useful details
+
+``` sql
+postgres=# SET client_min_messages=DEBUG;
+SET
+postgres=# SELECT anon.anonymize_database();
+DEBUG:  Anonymize table public.bar with firstname = anon.fake_first_name()
+DEBUG:  Anonymize table public.foo with id = NULL                                                                                 
+ERROR:  Cannot mask a "NOT NULL" column with a NULL value                                                                         
+HINT:  If privacy_by_design is enabled, add a default value to the column                                                         
+CONTEXT:  PL/pgSQL function anon.anonymize_table(regclass) line 47 at RAISE                                                       
+SQL function "anonymize_database" statement 1
+```
+
 Removing a masking rule
 ------------------------------------------------------------------------------
 
