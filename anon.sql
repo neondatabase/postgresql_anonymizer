@@ -99,6 +99,25 @@ LANGUAGE SQL
 ;
 
 
+-- Return the default value of a given column
+--
+-- * relid : the relation id
+-- * num   : the ordered number of the column
+--
+-- Introduced for version 2.0                
+--                                                                                             
+CREATE OR REPLACE FUNCTION anon.get_attrdef(                                                                                      
+    relid INT,                                                                                                                    
+    num   INT                                                                                                                     
+)                                                                                                                                 
+RETURNS TEXT                                                                                                                      
+AS $$                                                                                                                             
+    SELECT pg_catalog.pg_get_expr(adbin,adrelid)                                                                                  
+    FROM pg_catalog.pg_attrdef                                                                                                    
+    WHERE adrelid=relid                                                                                                           
+    AND   adnum=num;                                                                                                              
+$$ LANGUAGE SQL STRICT;
+
 -------------------------------------------------------------------------------
 -- Noise
 -------------------------------------------------------------------------------
