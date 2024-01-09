@@ -180,6 +180,27 @@ time, if you want to use that configuration you should:
 - And finally you can verify the configuration is properly applied by running
   it "by hand": `.git/hooks/pre-commit`
 
+Fake Data
+--------------------------------------------------------------------------------
+
+By default, the extension is shipped with an english fake dataset.
+
+### Update the fake dataset
+
+``` console
+make fake_data
+git commit data
+```
+
+### Add a new language
+
+To add a new fake dataset in another language, just change the
+`FAKE_DATA_LOCALES` variable
+
+``` console
+mkdir -p data/fr_FR/fake
+FAKE_DATA_LOCALES=fr_FR make fake_data
+```
 
 
 Security

@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     python3 \
     python3-pip \
+    zip \
  && rm -rf /var/lib/apt/lists/*
 
 # Import source files into the image

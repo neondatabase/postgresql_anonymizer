@@ -47,19 +47,19 @@ SELECT anon.mask_update();
 
 -- Jimmy reads the phone book
 \! PGPASSWORD=CHANGEME psql contrib_regression -U jimmy_mcnulty -c 'SELECT * FROM phone'
-   phone_owner   |                           phone_number                           
------------------+------------------------------------------------------------------
- Honora Crist    | 1c807c29e41f1427077052c70a7d6e50e7ae881363937176a3b79536d6c3dd06
- Clotilda Ernser | 90eba4cd848f3f9c1c42d29142d00311e4dabcc5ec6c9d246a1a88d8eff79c99
- Florencio Hyatt | 2ff3e01ff2c5b76d5921ad323ad9d334e3257eb407293941b60c7ab38d90a392
+  phone_owner   |                           phone_number                           
+----------------+------------------------------------------------------------------
+ Roberto Conley | 1c807c29e41f1427077052c70a7d6e50e7ae881363937176a3b79536d6c3dd06
+ Evelyn Raymond | 90eba4cd848f3f9c1c42d29142d00311e4dabcc5ec6c9d246a1a88d8eff79c99
+ Jenna Walters  | 2ff3e01ff2c5b76d5921ad323ad9d334e3257eb407293941b60c7ab38d90a392
 (3 rows)
 
 -- Jimmy joins table to get the call history
 \! PGPASSWORD=CHANGEME psql contrib_regression -U jimmy_mcnulty -c 'SELECT p1.phone_owner as "from", p2.phone_owner as "to", c.call_start_time FROM phonecall c JOIN phone p1 ON c.call_sender = p1.phone_number JOIN phone p2 ON c.call_receiver = p2.phone_number'
-      from       |       to        |           call_start_time           
------------------+-----------------+-------------------------------------
- Florencio Hyatt | Honora Crist    | Mon May 17 04:22:51.859137 2004 PDT
- Clotilda Ernser | Florencio Hyatt | Mon May 17 02:41:01.859137 2004 PDT
+      from      |       to       |           call_start_time           
+----------------+----------------+-------------------------------------
+ Jenna Walters  | Roberto Conley | Mon May 17 04:22:51.859137 2004 PDT
+ Evelyn Raymond | Jenna Walters  | Mon May 17 02:41:01.859137 2004 PDT
 (2 rows)
 
 -- Jimmy tries to find the salt :-)

@@ -192,7 +192,7 @@ SET anon.salt TO 'a_VeRy_SeCReT_SaLT';
 SELECT anon.pseudo_last_name('bob'::TEXT);
  pseudo_last_name 
 ------------------
- Schumm
+ Pollard
 (1 row)
 
 ROLLBACK;

@@ -671,8 +671,7 @@ BEGIN
   SELECT bool_or(results) INTO success
   FROM unnest(array[
     anon.load_csv('anon.identifiers_category',datapath||'/identifiers_category.csv'),
-    anon.load_csv('anon.identifier',datapath ||'/identifier_fr_FR.csv'),
-    anon.load_csv('anon.identifier',datapath ||'/identifier_en_US.csv'),
+    anon.load_csv('anon.identifier',datapath ||'/identifier.csv'),
     anon.load_csv('anon.address',datapath ||'/address.csv'),
     anon.load_csv('anon.city',datapath ||'/city.csv'),
     anon.load_csv('anon.company',datapath ||'/company.csv'),
@@ -2825,4 +2824,3 @@ $$
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
 -- TODO : https://en.wikipedia.org/wiki/T-closeness
-

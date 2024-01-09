@@ -39,8 +39,7 @@ NOTICE:  truncate cascades to table "identifier"
 -- returns a WARNING and FALSE
 SELECT anon.init('./does/not/exists/cd2ks3s/') IS FALSE;
 NOTICE:  Data file './does/not/exists/cd2ks3s//identifiers_category.csv' is not present. Skipping.
-NOTICE:  Data file './does/not/exists/cd2ks3s//identifier_fr_FR.csv' is not present. Skipping.
-NOTICE:  Data file './does/not/exists/cd2ks3s//identifier_en_US.csv' is not present. Skipping.
+NOTICE:  Data file './does/not/exists/cd2ks3s//identifier.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//address.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//city.csv' is not present. Skipping.
 NOTICE:  Data file './does/not/exists/cd2ks3s//company.csv' is not present. Skipping.
@@ -64,7 +63,9 @@ SELECT anon.is_initialized() IS FALSE;
 (1 row)
 
 -- load alternate data dir
-\! cp -pr data/ /tmp/tmp_anon_alternate_data
+\! mkdir -p /tmp/tmp_anon_alternate_data
+\! cp -pr data/*.csv /tmp/tmp_anon_alternate_data
+\! cp -pr data/fr_FR/fake/*.csv /tmp/tmp_anon_alternate_data
 SELECT anon.init('/tmp/tmp_anon_alternate_data');
  init 
 ------

@@ -142,6 +142,8 @@ pg_dump_anon: #: Build the pg_dump_anon command
 extension: | anon #: build the extension
 	cp anon.sql anon/anon--$(EXTENSION_VERSION).sql
 	cp data/*.csv anon/
+	# by default we ship the english fake data
+	cp data/en_US/fake/*.csv anon/
 
 anon:
 	mkdir -p $@
@@ -203,20 +205,19 @@ tests/expected/unit.out:
 EXTSCHEMA?=public
 
 ##
-## L O A D
+## DATA
 ##
 
 FAKE_DATA_TABLES?=address city company country email first_name iban last_name lorem_ipsum postcode siret
 FAKE_DATA_LINES?=1000
-FAKE_DATA_LOCALES?=en
+FAKE_DATA_LOCALES?=en_US
 FAKE_DATA_SEED?=0
-
-FAKE_DATA_CSV_FILES=$(addprefix data/, $(addsuffix .csv, $(FAKE_DATA_TABLES)))
+FAKE_DATA_CSV_FILES=$(addprefix data/$(FAKE_DATA_LOCALES)/fake/, $(addsuffix .csv, $(FAKE_DATA_TABLES)))
 
 .PHONY: fake_data
 fake_data: $(FAKE_DATA_CSV_FILES) #: generate the fake data tables
 
-data/%.csv: | _venv
+data/$(FAKE_DATA_LOCALES)/fake/%.csv: | _venv
 	_venv/bin/python python/populate.py \
 	  --table $* \
 	  --lines $(FAKE_DATA_LINES) \
@@ -225,9 +226,17 @@ data/%.csv: | _venv
 	  > $@
 
 _venv:
-	python3 -m venv $@
+	python3 -m venv $@ --upgrade-deps
 	$@/bin/pip install --upgrade pip
 	$@/bin/pip install -r python/requirements.txt
+
+DATA_ZIP_FILES=$(BUILD)/postgresql_anonymizer_data_en_US.zip
+DATA_ZIP_FILES+=$(BUILD)/postgresql_anonymizer_data_fr_FR.zip
+
+data_zip: $(DATA_ZIP_FILES)
+
+$(BUILD)/postgresql_anonymizer_data_%.zip: data/% data/*.csv
+	zip $@ --junk-paths -r $^
 
 clean_fake_data:
 	rm $(FAKE_DATA_CSV_FILES)

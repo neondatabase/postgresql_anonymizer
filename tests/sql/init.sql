@@ -18,7 +18,9 @@ SELECT anon.init('./does/not/exists/cd2ks3s/') IS FALSE;
 SELECT anon.is_initialized() IS FALSE;
 
 -- load alternate data dir
-\! cp -pr data/ /tmp/tmp_anon_alternate_data
+\! mkdir -p /tmp/tmp_anon_alternate_data
+\! cp -pr data/*.csv /tmp/tmp_anon_alternate_data
+\! cp -pr data/fr_FR/fake/*.csv /tmp/tmp_anon_alternate_data
 SELECT anon.init('/tmp/tmp_anon_alternate_data');
 
 -- Load bad data

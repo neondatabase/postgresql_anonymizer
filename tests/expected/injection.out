@@ -77,8 +77,7 @@ ROLLBACK TO shuffle_3;
 -- returns a WARNING and FALSE
 SELECT anon.load('base/''; CREATE TABLE inject_via_load(i int);--') IS FALSE;
 NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/identifiers_category.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/identifier_fr_FR.csv' is not present. Skipping.
-NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/identifier_en_US.csv' is not present. Skipping.
+NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/identifier.csv' is not present. Skipping.
 NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/address.csv' is not present. Skipping.
 NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/city.csv' is not present. Skipping.
 NOTICE:  Data file 'base/'; CREATE TABLE inject_via_load(i int);--/company.csv' is not present. Skipping.

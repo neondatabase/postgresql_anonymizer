@@ -7,8 +7,27 @@ values, and they are only in English.
 
 Here's how you can create your own set of fake data!
 
-Localized fake data
-------------------------------------------------------------------------------
+
+Alternative fake data packages
+--------------------------------------------------------------------------------
+
+The projet is offering alternative fake datasets (currently only French).
+You can download the zip file containing the dataset and load it into the
+extension like this:
+
+1. Go to <https://gitlab.com/dalibo/postgresql_anonymizer/-/packages>
+
+1. Click on "data"
+
+1. Choose your prefered zip file and download it on your server
+
+1. Unzip the file into a folder (for example `/path/to/custom_csv_files/`)
+
+1. Run `SELECT anon.init('/path/to/custom_csv_files/')`
+
+
+Generate your own fake dataset
+--------------------------------------------------------------------------------
 
 As an example, here's a python script that will generate fake data for you:
 

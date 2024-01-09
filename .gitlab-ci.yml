@@ -14,8 +14,11 @@ variables:
   PGPASSWORD: CHANGEME
   SAST_EXCLUDED_PATHS: '_venv, docs/howto/_venv'
   GIT_SUBMODULE_STRATEGY: recursive
+  PROJECT_API: "$CI_API_V4_URL/projects/$CI_PROJECT_ID"
+  DATA_ZIP_API_URL: "$PROJECT_API/packages/generic/data/$CI_COMMIT_REF_NAME"
   ## Uncomment this to run only windows specific jobs
   # WINDOWS_ONLY: "True"
+
 
 stages:
   - lint
@@ -499,6 +502,23 @@ windows_zip:
   only:
     variables:
       - $WINDOWS_ONLY
+
+data_zip:
+  stage: deploy
+  image: alpine
+  script:
+    - apk add -U make git zip curl
+    - make data_zip
+    - echo $DATA_ZIP_API_URL
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN"
+            --upload-file _build/postgresql_anonymizer_data_en_US.zip
+            "$DATA_ZIP_API_URL/postgresql_anonymizer_data_en_US.zip"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN"
+            --upload-file _build/postgresql_anonymizer_data_fr_FR.zip
+            "$DATA_ZIP_API_URL/postgresql_anonymizer_data_fr_FR.zip"'
+  artifacts:
+    paths:
+      - _build
 
 pages:
   stage: deploy
