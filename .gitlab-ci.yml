@@ -167,6 +167,7 @@ PG10-debian10:
   except:
     variables:
       - $WINDOWS_ONLY
+  when: manual  # PostgreSQL 10 is EOL
 
 PG11-debian10:
   <<: *init_PG_instance
@@ -190,40 +191,7 @@ PG11-debian10:
   except:
     variables:
       - $WINDOWS_ONLY
-
-## DOES NOT WORK ?
-PG11-centos7:
-  stage: build
-  image: centos:7
-  script:
-    # http://blog.cloud-mes.com/2020/05/16/fix-yum-update-postgresql12-to-v12-dot-3-require-llvm-toolset-7-clang-equals-4-dot-0-1-dependency-problem/
-    - yum -y install centos-release-scl-rh
-    - yum -y install llvm-toolset-7-clang
-    - yum -y install
-        https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-    - yum -y install
-        git make gcc postgresql11 postgresql11-server postgresql11-devel
-        postgresql11-contrib diffutils
-    - export PATH="$PATH:/usr/pgsql-11/bin"
-    - make
-    - make install
-    - mkdir -p $PGDATA
-    - chown postgres $PGDATA
-    - su postgres -c 'initdb'
-    - su postgres -c 'pg_ctl start'
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  when: manual
-  artifacts:
-    paths:
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
+  when: manual  # PostgreSQL 11 is EOL
 
 PG12-debian11:
   <<: *init_PG_instance
