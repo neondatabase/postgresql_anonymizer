@@ -80,6 +80,25 @@ $func$
   SET search_path=''
 ;
 
+
+-- Returns a value or another value :)
+--
+-- This provides a shorter way to write conditional masking rules
+--
+-- See https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/383#note_1676912245
+--
+CREATE OR REPLACE FUNCTION anon.ternary(
+  condition BOOL,
+  then_val ANYELEMENT,
+  else_val ANYELEMENT)
+RETURNS ANYELEMENT
+AS $$
+  SELECT CASE WHEN condition THEN then_val ELSE else_val END;
+$$
+LANGUAGE SQL
+;
+
+
 -------------------------------------------------------------------------------
 -- Noise
 -------------------------------------------------------------------------------
