@@ -86,14 +86,13 @@ SECURITY LABEL FOR anon ON COLUMN account.password
   IS 'MASKED WITH FUNCTION anon.ternary( id > 1000, NULL::TEXT, password)';
 ```
 
-**WARNING** : Conditional masking may be create a partially deterministic
+**WARNING** : Conditional masking may create a partially deterministic
 "connection" between the original data and the masked data. That connection can
 be used to retrieve personal information from the masked data. For instance,
-if NULL values are preserved for "deceased_date" column, it will reveal which
-persons are still actualy alive... In a nutshell : conditional masking may often
+if NULL values are preserved for a "deceased_date" column, it will reveal which
+persons are still actualy alive... In a nutshell: conditional masking may often
 produce a dataset that is not fully anonymized and therefore would still
 technically contain personal information.
-
 
 
 
@@ -111,7 +110,7 @@ Debugging masking rules
 ------------------------------------------------------------------------------
 
 When an error occurs to due a wrong masking rule, you can get more detailed
-information about the problem by setting `client_min_messages` to `DEBUG` and 
+information about the problem by setting `client_min_messages` to `DEBUG` and
 you will get useful details
 
 ``` sql
@@ -119,10 +118,10 @@ postgres=# SET client_min_messages=DEBUG;
 SET
 postgres=# SELECT anon.anonymize_database();
 DEBUG:  Anonymize table public.bar with firstname = anon.fake_first_name()
-DEBUG:  Anonymize table public.foo with id = NULL                                                                                 
-ERROR:  Cannot mask a "NOT NULL" column with a NULL value                                                                         
-HINT:  If privacy_by_design is enabled, add a default value to the column                                                         
-CONTEXT:  PL/pgSQL function anon.anonymize_table(regclass) line 47 at RAISE                                                       
+DEBUG:  Anonymize table public.foo with id = NULL
+ERROR:  Cannot mask a "NOT NULL" column with a NULL value
+HINT:  If privacy_by_design is enabled, add a default value to the column
+CONTEXT:  PL/pgSQL function anon.anonymize_table(regclass) line 47 at RAISE
 SQL function "anonymize_database" statement 1
 ```
 
