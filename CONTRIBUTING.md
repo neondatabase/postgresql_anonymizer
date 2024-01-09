@@ -164,6 +164,22 @@ For instance, if you want to run only the `noise.sql` test:
 make installcheck REGRESS=noise
 ```
 
+Linting
+--------------------------------------------------------------------------------
+
+Use `make lint` to run the various linters on the project.
+
+### Git pre-commit hook
+
+We maintain a [pre-commit] configuration to operate some verification at commit
+time, if you want to use that configuration you should:
+
+- Install pre-commit (On Debian based system you can probably simply run :
+  `sudo apt install pre-commit`)
+- Then apply the configuration with `pre-commit install`
+- And finally you can verify the configuration is properly applied by running
+  it "by hand": `.git/hooks/pre-commit`
+
 
 
 Security
