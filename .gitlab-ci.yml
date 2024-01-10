@@ -506,6 +506,8 @@ windows_zip:
 data_zip:
   stage: deploy
   image: alpine
+  rules:
+    - if: $CI_COMMIT_TAG                 # Run this job when a tag is created
   script:
     - apk add -U make git zip curl
     - make data_zip
@@ -540,6 +542,28 @@ pages:
 ##
 ## R E L E A S E
 ##
+
+release_anon:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG                 # Run this job when a tag is created
+  script:
+    - echo "running release_job"
+  release:
+    tag_name: '$CI_COMMIT_TAG'
+    description: '$CI_COMMIT_TAG'
+    assets:
+      links:
+        - name: 'English dataset'
+          url: '$DATA_ZIP_API_URL/postgresql_anonymizer_data_en_US.zip'
+          link_type: 'package'
+          filepath: 'postgresql_anonymizer_data_en_US.zip'
+        - name: 'French dataset'
+          url: '$DATA_ZIP_API_URL/postgresql_anonymizer_data_fr_FR.zip'
+          link_type: 'package'
+          filepath: 'postgresql_anonymizer_data_fr_FR.zip'
+
 release_pg_dump_anon:
   stage: release
   image:
