@@ -1563,6 +1563,29 @@ AS 'MODULE_PATHNAME', 'register_label'
   PARALLEL UNSAFE
 ;
 
+-- Set anon.salt to provided value
+CREATE OR REPLACE FUNCTION anon.set_salt(TEXT)
+RETURNS VOID
+AS 'MODULE_PATHNAME', 'set_anon_salt'
+  LANGUAGE C
+  VOLATILE
+  STRICT
+  PARALLEL UNSAFE
+  SECURITY INVOKER
+;
+
+-- Set anon.salt to provided value
+CREATE OR REPLACE FUNCTION anon.set_algorithm(TEXT)
+RETURNS VOID
+AS 'MODULE_PATHNAME', 'set_anon_algorithm'
+  LANGUAGE C
+  VOLATILE
+  STRICT
+  PARALLEL UNSAFE
+  SECURITY INVOKER
+;
+
+
 --
 -- Create an additional masking policy
 --
