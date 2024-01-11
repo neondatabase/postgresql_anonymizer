@@ -34,6 +34,9 @@ Datum   register_label(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(get_function_schema);
 PG_FUNCTION_INFO_V1(register_label);
 
+PG_FUNCTION_INFO_V1(set_anon_salt);
+PG_FUNCTION_INFO_V1(set_anon_algorithm);
+
 static bool guc_anon_restrict_to_trusted_schemas;
 // Some GUC vars below are not used in the C code
 // but they are used in the plpgsql code
@@ -326,4 +329,25 @@ register_label(PG_FUNCTION_ARGS)
     if (input_is_null) PG_RETURN_NULL();
     register_label_provider(policy,anon_object_relabel);
     return true;
+}
+
+
+Datum
+set_anon_salt(PG_FUNCTION_ARGS)
+{
+  char *salt = text_to_cstring(PG_GETARG_TEXT_PP(0));
+
+	SetConfigOption("anon.salt", salt, PGC_SUSET, PGC_S_OVERRIDE);
+
+  PG_RETURN_VOID();
+}
+
+Datum
+set_anon_algorithm(PG_FUNCTION_ARGS)
+{
+  char *algorithm = text_to_cstring(PG_GETARG_TEXT_PP(0));
+
+	SetConfigOption("anon.algorithm", algorithm, PGC_SUSET, PGC_S_OVERRIDE);
+
+  PG_RETURN_VOID();
 }

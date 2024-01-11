@@ -1563,6 +1563,29 @@ AS 'MODULE_PATHNAME', 'register_label'
   PARALLEL UNSAFE
 ;
 
+-- Set anon.salt to provided value
+CREATE OR REPLACE FUNCTION anon.set_salt(TEXT)
+RETURNS VOID
+AS 'MODULE_PATHNAME', 'set_anon_salt'
+  LANGUAGE C
+  VOLATILE
+  STRICT
+  PARALLEL UNSAFE
+  SECURITY INVOKER
+;
+
+-- Set anon.salt to provided value
+CREATE OR REPLACE FUNCTION anon.set_algorithm(TEXT)
+RETURNS VOID
+AS 'MODULE_PATHNAME', 'set_anon_algorithm'
+  LANGUAGE C
+  VOLATILE
+  STRICT
+  PARALLEL UNSAFE
+  SECURITY INVOKER
+;
+
+
 --
 -- Create an additional masking policy
 --
@@ -2036,7 +2059,17 @@ DECLARE
   r RECORD;
 BEGIN
 
-  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+  -- allow db_owner to start the masking engine
+  WITH db_owner AS (
+  SELECT u.usename, d.datname
+  FROM pg_database d, pg_user u
+  WHERE d.datdba=u.usesysid
+  AND d.datname=current_database()
+  ) SELECT 
+  current_user = db_owner.usename OR current_setting('is_superuser') = 'on' AS su INTO r
+  FROM db_owner;
+
+  -- SELECT current_setting('is_superuser') = 'on' AS su INTO r;
   IF NOT r.su THEN
     RAISE EXCEPTION 'Only supersusers can start the dynamic masking engine.';
   END IF;
@@ -2082,7 +2115,17 @@ DECLARE
   r RECORD;
 BEGIN
 
-  SELECT current_setting('is_superuser') = 'on' AS su INTO r;
+ -- allow db_owner to stop the masking engine
+  WITH db_owner AS (
+  SELECT u.usename, d.datname
+  FROM pg_database d, pg_user u
+  WHERE d.datdba=u.usesysid
+  AND d.datname=current_database()
+  ) SELECT 
+  current_user = db_owner.usename OR current_setting('is_superuser') = 'on' AS su INTO r
+  FROM db_owner;
+
+  -- SELECT current_setting('is_superuser') = 'on' AS su INTO r;
   IF NOT r.su THEN
     RAISE EXCEPTION 'Only supersusers can stop the dynamic masking engine.';
   END IF;
