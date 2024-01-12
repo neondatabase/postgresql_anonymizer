@@ -1,3 +1,106 @@
+PostgreSQL Anonymizer 1.2: Support for PostgreSQL 16
+================================================================================
+
+Eymoutiers, France, January 22nd, 2024
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[Static Masking] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
+Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+A new k-anonymity provider
+--------------------------------------------------------------------------------
+
+This version introduces a new syntax to define indirect identifiers.
+
+In previous version, the indirect identifiers were declared like this:
+
+  SECURITY LABEL FOR anon ON COLUMN users.id IS 'INDIRECT IDENTIFIER';
+
+With version 1.2, this rule must be rewritten as follows:
+
+  SECURITY LABEL FOR k_anonymity ON COLUMN users.id IS 'INDIRECT IDENTIFIER';
+
+For more details, read the "Generalization" section of the doc
+
+<https://postgresql-anonymizer.readthedocs.io/en/latest/generalization/#k-anonymity>
+
+
+
+How to Install
+--------------------------------------------------------------------------------
+
+This extension is officially supported on PostgreSQL 12 and further versions.
+
+On Red Hat, CentOS and Rocky Linux systems, you can install it directly from the
+[official PostgreSQL RPM repository]:
+
+    dnf install postgresql_anonymizer14
+
+Then load the extension with:
+
+    ALTER DATABASE foo SET session_preload_libraries = 'anon';
+
+Create the extension inside the database:
+
+    CREATE EXTENSION anon CASCADE;
+
+And finally, initialize the extension
+
+    SELECT anon.init();
+
+
+For other systems, check out the [install] documentation:
+
+https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+[official PostgreSQL RPM repository]: https://yum.postgresql.org/
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+Thanks
+--------------------------------------------------------------------------------
+
+This release includes code, bugfixes, documentation, code reviews and ideas
+from Jitesh Srivastava, GPGIT2, Udo Leiteritz, Luis Gonzalez-Silen,
+Julien Rouhaud, Olle Jonsson, Manuel Eveno and many other [contributors].
+
+Many thanks to them for their help and feedback, with a special mention to
+user GPGIT2 who provided invaluable amount of feedback, testing and ideas !
+
+
+[contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+
+--------------------------------------------------------------------------------
+
 PostgreSQL Anonymizer 1.1: Privacy By Default For Postgres
 ================================================================================
 

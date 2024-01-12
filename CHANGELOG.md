@@ -1,21 +1,23 @@
 CHANGELOG
 ===============================================================================
 
-2022FIXME : 1.2.0 - ~~WORK IN PROGRESS~~
+20240115 : 1.2.0 - Support for PostgreSQL 16
 -------------------------------------------------------------------------------
 
+<!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/19 -->
+<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
 __Breaking Changes__:
 
 ### A new k-anonymity provider
 
-In previous version, the inderect identifiers were declared like this:
+In previous version, the indirect identifiers were declared like this:
 
   ```sql
   SECURITY LABEL FOR anon ON COLUMN users.id IS 'INDIRECT IDENTIFIER';
   ```
 
-This rule must be rewritten as follows:
+With version 1.2, this rule must be rewritten as follows:
 
   ```sql
   SECURITY LABEL FOR k_anonymity ON COLUMN users.id IS 'INDIRECT IDENTIFIER';
@@ -25,12 +27,28 @@ For more details, read the "Generalization" section of the doc
 
 <https://postgresql-anonymizer.readthedocs.io/en/latest/generalization/#k-anonymity>
 
+__New features:__
 
+* Introducing a new sampling syntax to anonymize only a smaller portion of a dataset
+* Support for PostgreSQL 16
+* End of support for PostgreSQL 10 and 11
+* New debian packages
+* New French fake dataset
+* New syntax `COLUMN foo.bar IS 'NOT MASKED'`, useful when privacy_by_default
+  is enabled
+* Transparent Anonymous Dumps (still in beta)
 
 __Changes:__
 
 * [random] Introduce new 'Random in Range' functions
 * [random] Introduce new 'Random in Enum' functions
+* [core] Grant SELECT on sequences (#359)
+* [core] Do not use @extschema@
+* [core] Remove the deprecated standalone script
+* [pseudo] Update the fake SIRET table (#339)
+* [doc] Clarification on conditional masking (#383)
+* [pseudo] Fix anon.pseudo_country (#326)
+
 
 
 

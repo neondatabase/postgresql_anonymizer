@@ -16,6 +16,14 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Mark Shay: Support in Google Cloud SQL
+* Jitesh Srivastava: Documentation
+* GPGIT2 : Feedback, Testing and Ideas
+* Udo Leiteritz : fix for pg_dump_anon
+* Luis Gonzalez-Silen : Documentation
+* Julien Rouhaud : Technical Discussions
+* Olle Jonsson : Documentation
+* Manuel Eveno : Feedback
 * Michel Pelletier : Consistent backups
 * Gergő Rubint : Documentation
 * Mahesh Moturu : Documentation

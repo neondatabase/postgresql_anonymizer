@@ -10,6 +10,15 @@ Videos / Presentations
 Other technologies
 --------------------------------------------------------------------------------
 
+* [greenmask](https://github.com/GreenmaskIO/greenmask)
+  Anonymous dump utility written in Golang
+
+* [pganonymize](https://github.com/rheinwerk-verlag/pganonymize)
+  A commandline tool for anonymizing PostgreSQL databases
+
+* [pgantomizer](https://github.com/asgeirrr/pgantomizer)
+  Anonymous dumps based on masking rules written in a YAML file
+
 * [pgsodium and postgresql-anonymizer](https://github.com/michelp/pgsodium/blob/michelp/anonymizer-example/example/PgSodiumAnonymizer.ipynb)
   Pseudononymous Access To Encrypted Table
 
