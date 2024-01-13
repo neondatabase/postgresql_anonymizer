@@ -41,7 +41,8 @@ WORKDIR /src
 COPY . .
 
 # Install PostgreSQL Faker
-RUN pip3 install --no-cache-dir -r python/requirements.txt --break-system-packages && \
+RUN pip3 install pip --upgrade --break-system-packages && \
+    pip3 install --no-cache-dir -r python/requirements.txt --break-system-packages && \
     pgxn install postgresql_faker
 
 # Install anon extension
