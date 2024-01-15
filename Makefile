@@ -168,18 +168,31 @@ PGRGRSS=docker exec postgresqlanonymizer_PostgreSQL_1 /usr/lib/postgresql/10/lib
 ## D O C K E R
 ##
 
+DOCKER_IMAGE?=registry.gitlab.com/dalibo/postgresql_anonymizer
+PGRX_IMAGE?=$(DOCKER_IMAGE):pgrx
+PGRX_BUILD_ARGS?=
+
 ifneq ($(PG_MAJOR_VERSION),)
 BUILD_ARG := --build-arg PG_MAJOR_VERSION=$(PG_MAJOR_VERSION)
 endif
 
 docker_image: docker/Dockerfile #: build the docker image
-	docker build -t registry.gitlab.com/dalibo/postgresql_anonymizer . --file $^  $(BUILD_ARG)
+	docker build --tag $(DOCKER_IMAGE) . --file $^  $(BUILD_ARG)
+
+pgrx_image: docker/pgrx/Dockerfile
+	docker build --tag $(PGRX_IMAGE) . --file $^ $(PGRX_BUILD_ARGS)
 
 docker_push: #: push the docker image to the registry
-	docker push registry.gitlab.com/dalibo/postgresql_anonymizer
+	docker push $(DOCKER_IMAGE)
+
+pgrx_push:
+	docker push $(PGRX_IMAGE)
 
 docker_bash: #: enter the docker image (useful for testing)
 	docker exec -it docker-PostgreSQL-1 bash
+
+pgrx_bash:
+	$ docker run --rm --interactive --tty --volume  `pwd`:/pgrx $(PGRX_IMAGE)
 
 COMPOSE=docker compose --file docker/docker-compose.yml
 

@@ -87,6 +87,37 @@ git rebase upstream/master
 git push origin --force-with-lease
 ```
 
+Set up a development environment
+-------------------------------------------------------------------------------
+
+This extension is written in SQL, pl/pgsql and Rust. It relies on a Rust
+framework named [PGRX].
+
+To set up, your development environment follow the [PGRX install intructions] !
+
+Alternatively you use the docker image we built for that, simply by running:
+
+``` console
+make pgrx_bash
+```
+
+You will be logged in a PGRX environment with the project repo mounted in
+the `/pgrx` folder.
+
+> NOTE: If you're not using Docker Desktop and your UID / GID is not 1000,
+> then you may get permission errors with the `/pgrx` volume.
+> You can fix that by rebuilding the image locally with:
+
+``` console
+export PGRX_BUILD_ARGS="--build-arg UID=`id -u` --build-arg GID=`id -g`"
+make docker_image
+# ... /!\ this may take a while ...
+make docker_bash
+```
+
+
+[PGRX]: https://github.com/pgcentralfoundation/pgrx
+[PGRX install intructions]: https://github.com/pgcentralfoundation/pgrx#system-requirements
 
 
 
@@ -130,31 +161,35 @@ $$
 Testing with docker
 -------------------------------------------------------------------------------
 
-You can easily set up a proper testing environment from scratch with docker
-and docker-compose !
+You can easily set up a proper testing environment from scratch with docker !
 
-First launch a container with :
-
-```bash
-make docker_init
-```
-
-Then you can enter inside the container :
+First launch a container and log into with:
 
 ```bash
-make docker_bash
+make pgrx_bash
 ```
 
-Once inside the container, you can do the classic operations :
+For manual testing:
+
+```bash
+make run
+```
+
+To launch the unit tests:
+
+```bash
+make test
+```
+
+To launch the functional tests:
 
 ```bash
 make
 make install
 make installcheck
-psql
 ```
 
-The entire test suite take a few minutes to run. When developping a feature,
+The entire test suite take a few minutes to run. When developing a feature,
 usually you only want to check one test in particular. You can limit the scope
 of the test run with the `REGRESS` variable.
 
@@ -163,6 +198,18 @@ For instance, if you want to run only the `noise.sql` test:
 ```bash
 make installcheck REGRESS=noise
 ```
+
+By default the tests are launched against one PostgreSQL major version (as
+defined in `Cargo.toml`). To launch the test suite against another version
+export the `PGVER` variable:
+
+```bash
+export PGVER=pg15
+make run
+make test
+# etc.
+```
+
 
 Linting
 --------------------------------------------------------------------------------
