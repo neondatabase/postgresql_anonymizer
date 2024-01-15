@@ -81,238 +81,17 @@ lint-go:
 ## B U I L D
 ##
 
-pg_dump_anon:
-  stage: build
-  image: golang:bullseye
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        sudo make gcc postgresql-13 postgresql-server-dev-13 python3-pip
-        diffutils
-    - make && make install
-    - pg_ctlcluster -o
-        "-c client_encoding='UTF8'
-         -c hba_file=$PWD/pg_dump_anon/tests/pg_hba.conf
-         -c shared_preload_libraries='anon'"
-        13 main start
-    - psql -f $PWD/pg_dump_anon/tests/sql/roles.sql
-    - make -C pg_dump_anon
-    - make -C pg_dump_anon test
-  artifacts:
-    paths:
-      - _build
+# `cargo pgrx test` will build the extension, launch a Postgres instance
+# and run the unit tests against it. The functionnal tests will be launched
+# later will pg_regress
 
-windows-2016:
+build-pg13:
   stage: build
-  tags:
-    - windows  # run this job inside a windows gitlab runner
+  image: daamien/pgrx:latest
   script:
-    - .\build.bat
-  artifacts:
-    paths:
-      - '*'
-    expire_in: 1 day
-  only:
-    variables:
-      - $WINDOWS
-
-# We need to launch manually the instance because the entrypoint is skipped.
-.init_PG_instance: &init_PG_instance
-  before_script:
-    - mkdir -p $PGDATA
-    - mkdir -p $EXTDIR
-    - chown postgres $PGDATA
-    - gosu postgres initdb
-    - gosu postgres pg_ctl start
-
-PG9.6-debian10:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:9.6-buster
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        build-essential postgresql-server-dev-9.6 pgxnclient
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
-  when: manual  # PostgreSQL 9.6 is EOL
-
-PG10-debian10:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:10-buster
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        build-essential postgresql-server-dev-10 pgxnclient
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - anon*
-      - regression.*
-      - results/
-  except:
-    variables:
-      - $WINDOWS_ONLY
-  when: manual  # PostgreSQL 10 is EOL
-
-PG11-debian10:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:11-buster
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        make gcc postgresql-server-dev-11 pgxnclient
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
-  when: manual  # PostgreSQL 11 is EOL
-
-PG12-debian11:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:12
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        make gcc git postgresql-server-dev-12 pgxnclient
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
-
-PG13-debian11:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:13
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        make gcc postgresql-server-dev-13 diffutils
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
-
-PG14-debian11:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:14
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        make gcc postgresql-server-dev-14 diffutils
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - _build
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
-
-PG15-debian11:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:15
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        make gcc postgresql-server-dev-15 diffutils
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - _build
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
-
-PG16-debian12:
-  <<: *init_PG_instance
-  stage: build
-  image: postgres:16
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        make gcc postgresql-server-dev-16 diffutils
-    - make extension
-    - make install
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  artifacts:
-    paths:
-      - _build
-      - anon*
-      - regression.*
-      - results/
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
+    # `cargo pgrx test` will build the extension, launch a Postgres instance
+    # and
+    - cargo pgrx test pg13 --verbose
 
 
 blackbox:
@@ -357,6 +136,27 @@ how-to:
 ##
 ## T E S T
 ##
+
+installcheck-pg13:
+  stage: build
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  script:
+    - cargo pgrx start pg13
+    - make installcheck
+  artifacts:
+    paths:
+      - target/release/anon-pg13
+      - results
+    expire_in: 1 day
+
+# We need to launch manually the instance because the entrypoint is skipped.
+.init_PG_instance: &init_PG_instance
+  before_script:
+    - mkdir -p $PGDATA
+    - mkdir -p $EXTDIR
+    - chown postgres $PGDATA
+    - gosu postgres initdb
+    - gosu postgres pg_ctl start
 
 ## automatic SAST from Gitlab.com
 include:
