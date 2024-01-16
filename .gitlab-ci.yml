@@ -81,17 +81,23 @@ lint-go:
 ## B U I L D
 ##
 
-# `cargo pgrx test` will build the extension, launch a Postgres instance
-# and run the unit tests against it. The functionnal tests will be launched
-# later will pg_regress
+# `cargo pgrx test` will :
+#    - build the extension
+#    - launch a Postgres instance
+#    - run the unit tests against it.
+#
+# The functionnal tests will be launched later with pg_regress
+#
 
 build-pg13:
   stage: build
-  image: daamien/pgrx:latest
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
   script:
-    # `cargo pgrx test` will build the extension, launch a Postgres instance
-    # and
-    - cargo pgrx test pg13 --verbose
+    - cargo pgrx test pg13 --release --verbose
+  artifacts:
+    paths:
+      - target/release/anon-pg13
+    expire_in: 1 day
 
 
 blackbox:
@@ -108,9 +114,7 @@ blackbox:
     # this test to break every time a new minor version is released
     - sed -i 's/^--.*$//' results/blackbox.out
     - diff tests/expected/blackbox.out results/blackbox.out
-  except:
-    variables:
-      - $WINDOWS_ONLY
+  when: manual  # TODO: restore this when the Rust extension is ready
 
 how-to:
   image:
@@ -261,23 +265,6 @@ docker_stable:
     - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:stable
   only:
     - stable@dalibo/postgresql_anonymizer
-
-debian_packages:
-  stage: build
-  image: postgres:14
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends
-        postgresql-server-dev-all debhelper lintian make gcc
-    - make debian
-  artifacts:
-    paths:
-      - _build
-    expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
-
 
 pgxn:
   stage: deploy
