@@ -92,8 +92,11 @@ lint-go:
 build-pg13:
   stage: build
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  variables:
+    PGVER: pg13
   script:
-    - cargo pgrx test pg13 --release --verbose
+    - cargo pgrx test ${PGVER} --release --verbose
+    - make
   artifacts:
     paths:
       - target/release/anon-pg13
@@ -144,7 +147,10 @@ how-to:
 installcheck-pg13:
   stage: build
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  variables:
+    PGVER: pg13
   script:
+    - make install
     - cargo pgrx start pg13
     - make installcheck
   artifacts:
