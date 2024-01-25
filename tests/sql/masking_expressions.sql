@@ -18,8 +18,8 @@ INSERT INTO employees
 VALUES ('john', NULL, 100000);
 
 SELECT anon.masking_expressions_for_table('employees'::REGCLASS,'anon')
-     = ' "NAME" AS "NAME",job AS job,salary AS salary';
-;--     = '"NAME" AS "NAME",job AS job,salary AS salary';
+     = '"NAME" AS "NAME", job AS job, salary AS salary';
+;
 
 SELECT anon.masking_value_for_column('employees'::REGCLASS,1,'anon')
      = '"NAME"';

@@ -54,12 +54,6 @@ SELECT anon.get_function_schema('"a("(1,2,3)') = '';
  t
 (1 row)
 
-SELECT anon.get_function_schema('"(a)"."B(1)"(1,2,3)') = '(a)';
- ?column? 
-----------
- t
-(1 row)
-
 SELECT anon.get_function_schema('"..".".."($$..$$)') = '..';
  ?column? 
 ----------

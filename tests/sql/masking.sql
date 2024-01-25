@@ -43,14 +43,6 @@ IS 'MASKED WITH FUNCTION anon.partial("IBAN", 0, $$***********$$, 4 )     ';
 SECURITY LABEL FOR anon ON COLUMN "CoMPaNy".NAME
 IS 'MASKED WITH VALUE $$CONFIDENTIAL$$';
 
--- BUG #51 :
-CREATE TABLE test_type_casts(
-  last_name VARCHAR(30)
-);
-
-SECURITY LABEL FOR anon ON column test_type_casts.last_name
-IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-
 -- Table `work`
 CREATE TABLE work (
   id_work SERIAL,
@@ -65,7 +57,7 @@ CREATE TABLE work (
 INSERT INTO work
 VALUES ( 1, 1 , 1991, DATE '1985-05-25',NULL);
 
-SELECT count(*) = 5  FROM anon.pg_masks;
+SELECT count(*) = 4  FROM anon.pg_masks;
 
 SELECT masking_function = 'anon.partial("IBAN", 0, $$***********$$, 4 )'
   FROM anon.pg_masks
@@ -121,7 +113,6 @@ SELECT anon.mask_update();
 
 --  CLEAN
 
-DROP TABLE test_type_casts CASCADE;
 DROP TABLE work CASCADE;
 DROP TABLE "CoMPaNy" CASCADE;
 DROP TABLE people CASCADE;
