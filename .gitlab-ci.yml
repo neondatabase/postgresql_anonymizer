@@ -16,8 +16,6 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   PROJECT_API: "$CI_API_V4_URL/projects/$CI_PROJECT_ID"
   DATA_ZIP_API_URL: "$PROJECT_API/packages/generic/data/$CI_COMMIT_REF_NAME"
-  ## Uncomment this to run only windows specific jobs
-  # WINDOWS_ONLY: "True"
 
 
 stages:
@@ -29,6 +27,13 @@ stages:
 
 image: postgres:13
 
+include:
+  ## Build and test other versions
+  - local: ci/build_and_test_pgver.yml
+    inputs:
+      pgver: pg15
+  ## automatic SAST from Gitlab.com
+  - template: Security/SAST.gitlab-ci.yml
 
 ##
 ## L I N T
@@ -41,9 +46,6 @@ lint-bash:
     - apt-get install -y --no-install-recommends shellcheck
     - shellcheck bin/pg_dump_anon.sh
     - shellcheck docker/anon.sh
-  except:
-    variables:
-      - $WINDOWS_ONLY
 
 lint-markdown:
   stage: lint
@@ -51,9 +53,6 @@ lint-markdown:
   script:
     - gem install mdl
     - mdl docs/*.md *.md
-  except:
-    variables:
-      - $WINDOWS_ONLY
 
 lint-py:
   stage: lint
@@ -61,9 +60,6 @@ lint-py:
   script:
     - pip3 install flake8
     - flake8 python/*.py
-  except:
-    variables:
-      - $WINDOWS_ONLY
 
 lint-go:
   stage: lint
@@ -73,35 +69,21 @@ lint-go:
     - cd ./pg_dump_anon/
     - go mod download github.com/lib/pq
     - go vet main.go
-  except:
-    variables:
-      - $WINDOWS_ONLY
 
 ##
 ## B U I L D
 ##
 
-# `cargo pgrx test` will :
-#    - build the extension
-#    - launch a Postgres instance
-#    - run the unit tests against it.
-#
-# The functionnal tests will be launched later with pg_regress
-#
-
-build-pg13:
+build:
   stage: build
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
-  variables:
-    PGVER: pg13
   script:
-    - cargo pgrx test ${PGVER} --release --verbose
     - make
+    - make test
   artifacts:
     paths:
-      - target/release/anon-pg13
+      - target/release/anon-*
     expire_in: 1 day
-
 
 blackbox:
   stage: build
@@ -136,26 +118,23 @@ how-to:
     paths:
       - docs/how-to
     expire_in: 1 day
-  except:
-    variables:
-      - $WINDOWS_ONLY
 
 ##
 ## T E S T
 ##
 
-installcheck-pg13:
-  stage: build
+installcheck:
+  stage: test
+  dependencies:
+    - build
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
-  variables:
-    PGVER: pg13
   script:
     - make install
-    - cargo pgrx start pg13
+    - make start
     - make installcheck
   artifacts:
     paths:
-      - target/release/anon-pg13
+      - target/release/anon-*
       - results
     expire_in: 1 day
 
@@ -167,10 +146,6 @@ installcheck-pg13:
     - chown postgres $PGDATA
     - gosu postgres initdb
     - gosu postgres pg_ctl start
-
-## automatic SAST from Gitlab.com
-include:
-  - template: Security/SAST.gitlab-ci.yml
 
 ## basic user sories
 demo:
@@ -190,56 +165,6 @@ demo:
     paths:
       - demo/*.out
     expire_in: 1 day
-
-
-## Test various installation process
-
-install_pgxn:
-  stage: test
-  script:
-    - apt-get update
-    - apt-get install -y --no-install-recommends make gcc
-                                                 postgresql-server-dev-13
-                                                 pgxnclient
-    - pgxn install postgresql_anonymizer
-  when: manual
-
-install_yum_centos7_pg12:
-  stage: test
-  image: centos:7
-  script:
-    - yum -y install
-      https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-    - yum -y install postgresql12-contrib postgresql_anonymizer12
-    - mkdir -p $PGDATA
-    - chown postgres $PGDATA
-    - su postgres -c /usr/pgsql-12/bin/initdb $PGDATA
-    - su postgres -c "/usr/pgsql-12/bin/pg_ctl start"
-    - su postgres -c "psql -c 'CREATE EXTENSION anon CASCADE;'"
-  when: manual
-
-install_source_fedora:
-  stage: test
-  image: fedora:34
-  script:
-    - dnf install --assumeyes postgresql-server postgresql-contrib
-                              postgresql-server-devel libpq-devel make git
-                              redhat-rpm-config diffutils
-    - cd /tmp
-    - git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
-    - cd postgresql_anonymizer
-    - make
-    - make install
-    - export PGDATA=/var/lib/postgresql/data
-    - mkdir -p $PGDATA
-    - chown postgres $PGDATA
-    - su postgres -c initdb
-    - su postgres -c "pg_ctl start"
-    - export PGUSER=postgres
-    - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
-    - psql -c "SELECT pg_reload_conf();"
-    - make installcheck || diff results tests/expected
-  when: manual
 
 
 ##
@@ -285,16 +210,6 @@ pgxn:
     expire_in: 1 day
   only:
     - master
-
-windows_zip:
-  stage: deploy
-  image: alpine
-  script:
-    - apk add -U make git zip
-    - make windows_zip
-  only:
-    variables:
-      - $WINDOWS_ONLY
 
 data_zip:
   stage: deploy

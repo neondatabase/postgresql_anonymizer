@@ -1,0 +1,64 @@
+---
+spec:
+  inputs:
+    pgver:     # Mandatory
+      type: string
+      description: |
+        The PostgreSQL major version with the "pg" prefix
+        (e.g. `pg13`, pg16`, etc.)
+
+---
+
+# `cargo pgrx test` will :
+#    - build the extension
+#    - launch a Postgres instance
+#    - run the unit tests against it.
+#
+# The functionnal tests will be launched later with pg_regress
+#
+"build-$[[ inputs.pgver ]]":
+  stage: build
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  variables:
+    PGVER: $[[ inputs.pgver ]]
+  script:
+    # Build the extension package
+    - make
+    # Launch a postgres instance and run the unit tests
+    # The functionnal tests will be launched later with pg_regress
+    - make test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  artifacts:
+    paths:
+      - target/release/anon-$[[ inputs.pgver ]]
+    expire_in: 1 day
+
+##
+## Installcheck-pg13 will :
+##   - install the binaries from the build job
+##   - start a postgres instance
+##   - run the functionnal tests with pg_regress
+##
+"installcheck-$[[ inputs.pgver ]]":
+  stage: test
+  dependencies:
+    - build-$[[ inputs.pgver ]]
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  variables:
+    PGVER: $[[ inputs.pgver ]]
+  script:
+    - make install
+    - make start
+    - make installcheck
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  artifacts:
+    paths:
+      - target/release/anon-$[[ inputs.pgver ]]
+      - results
+    expire_in: 1 day
