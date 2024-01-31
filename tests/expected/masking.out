@@ -1,7 +1,6 @@
 -- This test cannot be run in a single transaction
 -- This test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 -- INIT
 SELECT anon.start_dynamic_masking();
  start_dynamic_masking 
@@ -158,7 +157,6 @@ NOTICE:  drop cascades to view mask."CoMPaNy"
 DROP TABLE people CASCADE;
 NOTICE:  drop cascades to view mask.people
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION pgcrypto;
 DROP SCHEMA mask;
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;

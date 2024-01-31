@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 -- generalize_int4range
 SELECT anon.generalize_int4range(42);
  generalize_int4range 

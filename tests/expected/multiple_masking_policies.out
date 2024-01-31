@@ -2,7 +2,6 @@
 ALTER SYSTEM SET anon.masking_policies = 'anon, rgpd';
 BEGIN;
 CREATE EXTENSION anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 -- ALTER SYSTEM requires to restart the instance for the change to take effect
 -- So we force the registration
 SELECT anon.register_masking_policy('gdpr');

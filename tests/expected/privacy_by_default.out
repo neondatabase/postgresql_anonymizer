@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 SET anon.privacy_by_default = True;
 CREATE TABLE public.access_logs (
   date_open TIMESTAMP,

@@ -29,12 +29,12 @@ SET anon.algorithm TO 'sha512';
 SELECT anon.hash('x');
 
 -- digest
-SELECT anon.digest(NULL,'b','sha1') IS NULL;
-SELECT anon.digest('a',NULL,'sha1') IS NULL;
+SELECT anon.digest(NULL,'b','sha512') IS NULL;
+SELECT anon.digest('a',NULL,'sha512') IS NULL;
 SELECT anon.digest('a','b',NULL) IS NULL;
 
 SELECT anon.digest('a','b','md5') = '187ef4436122d1cc2f40dc2b92f0eba0';
-SELECT anon.digest('a','b','sha1') = 'da23614e02469a0d7c7bd1bdab5c9c474b1904dc';
+SELECT anon.digest('a','b','sha1') IS NULL;
 SELECT anon.digest('a','b','sha224') = 'db3cda86d4429a1d39c148989566b38f7bda0156296bd364ba2f878b';
 SELECT anon.digest('a','b','sha256') = 'fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603';
 SELECT anon.digest('a','b','sha384') = 'c7be03ba5bcaa384727076db0018e99248e1a6e8bd1b9ef58a9ec9dd4eeebb3f48b836201221175befa74ddc3d35afdd';

@@ -14,7 +14,6 @@ SERVER files
 OPTIONS (filename '/etc/passwd', format 'csv', delimiter ':');
 -- STEP 1 : Activate the masking engine
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 SELECT anon.start_dynamic_masking();
  start_dynamic_masking 
 -----------------------
@@ -44,7 +43,6 @@ NOTICE:  The previous priviledges of 'skynet' are not restored. You need to gran
 
 --  CLEAN
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION pgcrypto;
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
 DROP ROLE skynet;

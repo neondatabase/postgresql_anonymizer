@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 CREATE TABLE employee (
   firstname TEXT,
   lastname TEXT,

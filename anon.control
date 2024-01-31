@@ -3,6 +3,5 @@ comment = 'Data anonymization tools'
 default_version = '1.2.0'
 directory='extension/anon'
 relocatable = false
-requires = 'pgcrypto'
 superuser = false
 module_pathname = '$libdir/anon'

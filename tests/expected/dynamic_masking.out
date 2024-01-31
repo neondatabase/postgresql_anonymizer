@@ -1,7 +1,6 @@
 -- This test cannot be run in a single transcation
 -- This test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 -- Dynamic masking
 SELECT anon.start_dynamic_masking();
  start_dynamic_masking 
@@ -108,7 +107,6 @@ NOTICE:  The previous priviledges of 'jimmy_mcnulty' are not restored. You need 
 DROP TABLE phonecall CASCADE;
 DROP TABLE phone CASCADE;
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION pgcrypto;
 REASSIGN OWNED BY jimmy_mcnulty TO postgres;
 DROP OWNED BY jimmy_mcnulty CASCADE;
 DROP ROLE jimmy_mcnulty;

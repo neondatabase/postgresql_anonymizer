@@ -1,6 +1,5 @@
 -- this test must be run on a database named 'contrib_regression'
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 -- INIT
 SELECT anon.init();
  init 
@@ -195,4 +194,3 @@ DROP ROLE mallory_the_masked_user;
 REASSIGN OWNED BY oscar_the_owner TO postgres;
 DROP ROLE oscar_the_owner;
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION pgcrypto;

@@ -53,7 +53,6 @@ INSERT INTO profile
 SELECT i, (i % 2) + 1,'personal data A '|| i, 'personal data B '|| i, 'personal data C '|| i, 'personal data D '|| i,'personal data E '|| i, 'personal data F '|| i, 'personal data G '|| i, 'personal data H '|| i
 FROM GENERATE_SERIES(1, 50000) i;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 --
 -- R U L E S
 --

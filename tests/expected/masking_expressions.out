@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 SELECT anon.masking_expressions_for_table(NULL, 'anon') IS NULL;
  ?column? 
 ----------

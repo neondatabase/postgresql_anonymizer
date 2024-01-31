@@ -1,11 +1,6 @@
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 --\echo Use "CREATE EXTENSION anon" to load this file. \quit
 
---
--- Dependencies :
---  * pgcrypto ( because PG10 does not include hashing functions )
---
-
 -- This cannot be done using `schema = anon` in anon.control
 -- because we want to be able to put the dependencies in a different schema
 CREATE SCHEMA IF NOT EXISTS anon;
@@ -104,18 +99,18 @@ LANGUAGE SQL
 -- * relid : the relation id
 -- * num   : the ordered number of the column
 --
--- Introduced for version 2.0                
---                                                                                             
-CREATE OR REPLACE FUNCTION anon.get_attrdef(                                                                                      
-    relid INT,                                                                                                                    
-    num   INT                                                                                                                     
-)                                                                                                                                 
-RETURNS TEXT                                                                                                                      
-AS $$                                                                                                                             
-    SELECT pg_catalog.pg_get_expr(adbin,adrelid)                                                                                  
-    FROM pg_catalog.pg_attrdef                                                                                                    
-    WHERE adrelid=relid                                                                                                           
-    AND   adnum=num;                                                                                                              
+-- Introduced for version 2.0
+--
+CREATE OR REPLACE FUNCTION anon.get_attrdef(
+    relid INT,
+    num   INT
+)
+RETURNS TEXT
+AS $$
+    SELECT pg_catalog.pg_get_expr(adbin,adrelid)
+    FROM pg_catalog.pg_attrdef
+    WHERE adrelid=relid
+    AND   adnum=num;
 $$ LANGUAGE SQL STRICT;
 
 -------------------------------------------------------------------------------
@@ -841,17 +836,32 @@ $$
 --- Generic hashing
 -------------------------------------------------------------------------------
 
--- This is a wrapper around the pgcrypto digest function
--- Standard algorithms are md5, sha1, sha224, sha256, sha384 and sha512.
--- https://www.postgresql.org/docs/current/pgcrypto.html
+-- Return the hash of a value for a given algorithm and a salt
+-- Standard algorithms are md5, sha224, sha256, sha384 and sha512
+--
+-- * In version 1.x, this was a wrapper around pgcrypto's digest() function
+-- * Since version 2.x, `sha1` is not longer supported
+--
 CREATE OR REPLACE FUNCTION anon.digest(
-  seed TEXT,
+  val TEXT,
   salt TEXT,
   algorithm TEXT
 )
 RETURNS TEXT AS
 $$
-  SELECT encode(public.digest(concat(seed,salt),algorithm),'hex');
+  SELECT CASE
+    WHEN algorithm = 'md5'
+      THEN pg_catalog.md5(concat(val,salt))
+    WHEN algorithm = 'sha224'
+      THEN pg_catalog.encode(pg_catalog.sha224(concat(val,salt)::BYTEA),'hex')
+    WHEN algorithm = 'sha256'
+      THEN pg_catalog.encode(pg_catalog.sha256(concat(val,salt)::BYTEA),'hex')
+    WHEN algorithm = 'sha384'
+      THEN pg_catalog.encode(pg_catalog.sha384(concat(val,salt)::BYTEA),'hex')
+    WHEN algorithm = 'sha512'
+      THEN pg_catalog.encode(pg_catalog.sha512(concat(val,salt)::BYTEA),'hex')
+    ELSE NULL
+    END
 $$
   LANGUAGE SQL
   IMMUTABLE

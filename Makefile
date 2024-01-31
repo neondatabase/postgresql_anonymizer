@@ -29,7 +29,7 @@ DATA = anon/*
 PG_CFLAGS = -Wno-unused-variable
 # Use this var to add more tests
 #PG_TEST_EXTRA ?= ""
-REGRESS_TESTS = init extschema detection ternary
+REGRESS_TESTS = init detection ternary
 REGRESS_TESTS+= get_function_schema trusted_schemas
 REGRESS_TESTS+= copy pg_dump
 REGRESS_TESTS+= masking_expressions

@@ -133,4 +133,3 @@ REASSIGN OWNED BY dump_anon TO postgres;
 DROP ROLE dump_anon;
 
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION pgcrypto;

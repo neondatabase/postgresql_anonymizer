@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 SELECT anon.init();
  init 
 ------
@@ -52,13 +51,13 @@ SELECT anon.hash('x');
 (1 row)
 
 -- digest
-SELECT anon.digest(NULL,'b','sha1') IS NULL;
+SELECT anon.digest(NULL,'b','sha512') IS NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT anon.digest('a',NULL,'sha1') IS NULL;
+SELECT anon.digest('a',NULL,'sha512') IS NULL;
  ?column? 
 ----------
  t
@@ -76,7 +75,7 @@ SELECT anon.digest('a','b','md5') = '187ef4436122d1cc2f40dc2b92f0eba0';
  t
 (1 row)
 
-SELECT anon.digest('a','b','sha1') = 'da23614e02469a0d7c7bd1bdab5c9c474b1904dc';
+SELECT anon.digest('a','b','sha1') IS NULL;
  ?column? 
 ----------
  t

@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 -- This should RAISE NOTICE
 SELECT anon.detect();
 NOTICE:  The dictionnary of identifiers is not present.

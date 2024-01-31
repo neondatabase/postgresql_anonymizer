@@ -6,4 +6,5 @@ repos:
       - id: trailing-whitespace
         exclude: ^tests/expected/
       - id: end-of-file-fixer
+        exclude: ^tests/expected/
       - id: check-added-large-files

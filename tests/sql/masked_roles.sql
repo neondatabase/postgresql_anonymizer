@@ -39,7 +39,6 @@ SELECT COUNT(*)=0 FROM anon.pg_masked_roles WHERE hasmask;
 --  CLEAN
 
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION pgcrypto;
 
 REASSIGN OWNED BY skynet TO postgres;
 DROP OWNED BY skynet CASCADE;
@@ -48,4 +47,3 @@ DROP ROLE skynet;
 REASSIGN OWNED BY hal TO postgres;
 DROP OWNED BY hal CASCADE;
 DROP ROLE hal;
-

@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 SELECT anon.init();
  init 
 ------

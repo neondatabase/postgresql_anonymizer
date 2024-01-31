@@ -1,5 +1,4 @@
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 CREATE TABLE people(name TEXT, age INT, zipcode TEXT);
 CREATE ROLE batman;
 -- This works

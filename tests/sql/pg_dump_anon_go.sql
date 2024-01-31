@@ -204,4 +204,3 @@ DROP ROLE mallory_the_masked_user;
 REASSIGN OWNED BY oscar_the_owner TO postgres;
 DROP ROLE oscar_the_owner;
 DROP EXTENSION anon CASCADE;
-DROP EXTENSION pgcrypto;

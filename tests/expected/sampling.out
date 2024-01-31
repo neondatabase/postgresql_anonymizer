@@ -1,6 +1,5 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-NOTICE:  installing required extension "pgcrypto"
 CREATE TABLE hundred AS
 SELECT generate_series(1,100) AS h;
 SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NULL;
