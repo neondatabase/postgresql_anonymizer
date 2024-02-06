@@ -1,5 +1,5 @@
 ##
-## This Makefile is tryaing to mimic the targets and behaviour of the
+## This Makefile is trying to mimic the targets and behaviour of the
 ## PGXS Makefile
 ##
 ## see https://github.com/postgres/postgres/blob/master/src/makefiles/pgxs.mk
@@ -7,6 +7,7 @@
 
 PGRX?=cargo pgrx
 PGVER?=$(shell grep 'default = \[".*\"]' Cargo.toml | sed -e 's/.*\["//' | sed -e 's/"].*//')
+PG_MAJOR_VERSION=$(PGVER:pg%=%)
 
 # use `TARGET=debug make run` for more detailled errors
 TARGET?=release
@@ -117,15 +118,21 @@ ifdef EXTRA_CLEAN
 	rm -rf $(EXTRA_CLEAN)
 endif
 
+
+##
+## All targets below are not part of the PGXS Makefile
+##
+
 ##
 ## P A C K A G E S
 ##
-## This is not part of the PGXS Makefile
-##
 
-deb: package
+rpm deb: package
+	export PG_LIBDIR=.$(PG_LIBDIR) && \
+	export PG_SHAREDIR=.$(PG_SHAREDIR) && \
+	export PG_MAJOR_VERSION=$(PG_MAJOR_VERSION) && \
 	envsubst < nfpm.template.yaml > $(TARGET_DIR)/nfpm.yaml
-	cd $(TARGET_DIR) && nfpm
+	cd $(TARGET_DIR) && nfpm package --packager $@
 
 
 # The `package` command needs pg_config from the target version

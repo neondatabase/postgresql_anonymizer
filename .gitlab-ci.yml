@@ -22,13 +22,19 @@ stages:
   - lint
   - build
   - test
+  - pack
   - deploy
   - release
 
 image: postgres:13
 
 include:
-  ## Build and test other versions
+  ## Default PG version is ALWAYS built and tested
+  - local: ci/build_and_test_pgver.yml
+    inputs:
+      always: 'yes'   # this is a string not a boolean
+      pgver: pg13
+  ## Other PG versions are built and tested only on the `main` branch
   - local: ci/build_and_test_pgver.yml
     inputs:
       pgver: pg15
@@ -74,17 +80,6 @@ lint-go:
 ## B U I L D
 ##
 
-build:
-  stage: build
-  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
-  script:
-    - make
-    - make test
-  artifacts:
-    paths:
-      - target/release/anon-*
-    expire_in: 1 day
-
 blackbox:
   stage: build
   image: docker:24.0
@@ -119,24 +114,6 @@ how-to:
       - docs/how-to
     expire_in: 1 day
 
-##
-## T E S T
-##
-
-installcheck:
-  stage: test
-  dependencies:
-    - build
-  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
-  script:
-    - make install
-    - make start
-    - make installcheck
-  artifacts:
-    paths:
-      - target/release/anon-*
-      - results
-    expire_in: 1 day
 
 # We need to launch manually the instance because the entrypoint is skipped.
 .init_PG_instance: &init_PG_instance
@@ -165,7 +142,6 @@ demo:
     paths:
       - demo/*.out
     expire_in: 1 day
-
 
 ##
 ## D E P L O Y

@@ -1,0 +1,29 @@
+---
+name: "postgresql_anonymizer_${PG_MAJOR_VERSION}"
+arch: "amd64"
+platform: "linux"
+version: "v2.0.0"
+section: "default"
+priority: "extra"
+maintainer: "DALIBO"
+description: |
+  Anonymization & Data Masking for PostgreSQL
+vendor: "DALIBO"
+homepage: "https://labs.dalibo.com/postgresql_anonymizer"
+license: "PostgreSQL"
+contents:
+  - src: ${PG_LIBDIR}/anon.so
+    dst: /usr/lib/postgresql/${PG_MAJOR_VERSION}/lib/anon.so
+  - src: ${PG_SHAREDIR}/extension/
+    dst: /usr/share/postgresql/${PG_MAJOR_VERSION}/extension/
+    type: tree
+
+overrides:
+  rpm:
+    # These locations are based on the PGDG packages, not the RedHat ones
+    contents:
+      - src: ${PG_LIBDIR}/anon.so
+        dst: /usr/pgsql-${PG_MAJOR_VERSION}/lib/anon.so
+      - src: ${PG_SHAREDIR}/extension/
+        dst: /usr/pgsql-${PG_MAJOR_VERSION}/share/extension/
+        type: tree

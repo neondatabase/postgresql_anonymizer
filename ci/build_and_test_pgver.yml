@@ -1,11 +1,18 @@
 ---
 spec:
   inputs:
+    always:    # Optionnal
+      type: string
+      default: ''
+      description: |
+        If the variable is defined, then all the jobs are launched in any case.
+        Usually you'd want at least 1 major version to be built/tested on all
+        pipelines.
     pgver:     # Mandatory
       type: string
       description: |
         The PostgreSQL major version with the "pg" prefix
-        (e.g. `pg13`, pg16`, etc.)
+        (e.g. `pg13`, pg16`, etc.).
 
 ---
 
@@ -21,6 +28,7 @@ spec:
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
   variables:
     PGVER: $[[ inputs.pgver ]]
+    ALWAYS: $[[ inputs.always ]]
   script:
     # Build the extension package
     - make
@@ -28,6 +36,7 @@ spec:
     # The functionnal tests will be launched later with pg_regress
     - make test
   rules:
+    - if: $ALWAYS
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -49,11 +58,13 @@ spec:
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
   variables:
     PGVER: $[[ inputs.pgver ]]
+    ALWAYS: $[[ inputs.always ]]
   script:
     - make install
     - make start
     - make installcheck
   rules:
+    - if: $ALWAYS
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -62,3 +73,45 @@ spec:
       - target/release/anon-$[[ inputs.pgver ]]
       - results
     expire_in: 1 day
+
+"nfpm-$[[ inputs.pgver ]]":
+  stage: pack
+  dependencies:
+    - build-$[[ inputs.pgver ]]
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  variables:
+    PGVER: $[[ inputs.pgver ]]
+    ALWAYS: $[[ inputs.always ]]
+  script:
+    - make deb
+    - make rpm
+  rules:
+    - if: $ALWAYS
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  artifacts:
+    paths:
+      - target/release/anon-$[[ inputs.pgver ]]
+      - results
+    expire_in: 1 day
+
+
+"upload-packages-$[[ inputs.pgver ]]":
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_TAG != null'
+      when: always
+    - when: manual
+      allow_failure: true
+  image: curlimages/curl:latest
+  dependencies:
+    - nfpm-$[[ inputs.pgver ]]
+  variables:
+    GENERIC_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic"
+    DEB_REGISTRY_URL: "$GENERIC_URL/deb/$CI_COMMIT_REF_NAME"
+    RPM_REGISTRY_URL: "$GENERIC_URL/rpm/$CI_COMMIT_REF_NAME"
+  script:
+    - cd "target/release/anon-$[[ inputs.pgver ]]"
+    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.deb "$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]_amd64.deb?select=package_file"'
+    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.rpm "$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]].x86_64.rpm?select=package_file"'
