@@ -38,7 +38,7 @@ INSERT INTO "CoMPaNy"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 
 SECURITY LABEL FOR anon ON COLUMN "CoMPaNy"."IBAN"
-IS 'MASKED WITH FUNCTION anon.partial("IBAN", 0, $$***********$$, 4 ) This will be ignored';
+IS 'MASKED WITH FUNCTION anon.partial("IBAN", 0, $$***********$$, 4 )     ';
 
 SECURITY LABEL FOR anon ON COLUMN "CoMPaNy".NAME
 IS 'MASKED WITH VALUE $$CONFIDENTIAL$$';
@@ -49,7 +49,7 @@ CREATE TABLE test_type_casts(
 );
 
 SECURITY LABEL FOR anon ON column test_type_casts.last_name
-IS 'MASKED WITH FUNCTION anon.fake_last_name()::VARCHAR(30)';
+IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 -- Table `work`
 CREATE TABLE work (

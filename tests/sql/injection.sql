@@ -88,12 +88,65 @@ WHERE tablename='inject_via_guc';
 --
 -- Masking Rule Syntax
 --
+
 SECURITY LABEL FOR anon ON COLUMN a.t
 IS 'MASKED WITH VALUE $$foo; CREATE TABLE inject_via_rule(i int);--$$';
+
+SAVEPOINT masking_rule_2;
+SECURITY LABEL FOR anon ON COLUMN a.t
+IS 'MASKED WITH VALUE NULL as TEXT) as t FROM a;
+    CREATE TABLE inject_via_rule(i int);
+    SELECT 1--()';
+ROLLBACK TO masking_rule_2;
+
+SAVEPOINT masking_rule_3;
+SECURITY LABEL FOR anon ON COLUMN a.t
+IS 'MASKED WITH VALUE NULL as t FROM a;
+    CREATE TABLE inject_via_rule(i int);
+    SELECT 1--()';
+ROLLBACK TO masking_rule_3;
+
+SAVEPOINT masking_rule_4;
+SECURITY LABEL FOR anon ON COLUMN a.t
+IS 'MASKED WITH FUNCTION anon.fake_lastname() as TEXT) as t FROM a;
+    CREATE TABLE inject_via_rule(i int);
+    SELECT 1--()';
+ROLLBACK TO masking_rule_4;
+
+SAVEPOINT masking_rule_5;
+SECURITY LABEL FOR anon ON COLUMN a.t
+IS 'MASKED WITH FUNCTION anon.fake_lastname() as t FROM a;
+    CREATE TABLE inject_via_rule(i int);
+    SELECT 1--()';
+ROLLBACK TO masking_rule_5;
 
 SELECT COUNT(*) = 0
 FROM pg_tables
 WHERE tablename='inject_via_rule';
+
+
+--
+-- Reading a privileged table
+--
+
+CREATE TABLE hashes (a int);
+
+SAVEPOINT masking_rule_6;
+SECURITY LABEL FOR anon ON COLUMN hashes.a
+IS 'MASKED WITH VALUE 1 as INT) as a,
+                      rolname,
+                      rolpassword
+                FROM pg_catalog.pg_authid --';
+ROLLBACK TO masking_rule_6;
+
+
+SAVEPOINT masking_rule_7;
+SECURITY LABEL FOR anon ON COLUMN hashes.a
+IS 'MASKED WITH VALUE 1 as a,
+                      rolname,
+                      rolpassword
+                FROM pg_catalog.pg_authid --';
+ROLLBACK TO masking_rule_7;
 
 -- CLEAN UP
 DROP EXTENSION anon CASCADE;

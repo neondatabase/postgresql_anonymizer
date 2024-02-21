@@ -27,9 +27,7 @@ SET anon.restrict_to_trusted_schemas = on;
 SAVEPOINT before_test_2;
 SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH FUNCTION lower(people.name) ';
-ERROR:  The schema of the masking filter must be defined
-HINT:  Check the anon.restrict_to_trusted_schemas parameter
-CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 15 at RAISE
+ERROR:  'MASKED WITH FUNCTION lower(people.name) ' is not a valid masking function
 ROLLBACK TO before_test_2;
 -- TEST 3 generates an error
 SAVEPOINT before_test_3;

@@ -82,4 +82,12 @@ SAVEPOINT function_call_error_1;
 SELECT anon.get_function_schema('a');
 ERROR:  'a' is not a valid function call
 ROLLBACK TO function_call_error_1;
+SAVEPOINT function_call_error_2;
+SELECT anon.get_function_schema('a,b,c');
+ERROR:  'a,b,c' is not a valid function call
+ROLLBACK TO function_call_error_2;
+SAVEPOINT function_call_error_3;
+SELECT anon.get_function_schema('a;SELECT b');
+ERROR:  'a;SELECT b' is not a valid function call
+ROLLBACK TO function_call_error_3;
 ROLLBACK;

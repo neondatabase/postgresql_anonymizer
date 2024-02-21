@@ -84,7 +84,10 @@ static bool guc_anon_transparent_dynamic_masking;
 /*
  * Internal Functions
  */
+
+static bool   pa_check_function(char * expr);
 static bool   pa_check_masking_policies(char **newval, void **extra, GucSource source);
+static bool   pa_check_value(char * expr);
 static char * pa_get_masking_policy_for_role(Oid roleid);
 static void   pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclabel);
 static bool   pa_has_mask_in_policy(Oid roleid, char *policy);
@@ -94,6 +97,7 @@ static char * pa_cast_as_regtype(char * value, int atttypid);
 static char * pa_masking_value_for_att(Relation rel, FormData_pg_attribute * att, char * policy);
 static char * pa_masking_expressions_for_table(Oid relid, char * policy);
 Node *        pa_masking_stmt_for_table(Oid relid, char * policy);
+Node *        pa_parse_expression(char * expr);
 
 /*
  * Hook functions
@@ -181,12 +185,30 @@ pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclab
            errmsg("'%s' is not a valid label for a table", seclabel)));
       }
 
+      /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH FUNCTION $x$' */
+      if ( pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0 ) {
+          char * substr=malloc(strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+          strncpy(substr, seclabel+21, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+          if (pa_check_function(substr)) return;
+          ereport(ERROR,
+            (errcode(ERRCODE_INVALID_NAME),
+            errmsg("'%s' is not a valid masking function", seclabel)));
+          break;
+      }
+
       /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
-      if ( pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0
-        || pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0
-        || pg_strncasecmp(seclabel, "NOT MASKED", 10) == 0
-      )
-        return;
+      if ( pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0) {
+          char * substr=malloc(strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+          strncpy(substr, seclabel+18, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+          if (pa_check_value(substr)) return;
+          ereport(ERROR,
+            (errcode(ERRCODE_INVALID_NAME),
+            errmsg("'%s' is not a valid masking value", seclabel)));
+          break;
+      }
+
+      /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'NOT MASKED' */
+      if ( pg_strncasecmp(seclabel, "NOT MASKED", 10) == 0 ) return;
 
       ereport(ERROR,
         (errcode(ERRCODE_INVALID_NAME),
@@ -549,12 +571,27 @@ anon_get_function_schema(PG_FUNCTION_ARGS)
     raw_parsetree_list = raw_parser(query_string);
     #endif
 
+    /* accept only one statement */
+    if ( list_length(raw_parsetree_list) != 1 ) {
+      ereport(ERROR,
+        (errcode(ERRCODE_INVALID_NAME),
+        errmsg("'%s' is not a valid function call", function_call)));
+    }
+
     /* walk throught the parse tree, down to the FuncCall node (if present) */
     #if PG_VERSION_NUM >= 100000
     stmt = (SelectStmt *) linitial_node(RawStmt, raw_parsetree_list)->stmt;
     #else
     stmt = (SelectStmt *) linitial(raw_parsetree_list);
     #endif
+
+    /* accept only one target in the statement */
+    if ( list_length(stmt->targetList) != 1 ) {
+      ereport(ERROR,
+        (errcode(ERRCODE_INVALID_NAME),
+        errmsg("'%s' is not a valid function call", function_call)));
+    }
+
     restarget = (ResTarget *) linitial(stmt->targetList);
     if (! IsA(restarget->val, FuncCall))
     {
@@ -571,6 +608,27 @@ anon_get_function_schema(PG_FUNCTION_ARGS)
     }
 
     PG_RETURN_TEXT_P(cstring_to_text(""));
+}
+
+/*
+ * pa_check_function
+ *   validate if an expression is a correct masking function
+ *
+ */
+static bool
+pa_check_function(char * expr)
+{
+    FuncCall * fc = (FuncCall *) pa_parse_expression(expr);
+
+    if (fc == NULL) return false;
+
+    if (! IsA(fc, FuncCall)) return false;
+
+    /* if the function name is not qualified, we cant check the schema */
+    if ( guc_anon_restrict_to_trusted_schemas
+    && list_length(fc->funcname) != 2 ) return false;
+
+    return true;
 }
 
 
@@ -608,6 +666,18 @@ pa_check_masking_policies(char **newval, void **extra, GucSource source)
   return true;
 }
 
+/*
+ * pa_check_value
+ *   validate if an expression is a correct masking value
+ *
+ */
+static bool
+pa_check_value(char * expr)
+{
+    Node * val = pa_parse_expression(expr);
+    if (val == NULL) return false;
+    return IsA(val, ColumnRef) || IsA(val,A_Const);
+}
 
 /*
  * pa_has_mask_in_policy
@@ -698,6 +768,60 @@ pa_masking_stmt_for_table(Oid relid, char * policy)
 
   raw_parsetree_list = pg_parse_query(query_string.data);
   return (Node *) linitial_node(RawStmt, raw_parsetree_list)->stmt;
+}
+
+/*
+ * pa_parse_expression
+ *   use the Postgres parser to check a given masking expression
+ *   returns the parsetree if the expression is valid
+ *   or NULL if the expression is invalid
+ */
+Node *
+pa_parse_expression(char * expr)
+{
+    char query_string[1024];
+    List  *raw_parsetree_list;
+    SelectStmt *stmt;
+    ResTarget  *restarget;
+    FuncCall   *fc;
+
+    if ( expr == NULL || strlen(expr) == 0)  {
+      return NULL;
+    }
+
+    PG_TRY();
+    {
+      /* build a simple SELECT statement and parse it */
+      query_string[0] = '\0';
+      strlcat(query_string, "SELECT ", sizeof(query_string));
+      strlcat(query_string, expr, sizeof(query_string));
+      #if PG_VERSION_NUM >= 140000
+      raw_parsetree_list = raw_parser(query_string,RAW_PARSE_DEFAULT);
+      #else
+      raw_parsetree_list = raw_parser(query_string);
+      #endif
+    }
+    PG_CATCH ();
+    {
+      return NULL;
+    }
+    PG_END_TRY();
+
+    /* accept only one statement */
+    if ( list_length(raw_parsetree_list) != 1 ) return NULL;
+
+    /* walk throught the parse tree, down to the FuncCall node (if present) */
+    #if PG_VERSION_NUM >= 100000
+    stmt = (SelectStmt *) linitial_node(RawStmt, raw_parsetree_list)->stmt;
+    #else
+    stmt = (SelectStmt *) linitial(raw_parsetree_list);
+    #endif
+
+    /* accept only one target in the statement */
+    if ( list_length(stmt->targetList) != 1 ) return NULL;
+
+    restarget = (ResTarget *) linitial(stmt->targetList);
+    return (Node *) restarget->val;
 }
 
 /*

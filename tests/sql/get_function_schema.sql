@@ -20,4 +20,12 @@ SAVEPOINT function_call_error_1;
 SELECT anon.get_function_schema('a');
 ROLLBACK TO function_call_error_1;
 
+SAVEPOINT function_call_error_2;
+SELECT anon.get_function_schema('a,b,c');
+ROLLBACK TO function_call_error_2;
+
+SAVEPOINT function_call_error_3;
+SELECT anon.get_function_schema('a;SELECT b');
+ROLLBACK TO function_call_error_3;
+
 ROLLBACK;
