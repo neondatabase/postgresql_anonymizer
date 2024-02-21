@@ -374,7 +374,7 @@ _PG_init(void)
     "Masking filters must be in a trusted schema",
     "Activate this option to prevent non-superuser from using their own masking filters",
     &guc_anon_restrict_to_trusted_schemas,
-    false,
+    true,
     PGC_SUSET,
     GUC_SUPERUSER_ONLY,
     NULL,
