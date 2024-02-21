@@ -19,11 +19,17 @@ GRANT USAGE ON SCHEMA anon TO PUBLIC;
 
 --
 -- By default, masking filter functions must be trusted
--- and we only trust functions from `pg_catalog` and `anon` namespaces
--- This can be bypassed by setting `anon.restrict_to_trusted_schemas` to false
+-- and we only trust functions from the `anon` namespaces
+-- This can protection can be disabled by setting
+-- `anon.restrict_to_trusted_schemas` to false
 --
-SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
 SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED';
+
+--
+-- In case, some masking rules require function from the pg_catalog schema
+-- it is possible to allow it with:
+--
+-- SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
 
 --
 -- This extension will create views based on masking functions. These functions
