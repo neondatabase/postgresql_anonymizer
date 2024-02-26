@@ -2336,7 +2336,20 @@ CREATE OR REPLACE FUNCTION anon.mask_create_view(
 )
 RETURNS BOOLEAN AS
 $$
+DECLARE
+  rel_is_view BOOLEAN;
 BEGIN
+  --
+  -- Masking rules on a view is not supported
+  --
+  SELECT relkind = 'v' INTO rel_is_view
+    FROM pg_catalog.pg_class
+    WHERE oid=relid;
+
+  IF rel_is_view THEN
+    RAISE EXCEPTION 'Masking a view is not supported.';
+  END IF;
+
   EXECUTE format( 'CREATE OR REPLACE VIEW %I.%s AS %s',
                   pg_catalog.current_setting('anon.maskschema'),
                   -- FIXME quote_ident(relid::REGCLASS::TEXT) ?
@@ -2559,6 +2572,24 @@ BEGIN
     RETURN FALSE;
   END IF;
 
+  --
+  -- Until Postgres 16, users could manually transform a table into a view
+  -- using a basic CREATE RULE statement. Placing a masking rule on a view is
+  -- not supported, however a very stubborn user could try to create a table,
+  -- put a mask on it and then transform the table into a view. In that case,
+  -- the mask_update process is stopped immediatly
+  --
+  -- https://github.com/postgres/postgres/commit/b23cd185fd5410e5204683933f848d4583e34b35
+  --
+  PERFORM c.oid
+  FROM pg_catalog.pg_class c
+  JOIN anon.pg_masking_rules mr ON c.oid = mr.attrelid
+  WHERE c.relkind='v';
+
+  IF FOUND THEN
+    RAISE EXCePTION 'Masking a view is not supported.';
+  END IF;
+
   -- Walk through all tables in the source schema
   -- and build a dynamic masking view
   PERFORM anon.mask_create_view(oid)
@@ -2619,7 +2650,8 @@ CREATE EVENT TRIGGER anon_trg_mask_update
     'ALTER TABLE', 'CREATE TABLE', 'CREATE TABLE AS', 'DROP TABLE',
     'ALTER MATERIALIZED VIEW', 'CREATE MATERIALIZED VIEW', 'DROP MATERIALIZED VIEW',
     'ALTER FOREIGN TABLE', 'CREATE FOREIGN TABLE', 'DROP FOREIGN TABLE',
-    'SECURITY LABEL', 'SELECT INTO'
+    'SECURITY LABEL', 'SELECT INTO',
+    'CREATE RULE', 'ALTER RULE', 'DROP RULE'
   )
   EXECUTE PROCEDURE anon.trg_mask_update()
   -- EXECUTE FUNCTION not supported by PG10 and below

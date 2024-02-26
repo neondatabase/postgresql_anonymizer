@@ -42,6 +42,7 @@ REGRESS_TESTS+= anonymize privacy_by_default
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path masking_foreign_tables
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= permissions_owner permissions_masked_role injection syntax_checks
+REGRESS_TESTS+= views
 REGRESS_TESTS+=$(PG_TEST_EXTRA)
 # This can be overridden by an env variable
 REGRESS?=$(REGRESS_TESTS)

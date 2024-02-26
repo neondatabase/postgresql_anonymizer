@@ -189,6 +189,16 @@ pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclab
            errmsg("'%s' is not a valid label for a table", seclabel)));
       }
 
+      /* If the object has a objectSubId, the seclabel is on a column */
+
+      /* Check that the column does not belong to a view */
+      if ( get_rel_relkind(object->objectId) == 'v' )
+      {
+        ereport(ERROR,
+            (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+             errmsg("Masking a view is not supported")));
+      }
+
       /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH FUNCTION $x$' */
       if ( pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0 ) {
           char * substr=malloc(strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
