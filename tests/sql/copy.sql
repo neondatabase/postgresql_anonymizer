@@ -22,8 +22,10 @@ SECURITY LABEL FOR anon ON ROLE jimmy IS 'MASKED';
 SECURITY LABEL FOR anon ON COLUMN "Phone".phone_owner
 IS 'MASKED WITH VALUE $$CONFIDENTIAL$$ ';
 
+SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
+
 SECURITY LABEL FOR anon ON COLUMN "Phone".phone_number
-IS 'MASKED WITH FUNCTION substring(md5(phone_number),0,12)';
+IS 'MASKED WITH FUNCTION pg_catalog.substring(pg_catalog.md5(phone_number),0,12)';
 
 SET anon.transparent_dynamic_masking TO true;
 

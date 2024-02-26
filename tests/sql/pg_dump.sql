@@ -5,6 +5,8 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.init();
 
+SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
+
 CREATE ROLE oscar_the_owner LOGIN PASSWORD 'xlfneifzmqdef';
 ALTER DATABASE :DBNAME OWNER TO oscar_the_owner;
 
@@ -39,12 +41,11 @@ VALUES
 ('Stalone'       ,'2683464645336781'),
 ('Lundgren'      ,'6877322588932345');
 
-
 SECURITY LABEL FOR anon ON COLUMN test.customer.name
-IS E'MASKED WITH FUNCTION md5(''0'') ';
+IS E'MASKED WITH FUNCTION pg_catalog.md5(''0'') ';
 
 SECURITY LABEL FOR anon ON COLUMN test.customer."CreditCard"
-IS E'MASKED WITH FUNCTION md5(''0'') ';
+IS E'MASKED WITH FUNCTION pg_catalog.md5(''0'') ';
 
 CREATE TABLE test."COMPANY" (
   rn SERIAL,
@@ -56,7 +57,7 @@ INSERT INTO test."COMPANY"
 VALUES (1991,'12345677890','Cyberdyne Systems');
 
 SECURITY LABEL FOR anon ON COLUMN test."COMPANY"."IBAN"
-IS E'MASKED WITH FUNCTION md5(''0'') ';
+IS E'MASKED WITH FUNCTION pg_catalog.md5(''0'') ';
 
 SECURITY LABEL FOR anon ON COLUMN test."COMPANY".brand
 IS E'MASKED WITH VALUE $$CONFIDENTIAL$$ ';

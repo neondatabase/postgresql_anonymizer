@@ -33,9 +33,7 @@ ROLLBACK TO before_test_2;
 SAVEPOINT before_test_3;
 SECURITY LABEL FOR anon ON COLUMN people.name
 IS 'MASKED WITH FUNCTION public.lower(people.name) ';
-ERROR:  public is not a trusted schema.
-HINT:  You must add a TRUSTED security label to this schema.
-CONTEXT:  PL/pgSQL function anon.trg_check_trusted_schemas() line 18 at RAISE
+ERROR:  'MASKED WITH FUNCTION public.lower(people.name) ' is not a valid masking function
 ROLLBACK TO before_test_3;
 -- TEST 4
 SECURITY LABEL FOR anon ON COLUMN people.name

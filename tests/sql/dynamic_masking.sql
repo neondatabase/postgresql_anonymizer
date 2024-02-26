@@ -6,6 +6,8 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 -- Dynamic masking
 SELECT anon.start_dynamic_masking();
 
+SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
+
 SET anon.salt TO 'x';
 
 CREATE TABLE phone (
@@ -31,7 +33,11 @@ INSERT INTO phonecall VALUES
 (835,'410-385-2983','410-719-9009','2004-05-17 11:22:51.859137+00','2004-05-17 11:34:18.119237+00');
 
 SECURITY LABEL FOR anon ON COLUMN phone.phone_owner
-IS 'MASKED WITH FUNCTION concat(anon.pseudo_first_name(phone_owner),$$ $$,anon.pseudo_last_name(phone_owner))';
+IS 'MASKED WITH FUNCTION pg_catalog.concat(
+                            anon.pseudo_first_name(phone_owner),
+                            $$ $$,
+                            anon.pseudo_last_name(phone_owner)
+                         )';
 
 SECURITY LABEL FOR anon ON COLUMN phone.phone_number
 IS 'MASKED WITH FUNCTION anon.hash(phone_number)';

@@ -8,6 +8,7 @@ SELECT anon.start_dynamic_masking();
  t
 (1 row)
 
+SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
 SET anon.salt TO 'x';
 CREATE TABLE phone (
   phone_owner  TEXT,
@@ -28,7 +29,11 @@ INSERT INTO phonecall VALUES
 (834,'410-617-7308','410-385-2983','2004-05-17 09:41:01.859137+00','2004-05-17 09:44:24.119237+00'),
 (835,'410-385-2983','410-719-9009','2004-05-17 11:22:51.859137+00','2004-05-17 11:34:18.119237+00');
 SECURITY LABEL FOR anon ON COLUMN phone.phone_owner
-IS 'MASKED WITH FUNCTION concat(anon.pseudo_first_name(phone_owner),$$ $$,anon.pseudo_last_name(phone_owner))';
+IS 'MASKED WITH FUNCTION pg_catalog.concat(
+                            anon.pseudo_first_name(phone_owner),
+                            $$ $$,
+                            anon.pseudo_last_name(phone_owner)
+                         )';
 SECURITY LABEL FOR anon ON COLUMN phone.phone_number
 IS 'MASKED WITH FUNCTION anon.hash(phone_number)';
 SECURITY LABEL FOR anon ON COLUMN phonecall.call_sender

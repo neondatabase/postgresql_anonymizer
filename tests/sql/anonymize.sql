@@ -67,6 +67,8 @@ FROM GENERATE_SERIES(1, 50000) i;
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
+SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
+
 --
 -- R U L E S
 --
@@ -79,10 +81,10 @@ IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 -- The FK must be masked with the same function on both ends
 SECURITY LABEL FOR anon ON COLUMN employee.phone
-IS 'MASKED WITH FUNCTION md5(phone)';
+IS 'MASKED WITH FUNCTION pg_catalog.md5(phone)';
 
 SECURITY LABEL FOR anon ON COLUMN call_history.fk_employee_phone
-IS 'MASKED WITH FUNCTION md5(fk_employee_phone)';
+IS 'MASKED WITH FUNCTION pg_catalog.md5(fk_employee_phone)';
 
 -- This is designed to break the UNIQUE constraint
 SECURITY LABEL FOR anon ON COLUMN employee.ssn

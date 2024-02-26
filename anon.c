@@ -28,6 +28,7 @@
 #include "catalog/pg_namespace.h"
 #include "catalog/namespace.h"
 #include "miscadmin.h"
+#include "nodes/nodeFuncs.h"
 #include "optimizer/planner.h"
 #include "tcop/utility.h"
 #include "utils/acl.h"
@@ -91,6 +92,8 @@ static bool   pa_check_value(char * expr);
 static char * pa_get_masking_policy_for_role(Oid roleid);
 static void   pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclabel);
 static bool   pa_has_mask_in_policy(Oid roleid, char *policy);
+static bool   pa_has_untrusted_schema(Node *node, void *context);
+static bool   pa_is_trusted_namespace(Oid namespaceId, char * policy);
 static void   pa_rewrite(Query * query, char * policy);
 static void   pa_rewrite_utility(PlannedStmt *pstmt, char * policy);
 static char * pa_cast_as_regtype(char * value, int atttypid);
@@ -98,6 +101,7 @@ static char * pa_masking_value_for_att(Relation rel, FormData_pg_attribute * att
 static char * pa_masking_expressions_for_table(Oid relid, char * policy);
 Node *        pa_masking_stmt_for_table(Oid relid, char * policy);
 Node *        pa_parse_expression(char * expr);
+
 
 /*
  * Hook functions
@@ -624,13 +628,65 @@ pa_check_function(char * expr)
 
     if (! IsA(fc, FuncCall)) return false;
 
-    /* if the function name is not qualified, we cant check the schema */
-    if ( guc_anon_restrict_to_trusted_schemas
-    && list_length(fc->funcname) != 2 ) return false;
+    elog(DEBUG1,"expr is a function");
 
+    /* if the function name is not qualified, we cant check the schema */
+    if ( guc_anon_restrict_to_trusted_schemas) {
+
+      if (list_length(fc->funcname) != 2 ) return false;
+
+      elog(DEBUG1,"expr is qualified");
+
+      if (pa_has_untrusted_schema((Node *)fc,NULL)) return false;
+    }
     return true;
 }
 
+static bool
+pa_has_untrusted_schema(Node *node, void *context)
+{
+  if (node == NULL) return false;
+
+  if (IsA(node, FuncCall))
+  {
+    FuncCall * fc = (FuncCall *) node;
+    Oid namespaceId;
+
+    // the function is not qualified, we cannot trust it
+    if ( list_length(fc->funcname) != 2 ) return true;
+
+    namespaceId = get_namespace_oid(strVal(linitial(fc->funcname)),false);
+
+    // Returning true will stop the tree walker right away
+    // So the logic is inverted: we stop the search once an unstrusted schema
+    // is found.
+    if ( ! pa_is_trusted_namespace(namespaceId,"anon") ) return true;
+  }
+
+  return raw_expression_tree_walker(node,
+                                    pa_has_untrusted_schema,
+                                    context);
+}
+
+
+/*
+ * pa_schema_is_trusted
+ *  checks that a schema is declared as trusted
+ *
+ */
+static bool
+pa_is_trusted_namespace(Oid namespaceId, char * policy)
+{
+  ObjectAddress namespace;
+  char * seclabel = NULL;
+
+  if (! OidIsValid(namespaceId)) return false;
+
+  ObjectAddressSet(namespace, NamespaceRelationId, namespaceId);
+  seclabel = GetSecurityLabel(&namespace, policy);
+
+  return (seclabel && pg_strncasecmp(seclabel, "TRUSTED",7) == 0);
+}
 
 /*
  * pa_check_masking_policies

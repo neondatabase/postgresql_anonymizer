@@ -10,12 +10,10 @@ SELECT
     'john@doe.com'::TEXT AS email
 ;
 
-
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SECURITY LABEL FOR anon ON COLUMN dbo.tbl1.lastname
 IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.init();
 
