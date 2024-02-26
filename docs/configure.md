@@ -23,7 +23,7 @@ anon.algorithm
 | Visible       | only to superusers |
 
 This is the hashing method used by pseudonymizing functions. Checkout the
-[pgcrypto documentation] for the list of avalaible options.
+[pgcrypto documentation] for the list of available options.
 
 [pgcrypto documentation]: https://www.postgresql.org/docs/current/pgcrypto.htm
 
@@ -53,34 +53,18 @@ anon.restrict_to_trusted_schemas
 
 
 By enabling this parameter, masking rules must be defined using functions
-located in a limited list of namespaces. By default, `pg_catalog` and `anon`
-are trusted.
+located in a limited list of namespaces. By default, only the `anon` schema is
+trusted.
 
 This improves security by preventing users from declaring their custom masking
-filters.
+filters. This also means that the schema must be explicit inside the masking
+rules.
 
-This also means that the schema must be explicit inside the masking rules. For
-instance, the rules below would fail because the schema of the lower function
-is not declared.
+For more details, check out the [Write your own masks] section of the
+[Masking functions] chapter.
 
-```sql
-SECURITY LABEL FOR anon ON COLUMN people.name
-IS 'MASKED WITH FUNCTION lower(people.name) ';
-```
-
-The correct way to declare it would be :
-
-```sql
-SECURITY LABEL FOR anon ON COLUMN people.name
-IS 'MASKED WITH FUNCTION pg_catalog.lower(people.name) ';
-```
-
-This parameter is kept to `off` in the current version to maintain backward
-compatibility but we highly encourage users to switch to `on` when possible.
-In the forthcoming version, we may define `on` as the default behaviour.
-
-
-
+[Masking functions]: masking_functions.md
+[Write your own masks]: masking_functions.md#write-your-own-masks
 
 anon.salt
 --------------------------------------------------------------------------------

@@ -53,49 +53,6 @@ SECURITY LABEL FOR anon ON COLUMN player.name
 [dollar quoting]: https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
 
 
-Conditional Masking
-------------------------------------------------------------------------------
-
-In some situations, you may want to apply a masking filter only for some value
-or for a limited number of lines in the table.
-
-For instance, if you to "preserve NULL values", you can use more advanced
-expressions with the `MASKED WITH VALUE` syntax:
-
-```sql
-SECURITY LABEL FOR anon ON COLUMN player.name
-  IS 'MASKED WITH VALUE CASE WHEN name IS NULL
-                             THEN name
-                             ELSE anon.fake_first_name()
-                             END';
-```
-
-For easier reading, you can use the `anon.ternary()` function that does the
-same:
-
-
-```sql
-SECURITY LABEL FOR anon ON COLUMN player.name
-  IS 'MASKED WITH FUNCTION anon.ternary(name IS NULL, name, anon.fake_first_name())';
-```
-
-You may also want to exclude some lines within the table:
-
-```sql
-SECURITY LABEL FOR anon ON COLUMN account.password
-  IS 'MASKED WITH FUNCTION anon.ternary( id > 1000, NULL::TEXT, password)';
-```
-
-**WARNING** : Conditional masking may create a partially deterministic
-"connection" between the original data and the masked data. That connection can
-be used to retrieve personal information from the masked data. For instance,
-if NULL values are preserved for a "deceased_date" column, it will reveal which
-persons are still actualy alive... In a nutshell: conditional masking may often
-produce a dataset that is not fully anonymized and therefore would still
-technically contain personal information.
-
-
-
 Listing masking rules
 ------------------------------------------------------------------------------
 

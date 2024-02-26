@@ -11,7 +11,9 @@ The extension provides functions to implement 8 main anonymization strategies:
 * [Pseudonymization]
 * [Generic Hashing]
 * [Partial scrambling]
+* [Conditional masking]
 * [Generalization]
+* [Using pg_catalog functions]
 * [Write your own Masks !]
 
 [Destruction]: #destruction
@@ -22,8 +24,10 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Pseudonymization]: #pseudonymization
 [Generic Hashing]: #generic-hashing
 [Partial scrambling]: #partial-scrambling
+[Conditional masking]: #conditional-masking
 [Generalization]: #generalization
 [Shuffling]: static_masking.md#shuffling
+[Using pg_catalog functions]: #using-pg_catalog-functions
 [Write your own Masks !]: #write-your-own-masks
 
 Depending on your data, you may need to use different strategies on different
@@ -362,10 +366,10 @@ data like this:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN people.phone_number
-IS 'MASKED WITH FUNCTION pg_catalog.left(anon.hash(phone_number),12)';
+IS 'MASKED WITH FUNCTION anon.left(anon.hash(phone_number),12)';
 
 SECURITY LABEL FOR anon ON COLUMN call_history.fk_phone_number
-IS 'MASKED WITH FUNCTION pg_catalog.left(anon.hash(fk_phone_number),12)';
+IS 'MASKED WITH FUNCTION anon.left(anon.hash(fk_phone_number),12)';
 ```
 
 Of course, cutting the hash value to 12 characters will increase the risk
@@ -384,6 +388,40 @@ For instance : a credit card number can be replaced by '40XX XXXX XXXX XX96'.
 
 * `anon.partial('abcdefgh',1,'xxxx',3)` will return 'axxxxfgh';
 * `anon.partial_email('daamien@gmail.com')` will become 'da******@gm******.com'
+
+Conditional Masking
+-------------------------------------------------------------------------------
+
+In some situations, you may want to apply a masking filter only for some value
+or for a limited number of lines in the table.
+
+For instance, if you want to "preserve NULL values", i.e. masking only the lines
+that contains a value, you can use the `anon.ternary` function, which works
+like a `CASE WHEN x THEN y ELSE z` statement :
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN player.score
+  IS 'MASKED WITH FUNCTION anon.ternary(score IS NULL,
+                                        NULL,
+                                        anon.random_int_between(0,100));
+```
+
+You may also want to exclude some lines within the table. Like keeping the
+password of some users so that they still may be able to connect to a testing
+deployment of your application:
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN account.password
+  IS 'MASKED WITH FUNCTION anon.ternary( id > 1000, NULL::TEXT, password)';
+```
+
+**WARNING** : Conditional masking may create a partially deterministic
+"connection" between the original data and the masked data. And that connection
+can be used to retrieve personal information from the masked data. For instance,
+if NULL values are preserved for a "deceased_date" column, it will reveal which
+persons are still actually alive... In a nutshell: conditional masking may often
+produce a dataset that is not fully anonymized and therefore would still
+technically contain personal information.
 
 
 Generalization
@@ -466,6 +504,49 @@ each range.
 [RANGE]: https://www.postgresql.org/docs/current/rangetypes.html
 
 
+Using `pg_catalog` functions
+------------------------------------------------------------------------------
+
+Since version 1.3, the `pg_catalog` schema is not trusted by default. This is
+a security measure designed to prevent users from using sophisticated functions in
+masking rules (such as `pg_catalog.query_to_xml`, `pg_catalog.ts_stat` or the
+[system administration functions] ) that should not be used as masking functions.
+
+[system administration functions]: https://www.postgresql.org/docs/current/functions-admin.html.
+
+However, the extension provides bindings to some useful and safe functions
+from the `pg_catalog` schema for your convenience:
+
+<!--
+  Update the list below with:
+  sed -n '50,150p' anon.sql | grep '^CREATE.*' | sed -e  's/^.*FUNCTION/-/'
+-->
+
+- anon.concat(TEXT,TEXT)
+- anon.date_add(TIMESTAMP WITH TIME ZONE,INTERVAL)
+- anon.date_part(TEXT,TIMESTAMP)
+- anon.date_part(TEXT,INTERVAL)
+- anon.date_subtract(TIMESTAMP WITH TIME ZONE, INTERVAL )
+- anon.date_trunc(TEXT,TIMESTAMP)
+- anon.date_trunc(TEXT,TIMESTAMP WITH TIME ZONE,TEXT)
+- anon.date_trunc(TEXT,INTERVAL)
+- anon.left(TEXT)
+- anon.lower(TEXT)
+- anon.make_date(INT,INT,INT )
+- make_time(INT,INT,DOUBLE PRECISION)
+- anon.md5(TEXT,INTEGER)
+- anon.right(TEXT,INTEGER)
+- anon.substr(TEXT,INTEGER)
+- anon.substr(TEXT,INTEGER,INTEGER)
+- anon.upper(TEXT)
+
+If you need more bindings, you can either
+
+- Write your own mapping function in a trusted schema (see below)
+- Set the `pg_catalog` schema as `TRUSTED` (not recommended)
+- open an issue
+
+
 Write your own Masks !
 ------------------------------------------------------------------------------
 
@@ -473,24 +554,10 @@ You can also use your own function as a mask. The function must either be
 destructive (like [Partial Scrambling]) or insert some randomness in the dataset
 (like [Faking]).
 
-For instance if you wrote a function `foo()` inside the schema `bar`,
-then you can apply it like this:
-
-```sql
-SECURITY LABEL FOR anon ON SCHEMA bar IS 'TRUSTED';
-
-SECURITY LABEL FOR anon ON COLUMN player.score
-IS 'MASKED WITH FUNCTION bar.foo()';
-```
-
-> NOTE: The `bar` schema must be declared as `TRUSTED` by a superuser.
-
-### Example: Writing a masking function for a JSONB column
-
 <!-- cf. demo/writing_your_own_mask.sql -->
 
-For complex data types, you may have to write your own function. This will be
-a common use case if you have to hide certain parts of a JSON field.
+Especially for complex data types, you may have to write your own function.
+This will be a common use case if you have to hide certain parts of a JSON field.
 
 For example:
 
@@ -532,6 +599,9 @@ through the keys and replace the sensitive values as needed.
 [PostgreSQL JSON functions and operators]: https://www.postgresql.org/docs/current/functions-json.html
 
 ```sql
+CREATE SCHEMA custom_masks;
+
+-- This step requires superuser privilege
 SECURITY LABEL FOR anon ON SCHEMA custom_masks IS 'TRUSTED';
 
 CREATE FUNCTION custom_masks.remove_last_name(j JSONB)

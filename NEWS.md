@@ -1,3 +1,88 @@
+PostgreSQL Anonymizer 1.3: Important Security Update
+================================================================================
+
+Eymoutiers, France, March 4th, 2024
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension supports 3 different anonymization strategies: [Dynamic Masking],
+[Static Masking] and [Anonymous Dumps]. It also offers a large choice of
+[Masking Functions] such as Substitution, Randomization, Faking,
+Pseudonymization, Partial Scrambling, Shuffling, Noise Addition and
+Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+
+
+2 major vulnerabilities fixed
+--------------------------------------------------------------------------------
+
+This update corrects 2 identified vulnerabilities found recently in versions 1.2
+and earlier. It is strongly recommended to proceed update to 1.3.0 or higher as
+soon as possible.
+
+The main high-risk vulnerability allows privilege escalation via SQL injection
+when creating or updating a masking rule. If an identified postgres user
+already owns objects inside a database, he/she may be able to execute arbitrary
+SQL code as a PostgreSQL superuser.
+
+User that do not own any objects and especially the "masked users" cannot take
+advantage of that vulnerability.
+
+
+Enforced security
+--------------------------------------------------------------------------------
+
+This new version he enforces a series of security checks and it will now
+refuse some masking rules that were previously accepted. Users of previous may
+have to rewrite some rules inside their masking policy.
+
+Please refer to the [Upgrade section] for a complete list of the required
+changes.
+
+[Upgrade section]: https://postgresql-anonymizer.readthedocs.io/en/latest/UPGRADE/
+
+
+How to Upgrade
+--------------------------------------------------------------------------------
+
+Install the new version using your prefered [install] method. On Red Hat and
+Rocky Linux systems, you can update it directly with `dnf update` and restart
+the PostgreSQL instance.
+
+Then drop the extension and recreate it.
+
+[install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+[Dalibo Labs]: https://labs.dalibo.com
+[Damien Clochard]: https://www.dalibo.com/en/equipe#daamien
+
+
+
+--------------------------------------------------------------------------------
+
+
 PostgreSQL Anonymizer 1.2: Support for PostgreSQL 16
 ================================================================================
 
