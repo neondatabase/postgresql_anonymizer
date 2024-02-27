@@ -57,6 +57,101 @@ $func$
 ;
 
 -------------------------------------------------------------------------------
+-- Bindings to commodity functions in pg_catalog
+-------------------------------------------------------------------------------
+
+-- As we try to discourage users to mark pg_catalog as TRUSTED, we provide a
+-- series of mappings towards safe and useful functions.
+-- If you think a useful function is missing below, please open a ticket.
+
+
+CREATE OR REPLACE FUNCTION anon.concat(TEXT,TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.concat($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.date_add(TIMESTAMP WITH TIME ZONE,INTERVAL)
+  RETURNS TIMESTAMP WITH TIME ZONE AS
+  $$ SELECT pg_catalog.anon.date_add($1,$2); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.date_part(TEXT,TIMESTAMP)
+  RETURNS double precision AS
+  $$ SELECT pg_catalog.anon.date_part($1,$2); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.date_part(TEXT,INTERVAL)
+  RETURNS double precision AS
+  $$ SELECT pg_catalog.anon.date_part($1,$2); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.date_subtract(TIMESTAMP WITH TIME ZONE, INTERVAL )
+  RETURNS TIMESTAMP WITH TIME ZONE AS
+  $$ SELECT pg_catalog.anon.date_subtract($1,$2); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.date_trunc(TEXT,TIMESTAMP)
+  RETURNS TIMESTAMP AS
+  $$ SELECT pg_catalog.anon.date_trunc($1,$2); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.date_trunc(TEXT,TIMESTAMP WITH TIME ZONE,TEXT)
+  RETURNS TIMESTAMP WITH TIME ZONE AS
+  $$ SELECT pg_catalog.anon.date_trunc($1,$2); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.date_trunc(TEXT,INTERVAL)
+  RETURNS INTERVAL AS
+  $$ SELECT pg_catalog.anon.date_trunc($1,$2); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.left(TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.left($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.lower(TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.lower($1) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.make_date(INT,INT,INT )
+  RETURNS date AS
+  $$ SELECT pg_catalog.make_date($1,$2,$3); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION make_time(INT,INT,DOUBLE PRECISION)
+  RETURNS time AS
+  $$ SELECT pg_catalog.make_time($1,$2,$3); $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.md5(TEXT,INTEGER)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.md5($1) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.right(TEXT,INTEGER)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.md5($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.substr(TEXT,INTEGER)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.substr($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.substr(TEXT,INTEGER,INTEGER)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.substr($1,$2,$3) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.upper(TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.upper($1) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+
+-------------------------------------------------------------------------------
 -- Common functions
 -------------------------------------------------------------------------------
 
