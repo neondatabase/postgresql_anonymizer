@@ -88,6 +88,7 @@ static bool guc_anon_transparent_dynamic_masking;
 
 static bool   pa_check_function(char * expr);
 static bool   pa_check_masking_policies(char **newval, void **extra, GucSource source);
+static bool   pa_check_tablesample(const char * tbs);
 static bool   pa_check_value(char * expr);
 static char * pa_get_masking_policy_for_role(Oid roleid);
 static void   pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclabel);
@@ -151,13 +152,9 @@ pa_ProcessUtility_hook( PlannedStmt *pstmt,
 static void
 pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclabel)
 {
-  char *checksemicolon;
 
   /* SECURITY LABEL FOR anon ON COLUMN foo.bar IS NULL */
   if (seclabel == NULL) return;
-
-  /* Prevent SQL injection attacks inside the security label */
-  checksemicolon = strchr(seclabel, ';');
 
   switch (object->classId)
   {
@@ -165,7 +162,7 @@ pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclab
     case DatabaseRelationId:
 
       if ( pg_strncasecmp(seclabel, "TABLESAMPLE", 11) == 0
-        && checksemicolon == NULL
+        && pa_check_tablesample(seclabel)
       )
         return;
 
@@ -180,7 +177,7 @@ pa_masking_policy_object_relabel(const ObjectAddress *object, const char *seclab
       if (object->objectSubId == 0)
       {
         if ( pg_strncasecmp(seclabel, "TABLESAMPLE", 11) == 0
-          && checksemicolon == NULL
+          && pa_check_tablesample(seclabel)
         )
           return;
 
@@ -730,6 +727,46 @@ pa_check_masking_policies(char **newval, void **extra, GucSource source)
   }
 
   return true;
+}
+
+
+/*
+ * pa_check_tablesample
+ *   Validate a tablesample expression
+ */
+bool
+pa_check_tablesample(const char * tbs)
+{
+    char query_string[PA_MAX_SIZE_MASKING_RULE+1];
+    List  *raw_parsetree_list;
+    SelectStmt *stmt;
+
+    if ( tbs== NULL || strnlen(tbs,PA_MAX_SIZE_MASKING_RULE) == 0)  {
+      return false;
+    }
+
+    PG_TRY();
+    {
+      /* build a simple SELECT statement and parse it */
+      query_string[0] = '\0';
+      strlcat(query_string, "SELECT 1 FROM foo ", sizeof(query_string));
+      strlcat(query_string, tbs, sizeof(query_string));
+      #if PG_VERSION_NUM >= 140000
+      raw_parsetree_list = raw_parser(query_string,RAW_PARSE_DEFAULT);
+      #else
+      raw_parsetree_list = raw_parser(query_string);
+      #endif
+    }
+    PG_CATCH ();
+    {
+      return false;
+    }
+    PG_END_TRY();
+
+    /* accept only one statement */
+    if ( list_length(raw_parsetree_list) != 1 ) return false;
+
+    return true;
 }
 
 /*

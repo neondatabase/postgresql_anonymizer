@@ -120,6 +120,13 @@ IS 'MASKED WITH FUNCTION anon.fake_lastname() as t FROM a;
     SELECT 1--()';
 ROLLBACK TO masking_rule_5;
 
+
+SAVEPOINT masking_rule_6;
+SECURITY LABEL FOR anon ON TABLE a
+IS 'TABLESAMPLE SYSTEM(10);
+    CREATE TABLE inject_via_rule(i int);
+    --';
+ROLLBACK TO masking_rule_6;
 SELECT COUNT(*) = 0
 FROM pg_tables
 WHERE tablename='inject_via_rule';
@@ -131,22 +138,22 @@ WHERE tablename='inject_via_rule';
 
 CREATE TABLE hashes (a int);
 
-SAVEPOINT masking_rule_6;
+SAVEPOINT masking_rule_7;
 SECURITY LABEL FOR anon ON COLUMN hashes.a
 IS 'MASKED WITH VALUE 1 as INT) as a,
                       rolname,
                       rolpassword
                 FROM pg_catalog.pg_authid --';
-ROLLBACK TO masking_rule_6;
+ROLLBACK TO masking_rule_7;
 
 
-SAVEPOINT masking_rule_7;
+SAVEPOINT masking_rule_8;
 SECURITY LABEL FOR anon ON COLUMN hashes.a
 IS 'MASKED WITH VALUE 1 as a,
                       rolname,
                       rolpassword
                 FROM pg_catalog.pg_authid --';
-ROLLBACK TO masking_rule_7;
+ROLLBACK TO masking_rule_8;
 
 -- CLEAN UP
 DROP EXTENSION anon CASCADE;
