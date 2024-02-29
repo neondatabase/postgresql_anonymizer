@@ -23,7 +23,7 @@ Generalization.
 --------------------------------------------------------------------------------
 
 This update corrects 2 identified vulnerabilities found recently in versions 1.2
-and earlier. It is strongly recommended to proceed update to 1.3.0 or higher as
+and earlier. It is strongly recommended to proceed update to 1.3 or higher as
 soon as possible.
 
 The main high-risk vulnerability allows privilege escalation via SQL injection
@@ -38,12 +38,12 @@ advantage of that vulnerability.
 Enforced security
 --------------------------------------------------------------------------------
 
-This new version he enforces a series of security checks and it will now
-refuse some masking rules that were previously accepted. Users of previous may
-have to rewrite some rules inside their masking policy.
+This new version enforces a series of security checks and it will now
+refuse some masking rules that were previously accepted. Users of previous
+versions may have to rewrite some rules inside their masking policy.
 
-Please refer to the [Upgrade section] for a complete list of the required
-changes.
+Please refer to the [Upgrade section] of the documentation for a complete
+list of the required changes.
 
 [Upgrade section]: https://postgresql-anonymizer.readthedocs.io/en/latest/UPGRADE/
 
@@ -51,11 +51,10 @@ changes.
 How to Upgrade
 --------------------------------------------------------------------------------
 
-Install the new version using your prefered [install] method. On Red Hat and
-Rocky Linux systems, you can update it directly with `dnf update` and restart
-the PostgreSQL instance.
+Install the new version using your prefered [install] method. For instance, on
+Red Hat and Rocky Linux systems, you can update it directly with `dnf update`.
 
-Then drop the extension and recreate it.
+Then restart the PostgreSQL instance, drop the extension and recreate it.
 
 [install]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
 
