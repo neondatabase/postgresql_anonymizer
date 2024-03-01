@@ -47,3 +47,8 @@ debian/debhelper-build-stamp
 debian/postgresql-??-anonymizer.substvars
 debian/postgresql-??-anonymizer/
 dput
+# Rust
+/target
+*.iml
+**/*.rs.bk
+Cargo.lock
