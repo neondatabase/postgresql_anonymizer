@@ -880,7 +880,7 @@ pa_masking_value_for_att(Relation rel, FormData_pg_attribute * att, char * polic
   if (seclabel && pg_strncasecmp(seclabel, "MASKED WITH FUNCTION", 20) == 0)
   {
     char * substr=malloc(strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
-    strncpy(substr, seclabel+21, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+    strlcpy(substr, seclabel+21, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
     if (guc_anon_strict_mode) return pa_cast_as_regtype(substr, att->atttypid);
     return substr;
   }
@@ -888,7 +888,7 @@ pa_masking_value_for_att(Relation rel, FormData_pg_attribute * att, char * polic
   if (seclabel && pg_strncasecmp(seclabel, "MASKED WITH VALUE", 17) == 0)
   {
     char * substr=malloc(strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
-    strncpy(substr, seclabel+18, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
+    strlcpy(substr, seclabel+18, strnlen(seclabel,PA_MAX_SIZE_MASKING_RULE));
     if (guc_anon_strict_mode) return pa_cast_as_regtype(substr, att->atttypid);
     return substr;
   }
