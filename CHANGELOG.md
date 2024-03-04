@@ -1,6 +1,38 @@
 CHANGELOG
 ===============================================================================
 
+
+20240304 : 1.3.1 - Minor release
+-------------------------------------------------------------------------------
+
+__Changes:__
+
+* Fix PGXN metadata
+
+20240304 : 1.3.0 - Important Security Update
+-------------------------------------------------------------------------------
+
+__Breaking Changes__:
+
+This new version enforces a series of security checks and it will now
+refuse some masking rules that were previously accepted. Users of previous
+versions may have to rewrite some rules inside their masking policy.
+
+__Changes:__
+
+* [core] improve injection protection for tablesample rules
+* [core] Add bindings to useful `pg_catalog` functions
+* [core] Masking a view is not supported
+* [docs] upgrade version to 1.3
+* [core] Checking schemas in nested masking functions
+* [core] do not trust `pg_catalog` by default
+* [core] Activate `restrict_to_trusted_schemas` by default
+* [core] Prevent injection from masking rules
+* Prepare for the Rust rewrite
+* [core] replace strncpy by strlcpy
+* Remove dependency to pgcrypto
+
+
 20240115 : 1.2.0 - Support for PostgreSQL 16
 -------------------------------------------------------------------------------
 
