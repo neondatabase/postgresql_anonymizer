@@ -352,11 +352,18 @@ that most Database As A Service platforms (DBaaS), such as Amazon RDS or
 Microsoft Azure SQL, do not allow. They must add the extension to their catalog
 in order for you to use it.
 
-At the time we are writing this (October 2023), the following platforms support
+At the time we are writing this (March 2024), the following platforms provide
 PostgreSQL Anonymizer:
 
-* [Google Cloud SQL](https://cloud.google.com/sql/docs/postgres/extensions#postgresql_anonymizer)
-* [Postgres.ai](https://postgres.ai/docs/database-lab/masking)
+* [Crunchy Bridge]
+* [Google Cloud SQL]
+* [Postgres.ai]
+* [Tembo]
+
+[Crunchy Bridge]: https://access.crunchydata.com/documentation/postgresql-anonymizer/latest/
+[Google Cloud SQL]: https://cloud.google.com/sql/docs/postgres/extensions#postgresql_anonymizer
+[Postgres.ai]: https://postgres.ai/docs/database-lab/masking
+[Tembo]: https://tembo.io/blog/anon-dump
 
 Please refer to their own documentation on how to activate the extension as they
 might have a platform-specific install procedure.
