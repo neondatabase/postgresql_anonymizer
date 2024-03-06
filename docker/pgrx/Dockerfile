@@ -2,7 +2,7 @@ FROM rust:1
 
 ARG UID=1000
 ARG GID=1000
-ARG PGRX_VERSION=0.11.3
+ARG PGRX_VERSION=0.12.0-alpha.1
 
 # Create the postgres user with the given uid/gid
 # If you're not using Docker Desktop and your UID / GID is not 1000 then
