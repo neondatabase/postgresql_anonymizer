@@ -315,7 +315,7 @@ cat dump.sql rules.sql | $ANON > anon_dump.sql
 _NB:_ You can also gather _step 1_ and _step 3_ in a single command:
 
 ```console
-(pg_dumpall --roles-only && pg_dump my_db) | cat - rules.sql | $ANON > anon_dump.sql
+(pg_dumpall --roles-only && pg_dump my_db && cat rules.sql) | $ANON > anon_dump.sql
 ```
 
 
