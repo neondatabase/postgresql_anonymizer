@@ -29,7 +29,7 @@ used:
 
 The identifier categories are based on the [HIPAA classification].
 
-[HIPAA classification]: https://www.luc.edu/its/aboutits/itspoliciesguidelines/hipaainformation/18hipaaidentifiers/
+[HIPAA classification]: https://www.luc.edu/its/aboutus/itspoliciesguidelines/hipaainformation/the18hipaaidentifiers/
 
 Limitations
 ---------------------------------------------------------------------------------
