@@ -578,3 +578,16 @@ release_pg_dump_anon:
   script:
     - cd pg_dump_anon
     - goreleaser release --rm-dist
+
+release_docker:
+  stage: release
+  image: docker:24.0
+  rules:
+    - if: $CI_COMMIT_TAG                 # Run this job when a tag is created
+  services:
+    - docker:24.0-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY/dalibo/postgresql_anonymizer:$CI_COMMIT_TAG .
+                   --file docker/Dockerfile
+    - docker push $CI_REGISTRY/dalibo/postgresql_anonymizer:$CI_COMMIT_TAG
