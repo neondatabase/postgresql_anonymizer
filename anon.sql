@@ -72,42 +72,47 @@ CREATE OR REPLACE FUNCTION anon.concat(TEXT,TEXT)
 
 CREATE OR REPLACE FUNCTION anon.date_add(TIMESTAMP WITH TIME ZONE,INTERVAL)
   RETURNS TIMESTAMP WITH TIME ZONE AS
-  $$ SELECT pg_catalog.anon.date_add($1,$2); $$
+  $$ SELECT $1 + $2; $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.date_part(TEXT,TIMESTAMP)
   RETURNS double precision AS
-  $$ SELECT pg_catalog.anon.date_part($1,$2); $$
+  $$ SELECT pg_catalog.date_part($1,$2); $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.date_part(TEXT,INTERVAL)
   RETURNS double precision AS
-  $$ SELECT pg_catalog.anon.date_part($1,$2); $$
+  $$ SELECT pg_catalog.date_part($1,$2); $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.date_subtract(TIMESTAMP WITH TIME ZONE, INTERVAL )
   RETURNS TIMESTAMP WITH TIME ZONE AS
-  $$ SELECT pg_catalog.anon.date_subtract($1,$2); $$
+  $$ SELECT $1 - $2; $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.date_trunc(TEXT,TIMESTAMP)
   RETURNS TIMESTAMP AS
-  $$ SELECT pg_catalog.anon.date_trunc($1,$2); $$
+  $$ SELECT pg_catalog.date_trunc($1,$2); $$
   LANGUAGE SQL PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION anon.date_trunc(TEXT,TIMESTAMP WITH TIME ZONE,TEXT)
+CREATE OR REPLACE FUNCTION anon.date_trunc(TEXT,TIMESTAMP WITH TIME ZONE)
   RETURNS TIMESTAMP WITH TIME ZONE AS
-  $$ SELECT pg_catalog.anon.date_trunc($1,$2); $$
+  $$ SELECT pg_catalog.date_trunc($1,$2); $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.date_trunc(TEXT,INTERVAL)
   RETURNS INTERVAL AS
-  $$ SELECT pg_catalog.anon.date_trunc($1,$2); $$
+  $$ SELECT pg_catalog.date_trunc($1,$2); $$
   LANGUAGE SQL PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION anon.left(TEXT)
+CREATE OR REPLACE FUNCTION anon.left(TEXT, INTEGER)
   RETURNS TEXT AS
   $$ SELECT pg_catalog.left($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.length(TEXT)
+  RETURNS INTEGER AS
+  $$ SELECT pg_catalog.length($1) $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.lower(TEXT)
@@ -120,19 +125,19 @@ CREATE OR REPLACE FUNCTION anon.make_date(INT,INT,INT )
   $$ SELECT pg_catalog.make_date($1,$2,$3); $$
   LANGUAGE SQL PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION make_time(INT,INT,DOUBLE PRECISION)
+CREATE OR REPLACE FUNCTION anon.make_time(INT,INT,DOUBLE PRECISION)
   RETURNS time AS
   $$ SELECT pg_catalog.make_time($1,$2,$3); $$
   LANGUAGE SQL PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION anon.md5(TEXT,INTEGER)
+CREATE OR REPLACE FUNCTION anon.md5(TEXT)
   RETURNS TEXT AS
   $$ SELECT pg_catalog.md5($1) $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.right(TEXT,INTEGER)
   RETURNS TEXT AS
-  $$ SELECT pg_catalog.md5($1,$2) $$
+  $$ SELECT pg_catalog.right($1,$2) $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.substr(TEXT,INTEGER)
