@@ -16,6 +16,11 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Guillaume Risbourg: CI improvements
+* Austin Putman: Bug fixes
+* Carlos Ruiz: Documentation
+* Bojan Mihelac: Documentation
+* Pedro Gallegos: Security improvements
 * Mark Shay: Support in Google Cloud SQL
 * Jitesh Srivastava: Documentation
 * GPGIT2 : Feedback, Testing and Ideas

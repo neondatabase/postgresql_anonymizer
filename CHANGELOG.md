@@ -1,6 +1,20 @@
 CHANGELOG
 ===============================================================================
 
+20240321 : 1.3.2 - Fix pg_catalog bindings
+-------------------------------------------------------------------------------
+
+__Changes:__
+
+* [bindings] Add date functions
+* [doc] Now available on Neon
+* [bindings] Add replace function
+* [CI] release a tagged docker image for each COMMIT_TAG (Guillaume Risbourg)
+* [bindings] Fix multiple signature errors in the pg_catalog bindings (Austin Putman)
+* [docs] Fix wrong link on detection.md (Carlos Ruiz)
+* [bindings] Add anon.length bindings
+* [docs] fix "Black Box" shortcut command in INSTALL.md (Bojan Mihelac)
+
 
 20240304 : 1.3.1 - Minor release
 -------------------------------------------------------------------------------
