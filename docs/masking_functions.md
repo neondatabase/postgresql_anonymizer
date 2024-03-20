@@ -223,8 +223,8 @@ For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 * `anon.lorem_ipsum( paragraphs := 4 )` returns 4 paragraphs
 * `anon.lorem_ipsum( words := 20 )` returns 20 words
 * `anon.lorem_ipsum( characters := 7 )` returns 7 characters
-* `anon.lorem_ipsum( characters := LENGTH(table.column) )` returns the same
-   amount of characters as the original string
+* `anon.lorem_ipsum( characters := anon.length(table.column) )` returns the
+  same amount of characters as the original string
 
 [Lorem Ipsum]: https://lipsum.com
 
@@ -531,10 +531,12 @@ from the `pg_catalog` schema for your convenience:
 - anon.date_trunc(TEXT,TIMESTAMP WITH TIME ZONE,TEXT)
 - anon.date_trunc(TEXT,INTERVAL)
 - anon.left(TEXT)
+- anon.length(TEXT)
 - anon.lower(TEXT)
 - anon.make_date(INT,INT,INT )
 - make_time(INT,INT,DOUBLE PRECISION)
 - anon.md5(TEXT,INTEGER)
+- anon.random()
 - anon.right(TEXT,INTEGER)
 - anon.substr(TEXT,INTEGER)
 - anon.substr(TEXT,INTEGER,INTEGER)
