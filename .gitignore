@@ -52,3 +52,4 @@ dput
 *.iml
 **/*.rs.bk
 Cargo.lock
+.idea

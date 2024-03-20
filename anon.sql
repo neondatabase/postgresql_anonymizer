@@ -135,6 +135,11 @@ CREATE OR REPLACE FUNCTION anon.md5(TEXT)
   $$ SELECT pg_catalog.md5($1) $$
   LANGUAGE SQL PARALLEL SAFE;
 
+CREATE OR REPLACE FUNCTION anon.random()
+  RETURNS DOUBLE PRECISION AS
+  $$ SELECT pg_catalog.random() $$
+  LANGUAGE SQL PARALLEL SAFE;
+
 CREATE OR REPLACE FUNCTION anon.right(TEXT,INTEGER)
   RETURNS TEXT AS
   $$ SELECT pg_catalog.right($1,$2) $$
@@ -1937,8 +1942,8 @@ $$
 CREATE OR REPLACE FUNCTION anon.get_schema(t TEXT)
 RETURNS TEXT
 AS $$
-  SELECT quote_ident(a[array_upper(a, 1)-1])
-  FROM parse_ident(t) AS a;
+  SELECT pg_catalog.quote_ident(a[array_upper(a, 1)-1])
+  FROM pg_catalog.parse_ident(t) AS a;
 $$
   LANGUAGE SQL
   IMMUTABLE
@@ -1950,8 +1955,8 @@ $$
 CREATE OR REPLACE FUNCTION anon.get_relname(t TEXT)
 RETURNS TEXT
 AS $$
-  SELECT quote_ident(a[array_upper(a, 1)])
-  FROM parse_ident(t) AS a;
+  SELECT pg_catalog.quote_ident(a[array_upper(a, 1)])
+  FROM pg_catalog.parse_ident(t) AS a;
 $$
   LANGUAGE SQL
   IMMUTABLE
@@ -1977,7 +1982,7 @@ BEGIN
   IF untrusted_schema = '' THEN
     RAISE 'The schema of the masking filter must be defined'
       USING HINT = 'Check the anon.restrict_to_trusted_schemas parameter';
-  ELSIF length(untrusted_schema) > 0 THEN
+  ELSIF pg_catalog.length(untrusted_schema) > 0 THEN
     RAISE '% is not a trusted schema.', untrusted_schema
       USING HINT = 'You must add a TRUSTED security label to this schema.';
   END IF;
