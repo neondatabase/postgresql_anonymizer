@@ -523,6 +523,7 @@ from the `pg_catalog` schema for your convenience:
 -->
 
 - anon.concat(TEXT,TEXT)
+- anon.concat(TEXT,TEXT, TEXT)
 - anon.date_add(TIMESTAMP WITH TIME ZONE,INTERVAL)
 - anon.date_part(TEXT,TIMESTAMP)
 - anon.date_part(TEXT,INTERVAL)
@@ -534,9 +535,12 @@ from the `pg_catalog` schema for your convenience:
 - anon.length(TEXT)
 - anon.lower(TEXT)
 - anon.make_date(INT,INT,INT )
-- make_time(INT,INT,DOUBLE PRECISION)
+- anon.make_time(INT,INT,DOUBLE PRECISION)
 - anon.md5(TEXT)
 - anon.random()
+- anon.replace(TEXT,TEXT,TEXT)
+- anon.regexp_replace(TEXT,TEXT,TEXT)
+- anon.regexp_replace(TEXT,TEXT,TEXT,TEXT)
 - anon.right(TEXT,INTEGER)
 - anon.substr(TEXT,INTEGER)
 - anon.substr(TEXT,INTEGER,INTEGER)
