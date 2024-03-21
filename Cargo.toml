@@ -17,9 +17,8 @@ pg16 = ["pgrx/pg16", "pgrx-tests/pg16" ]
 pg_test = []
 
 [dependencies]
-lazy_static = "1.4.0"
+c_str_macro = "1.0.3"
 pgrx = "=0.12.0-alpha.1"
-quoted-string = "0.6.1"
 regex = "1.10.2"
 
 [dev-dependencies]
