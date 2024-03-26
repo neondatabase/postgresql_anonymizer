@@ -11,15 +11,18 @@ SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NULL;
 SAVEPOINT before_error_invalid_label;
   SECURITY LABEL FOR anon ON TABLE hundred IS 'INVALID LABEL';
 ERROR:  'INVALID LABEL' is not a valid label for a table
+DETAIL:  Syntax error
 ROLLBACK TO before_error_invalid_label;
 SAVEPOINT before_error_invalid_label2;
   SECURITY LABEL FOR anon ON DATABASE contrib_regression IS 'INVALID LABEL';
 ERROR:  'INVALID LABEL' is not a valid label for a database
+DETAIL:  Syntax error
 ROLLBACK TO before_error_invalid_label2;
 SAVEPOINT before_sql_injection;
   SECURITY LABEL FOR anon ON TABLE hundred
   IS 'TABLESAMPLE BERNOULLI (33); CREATE ROLE bob SUPERUSER;';
 ERROR:  'TABLESAMPLE BERNOULLI (33); CREATE ROLE bob SUPERUSER;' is not a valid label for a table
+DETAIL:  Expression is invalid
 ROLLBACK TO before_sql_injection;
 SECURITY LABEL FOR anon ON TABLE hundred
 IS 'TABLESAMPLE SYSTEM(33)';
