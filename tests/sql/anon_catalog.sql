@@ -2,8 +2,6 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
-SELECT anon.version();
-
 SELECT anon.concat('foo', 'bar') = 'foobar';
 
 SELECT anon.date_add('2020-03-19 12:00:00-00:00'::timestamp, '1 week') = '2020-03-26 12:00:00-00:00'::timestamp;
