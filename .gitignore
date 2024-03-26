@@ -8,7 +8,6 @@ tests/tmp/*
 *.swp
 *.swo
 # tests
-*.out
 *.diffs
 _dump1.sql
 _dump2.sql
