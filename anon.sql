@@ -57,13 +57,22 @@ $func$
 ;
 
 -------------------------------------------------------------------------------
--- Bindings to commodity functions in pg_catalog
+-- Bindings to useful functions in pg_catalog
 -------------------------------------------------------------------------------
 
 -- As we try to discourage users to mark pg_catalog as TRUSTED, we provide a
 -- series of mappings towards safe and useful functions.
 -- If you think a useful function is missing below, please open a ticket.
 
+CREATE OR REPLACE FUNCTION anon.age(TIMESTAMP, TIMESTAMP)
+  RETURNS INTERVAL AS
+  $$ SELECT pg_catalog.age($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.age(TIMESTAMP)
+  RETURNS INTERVAL AS
+  $$ SELECT pg_catalog.age($1) $$
+  LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.concat(TEXT,TEXT)
   RETURNS TEXT AS
@@ -140,6 +149,11 @@ CREATE OR REPLACE FUNCTION anon.md5(TEXT)
   $$ SELECT pg_catalog.md5($1) $$
   LANGUAGE SQL PARALLEL SAFE;
 
+CREATE OR REPLACE FUNCTION anon.now()
+  RETURNS TIMESTAMP WITH TIME ZONE AS
+  $$ SELECT pg_catalog.now() $$
+  LANGUAGE SQL PARALLEL SAFE;
+
 CREATE OR REPLACE FUNCTION anon.random()
   RETURNS DOUBLE PRECISION AS
   $$ SELECT pg_catalog.random() $$
@@ -159,7 +173,7 @@ CREATE OR REPLACE FUNCTION anon.regexp_replace(TEXT,TEXT,TEXT,TEXT)
   RETURNS TEXT AS
   $$ SELECT pg_catalog.regexp_replace($1,$2,$3,$4) $$
   LANGUAGE SQL PARALLEL SAFE;
-  
+
 CREATE OR REPLACE FUNCTION anon.right(TEXT,INTEGER)
   RETURNS TEXT AS
   $$ SELECT pg_catalog.right($1,$2) $$
@@ -173,6 +187,41 @@ CREATE OR REPLACE FUNCTION anon.substr(TEXT,INTEGER)
 CREATE OR REPLACE FUNCTION anon.substr(TEXT,INTEGER,INTEGER)
   RETURNS TEXT AS
   $$ SELECT pg_catalog.substr($1,$2,$3) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.to_char(TIMESTAMP,TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.to_char($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.to_char(TIMESTAMP WITH TIME ZONE, TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.to_char($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.to_char(INTERVAL,TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.to_char($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.to_char(NUMERIC,TEXT)
+  RETURNS TEXT AS
+  $$ SELECT pg_catalog.to_char($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.to_date(TEXT,TEXT)
+  RETURNS DATE AS
+  $$ SELECT pg_catalog.to_date($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.to_number(TEXT,TEXT)
+  RETURNS NUMERIC AS
+  $$ SELECT pg_catalog.to_number($1,$2) $$
+  LANGUAGE SQL PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION anon.to_timestamp(TEXT,TEXT)
+  RETURNS TIMESTAMP WITH TIME ZONE AS
+  $$ SELECT pg_catalog.to_timestamp($1,$2) $$
   LANGUAGE SQL PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION anon.upper(TEXT)
