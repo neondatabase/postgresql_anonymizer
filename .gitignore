@@ -8,6 +8,7 @@ tests/tmp/*
 *.swp
 *.swo
 # tests
+regression.out
 *.diffs
 _dump1.sql
 _dump2.sql
