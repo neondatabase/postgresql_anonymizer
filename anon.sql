@@ -2642,7 +2642,7 @@ BEGIN
   WHERE anon.hasmask(oid::REGROLE);
 
   -- Drop the masking schema, it should be empty
-  EXECUTE format('DROP SCHEMA %I',
+  EXECUTE format('DROP SCHEMA IF EXISTS %I',
                   pg_catalog.current_setting('anon.maskschema')
   );
 
