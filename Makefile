@@ -15,12 +15,17 @@ TARGET_DIR?=target/$(TARGET)/anon-$(PGVER)/
 PG_CONFIG?=`$(PGRX) info pg-config $(PGVER)`
 PG_SHAREDIR?=$(shell $(PG_CONFIG) --sharedir)
 PG_LIBDIR?=$(shell $(PG_CONFIG) --libdir)
+PG_BINDIR?=$(shell $(PG_CONFIG) --bindir)
+
+# Be sure to use the PGRX version (PGVER) of the postgres binaries
+# It's especially important for the pg_dump test in pg_regress
+PATH:=$(PG_BINDIR):${PATH}
 
 # This is where the package is placed
 TARGET_SHAREDIR?=$(TARGET_DIR)/$(PG_SHAREDIR)
 TARGET_LIBDIR?=$(TARGET_DIR)/$(PG_LIBDIR)
 
-PG_REGRESS?=/usr/lib/postgresql/15/lib/pgxs/src/test/regress/pg_regress
+PG_REGRESS?=$(PG_LIBDIR)/pgxs/src/test/regress/pg_regress
 PG_SOCKET_DIR?=/var/lib/postgresql/.pgrx/
 PGHOST?=localhost
 PGPORT?=288$(subst pg,,$(PGVER))
