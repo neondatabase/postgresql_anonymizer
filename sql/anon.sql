@@ -1080,19 +1080,15 @@ $$
 -- Random Generic Data
 -------------------------------------------------------------------------------
 
+-- The random functions are written in Rust (see `src/random.rs`)
+
+-- Undocumented and kept for backward compatibility with v1
 CREATE OR REPLACE FUNCTION anon.random_string(
   l integer
 )
 RETURNS text
 AS $$
-  SELECT array_to_string(
-    array(
-        select substr('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-                      ((random()*(36-1)+1)::integer)
-                      ,1)
-        from generate_series(1,l)
-    ),''
-  );
+  SELECT anon.random_string(pg_catalog.int4range(1,l+1));
 $$
   LANGUAGE SQL
   VOLATILE
@@ -1102,196 +1098,27 @@ $$
   SET search_path=''
 ;
 
--- Zip code
-CREATE OR REPLACE FUNCTION anon.random_zip()
-RETURNS text
-AS $$
-  SELECT array_to_string(
-         array(
-                select substr('0123456789',((random()*(10-1)+1)::integer),1)
-                from generate_series(1,5)
-            ),''
-          );
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-
--- range
-
-CREATE OR REPLACE FUNCTION anon.random_in_daterange(
-  r DATERANGE
-)
-RETURNS DATE
-AS $$
-  SELECT CAST(
-      (random()*(upper(r)::TIMESTAMP-lower(r)::TIMESTAMP))::INTERVAL
-      +lower(r)
-      AS DATE
-  );
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.random_in_int4range(
-  r INT4RANGE
-)
-RETURNS INT
-AS $$
-  -- PG12 does not automatically cast the double precision result to INT)
-  SELECT CAST( (random()*(upper(r)-lower(r)-1))+lower(r) AS INT);
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.random_in_int8range(
-  r INT8RANGE
-)
-RETURNS BIGINT
-AS $$
-  SELECT CAST( (random()*(upper(r)-lower(r)-1))+lower(r) AS BIGINT);
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.random_in_numrange(
-  r NUMRANGE
-)
-RETURNS NUMERIC
-AS $$
-  SELECT CAST( (random()*(upper(r)-lower(r)))+lower(r) AS NUMERIC);
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-
-CREATE OR REPLACE FUNCTION anon.random_in_tsrange(
-  r TSRANGE
-)
-RETURNS TIMESTAMP WITHOUT TIME ZONE
-AS $$
-  SELECT  CAST( (random()*(upper(r)-lower(r)))::INTERVAL+lower(r)
-          AS TIMESTAMP WITHOUT TIME ZONE);
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.random_in_tstzrange(
-  r TSTZRANGE
-)
-RETURNS TIMESTAMP WITH TIME ZONE
-AS $$
-  SELECT  CAST( (random()*(upper(r)-lower(r)))::INTERVAL+lower(r)
-          AS TIMESTAMP WITH TIME ZONE);
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-
--- date
-
-CREATE OR REPLACE FUNCTION anon.random_date_between(
-  date_start timestamp WITH TIME ZONE,
-  date_end timestamp WITH TIME ZONE
-)
-RETURNS timestamp WITH TIME ZONE AS $$
-    SELECT (random()*(date_end-date_start))::interval+date_start;
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.random_date()
-RETURNS timestamp with time zone AS $$
-  SELECT anon.random_date_between('1900-01-01'::timestamp with time zone,now());
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-
--- integer
-
-CREATE OR REPLACE FUNCTION anon.random_int_between(
-  int_start INTEGER,
-  int_stop INTEGER
-)
-RETURNS INTEGER AS $$
-    SELECT CAST ( random()*(int_stop-int_start)+int_start AS INTEGER );
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
-CREATE OR REPLACE FUNCTION anon.random_bigint_between(
-  int_start BIGINT,
-  int_stop BIGINT
-)
-RETURNS BIGINT AS $$
-    SELECT CAST ( random()*(int_stop-int_start)+int_start AS BIGINT );
-$$
-  LANGUAGE SQL
-  VOLATILE
-  RETURNS NULL ON NULL INPUT
-  PARALLEL RESTRICTED -- because random
-  SECURITY INVOKER
-  SET search_path=''
-;
-
+-- Undocumented and kept for backward compatibility with v1
 CREATE OR REPLACE FUNCTION anon.random_phone(
-  phone_prefix TEXT DEFAULT '0'
+  prefix TEXT
 )
 RETURNS TEXT AS $$
-  SELECT  phone_prefix
-          || CAST(anon.random_int_between(100000000,999999999) AS TEXT)
-          AS "phone";
+  SELECT  anon.random_number_with_format(prefix||'#########');
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+-- Undocumented and kept for backward compatibility with v1
+CREATE OR REPLACE FUNCTION anon.plop(
+  prefix TEXT
+)
+RETURNS TEXT AS $$
+  SELECT  anon.random_number_with_format(prefix||'#########');
 $$
   LANGUAGE SQL
   VOLATILE

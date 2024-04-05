@@ -31,6 +31,7 @@ SELECT extract( DAY FROM anon.random_in_tsrange('[2022-10-9,2022-10-31)')) > 8;
 SELECT extract( YEAR FROM anon.random_in_tstzrange('[2022-01-01,2022-12-31]')) = 2022;
 
 -- Date
+SELECT anon.random_time() IS NOT NULL;
 SELECT pg_typeof(anon.random_date_between('1900-01-01'::TIMESTAMP WITH TIME ZONE,now())) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
 SELECT pg_typeof(anon.random_date_between('0001-01-01'::DATE,'4001-01-01'::DATE)) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
 SELECT pg_typeof(anon.random_date()) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;

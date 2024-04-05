@@ -5,6 +5,12 @@
 use pgrx::*;
 use std::ffi::CStr;
 
+
+pub static ANON_DUMMY_LOCALE: GucSetting<Option<&'static CStr>> =
+    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
+        CStr::from_bytes_with_nul_unchecked(b"en_US\0")
+    }));
+
 pub static ANON_K_ANONYMITY_PROVIDER: GucSetting<Option<&'static CStr>> =
     GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
         CStr::from_bytes_with_nul_unchecked(b"k_anonymity\0")
@@ -53,6 +59,15 @@ static ANON_MASK_SCHEMA: GucSetting<Option<&'static CStr>> =
 // Register the GUC parameters for the extension
 //
 pub fn register_gucs() {
+
+    GucRegistry::define_string_guc(
+        "anon.dummy_locale",
+        "The default locale for the dummy data functions",
+        "",
+        &ANON_DUMMY_LOCALE,
+        GucContext::Suset,
+        GucFlags::SUPERUSER_ONLY,
+    );
 
     GucRegistry::define_string_guc(
         "anon.k_anonymity_provider",

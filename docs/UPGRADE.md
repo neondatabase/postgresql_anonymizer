@@ -8,6 +8,24 @@ The operation `ALTER EXTENSION ... UPDATE ...` is not supported.
 You need to drop and recreate the extension after every upgrade.
 
 
+Upgrade to version 2.0 and further versions
+-------------------------------------------------------------------------------
+
+With version 2, the entire core library was rewritten in Rust. This is a major
+change that brings new features, better performances and improved stability.
+
+However the changes are mostly internal and for the most part the public
+interface of the extension does not change. An masking policy written with
+version 1.3 should work with version 2.0 !
+
+<!--
+Unfortunatelly there are a few breaking changes that could not avoid:
+
+* The function `anon.random_phone('+33')` is now replaced by
+  `anon.random_phone_with_format('+33# ## ## ## ##')`. This new function gives
+  you more flexibility to specify to output format of the phone numbers.
+-->
+
 Upgrade to version 1.3 and further versions
 -------------------------------------------------------------------------------
 

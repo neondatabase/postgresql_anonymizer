@@ -92,6 +92,12 @@ SELECT extract( YEAR FROM anon.random_in_tstzrange('[2022-01-01,2022-12-31]')) =
 (1 row)
 
 -- Date
+SELECT anon.random_time() IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT pg_typeof(anon.random_date_between('1900-01-01'::TIMESTAMP WITH TIME ZONE,now())) = 'TIMESTAMP WITH TIME ZONE'::REGTYPE;
  ?column? 
 ----------
