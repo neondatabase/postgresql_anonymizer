@@ -37,6 +37,7 @@ pub use pgrx::pg_sys::Value as SchemaValue;
 /// strVal macro
 ///
 
+#[allow(non_snake_case)]
 #[cfg(any(feature = "pg15", feature = "pg16"))]
 pub unsafe fn strVal(v: SchemaValue) -> *const i8 { v.sval }
 
