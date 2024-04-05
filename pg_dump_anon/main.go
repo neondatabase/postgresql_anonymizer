@@ -286,7 +286,7 @@ func main() {
   flag.StringVar(&f_encoding,"E","","dump the data in encoding ENCODING")
   flag.StringVar(&f_encoding,"encoding","","dump the data in encoding ENCODING")
   flag.StringVar(&f_exclude_table,"T","","Exclude the specified table(s)")
-  flag.StringVar(&f_exclude_table,"exclude-table","","Exclude the specified schema(s)")
+  flag.StringVar(&f_exclude_table,"exclude-table","","Exclude the specified table(s)")
   flag.StringVar(&f_exclude_table_data,"exclude-table-data","","do NOT dump data for the specified table(s)")
   flag.StringVar(&f_file,"f", "", "Output file")
   flag.StringVar(&f_file,"file", "", "Output file")
@@ -572,4 +572,3 @@ func main() {
 
   os.Exit(0)
 }
-
