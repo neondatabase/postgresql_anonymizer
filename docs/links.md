@@ -5,10 +5,13 @@ Videos / Presentations
 --------------------------------------------------------------------------------
 
 * French: https://www.youtube.com/watch?v=KGSlp4UygdU
+* English: https://www.youtube.com/watch?v=niIIFL4s-L8
 * Chinese: https://www.youtube.com/watch?v=n9atI31FcSM
 
 Similar technologies
 --------------------------------------------------------------------------------
+* [database anonymizer](https://gitnet.fr/deblan/database-anonymizer)
+  An anonymizing ETL for MySQL and PostgreSQL
 
 * [greenmask](https://github.com/GreenmaskIO/greenmask)
   Anonymous dump utility written in Golang
