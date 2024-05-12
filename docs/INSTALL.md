@@ -49,7 +49,7 @@ This extension is available in two versions :
 
 
 
-Install on RedHat / CentOS
+Install on RedHat / Rocky Linux / Alma Linux
 ------------------------------------------------------------------------------
 
 > This is the recommended way to install the `stable` extension
@@ -150,11 +150,14 @@ All new connections to the database can now use the extension.
 Install From source
 ------------------------------------------------------------------------------
 
+[PGRX System Requirements]: https://github.com/pgcentralfoundation/pgrx?tab=readme-ov-file#system-requirements
+
 > This is the recommended way to install the `latest` extension
 
-_Step 0:_ First you need to install the postgresql development libraries.
-On most distributions, this is available through a package called
-`postgresql-devel` or `postgresql-server-dev`.
+**Important**: Building the extension requires a full Rust development
+environment. It is not recommended to build it on a production server.
+
+_Step 0:_ First you need to install the [PGRX System Requirements].
 
 _Step 1:_ Download the source from the
 [official repository on Gitlab](https://gitlab.com/dalibo/postgresql_anonymizer/),
@@ -324,25 +327,33 @@ Install on MacOS
 
 **WE DO NOT PROVIDE COMMUNITY SUPPORT FOR THIS EXTENSION ON MACOS SYSTEMS.**
 
-However it should be possible to build the extension with the following lines:
+However it should be possible to build the extension if you install the
+[PGRX Mac OS system requirements] and then follow the regular
+[install from source] procedure.
 
-```console
-export C_INCLUDE_PATH="$(xcrun --show-sdk-path)/usr/include"
-make extension
-make install
-```
+[PGRX Mac OS system requirements]: https://github.com/pgcentralfoundation/pgrx?tab=readme-ov-file#system-requirements
 
 Install on Windows
 ------------------------------------------------------------------------------
 
-**WE DO NOT PROVIDE COMMUNITY SUPPORT FOR THIS EXTENSION ON WINDOWS.**
+PostgreSQL Anonymizer is built upon the [PGRX] framework and currently [PGRX]
+does not support compiling PostgreSQL extensions for Windows.
 
-However it is possible to compile it using Visual Studio and the `build.bat`
-file.
+This is means that there's no native build of PostgreSQL Anonymizer for Windows.
 
-We provide Windows binaries and install files as part of our commercial
-support.
+However is it possible to run PostgreSQL inside a WSL2 container, which is
+basically an Ubuntu subsystem running on Windows.
 
+You can then install PostgreSQL Anonymizer inside the WSL2 container like you
+would on a regular Ubuntu server.
+
+Please read the Windows documentation for more details:
+
+* [Install WSL2]
+* [Install PostgreSQL in WSL2]
+
+[Install PostgreSQL in WSL2]: https://learn.microsoft.com/windows/wsl/tutorials/wsl-database#install-postgresql
+[Install WSL2]: https://learn.microsoft.com/windows/wsl/install
 
 Install in the cloud
 ------------------------------------------------------------------------------
