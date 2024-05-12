@@ -57,7 +57,7 @@ table without writing any masking rule.
 # SELECT * FROM access_logs LIMIT 1;
  date_open | ip_addr | url | browser_agent
 -----------+---------+-----+---------------
-           |         |     | unkown
+           |         |     | unknown
 ```
 
 
@@ -102,7 +102,7 @@ Caveat: Add a DEFAULT to the NOT NULL columns
 
 It is a bit ironic that the `anon.privacy_by_default` parameter **is not**
 enabled by default. This reason is simple: activating this option **may or may
-not** lead to contraint violations depending on the columns constraints placed
+not** lead to constraint violations depending on the columns constraints placed
 in the database model.
 
 Let's say we want to add a `NOT NULL` constraint on the `date_open` column:
@@ -132,5 +132,3 @@ ALTER TABLE public.access_logs
 
 Other constraints (foreign keys, UNIQUE, CHECK, etc.) should work fine without
 a DEFAULT value.
-
-

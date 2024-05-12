@@ -26,4 +26,3 @@ file /tmp/dump.latin9.sql
 
 # clean up
 dropdb $DB_SOURCE
-

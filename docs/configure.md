@@ -118,5 +118,3 @@ Then reconnect so that the change takes effect and start the engine.
 ```sql
 SELECT start_dynamic_masking();
 ```
-
-

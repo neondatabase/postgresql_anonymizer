@@ -24,7 +24,7 @@ Similar technologies
   Anonymous dumps based on masking rules written in a YAML file
 
 * [pgsodium and postgresql-anonymizer](https://github.com/michelp/pgsodium/blob/michelp/anonymizer-example/example/PgSodiumAnonymizer.ipynb)
-  Pseudononymous Access To Encrypted Table
+  Pseudonymous Access To Encrypted Table
 
 * [pg_diffix](https://github.com/diffix/pg_diffix)
   PostgreSQL extension implementing differential privacy (inactive)

@@ -14,7 +14,7 @@ REVOKE ALL ON SCHEMA anon FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA anon FROM PUBLIC;
 -- ...except calling the functions
 GRANT USAGE ON SCHEMA anon TO PUBLIC;
--- other priviledge will be granted below on a case-by-case basis
+-- other privileges will be granted below on a case-by-case basis
 
 
 --
@@ -33,9 +33,9 @@ SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED';
 
 --
 -- This extension will create views based on masking functions. These functions
--- will be run as with priviledges of the owners of the views. This is prone
--- to search_path attacks: an untrusted user may be able to overide some
--- functions and gain superuser priviledges.
+-- will be run as with privileges of the owners of the views. This is prone
+-- to search_path attacks: an untrusted user may be able to override some
+-- functions and gain superuser privileges.
 --
 -- Therefore all functions should be defined with `SET search_path=''` even if
 -- they are not SECURITY DEFINER.
@@ -715,7 +715,7 @@ RETURNS TABLE (
 AS $$
 BEGIN
   IF not anon.is_initialized() THEN
-    RAISE NOTICE 'The dictionnary of identifiers is not present.'
+    RAISE NOTICE 'The dictionary of identifiers is not present.'
       USING HINT = 'You probably need to run ''SELECT anon.init()'' ';
   END IF;
 
@@ -1054,7 +1054,7 @@ $$
 --
 -- Return a hash value for a seed
 --
--- The function is a SECURIY DEFINER because `anon.salt` and `anon.algorithm`
+-- The function is a SECURITY DEFINER because `anon.salt` and `anon.algorithm`
 -- are visible only to superusers.
 --
 CREATE OR REPLACE FUNCTION anon.hash(
@@ -1509,7 +1509,7 @@ $$
 
 
 --
--- the pseudo function are declared as SECURTY DEFINER because the access
+-- the pseudo function are declared as SECURITY DEFINER because the access
 -- the anon.salt which is only visible to superusers.
 --
 -- If a masked role can read the salt, he/she can run a brute force attack to
@@ -1705,7 +1705,7 @@ $$
 ;
 
 --
--- partial_email('daamien@gmail.com') will becomme 'da******@gm******.com'
+-- partial_email('daamien@gmail.com') will become 'da******@gm******.com'
 --
 CREATE OR REPLACE FUNCTION anon.partial_email(
   ov TEXT
@@ -1891,7 +1891,7 @@ SELECT
   COALESCE(masking_function,masking_value) AS masking_filter,
   (
     -- Aggregate with count and bool_and to handle the cases
-    -- when the schema is not delared
+    -- when the schema is not declared
     SELECT COUNT(label)>0 and bool_and(label='TRUSTED')
     FROM pg_seclabel sl,
          anon.get_function_schema(masking_function) f("schema")
@@ -1971,7 +1971,7 @@ SELECT * FROM anon.pg_masking_rules
 -- Static Masking
 -------------------------------------------------------------------------------
 
--- Return SQL assigment which replace masked data in a column or null when no masking rule was found
+-- Return SQL assignment which replace masked data in a column or null when no masking rule was found
 CREATE OR REPLACE FUNCTION anon.build_anonymize_column_assignment(
   tablename REGCLASS,
   colname NAME
@@ -2341,7 +2341,7 @@ BEGIN
   IF NOT autoload THEN
     RAISE DEBUG 'Autoload is disabled.';
   ELSEIF r.init THEN
-    RAISE DEBUG 'Anon extension is already initiliazed.';
+    RAISE DEBUG 'Anon extension is already initialized.';
   ELSE
     PERFORM anon.init();
   END IF;
@@ -2470,10 +2470,10 @@ CREATE OR REPLACE FUNCTION anon.unmask_role(
 RETURNS BOOLEAN AS
 $$
 BEGIN
-  -- we dont know what priviledges this role had before putting his mask on
-  -- so we keep most of the priviledges as they are and let the
+  -- we dont know what privileges this role had before putting his mask on
+  -- so we keep most of the privileges as they are and let the
   -- administrator restore the correct access right.
-  RAISE NOTICE 'The previous priviledges of ''%'' are not restored. You need to grant them manually.', maskedrole;
+  RAISE NOTICE 'The previous privileges of ''%'' are not restored. You need to grant them manually.', maskedrole;
   -- restore default search_path
   EXECUTE format('ALTER ROLE %s RESET search_path;', maskedrole);
   RETURN TRUE;
@@ -2504,7 +2504,7 @@ BEGIN
   -- using a basic CREATE RULE statement. Placing a masking rule on a view is
   -- not supported, however a very stubborn user could try to create a table,
   -- put a mask on it and then transform the table into a view. In that case,
-  -- the mask_update process is stopped immediatly
+  -- the mask_update process is stopped immediately
   --
   -- https://github.com/postgres/postgres/commit/b23cd185fd5410e5204683933f848d4583e34b35
   --

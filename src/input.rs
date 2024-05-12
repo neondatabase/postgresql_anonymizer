@@ -81,7 +81,7 @@ pub fn check_value( expr: &str) -> Result<(),&'static str> {
 }
 
 
-/// walk through a parsetree and check that all fonction belong in a trusted
+/// walk through a parsetree and check that all functions belong in a trusted
 /// schema
 ///
 #[pg_guard]

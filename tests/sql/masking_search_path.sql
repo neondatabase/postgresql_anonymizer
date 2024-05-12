@@ -48,5 +48,3 @@ SELECT anon.stop_dynamic_masking();
 SELECT COUNT(*)=0 FROM pg_namespace WHERE nspname='dbo_MASK_2';
 
 ROLLBACK;
-
-

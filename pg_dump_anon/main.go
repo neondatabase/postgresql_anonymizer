@@ -92,7 +92,7 @@ var psql_opts []string = []string {
 }
 
 // output file pointer
-var output *os.File = os.Stdout       // by default, use standard ouput
+var output *os.File = os.Stdout       // by default, use standard output
 
 // snapshot identifier
 var snapshotname string
@@ -364,7 +364,7 @@ func main() {
     append_pg_dump_option("--verbose")
   }
 
-  // Open the file ouput, if any
+  // Open the file output, if any
   if f_file != "" {
     fn := redirectOutput(f_file)
     defer fn()

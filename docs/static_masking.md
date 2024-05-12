@@ -112,7 +112,7 @@ Shuffling
 This is useful for foreign keys because referential integrity will be kept.
 
 **IMPORTANT:**  `shuffle_column()` is not a [masking function] because it works
-"verticaly" : it will modify all the values of a column at once.
+"vertically" : it will modify all the values of a column at once.
 
 [masking function]: masking_functions.md
 
@@ -130,8 +130,3 @@ There are also some functions that can add noise on an entire column:
 
 **IMPORTANT** : These noise functions are vulnerable to a form of
 repeat attack. See `demo/noise_reduction_attack.sql` for more details.
-
-
-
-
-

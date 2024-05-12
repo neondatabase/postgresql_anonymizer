@@ -4,11 +4,11 @@ BEGIN;
 
 CREATE TABLE suggest(
 	attname TEXT,
-	suggested_mask TEXT	
+	suggested_mask TEXT
 );
 
-INSERT INTO suggest 
-VALUES 
+INSERT INTO suggest
+VALUES
 ('firstname','random_first_name()'),
 ('first_name','random_first_name()'),
 ('given_name','random_first_name()'),
@@ -20,7 +20,7 @@ VALUES
 ('cartebancaire','FIXME')
 ;
 
-SELECT 
+SELECT
   a.attrelid,
   a.attname,
   s.suggested_mask,

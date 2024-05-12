@@ -81,4 +81,3 @@ There may be other sampling tools for PostgreSQL but [pg_sample] is probably
 the best one.
 
 [pg_sample]: https://github.com/mla/pg_sample
-

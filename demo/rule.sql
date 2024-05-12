@@ -1,11 +1,11 @@
 --
--- This file contains various experiments to implement the 
+-- This file contains various experiments to implement the
 -- dynamic masking engine using the RULE system.
 --
--- The main issue is that PostgreSQL considers that a VIEW 
+-- The main issue is that PostgreSQL considers that a VIEW
 -- is an empty TABLE and a RULE. Therefore it does not allow
 -- user to put a RULE on a non-empty TABLE :
--- 
+--
 -- The examples below will return the following error:
 -- « could not convert table x to a view because it is not empty »
 --

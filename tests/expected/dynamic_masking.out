@@ -102,7 +102,7 @@ SELECT COUNT(name)>5 FROM pg_settings WHERE name LIKE 'anon.%';
 CREATE EXTENSION pg_stat_statements;
 -- STOP
 SELECT anon.stop_dynamic_masking();
-NOTICE:  The previous priviledges of 'jimmy_mcnulty' are not restored. You need to grant them manually.
+NOTICE:  The previous privileges of 'jimmy_mcnulty' are not restored. You need to grant them manually.
  stop_dynamic_masking 
 ----------------------
  t

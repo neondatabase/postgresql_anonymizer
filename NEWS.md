@@ -51,7 +51,7 @@ list of the required changes.
 How to Upgrade
 --------------------------------------------------------------------------------
 
-Install the new version using your prefered [install] method. For instance, on
+Install the new version using your preferred [install] method. For instance, on
 Red Hat and Rocky Linux systems, you can update it directly with `dnf update`.
 
 Then restart the PostgreSQL instance, drop the extension and recreate it.
@@ -241,7 +241,7 @@ Before version 1.0, pg_dump_anon was a bash script. This script was nice and
 simple. However under certain conditions the anonymous backups were not
 consistent.
 
-There's now a brand new version of pg_dump_anon (rewitten in Golang) that
+There's now a brand new version of pg_dump_anon (rewritten in Golang) that
 will always produce consistent exports.
 
 The previous script is now renamed to pg_dump_anon.sh and it is still
@@ -354,10 +354,10 @@ to involve developers and architects early on, during the preliminary design
 steps, by declaring the masking rules using SQL, directly inside the database
 model itself, in the same way as an integrity constraint or an index !
 
-When a developper wants to add a new column to a table, she/he usually
+When a developer wants to add a new column to a table, she/he usually
 defines a few rules and restrictions that are enforced for this column.
 With PostgreSQL Anonymizer, she/he can also declare that this column contains
-personnal information and write a masking rule to describe how the data
+personal information and write a masking rule to describe how the data
 will be transformed during the anonymization process.
 
 The extension offers a panel of masking techniques: randomization, noise,
@@ -369,7 +369,7 @@ role in the data protection policy :
 
 > « With PostgreSQL Anonymizer we integrate, from the design of the database,
 > the principle that outside production the data must be anonymized. Thus we can
-> inforce the RGPD rules, without affecting the quality of the tests during
+> enforce the RGPD rules, without affecting the quality of the tests during
 > version upgrades for example. »
 
 Here's a basic example:
@@ -397,7 +397,7 @@ there's no risk of [singling out] an individual inside the dataset.
 
 Data protection is a team effort ! Every person involved in the lifecycle
 of application should be concerned. With that mindset, the PostgreSQL
-Anonymizer extension provides tools for developpers and DBAs and help them
+Anonymizer extension provides tools for developers and DBAs and help them
 to implement the data masking rules early on, thus respecting the
 "Privacy by Design" principle.
 
@@ -1073,7 +1073,7 @@ functions:
   algorithm you want to use
 
 By default a random secret salt is generated when the extension is initialized
-and the default hash algortihm is `sha512`. You can change that if needed.
+and the default hash algorithm is `sha512`. You can change that if needed.
 
 Keep in mind that hashing is a form of Pseudonymization. This means that the
 real data can be rebuilt using the hashed value and the masking function. If an
@@ -1352,7 +1352,7 @@ value. For instance, instead of saying "Bob is 28 years old", you can say
 the data remains true while avoiding the risk of re-identification.
 
 PostgreSQL can handle generalization very easily with the [RANGE] data types,
-a very poweful way to store and manipulate a set of values contained between
+a very powerful way to store and manipulate a set of values contained between
 a lower and an upper bound.
 
 [RANGE]: https://www.postgresql.org/docs/current/rangetypes.html
@@ -1405,8 +1405,8 @@ of re-identification using linkage with other data sources.
 
 You can evaluate the k-anonymity factor of a table in 2 steps :
 
-Step 1: First defined the columns that are [indirect idenfiers] ( also known
-as "quasi identifers") like this:
+Step 1: First defined the columns that are [indirect identifiers] ( also known
+as "quasi identifiers") like this:
 
     SECURITY LABEL FOR anon ON COLUMN generalized_patient.zipcode
     IS 'INDIRECT IDENTIFIER';
@@ -1564,12 +1564,12 @@ Paris, August 26, 2019
 identifiable information (PII) or commercially sensitive data from a PostgreSQL
 database.
 
-Firts of all, you declare a list of [Masking Rules] directly inside the database
+First of all, you declare a list of [Masking Rules] directly inside the database
 model with SQL comments like this :
 
     COMMENT ON COLUMN users.name IS 'MASKED WITH FUNCTION md5(name)';
 
-Once the masking rules are declared, anonymization can be acheived in 3
+Once the masking rules are declared, anonymization can be achieved in 3
 different ways:
 
 * [Anonymous Dumps]: Simply export the masked data into an SQL file
@@ -1580,7 +1580,7 @@ In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shuffling, noise, etc... You can also user your own custom
 function !
 
-For more detail, please take a look at the documention:
+For more detail, please take a look at the documentation:
 https://postgresql-anonymizer.readthedocs.io/
 
 [Masking Rules]: https://postgresql-anonymizer.readthedocs.io/en/latest/declare_masking_rules/
@@ -1639,7 +1639,7 @@ Paris, october 29, 2018
 `postgresql_anonymizer` is an extension to mask or replace personally identifiable
 information (PII) or commercially sensitive data from a PostgreSQL database.
 
-The projet is aiming toward a **declarative approach** of anonymization. This
+The project is aiming toward a **declarative approach** of anonymization. This
 means we're trying to extend PostgreSQL's Data Definition Language (DDL) in
 order to specify the anonymization strategy inside the table definition itself.
 
@@ -1697,7 +1697,7 @@ It requires an extension named `tsm_system_rows`, which is delivered by the
 postgresql-contrib package of the main linux distributions
 
 You can install it with `pgxn` or build from source it like any other
-extenstion.
+extension.
 
 **WARNING:** The project is at an early stage of development and should be used carefully.
 

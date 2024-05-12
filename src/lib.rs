@@ -418,7 +418,7 @@ mod anon {
             )
         };
 
-        // walk throught the parse tree, down to the FuncCall node (if present)
+        // walk through the parse tree, down to the FuncCall node (if present)
         let raw_stmt = unsafe {
             // this is the equivalent of the linitial_node C macro
             // https://doxygen.postgresql.org/pg__list_8h.html#a213ac28ac83471f2a47d4e3918f720b4
@@ -637,7 +637,7 @@ mod anon {
             reldesc.attrs.as_slice(natts.try_into().unwrap())
         };
 
-        // Here attibutes are numbered from 0 up
+        // Here attributes are numbered from 0 up
         let a = attrs[colnum as usize - 1 ];
 
         if a.attisdropped {
@@ -760,7 +760,7 @@ mod tests {
         /// Create objects for testing purpose
         ///
         /// This is a very basic testing context
-        /// For more sophisticated use cases, use the `pg_regress` functionnal
+        /// For more sophisticated use cases, use the `pg_regress` functional
         /// test suite
         ///
 
@@ -921,8 +921,8 @@ mod tests {
         // and we would have to create planned statements from scratch and
         // pass them to function.
         //
-        // Alternatively, the functionnal tests are way simpler to write, so
-        // currenlty we focus on them and ignore this unit test.
+        // Alternatively, the functional tests are way simpler to write, so
+        // currently we focus on them and ignore this unit test.
         //
         // See `tests/sql/copy.sql` and `test/sql/pg_dump.sql` for more details
         //

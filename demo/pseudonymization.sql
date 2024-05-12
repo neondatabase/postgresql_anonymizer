@@ -46,4 +46,3 @@ SELECT * FROM people;
 
 
 ROLLBACK;
-

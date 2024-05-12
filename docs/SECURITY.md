@@ -5,7 +5,7 @@ Security
 Permissions
 ------------------------------------------------------------------------------
 
-Here's an overview of what users can do depending on the priviledge they have:
+Here's an overview of what users can do depending on the privileges they have:
 
 | Action                                   | Superuser | Owner | Masked Role |
 | :--------------------------------------- | :-------: | :---: | :---------: |
@@ -37,7 +37,7 @@ By default, the database owner can only write masking rules with functions
 that are located in the trusted schemas which are controlled by the superusers.
 
 Out of the box, only the `anon` schema is declared as trusted. This means that
-by defautt the functions from the `pg_catalog` cannot be used in masking rules.
+by default the functions from the `pg_catalog` cannot be used in masking rules.
 
 For more details, read the [Using pg_catalog functions] section.
 
@@ -55,4 +55,3 @@ that calls them. This is an important restriction.
 
 This extension contains another few functions declared with the tag
 `SECURITY DEFINER`.
-

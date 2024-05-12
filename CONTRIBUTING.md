@@ -73,7 +73,7 @@ git push origin
 
 When working on a Merge Requests (`MR`) that takes a long time, it can happen
 that your local branch (let's call it `foo`) is out of sync. Here's how you
-can apply the lastest:
+can apply the latest:
 
 
 ```bash
@@ -93,7 +93,7 @@ Set up a development environment
 This extension is written in SQL, pl/pgsql and Rust. It relies on a Rust
 framework named [PGRX].
 
-To set up, your development environment follow the [PGRX install intructions] !
+To set up, your development environment follow the [PGRX install instructions] !
 
 Alternatively you use the docker image we built for that, simply by running:
 
@@ -117,7 +117,7 @@ make docker_bash
 
 
 [PGRX]: https://github.com/pgcentralfoundation/pgrx
-[PGRX install intructions]: https://github.com/pgcentralfoundation/pgrx#system-requirements
+[PGRX install instructions]: https://github.com/pgcentralfoundation/pgrx#system-requirements
 
 
 

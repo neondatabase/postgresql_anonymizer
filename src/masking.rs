@@ -82,7 +82,7 @@ pub fn stmt_for_table(
 /// which can be either:
 ///     - the attribute name (i.e. the authentic value)
 ///     - the function or value from the masking rule
-///     - the defaut value of the column
+///     - the default value of the column
 ///     - "NULL"
 ///
 pub fn value_for_att(
@@ -160,7 +160,7 @@ pub fn value_for_att(
         };
         debug3!("Anon: reldesc = {:#?}", reldesc);
         // loop over the constraints of relation in search of
-        // the default value of this colum
+        // the default value of this column
 
         let constr = unsafe {
             // constr is a TupleConstr object

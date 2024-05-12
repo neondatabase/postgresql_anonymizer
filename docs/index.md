@@ -124,6 +124,3 @@ it fits your needs and what features are missing.
 You can either [open an issue] or send a message at <contact@dalibo.com>.
 
 [open an issue]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
-
-
-

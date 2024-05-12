@@ -41,8 +41,8 @@ SELECT anon.mask_update();
 
 -- STOP
 SELECT anon.stop_dynamic_masking();
-NOTICE:  The previous priviledges of 'skynet' are not restored. You need to grant them manually.
-NOTICE:  The previous priviledges of 'hal' are not restored. You need to grant them manually.
+NOTICE:  The previous privileges of 'skynet' are not restored. You need to grant them manually.
+NOTICE:  The previous privileges of 'hal' are not restored. You need to grant them manually.
  stop_dynamic_masking 
 ----------------------
  t

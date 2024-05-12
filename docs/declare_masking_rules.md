@@ -114,5 +114,5 @@ Declaring Rules with COMMENTs is deprecated.
 Previous version of the extension allowed users to declare masking rules using
 the `COMMENT` syntax.
 
-This is not suppported any more. `SECURITY LABELS` are now the only way to
+This is not supported any more. `SECURITY LABELS` are now the only way to
 declare rules.

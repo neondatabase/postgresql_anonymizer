@@ -48,4 +48,3 @@ The data can be altered with several techniques:
   using additional information. **Encryption** and **Hashing** are two examples
   of pseudonymization techniques. However a pseudonymizated data is still linked
   to the original data.
-

@@ -187,4 +187,3 @@ SELECT anon.remove_masks_for_all_columns();
 SELECT COUNT(*)=0 FROM anon.pg_masking_rules;
 
 ROLLBACK;
-

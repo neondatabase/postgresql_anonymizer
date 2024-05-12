@@ -28,6 +28,3 @@ SELECT CASE
 ;
 
 ROLLBACK;
-
-
-

@@ -172,4 +172,3 @@ In order the view the masked data with a graphic tool, you can either:
 1- Open the SQL query panel and type `SELECT * FROM foo`
 
 2- Navigate to `Database > Schemas > mask > Views > foo`
-

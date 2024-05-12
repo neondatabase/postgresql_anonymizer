@@ -223,7 +223,3 @@ Performance
 See [docs/performances.md]
 
 [docs/performances.md]: https://postgresql-anonymizer.readthedocs.io/en/latest/performances/
-
-
-
-

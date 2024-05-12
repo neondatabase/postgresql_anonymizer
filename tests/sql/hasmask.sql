@@ -29,4 +29,3 @@ SELECT anon.hasmask(NULL) IS FALSE;
 SELECT anon.hasmask('does_not_exist');
 
 ROLLBACK;
-

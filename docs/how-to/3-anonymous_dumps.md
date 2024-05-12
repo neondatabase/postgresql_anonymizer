@@ -11,7 +11,7 @@ their views.
 
 He hired a web agency to develop a new design for his website. The
 agency asked for a SQL export (dump) of the current website database.
-Paul wants to \"clean\" the database export and remove any personnal
+Paul wants to \"clean\" the database export and remove any personal
 information contained in the comment section.
 
 ## How it works
@@ -73,7 +73,7 @@ the field does not have a standard schema makes our tasks harder.
 
 As we can see, web visitors can write any kind of information in the
 comment section. Our best option is to remove this key entirely because
-there\'s no way to extract personnal data properly.
+there\'s no way to extract personal data properly.
 
 
 ------------------------------------------------------------------------
@@ -164,7 +164,7 @@ database into it.
 
 Pierre plans to extract general information from the metadata. For
 instance, he wants to calculate the number of unique visitors based on
-the different IP adresses. But an IP adress is an **indirect
+the different IP addresses. But an IP address is an **indirect
 identifier**, so Paul needs to anonymize this field while maintaining
 the fact that some values appear multiple times.
 

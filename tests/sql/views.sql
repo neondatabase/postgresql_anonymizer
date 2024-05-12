@@ -24,4 +24,3 @@ SECURITY LABEL FOR anon ON COLUMN v_early_employee.ssn
 ROLLBACK TO mask_on_view;
 
 ROLLBACK;
-

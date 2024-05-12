@@ -40,7 +40,7 @@ EOF
 # For debug
 pg_dump blackbox_demo_db > _blackbox_demo_dump.sql
 
-# Pass the dump and the rules throught the docker "black box"
+# Pass the dump and the rules through the docker "black box"
 (pg_dumpall --roles-only && pg_dump blackbox_demo_db) | cat - _blackbox_rules.sql | $BOX > _blackbox_demo_dump_anonymized.sql
 
 cat _blackbox_demo_dump_anonymized.sql | grep 'Sarah'

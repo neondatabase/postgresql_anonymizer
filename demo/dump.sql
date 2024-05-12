@@ -14,10 +14,10 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.load();
 
 -- STEP 2 : Declare the masking rules
-SECURITY LABEL FOR anon ON COLUMN cluedo.name 
+SECURITY LABEL FOR anon ON COLUMN cluedo.name
 IS 'MASKED WITH FUNCTION anon.random_last_name()';
 
-SECURITY LABEL FOR anon ON COLUMN cluedo.room 
+SECURITY LABEL FOR anon ON COLUMN cluedo.room
 IS 'MASKED WITH FUNCTION cast(''CONFIDENTIAL'' AS TEXT)';
 
 -- STEP 3 : Dump

@@ -1,7 +1,7 @@
 ---
 spec:
   inputs:
-    always:    # Optionnal
+    always:    # Optional
       type: string
       default: ''
       description: |
@@ -21,7 +21,7 @@ spec:
 #    - launch a Postgres instance
 #    - run the unit tests against it.
 #
-# The functionnal tests will be launched later with pg_regress
+# The functional tests will be launched later with pg_regress
 #
 "build-$[[ inputs.pgver ]]":
   stage: build
@@ -33,7 +33,7 @@ spec:
     # Build the extension package
     - make
     # Launch a postgres instance and run the unit tests
-    # The functionnal tests will be launched later with pg_regress
+    # The functional tests will be launched later with pg_regress
     - make test
   rules:
     - if: $ALWAYS
@@ -49,7 +49,7 @@ spec:
 ## Installcheck-pg13 will :
 ##   - install the binaries from the build job
 ##   - start a postgres instance
-##   - run the functionnal tests with pg_regress
+##   - run the functional tests with pg_regress
 ##
 "installcheck-$[[ inputs.pgver ]]":
   stage: test

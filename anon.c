@@ -589,7 +589,7 @@ anon_get_function_schema(PG_FUNCTION_ARGS)
         errmsg("'%s' is not a valid function call", function_call)));
     }
 
-    /* walk throught the parse tree, down to the FuncCall node (if present) */
+    /* walk through the parse tree, down to the FuncCall node (if present) */
     #if PG_VERSION_NUM >= 100000
     stmt = (SelectStmt *) linitial_node(RawStmt, raw_parsetree_list)->stmt;
     #else
@@ -637,7 +637,7 @@ pa_check_function(char * expr)
 
     elog(DEBUG1,"expr is a function");
 
-    /* if the function name is not qualified, we cant check the schema */
+    /* if the function name is not qualified, we can't check the schema */
     if ( guc_anon_restrict_to_trusted_schemas) {
 
       if (list_length(fc->funcname) != 2 ) return false;
@@ -913,7 +913,7 @@ pa_parse_expression(char * expr)
     /* accept only one statement */
     if ( list_length(raw_parsetree_list) != 1 ) return NULL;
 
-    /* walk throught the parse tree, down to the FuncCall node (if present) */
+    /* walk through the parse tree, down to the FuncCall node (if present) */
     #if PG_VERSION_NUM >= 100000
     stmt = (SelectStmt *) linitial_node(RawStmt, raw_parsetree_list)->stmt;
     #else
@@ -1083,7 +1083,7 @@ pa_rewrite_utility(PlannedStmt *pstmt, char * policy)
  * which can be either:
  *     - the attribute name (i.e. the authentic value)
  *     - the function or value from the masking rule
- *     - the defaut value of the column
+ *     - the default value of the column
  *     - "NULL"
  */
 static char *

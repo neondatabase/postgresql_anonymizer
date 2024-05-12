@@ -18,11 +18,11 @@ INSERT INTO book
 VALUES (1,'T2: Infiltrator',23457);
 
 
--- TEST 1 : randomize referenced key 
+-- TEST 1 : randomize referenced key
 UPDATE author
 SET id=anon.random_int_between(1,200);
 
--- TEST 2 : randomize foreign key 
+-- TEST 2 : randomize foreign key
 UPDATE book
 SET fk_author_id=anon.random_int_between(1,1000000);
 

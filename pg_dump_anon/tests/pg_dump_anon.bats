@@ -120,6 +120,3 @@ teardown() {
   $PG_DUMP_ANON -t owner --file=$RESULTS/owner_2.sql pg_dump_anon_regression
   $DIFF $RESULTS/owner.sql $RESULTS/owner_2.sql
 }
-
-
-

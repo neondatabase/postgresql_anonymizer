@@ -78,7 +78,7 @@ CONTEXT:  PL/pgSQL function anon.stop_dynamic_masking() line 8 at RAISE
 ROLLBACK TO fail_stop_engine;
 RESET ROLE;
 SELECT anon.stop_dynamic_masking();
-NOTICE:  The previous priviledges of 'mallory_the_masked_user' are not restored. You need to grant them manually.
+NOTICE:  The previous privileges of 'mallory_the_masked_user' are not restored. You need to grant them manually.
  stop_dynamic_masking 
 ----------------------
  t

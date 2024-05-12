@@ -156,7 +156,7 @@ IS 'MASKED WITH FUNCTION anon.random_in_enum(creditcard)'
 
 ### Random in Range
 
-[RANGE types] are a powerfull way to describe an interval of values, where can
+[RANGE types] are a powerful way to describe an interval of values, where can
 define inclusive or excluvive bounds:
 
 <https://www.postgresql.org/docs/current/rangetypes.html#RANGETYPES-EXAMPLES>
@@ -671,4 +671,3 @@ sophisticated JSON structure with SQL is possible, but it can be tricky at
 first! There are multiple ways of walking through the keys and updating
 values. You will probably have to try different approaches, depending on
 your real JSON data and the performance you want to reach.
-

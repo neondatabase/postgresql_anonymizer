@@ -1,5 +1,5 @@
 --
--- This example shows why the shuffling method is usefull with foreign keys
+-- This example shows why the shuffling method is useful with foreign keys
 --
 
 BEGIN;
@@ -7,14 +7,14 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 CREATE TABLE city (
-  id  SERIAL,	
+  id  SERIAL,
   name TEXT PRIMARY KEY
 );
 
 INSERT INTO city
-VALUES 
-(1,'Paris'), 
-(2,'London'), 
+VALUES
+(1,'Paris'),
+(2,'London'),
 (3,'Sidney');
 
 CREATE TABLE weather (
@@ -22,11 +22,11 @@ CREATE TABLE weather (
   fk_city_name TEXT references city(name),
   date_measurement  DATE,
   temperature INT,
-  precipitation REAL	
+  precipitation REAL
 );
 
 
-INSERT INTO weather 
+INSERT INTO weather
 VALUES
 ( 1, 'Paris', '2019-01-17', 6, 0.0 ),
 ( 2, 'Paris', '2019-01-18', 2, 3.0 ),
@@ -50,4 +50,3 @@ SELECT * FROM weather ORDER BY id;
 
 -- Clean up
 ROLLBACK;
-

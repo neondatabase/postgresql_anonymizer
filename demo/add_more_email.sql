@@ -21,4 +21,3 @@ FROM
 ) d
 ;
 COMMIT;
-

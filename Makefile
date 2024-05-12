@@ -9,7 +9,7 @@ PGRX?=cargo pgrx
 PGVER?=$(shell grep 'default = \[".*\"]' Cargo.toml | sed -e 's/.*\["//' | sed -e 's/"].*//')
 PG_MAJOR_VERSION=$(PGVER:pg%=%)
 
-# use `TARGET=debug make run` for more detailled errors
+# use `TARGET=debug make run` for more detailed errors
 TARGET?=release
 TARGET_DIR?=target/$(TARGET)/anon-$(PGVER)/
 PG_CONFIG?=`$(PGRX) info pg-config $(PGVER)`
@@ -78,7 +78,7 @@ install:
 ##
 ## INSTALLCHECK
 ##
-## These are the functionnal tests, the unit tests are run with Cargo
+## These are the functional tests, the unit tests are run with Cargo
 ##
 
 installcheck:

@@ -35,7 +35,7 @@ IS 'MASKED WITH FUNCTION anon.fake_last_name()';
 
 -- STOP
 SELECT anon.stop_dynamic_masking();
-NOTICE:  The previous priviledges of 'skynet' are not restored. You need to grant them manually.
+NOTICE:  The previous privileges of 'skynet' are not restored. You need to grant them manually.
  stop_dynamic_masking 
 ----------------------
  t

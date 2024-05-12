@@ -437,7 +437,7 @@ might have a platform-specific install procedure.
 
 If your favorite DBaaS provider is not present in the list above, there is not
 much we can do about it... Although we have open discussions with some major
-actors in this domain, we DO NOT have internal knowledge on wether or not they
+actors in this domain, we DO NOT have internal knowledge on whether or not they
 will support it in the near future. If privacy and anonymity are a concern to
 you, we encourage you to contact the customer service of these platforms and
 ask them directly if they plan to add this extension to their catalog.

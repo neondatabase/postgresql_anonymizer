@@ -125,7 +125,7 @@ __Changes:__
 * [pg_dump_anon] Consistent backups
 * [meta] Update copyright date (Gergő Rubint)
 * [blackbox] FIX Anon extension is not installed
-* [data] update the dictionnary of english identifiers
+* [data] update the dictionary of english identifiers
 * [doc] Updates on masking rules (Mahesh Moturu)
 * [doc] Fix howto: grant select on supplier (Christophe Courtois)
 * [doc] how to contribute to the detect
@@ -198,7 +198,7 @@ __Changes:__
 * [core] declaring masking rules with COMMENT is now deprecated
 * [core] Add parallel safety for each function
 * [dump] FIX #272: pg_dump_anon throws a stdout error when used with sudo
-* [doc] Quick notes about perfomance
+* [doc] Quick notes about performance
 * [dump] FIX #281 - Regression on pg_dump_anon -U
 * [docker] fix the entrypoint env vars
 * [dump] add --data-only option
@@ -222,7 +222,7 @@ __Changes:__
 * [noise] anon.noise my fail with an error 22003
 * [core] support CASE in masking rules
 * [doc] How To
-* [core] Remove depency to tsm_system_rows
+* [core] Remove dependency to tsm_system_rows
 * [doc] Multiple documentation improvements
 * [core] Add support for PostgreSQL 15
 * [dump] Many pg_dump_anon improvements
@@ -312,7 +312,7 @@ __Changes:__
 * [core] Add schemaname in `pg_masking_rules`
 * [doc] Explain the permission model
 * [docker] simplify the build process for different PG major versions
-* [core] FIX #198: bug in the `shuffle` mecanism
+* [core] FIX #198: bug in the `shuffle` mechanism
 * [doc] Documentation Improvements (Rushal Verma)
 * [core] Improve the random generator, deprecated use of `tms_system_rows`
 

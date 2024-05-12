@@ -1,6 +1,6 @@
 # 2- How to use Dynamic Masking
 
-> With Dynamic Masking, the database owner can hide personnal data for
+> With Dynamic Masking, the database owner can hide personal data for
 > some users, while other users are still allowed to read and write the
 > authentic data.
 
@@ -11,7 +11,7 @@ Paul has 2 employees:
 -   Jack is operating the new sales application, he needs access to the
     real data. He is what the GPDR would call a **\"data processor\"**.
 -   Pierre is a data analyst who runs statistic queries on the database.
-    He should not have access to any personnal data.
+    He should not have access to any personal data.
 
 ## How it works
 
@@ -182,7 +182,7 @@ Connect as Pierre and check that he cannot view the real company info:
 
 ### E203 - Pseudonymize the company name
 
-Because of dynamic masking, the fake values will be different everytime
+Because of dynamic masking, the fake values will be different every time
 Pierre tries to read the table.
 
 Pierre would like to have always the same fake values for a given
@@ -222,7 +222,7 @@ Now connect as Pierre and read the table again:
 SELECT * FROM company;
 ```
 
-Pierre will see different \"fake data\" everytime he reads the table:
+Pierre will see different \"fake data\" every time he reads the table:
 
 ``` { .run-postgres user=pierre }
 SELECT * FROM company;

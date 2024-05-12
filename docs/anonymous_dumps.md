@@ -97,7 +97,7 @@ go install gitlab.com/dalibo/postgresql_anonymizer/pg_dump_anon
 
 ### Install With docker
 
-If you do not want to instal Go on your production servers, you can fetch the
+If you do not want to install Go on your production servers, you can fetch the
 binary with:
 
 ```console
@@ -133,5 +133,3 @@ simple, however under certain conditions the backup were not consistent. See
 
 This script is now renamed to `pg_dump_anon.sh` and it is still available for
 backwards compatibility. But it will be deprecated in version 2.0.
-
-

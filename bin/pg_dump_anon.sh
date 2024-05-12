@@ -72,7 +72,7 @@ grep -v -E "^COMMENT ON EXTENSION $1"
 ## specific treatment ( especially the `--file` option)
 ################################################################################
 
-output=/dev/stdout      # by default, use standard ouput
+output=/dev/stdout      # by default, use standard output
 
 if [ ! -w "$output" ]
 then

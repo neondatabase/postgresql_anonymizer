@@ -31,7 +31,7 @@ queries.
 Jack is an employee of Paul. He's in charge of relationship with the
 various suppliers of the shop.
 
-Paul respects his suppliers privacy. He needs to hide the personnal
+Paul respects his suppliers privacy. He needs to hide the personal
 information to Pierre, but Jack needs read and write access the real
 data.
 
@@ -144,7 +144,7 @@ to learn how to install the extension in your PostgreSQL instance.
 
 ## The Roles
 
-We will with 3 differents users:
+We will with 3 different users:
 
 ``` { .run-postgres user=postgres dbname=postgres show_result=false }
 CREATE ROLE paul LOGIN SUPERUSER PASSWORD 'CHANGEME';
