@@ -53,26 +53,25 @@ Install on RedHat / Rocky Linux / Alma Linux
 ------------------------------------------------------------------------------
 
 > This is the recommended way to install the `stable` extension
-> This method works for RHEL/CentOS 7 and 8. If you're running RHEL/CentOS 6,
-> consider upgrading or read the [Install With PGXN] section.
+> This method works for RHEL 8 and 9. If you're running an obsolete version of
+> RHEL consider upgrading or read the [Install With PGXN] section.
 
-_Step 0:_ Add the [PostgreSQL Official RPM Repo] to your system. It should be
-something like:
+_Step 0:_ Add the [DaLibo Labs RPM Repo] to your system.
 
 ```console
-sudo yum install https://.../pgdg-redhat-repo-latest.noarch.rpm
+sudo dnf install https://.../pgdg-redhat-repo-latest.noarch.rpm
 ```
 
-[PostgreSQL Official RPM Repo]: https://yum.postgresql.org/
+[Dalibo Labs RPM Repo]: https://yum.dalibo.org/labs/
 
 
 _Step 1:_ Deploy
 
 ```console
-sudo yum install postgresql_anonymizer_14
+sudo yum install postgresql_anonymizer_16
 ```
 
-(Replace `14` with the major version of your PostgreSQL instance.)
+(Replace `16` with the major version of your PostgreSQL instance.)
 
 _Step 2:_  Load the extension.
 
@@ -96,6 +95,52 @@ SELECT anon.init();
 
 All new connections to the database can now use the extension.
 
+Install on Debian / Ubuntu
+------------------------------------------------------------------------------
+
+> This is the recommended way to install the `stable` extension
+
+_Step 0:_ Add the [DaLibo Labs DEB Repo] to your system.
+
+```console
+apt install curl lsb-release
+echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
+curl -fsSL -o /etc/apt/trusted.gpg.d/dalibo-labs.gpg https://apt.dalibo.org/labs/debian-dalibo.gpg
+apt update
+```
+
+[Dalibo Labs DEB Repo]: https://apt.dalibo.org/labs/
+
+
+_Step 1:_ Deploy
+
+```console
+sudo apt install postgresql_anonymizer_16
+```
+
+(Replace `16` with the major version of your PostgreSQL instance.)
+
+_Step 2:_  Load the extension.
+
+```sql
+ALTER DATABASE foo SET session_preload_libraries = 'anon';
+```
+
+(If you're already loading extensions that way, just add `anon` the current list)
+
+_Step 3:_  Close your session and open a new one. Create the extension.
+
+```sql
+CREATE EXTENSION anon CASCADE;
+```
+
+_Step 4:_  Initialize the extension
+
+```sql
+SELECT anon.init();
+```
+
+All new connections to the database can now use the extension.
 
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
