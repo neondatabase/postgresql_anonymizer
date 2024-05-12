@@ -52,7 +52,7 @@ This extension is available in two versions :
 Install on RedHat / Rocky Linux / Alma Linux
 ------------------------------------------------------------------------------
 
-> This is the recommended way to install the `stable` extension
+> This is the recommended way to install the `stable` version
 > This method works for RHEL 8 and 9. If you're running an obsolete version of
 > RHEL consider upgrading or read the [Install With PGXN] section.
 
@@ -64,6 +64,9 @@ sudo dnf install https://.../pgdg-redhat-repo-latest.noarch.rpm
 
 [Dalibo Labs RPM Repo]: https://yum.dalibo.org/labs/
 
+
+Alternatively you can download the `latest` version from the
+[Gitlab Package Registry].
 
 _Step 1:_ Deploy
 
@@ -98,7 +101,7 @@ All new connections to the database can now use the extension.
 Install on Debian / Ubuntu
 ------------------------------------------------------------------------------
 
-> This is the recommended way to install the `stable` extension
+> This is the recommended way to install the `stable` version
 
 _Step 0:_ Add the [DaLibo Labs DEB Repo] to your system.
 
@@ -111,6 +114,10 @@ apt update
 
 [Dalibo Labs DEB Repo]: https://apt.dalibo.org/labs/
 
+Alternatively you can download the `latest` version from the
+[Gitlab Package Registry].
+
+[Gitlab Package Registry]: https://gitlab.com/dalibo/postgresql_anonymizer/-/packages
 
 _Step 1:_ Deploy
 
