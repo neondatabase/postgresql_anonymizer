@@ -8,3 +8,15 @@ repos:
       - id: end-of-file-fixer
         exclude: ^tests/expected/
       - id: check-added-large-files
+  - repo: local
+    hooks:
+      - id: codespell
+        name: codespell
+        entry: codespell
+        language: system
+        types: [file]
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: v0.13.0
+    hooks:
+      - id: markdownlint
+        exclude: docs/(dev|how-to)

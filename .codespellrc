@@ -1,0 +1,3 @@
+[codespell]
+skip = data/*,images/*,pg_dump_anon/tests/*,*.out,build.bat,docs/how-to/*,tests/sql/pg_dump_anon_go.sql,tests/sql/pg_dump_anon_sh.sql,pg_dump_anon/tests/sql/install.sql
+ignore-words-list = crate,udo,manuel
