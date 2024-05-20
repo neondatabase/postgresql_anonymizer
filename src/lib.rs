@@ -68,30 +68,36 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
         };
         debug3!("Anon: copystmt before = {:#?}", copystmt );
 
-        if ! copystmt.is_from && ! copystmt.relation.is_null() {
-            // We now know this is a `COPY xxx TO ...` statement
+        // ignore `COPY FROM` statements
+        if copystmt.is_from { return; }
 
-            // Fetch the relation id
-            let relid = unsafe {
-                pg_sys::RangeVarGetRelidExtended(
-                    copystmt.relation,
-                    pg_sys::AccessShareLock as i32,
-                    0,
-                    None,
-                    core::ptr::null_mut(),
-                )
-            };
-
-            // Replace the relation by the masking subquery */
-            copystmt.relation = core::ptr::null_mut();
-            copystmt.attlist = core::ptr::null_mut();
-            copystmt.query = masking::stmt_for_table(relid, policy);
-
-            debug3!("Anon: copystmt after = {:#?}", copystmt);
-
-            // Return the pointer to Postgres
-            copystmt.into_pg();
+        // ignore `COPY (SELECT ...) TO` statements
+        if copystmt.relation.is_null() {
+            ereport!(ERROR, ERRCODE_FEATURE_NOT_SUPPORTED, "not implemented yet");
         }
+
+        // We now know this is a `COPY xxx TO ...` statement
+
+        // Fetch the relation id
+        let relid = unsafe {
+            pg_sys::RangeVarGetRelidExtended(
+                copystmt.relation,
+                pg_sys::AccessShareLock as i32,
+                0,
+                None,
+                core::ptr::null_mut(),
+            )
+        };
+
+        // Replace the relation by the masking subquery */
+        copystmt.relation = core::ptr::null_mut();
+        copystmt.attlist = core::ptr::null_mut();
+        copystmt.query = masking::stmt_for_table(relid, policy);
+
+        debug3!("Anon: copystmt after = {:#?}", copystmt);
+
+        // Return the pointer to Postgres
+        copystmt.into_pg();
     }
 }
 

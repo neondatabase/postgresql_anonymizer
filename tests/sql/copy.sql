@@ -35,7 +35,8 @@ SET ROLE jimmy;
 
 COPY public."Phone" TO stdout;
 
--- TODO
--- COPY (SELECT * FROM "Phone") TO stdout;
+SAVEPOINT feature_not_implemented;
+COPY (SELECT * FROM "Phone") TO stdout;
+ROLLBACK TO feature_not_implemented;
 
 ROLLBACK;
