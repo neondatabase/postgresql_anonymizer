@@ -210,6 +210,21 @@ make test
 # etc.
 ```
 
+Build the docs
+--------------------------------------------------------------------------------
+
+We publish 2 versions of the documentation `stable` and `latest`.  
+
+If you want to read the documentation of a previous version, you can simply read 
+the markdown files in the `docs` folder :
+
+```bash
+# replace `1.1.0` with the version you want
+git checkout 1.1.0
+pip install mkdocs
+mkdocs build
+cd site
+```
 
 Linting
 --------------------------------------------------------------------------------
