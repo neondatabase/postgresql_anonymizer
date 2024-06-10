@@ -213,9 +213,9 @@ make test
 Build the docs
 --------------------------------------------------------------------------------
 
-We publish 2 versions of the documentation `stable` and `latest`.  
+We publish 2 versions of the documentation `stable` and `latest`.
 
-If you want to read the documentation of a previous version, you can simply read 
+If you want to read the documentation of a previous version, you can simply read
 the markdown files in the `docs` folder :
 
 ```bash
