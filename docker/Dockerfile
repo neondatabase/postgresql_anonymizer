@@ -1,8 +1,8 @@
 
 # This instructions must be declared before any FROM
 # You can override it and build your own image based another version
-# like this: `PG_MAJOR_VERSION=11 make docker_image`
-ARG PG_MAJOR_VERSION=14
+# like this: `PG_MAJOR_VERSION=13 make docker_image`
+ARG PG_MAJOR_VERSION=16
 
 ##
 ## First Stage: build pg_dump_anon
@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build .
 ##
 ## Second Stage
 ##
-ARG PG_MAJOR_VERSION=14
+ARG PG_MAJOR_VERSION=16
 FROM postgres:$PG_MAJOR_VERSION
 
 # An ARG declared before a FROM is outside of a build stage, so it can’t be
