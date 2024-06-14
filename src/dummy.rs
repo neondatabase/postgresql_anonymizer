@@ -45,12 +45,12 @@ macro_rules! dummy_with_range {
     ($struct: ident, $locale: ident, $range_i32: ident ) => {
         match $locale {
 //            "ar_SA" => $struct(AR_SA,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
-            "en_US" => $struct(EN,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
-            "fr_FR" => $struct(FR_FR,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
-            "ja_JP" => $struct(JA_JP,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
-            "pt_BR" => $struct(PT_BR,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
-            "zh_CN" => $struct(ZH_CN,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
-            "zh_TW" => $struct(ZH_TW,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
+            "en_US" => $struct(EN,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
+            "fr_FR" => $struct(FR_FR,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
+            "ja_JP" => $struct(JA_JP,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
+            "pt_BR" => $struct(PT_BR,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
+            "zh_CN" => $struct(ZH_CN,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
+            "zh_TW" => $struct(ZH_TW,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
             _       => panic!(  "Anon: {} is not a supported locale",
                                 $locale
                         ),
@@ -103,7 +103,7 @@ macro_rules! declare_l10n_fn_String {
 
         #[pg_extern]
         pub fn $name() -> String {
-            let locale = crate::guc::ANON_DUMMY_LOCALE.get()
+            let locale = $crate::guc::ANON_DUMMY_LOCALE.get()
                             .unwrap().to_str().expect("Should be a string");
             dummy!($struct,locale)
         }
@@ -120,16 +120,16 @@ macro_rules! declare_l10n_fn_with_range_to_string {
                     locale: &'static str,
                     r: pgrx::Range<i32>)
                 -> String {
-                return crate::dummy_with_range!($struct,locale,r);
+                return $crate::dummy_with_range!($struct,locale,r);
             }
         }
 
         #[pg_extern]
         pub fn $name(r: pgrx::Range<i32>)
             -> String {
-            let locale = crate::guc::ANON_DUMMY_LOCALE.get()
+            let locale = $crate::guc::ANON_DUMMY_LOCALE.get()
                             .unwrap().to_str().expect("Should be a string");
-            return crate::dummy_with_range!($struct,locale,r);
+            return $crate::dummy_with_range!($struct,locale,r);
         }
     }
 }

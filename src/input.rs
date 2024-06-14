@@ -212,7 +212,7 @@ fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>,&'static str>
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
-    use crate::tests::fixture;
+    use crate::fixture;
     use crate::input::*;
 
     #[pg_test]

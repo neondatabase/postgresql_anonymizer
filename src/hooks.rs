@@ -115,15 +115,13 @@ impl pgrx::hooks::PgHooks for AnonHooks {
         ) -> pgrx::hooks::HookResult<()>,
     ) -> pgrx::hooks::HookResult<()> {
 
-        use crate::anon::get_masking_policy;
-
         if unsafe { pg_sys::IsTransactionState() } {
             let uid = unsafe { pg_sys::GetUserId() };
 
             // Rewrite the utility command when transparent dynamic masking
             // is enabled and the role is masked
             if guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {
-                if let Some(masking_policy) = get_masking_policy(uid) {
+                if let Some(masking_policy) = masking::get_masking_policy(uid) {
                     pa_rewrite_utility(&pstmt,masking_policy);
                 }
             }

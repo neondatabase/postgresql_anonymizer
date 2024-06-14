@@ -4,10 +4,10 @@
 /// The *_relabel functions are called every time a security label is declared
 ///
 
-use crate::anon;
 use crate::error;
 use crate::guc;
 use crate::input;
+use crate::masking;
 use crate::re;
 use pgrx::prelude::*;
 use pgrx::PgSqlErrorCode::*;
@@ -28,7 +28,7 @@ pub fn register_label_providers() {
     };
 
     // Register the masking policies
-    for policy in anon::list_masking_policies().iter() {
+    for policy in masking::list_masking_policies().iter() {
         debug1!("Anon: registering masking policy '{}'", policy.unwrap());
         // transform the str back into a C Pointer
         let c_ptr_policy = policy.unwrap().as_ptr();
