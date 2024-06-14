@@ -31,8 +31,14 @@ PGHOST?=localhost
 PGPORT?=288$(subst pg,,$(PGVER))
 PSQL_OPT?=--host $(PGHOST) --port $(PGPORT)
 PGDATABASE?=contrib_regression
-# Use this var to add more tests
-#PG_TEST_EXTRA ?= ""
+
+##
+## PGXS tests
+##
+
+# PGXS is used only for functional testing with `make installcheck`
+# For unit tests, we use `cargo` via `make test`
+
 REGRESS_TESTS = init
 REGRESS_TESTS+= ternary
 REGRESS_TESTS+= noise shuffle
@@ -48,8 +54,30 @@ REGRESS_TESTS+= anon_catalog anonymize privacy_by_default
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path masking_foreign_tables
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= permissions_owner permissions_masked_role injection syntax_checks
-REGRESS_TESTS+= views
+REGRESS_TESTS+= views elevation_via_mask
+
+# We try our best to write tests that produce the same output on all the 5
+# current Postgres major versions. But sometimes it's really hard to do and
+# we generally prefer simplicity over complex output manipulation tricks.
+#
+# In these few special cases, we use conditional tests with the following
+# naming rules:
+# * the _PG15+ suffix means PostgreSQL 15 and all the major versions after
+# * the _PG13- suffix means PostgreSQL 13 and all the major versions below
+
+REGRESS_TESTS_PG12 = elevation_via_rule_PG15-
+REGRESS_TESTS_PG13 = elevation_via_rule_PG15-
+REGRESS_TESTS_PG14 = elevation_via_rule_PG15-
+REGRESS_TESTS_PG15 = elevation_via_rule_PG15-
+REGRESS_TESTS_PG16 =
+REGRESS_TESTS_PG17 =
+
+REGRESS_TESTS+=${REGRESS_TESTS_PG${PG_MAJOR_VERSION}}
+
+# Use this var to add more tests
+#PG_TEST_EXTRA ?= ""
 REGRESS_TESTS+=$(PG_TEST_EXTRA)
+
 # This can be overridden by an env variable
 REGRESS?=$(REGRESS_TESTS)
 
