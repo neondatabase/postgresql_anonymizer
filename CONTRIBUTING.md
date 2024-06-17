@@ -158,6 +158,33 @@ $$
 ;
 ```
 
+Adding new tests
+-------------------------------------------------------------------------------
+
+The functional tests are managed with `pg_regress`, a component of the [PGXS]
+extension framework. You can simply launch the tests with:
+
+```bash
+make
+make install
+make installcheck
+```
+
+Adding a new test is not very intuitive. Here's a quick method to create a
+test named `foo`:
+
+1. Write your tests in `tests/sql/foo.sql`
+2. Run it with `make installcheck REGRESS=foo`
+3. Check the output in `results/foo.out`
+4. If the output is not the expected result, then return to step 1
+5. Else copy `results/foo.out` in `tests/expected`
+6. Open the `Makefile`, add `foo` in the `REGRESS_TESTS` variable
+7. Run `make installcheck`
+
+
+[PGXS]: https://www.postgresql.org/docs/current/extend-pgxs.html
+
+
 Testing with docker
 -------------------------------------------------------------------------------
 
