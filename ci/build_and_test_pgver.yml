@@ -113,5 +113,26 @@ spec:
     RPM_REGISTRY_URL: "$GENERIC_URL/rpm/$CI_COMMIT_REF_NAME"
   script:
     - cd "target/release/anon-$[[ inputs.pgver ]]"
-    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.deb "$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]_amd64.deb?select=package_file"'
-    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.rpm "$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]].x86_64.rpm?select=package_file"'
+    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.deb "$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.amd64.deb?select=package_file"'
+    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.rpm "$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.x86_64.rpm?select=package_file"'
+
+"release-packages-$[[ inputs.pgver ]]":
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG                 # Run this job when a tag is created
+  script:
+    - echo "running release_job"
+  release:
+    tag_name: '$CI_COMMIT_TAG'
+    description: '$CI_COMMIT_TAG'
+    assets:
+      links:
+        - name: 'RPM package for $[[ inputs.pgver ]] (x64_64)'
+          url: '$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.x86_64.rpm'
+          link_type: 'package'
+          filepath: 'postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.x86_64.rpm'
+        - name: 'DEB package for $[[ inputs.pgver ]] (x64_64)'
+          url: '$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.amd64.deb'
+          link_type: 'package'
+          filepath: 'postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.amd64.deb'
