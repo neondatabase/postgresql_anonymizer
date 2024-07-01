@@ -14,7 +14,7 @@ variables:
 ##
 ## L I N T
 ##
-lint-markdown:
+"lint-markdown":
   stage: lint
   image: ruby:alpine
   script:
@@ -24,7 +24,7 @@ lint-markdown:
 ##
 ## B U I L D
 ##
-how-to:
+"how-to":
   image:
     name: dalibo/pandocker:latest
     entrypoint: [""]

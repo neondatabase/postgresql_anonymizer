@@ -17,6 +17,16 @@ spec:
 ---
 
 ##
+## L I N T
+##
+"lint-rs":
+  stage: lint
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  script:
+  - cargo clippy --release
+  allow_failure: true
+
+##
 ## B U I L D
 ##
 
