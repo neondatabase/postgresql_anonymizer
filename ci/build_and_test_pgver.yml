@@ -16,6 +16,10 @@ spec:
 
 ---
 
+##
+## B U I L D
+##
+
 # `cargo pgrx test` will :
 #    - build the extension
 #    - launch a Postgres instance
@@ -46,11 +50,15 @@ spec:
     expire_in: 1 day
 
 ##
-## Installcheck-pg13 will :
-##   - install the binaries from the build job
-##   - start a postgres instance
-##   - run the functional tests with pg_regress
+## T E S T
 ##
+
+#
+# Installcheck-pg13 will :
+#   - install the binaries from the build job
+#   - start a postgres instance
+#   - run the functional tests with pg_regress
+#
 "installcheck-$[[ inputs.pgver ]]":
   stage: test
   dependencies:
@@ -74,6 +82,10 @@ spec:
       - results
     expire_in: 1 day
 
+##
+## P A C K
+##
+
 "nfpm-$[[ inputs.pgver ]]":
   stage: pack
   dependencies:
@@ -96,6 +108,9 @@ spec:
       - results
     expire_in: 1 day
 
+##
+## D E P L O Y
+##
 
 "upload-packages-$[[ inputs.pgver ]]":
   stage: deploy
@@ -115,6 +130,10 @@ spec:
     - cd "target/release/anon-$[[ inputs.pgver ]]"
     - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.deb "$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.amd64.deb?select=package_file"'
     - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.rpm "$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.x86_64.rpm?select=package_file"'
+
+##
+## R E L E A S E
+##
 
 "release-packages-$[[ inputs.pgver ]]":
   stage: release
