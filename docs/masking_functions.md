@@ -508,49 +508,31 @@ Using `pg_catalog` functions
 ------------------------------------------------------------------------------
 
 Since version 1.3, the `pg_catalog` schema is not trusted by default. This is
-a security measure designed to prevent users from using sophisticated functions in
-masking rules (such as `pg_catalog.query_to_xml`, `pg_catalog.ts_stat` or the
-[system administration functions] ) that should not be used as masking functions.
+a security measure designed to prevent users from using sophisticated functions
+inside masking rules (such as `pg_catalog.query_to_xml`, `pg_catalog.ts_stat`
+or the [system administration functions] ) that should not be used as masking
+functions.
 
 [system administration functions]: https://www.postgresql.org/docs/current/functions-admin.html.
 
-However, the extension provides bindings to some useful and safe functions
-from the `pg_catalog` schema for your convenience:
+However, the extension allows using some useful and safe functions from the
+`pg_catalog` schema for your convenience. These are small subset of functions
+that are declared as `TRUSTED` for anonymization.
 
-<!--
-  Update the list below with:
-  sed -n '50,150p' anon.sql | grep '^CREATE.*' | sed -e  's/^.*FUNCTION/-/'
--->
+The list of TRUSTED pg_catalog functions is available via the
+`anon.pg_trusted_functions` views :
 
-- anon.concat(TEXT,TEXT)
-- anon.concat(TEXT,TEXT, TEXT)
-- anon.date_add(TIMESTAMP WITH TIME ZONE,INTERVAL)
-- anon.date_part(TEXT,TIMESTAMP)
-- anon.date_part(TEXT,INTERVAL)
-- anon.date_subtract(TIMESTAMP WITH TIME ZONE, INTERVAL )
-- anon.date_trunc(TEXT,TIMESTAMP)
-- anon.date_trunc(TEXT,TIMESTAMP WITH TIME ZONE,TEXT)
-- anon.date_trunc(TEXT,INTERVAL)
-- anon.left(TEXT,INTEGER)
-- anon.length(TEXT)
-- anon.lower(TEXT)
-- anon.make_date(INT,INT,INT )
-- anon.make_time(INT,INT,DOUBLE PRECISION)
-- anon.md5(TEXT)
-- anon.random()
-- anon.replace(TEXT,TEXT,TEXT)
-- anon.regexp_replace(TEXT,TEXT,TEXT)
-- anon.regexp_replace(TEXT,TEXT,TEXT,TEXT)
-- anon.right(TEXT,INTEGER)
-- anon.substr(TEXT,INTEGER)
-- anon.substr(TEXT,INTEGER,INTEGER)
-- anon.upper(TEXT)
 
-If you need more bindings, you can either
+``` sql
+SELECT * FROM anon.pg_trusted_functions;
+```
 
-- Write your own mapping function in a trusted schema (see below)
-- Set the `pg_catalog` schema as `TRUSTED` (not recommended)
-- open an issue
+If you need to use a pg_catalog function which is not in this list, you can
+ask a superuser to trust it with:
+
+``` sql
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.foo IS 'TRUSTED';
+```
 
 
 Write your own Masks !
@@ -607,9 +589,6 @@ through the keys and replace the sensitive values as needed.
 ```sql
 CREATE SCHEMA custom_masks;
 
--- This step requires superuser privilege
-SECURITY LABEL FOR anon ON SCHEMA custom_masks IS 'TRUSTED';
-
 CREATE FUNCTION custom_masks.remove_last_name(j JSONB)
 RETURNS JSONB
 VOLATILE
@@ -624,6 +603,10 @@ SELECT
   )::JSONB
 FROM jsonb_array_elements( j->'employees') e
 $func$;
+
+-- This step requires superuser privilege
+SECURITY LABEL FOR anon ON FUNCTION custom_masks.remove_last_name IS 'TRUSTED';
+
 ```
 
 Then check that the function is working correctly:

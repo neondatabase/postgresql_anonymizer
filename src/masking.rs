@@ -3,10 +3,10 @@
 ///
 
 use c_str_macro::c_str;
+use crate::error;
 use crate::guc;
 use crate::re;
 use pgrx::prelude::*;
-use pgrx::PgSqlErrorCode::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
@@ -75,11 +75,7 @@ pub fn list_masking_policies() -> Vec<Option<&'static str>> {
                           // remove the white spaces
     //masking_policies.retain(|c| !c.is_whitespace());
     if masking_policies.is_empty() {
-        ereport!(
-            ERROR,
-            ERRCODE_NO_DATA,
-            "Anon: the masking policy is not defined"
-        );
+        error::policy_not_defined().ereport();
     }
 
     return masking_policies.split(',').map(Some).collect();

@@ -1,8 +1,7 @@
-
+use crate::error;
 use crate::guc;
 use crate::masking;
 use pgrx::prelude::*;
-use pgrx::PgSqlErrorCode::*;
 
 /// Apply masking rules to a COPY statement
 /// In a COPY statement, substitute the masked relation by its masking view
@@ -29,7 +28,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
         if pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_ExplainStmt)
         || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_TruncateStmt)
         {
-            ereport!(ERROR, ERRCODE_INSUFFICIENT_PRIVILEGE, "role is masked");
+            error::insufficient_privilege("role is masked".to_string()).ereport();
         }
     }
 
@@ -52,7 +51,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
 
         // ignore `COPY (SELECT ...) TO` statements
         if copystmt.relation.is_null() {
-            ereport!(ERROR, ERRCODE_FEATURE_NOT_SUPPORTED, "not implemented yet");
+            error::not_implemented_yet().ereport();
         }
 
         // We now know this is a `COPY xxx TO ...` statement

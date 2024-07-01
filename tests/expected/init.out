@@ -6,14 +6,13 @@ SELECT anon.is_initialized() IS FALSE;
  t
 (1 row)
 
--- 2 event triggers are defined
-SELECT evtname IN ('anon_trg_check_trusted_schemas','anon_trg_mask_update')
+-- 1 event trigger is defined
+SELECT evtname IN ('anon_trg_mask_update')
 FROM pg_event_trigger;
  ?column? 
 ----------
  t
- t
-(2 rows)
+(1 row)
 
 -- basic usage
 SELECT anon.init();

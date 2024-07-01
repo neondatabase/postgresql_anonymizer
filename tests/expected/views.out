@@ -15,6 +15,6 @@ IS 'MASKED WITH VALUE NULL';
 SAVEPOINT mask_on_view;
 SECURITY LABEL FOR anon ON COLUMN v_early_employee.ssn
   IS 'MASKED WITH VALUE NULL';
-ERROR:  Masking a view is not supported
+ERROR:  Anon: Masking a view is not supported
 ROLLBACK TO mask_on_view;
 ROLLBACK;

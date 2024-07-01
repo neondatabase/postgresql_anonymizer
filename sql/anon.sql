@@ -1,9 +1,3 @@
--- complain if script is sourced in psql, rather than via CREATE EXTENSION
---\echo Use "CREATE EXTENSION anon" to load this file. \quit
-
--- This cannot be done using `schema = anon` in anon.control
--- because we want to be able to put the dependencies in a different schema
---CREATE SCHEMA IF NOT EXISTS anon;
 
 --------------------------------------------------------------------------------
 -- Security First
@@ -20,16 +14,14 @@ GRANT USAGE ON SCHEMA anon TO PUBLIC;
 --
 -- By default, masking filter functions must be trusted
 -- and we only trust functions from the `anon` namespaces
--- This can protection can be disabled by setting
--- `anon.restrict_to_trusted_schemas` to false
 --
 SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED';
 
 --
--- In case, some masking rules require function from the pg_catalog schema
--- it is possible to allow it with:
+-- In the same spirit, the functions below that are NOT masking functions,
+-- (i.e. mostly internal functions of the masking engine) are labeled as
+-- `UNSTRUSTED` to block users from using them in masking rules.
 --
--- SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
 
 --
 -- This extension will create views based on masking functions. These functions
@@ -45,24 +37,79 @@ SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED';
 -- https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
 --
 
-CREATE OR REPLACE FUNCTION anon.version()
-RETURNS TEXT AS
-$func$
-  SELECT extversion FROM pg_extension WHERE extname='anon';
-$func$
-  LANGUAGE SQL
-  PARALLEL SAFE
-  SECURITY INVOKER
-  SET search_path=''
+-------------------------------------------------------------------------------
+-- TRUSTED pg_catalog functions
+-------------------------------------------------------------------------------
+
+-- Some pg_catalog functions, such as `pg_terminate_backend()`, should not be
+-- used in masking rule. That's why the pg_catalog schema is not trusted by
+-- by default. As we try to discourage users to mark it as TRUSTED, we provide
+-- a simple way to trust some functions individually in order to allow usage of
+-- some safe and useful functions.
+--
+-- Note: A function may have multiple definitions (e.g. `age(DATE,DATE)` and
+-- `age(TIMESTAMP,TIMESTAMP)`). In such case, trusting one definition is
+-- equivalent to trusting all of the definitions.
+--
+-- Obviously we're not trying to be exhaustive here. There's just too many
+-- pg_catalog functions, but if you think a useful function is missing below,
+-- please open a ticket.
+--
+
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.array_to_json(ANYARRAY) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.age(TIMESTAMP, TIMESTAMP) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.concat(VARIADIC "any") IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.date_part(TEXT,TIMESTAMP) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.date_trunc(TEXT,TIMESTAMP) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.json_build_array() IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.jsonb_build_array() IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.json_build_object() IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.jsonb_build_object() IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.json_object(TEXT[]) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.jsonb_object(TEXT[]) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.left(TEXT, INTEGER) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.length(TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.lower(TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.make_date(INT,INT,INT ) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.make_time(INT,INT,DOUBLE PRECISION) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.md5(TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.now() IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.random() IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.replace(TEXT,TEXT,TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.regexp_replace(TEXT,TEXT,TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.regexp_replace(TEXT,TEXT,TEXT,TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.right(TEXT,INTEGER) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.row_to_json(RECORD)  IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.substr(TEXT,INTEGER) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.to_char(TIMESTAMP,TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.to_date(TEXT,TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.to_json IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.to_jsonb IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.to_number(TEXT,TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.to_timestamp(TEXT,TEXT) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.upper(TEXT) IS 'TRUSTED';
+
+-- Display all the trusted functions
+CREATE OR REPLACE VIEW anon.pg_trusted_functions
+AS
+  SELECT
+    objnamespace::REGNAMESPACE AS schema,
+    objname AS function
+  FROM pg_seclabels
+  WHERE upper(label) = 'TRUSTED'
+  AND objtype='function'
+  ORDER BY 1,2
 ;
+
 
 -------------------------------------------------------------------------------
 -- Bindings to useful functions in pg_catalog
 -------------------------------------------------------------------------------
 
--- As we try to discourage users to mark pg_catalog as TRUSTED, we provide a
--- series of mappings towards safe and useful functions.
--- If you think a useful function is missing below, please open a ticket.
+--
+-- This section is undocumented and unsupported.
+-- Kept for backward compatibility with rules written for version 1.3
+--
 
 CREATE OR REPLACE FUNCTION anon.age(TIMESTAMP, TIMESTAMP)
   RETURNS INTERVAL AS
@@ -233,6 +280,17 @@ CREATE OR REPLACE FUNCTION anon.upper(TEXT)
 -------------------------------------------------------------------------------
 -- Common functions
 -------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION anon.version()
+RETURNS TEXT AS
+$func$
+  SELECT extversion FROM pg_extension WHERE extname='anon';
+$func$
+  LANGUAGE SQL
+  PARALLEL SAFE
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -- Returns TRUE if the column exists in the table
 CREATE OR REPLACE FUNCTION anon.column_exists(
@@ -825,6 +883,7 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.load_csv IS 'UNTRUSTED';
 
 -- load fake data from a given path
 CREATE OR REPLACE FUNCTION anon.init(
@@ -870,7 +929,7 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
-
+SECURITY LABEL FOR anon ON FUNCTION anon.init(TEXT) IS 'UNTRUSTED';
 
 -- People tend to forget the anon.init() step
 -- This is a friendly notice for them
@@ -891,7 +950,7 @@ $$
   SECURITY INVOKER
   SET search_path='';
 ;
-
+SECURITY LABEL FOR anon ON FUNCTION anon.notice_if_not_init IS 'UNTRUSTED';
 
 -- load() is here for backward compatibility with version 0.6
 CREATE OR REPLACE FUNCTION anon.load(TEXT)
@@ -906,7 +965,7 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
-
+SECURITY LABEL FOR anon ON FUNCTION anon.load(TEXT) IS 'UNTRUSTED';
 
 -- If no path given, use the default data
 CREATE OR REPLACE FUNCTION anon.init()
@@ -927,6 +986,7 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+SECURITY LABEL FOR anon ON FUNCTION anon.init() IS 'UNTRUSTED';
 
 -- load() is here for backward compatibility with version 0.6 and below
 CREATE OR REPLACE FUNCTION anon.load()
@@ -944,6 +1004,7 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+SECURITY LABEL FOR anon ON FUNCTION anon.load() IS 'UNTRUSTED';
 
 -- True if the fake data is already here
 CREATE OR REPLACE FUNCTION anon.is_initialized()
@@ -971,6 +1032,7 @@ $$
   SECURITY DEFINER
   SET search_path=''
 ;
+SECURITY LABEL FOR anon ON FUNCTION anon.is_initialized IS 'UNTRUSTED';
 
 -- remove all fake data
 CREATE OR REPLACE FUNCTION anon.reset()
@@ -998,6 +1060,7 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+SECURITY LABEL FOR anon ON FUNCTION anon.reset IS 'UNTRUSTED';
 
 -- backward compatibility with version 0.6 and below
 CREATE OR REPLACE FUNCTION anon.unload()
@@ -1011,6 +1074,8 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.unload IS 'UNTRUSTED';
 
 -------------------------------------------------------------------------------
 --- Generic hashing
@@ -1737,29 +1802,6 @@ $$
 -- anonymize(), dump() and dynamic masking engine
 -------------------------------------------------------------------------------
 
---
--- Create an additional masking policy
---
-CREATE OR REPLACE FUNCTION anon.register_masking_policy(
-  policy TEXT
-)
-RETURNS BOOLEAN
-AS $$
-BEGIN
---  PERFORM anon.register_label(policy);
-  EXECUTE format('SECURITY LABEL FOR %I ON SCHEMA pg_catalog IS ''TRUSTED'';',
-                    policy);
-  EXECUTE format('SECURITY LABEL FOR %I ON SCHEMA anon IS ''TRUSTED'';',
-                    policy);
-  RETURN True;
-END;
-$$
-  LANGUAGE plpgsql
-  VOLATILE
-  STRICT
-  PARALLEL UNSAFE
-;
-
 
 CREATE OR REPLACE FUNCTION anon.get_schema(t TEXT)
 RETURNS TEXT
@@ -1774,6 +1816,7 @@ $$
 ;
 
 
+
 CREATE OR REPLACE FUNCTION anon.get_relname(t TEXT)
 RETURNS TEXT
 AS $$
@@ -1786,42 +1829,6 @@ $$
   PARALLEL SAFE
 ;
 
-CREATE OR REPLACE FUNCTION anon.trg_check_trusted_schemas()
-RETURNS event_trigger
-AS $$
-DECLARE
-  untrusted_schema TEXT;
-BEGIN
-  -- This will return nothing if the schema is to be trusted
-  SELECT anon.get_function_schema(masking_function)
-  INTO untrusted_schema
-  FROM anon.pg_masking_rules
-  WHERE pg_catalog.current_setting('anon.restrict_to_trusted_schemas')::BOOLEAN
-  AND masking_function IS NOT NULL
-  AND NOT trusted_schema
-  LIMIT 1;
-
-  IF untrusted_schema = '' THEN
-    RAISE 'The schema of the masking filter must be defined'
-      USING HINT = 'Check the anon.restrict_to_trusted_schemas parameter';
-  ELSIF pg_catalog.length(untrusted_schema) > 0 THEN
-    RAISE '% is not a trusted schema.', untrusted_schema
-      USING HINT = 'You must add a TRUSTED security label to this schema.';
-  END IF;
-END;
-$$
-  LANGUAGE plpgsql
-  PARALLEL SAFE
-  SECURITY DEFINER
-  SET search_path=''
-;
-
--- Check each new masking rule
-CREATE EVENT TRIGGER anon_trg_check_trusted_schemas
-  ON ddl_command_end
-  WHEN TAG IN ('SECURITY LABEL')
-  EXECUTE PROCEDURE anon.trg_check_trusted_schemas();
-  -- EXECUTE FUNCTION is not supported by PG10 and below
 
 -- List of all the masked columns
 CREATE OR REPLACE VIEW anon.pg_masking_rules AS
@@ -1959,7 +1966,7 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
-
+SECURITY LABEL FOR anon ON FUNCTION anon.remove_masks_for_all_columns IS 'UNTRUSTED';
 
 -- Compatibility with version 0.3 and earlier
 CREATE OR REPLACE VIEW anon.pg_masks AS
@@ -2011,6 +2018,8 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.build_anonymize_column_assignment IS 'UNTRUSTED';
+
 -- Replace masked data in a column
 CREATE OR REPLACE FUNCTION anon.anonymize_column(
   tablename REGCLASS,
@@ -2046,6 +2055,8 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_column IS 'UNTRUSTED';
 
 -- Replace masked data in a table
 CREATE OR REPLACE FUNCTION anon.anonymize_table(tablename REGCLASS)
@@ -2107,6 +2118,8 @@ $$
   SET search_path = ''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_table IS 'UNTRUSTED';
+
 -- Walk through all tables with masked columns and execute anonymize_table on them
 CREATE OR REPLACE FUNCTION anon.anonymize_database()
 RETURNS BOOLEAN AS
@@ -2124,7 +2137,7 @@ $$
   SET search_path=''
 ;
 
-
+SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_table IS 'UNTRUSTED';
 
 -------------------------------------------------------------------------------
 -- Dynamic Masking
@@ -2159,6 +2172,8 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.hasmask IS 'UNTRUSTED';
 
 -- DEPRECATED : use directly `hasmask(oid::REGROLE)` instead
 -- Adds a `hasmask` column to the pg_roles catalog
@@ -2197,6 +2212,8 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.mask_columns IS 'UNTRUSTED';
 
 -- get the "select filters" that will mask the real data of a table
 CREATE OR REPLACE FUNCTION anon.mask_filters(
@@ -2238,6 +2255,8 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.mask_filters IS 'UNTRUSTED';
+
 -- Build a SELECT query masking the real data
 CREATE OR REPLACE FUNCTION anon.mask_select(
   relid OID
@@ -2256,6 +2275,8 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.mask_select IS 'UNTRUSTED';
 
 -- Build a masked view for a table
 CREATE OR REPLACE FUNCTION anon.mask_create_view(
@@ -2296,6 +2317,8 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION  anon.mask_create_view IS 'UNTRUSTED';
+
 -- Remove a masked view for a given table
 CREATE OR REPLACE FUNCTION anon.mask_drop_view(
   relid OID
@@ -2320,6 +2343,8 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION  anon.mask_drop_view IS 'UNTRUSTED';
 
 -- Activate the masking engine
 CREATE OR REPLACE FUNCTION anon.start_dynamic_masking(
@@ -2368,6 +2393,7 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.start_dynamic_masking IS 'UNTRUSTED';
 
 -- this is opposite of start_dynamic_masking()
 CREATE OR REPLACE FUNCTION anon.stop_dynamic_masking()
@@ -2409,6 +2435,7 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.stop_dynamic_masking IS 'UNTRUSTED';
 
 
 -- This is run after any changes in the data model
@@ -2427,6 +2454,7 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.trg_mask_update IS 'UNTRUSTED';
 
 -- Mask a specific role
 CREATE OR REPLACE FUNCTION anon.mask_role(
@@ -2463,6 +2491,8 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.mask_role IS 'UNTRUSTED';
+
 -- Remove (partially) the mask of a specific role
 CREATE OR REPLACE FUNCTION anon.unmask_role(
   maskedrole REGROLE
@@ -2484,6 +2514,8 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.unmask_role IS 'UNTRUSTED';
 
 CREATE OR REPLACE FUNCTION anon.mask_update()
 RETURNS BOOLEAN AS
@@ -2539,6 +2571,7 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.mask_update IS 'UNTRUSTED';
 
 --
 -- Unmask all the role at once
@@ -2564,6 +2597,7 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.remove_masks_for_all_roles IS 'UNTRUSTED';
 
 --
 -- Trigger the mask_update on any major schema changes

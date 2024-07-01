@@ -10,7 +10,6 @@ use crate::input;
 use crate::masking;
 use crate::re;
 use pgrx::prelude::*;
-use pgrx::PgSqlErrorCode::*;
 use std::ffi::CStr;
 
 pub fn register_label_providers() {
@@ -48,12 +47,9 @@ unsafe extern "C" fn k_anonymity_object_relabel(
     object_ptr: *const pg_sys::ObjectAddress,
     seclabel_ptr: *const i8,
 ) {
-    debug1!("Anon: Checking the K-Anonymity Security Label");
 
     /* SECURITY LABEL FOR k_anonymity ON COLUMN client.zipcode IS NULL */
-    if seclabel_ptr.is_null() {
-        return
-    }
+    if seclabel_ptr.is_null() { return }
 
     // Transform the object C pointer into a smart pointer
     let object = unsafe {
@@ -67,22 +63,15 @@ unsafe extern "C" fn k_anonymity_object_relabel(
      * SECURITY LABEL FOR k_anonymity ON COLUMN client.zipcode IS 'QUASI IDENTIFIER';
      */
     if object.classId == pg_sys::RelationRelationId {
-        let seclabel_cstr = unsafe { CStr::from_ptr(seclabel_ptr) };
-        let seclabel_str  = seclabel_cstr.to_str().unwrap();
-        if re::is_match_indirect_identifier(seclabel_cstr) {
-            return
-        }
-        ereport!(
-            ERROR,
-            ERRCODE_INVALID_NAME,
-            format!("'{}' is not a valid label for a column", seclabel_str)
-        );
+        let label = unsafe { CStr::from_ptr(seclabel_ptr) };
+        if re::is_match_indirect_identifier(label) { return }
+        error::invalid_label_for("a column",label,None).ereport();
     }
-    ereport!(
-        ERROR,
-        ERRCODE_FEATURE_NOT_SUPPORTED,
-        "The k_anonymity provider does not support labels on this object"
-    );
+
+    /* Everything else is not supported */
+    error::feature_not_supported(
+        "Placing a k_anonymity label on this object"
+    ).ereport();
 }
 
 
@@ -91,17 +80,17 @@ unsafe extern "C" fn k_anonymity_object_relabel(
 /// This function is a callback called whenever a SECURITY LABEL is declared on
 /// a registered masking policy
 ///
+/// The function returns `()` if the label if fine
+/// otherwise it throws an error via ereport() to ROLLBACK the transaction
+///
 #[pg_guard]
 unsafe extern "C" fn masking_policy_object_relabel(
     object_ptr: *const pg_sys::ObjectAddress,
     seclabel_ptr: *const i8,
 ) {
-    use crate::re;
 
     /* SECURITY LABEL FOR anon ON COLUMN foo.bar IS NULL */
-    if seclabel_ptr.is_null() {
-        return
-    }
+    if seclabel_ptr.is_null() { return }
 
     // convert the object C pointer into a smart pointer
     let object = unsafe {
@@ -110,129 +99,126 @@ unsafe extern "C" fn masking_policy_object_relabel(
         )
     };
 
-    // convert the C string pointer into a Rust string
-    let seclabel_cstr = unsafe { CStr::from_ptr(seclabel_ptr) };
-    let string_seclabel = seclabel_cstr.to_str().unwrap().to_string();
+    // Extract the security label
+    let label = unsafe { CStr::from_ptr(seclabel_ptr) };
 
     match object.classId {
+        /* SECURITY LABEL FOR anon ON FUNCTION public.foo() IS 'TRUSTED' */
+        pg_sys::ProcedureRelationId => { relabel_function(label) }
+
         /* SECURITY LABEL FOR anon ON DATABASE d IS 'TABLESAMPLE SYSTEM(10)' */
-        pg_sys::DatabaseRelationId => {
-            if re::is_match_tablesample(seclabel_cstr) {
-                let check_tbs = input::check_tablesample(&string_seclabel);
-                if check_tbs.is_ok() { return; }
-                error::invalid_label_database(&string_seclabel,
-                                              check_tbs.unwrap_err());
-            }
-            error::invalid_label_database(&string_seclabel,"Syntax error");
-        }
+        pg_sys::DatabaseRelationId => { relabel_database(label) }
+
         /* SECURITY LABEL FOR anon ON TABLE t IS 'TABLESAMPLE SYSTEM(10)' */
+        /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
+        /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH FUNCTION $x$' */
+        /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'NOT MASKED */
         pg_sys::RelationRelationId => {
             /*
              * RelationRelationId will match either a table or a column !
              * If the object subId is 0, it's a table
              */
 
-            /* SECURITY LABEL FOR anon ON TABLE t IS 'TABLESAMPLE SYSTEM(10)' */
             if object.objectSubId == 0 {
-                if re::is_match_tablesample(seclabel_cstr) {
-                    let check_tbs = input::check_tablesample(&string_seclabel);
-                    if check_tbs.is_ok() { return; }
-                    ereport!(
-                        ERROR,
-                        ERRCODE_INVALID_NAME,
-                        format!("'{}' is not a valid label for a table", string_seclabel),
-                        format!("{}",check_tbs.unwrap_err())
-                    );
-                }
-                ereport!(
-                    ERROR,
-                    ERRCODE_SYNTAX_ERROR,
-                    format!("'{}' is not a valid label for a table", string_seclabel),
-                    "Syntax error"
-                );
+                /* SECURITY LABEL FOR anon ON TABLE t IS '[...]' */
+                relabel_table(label)
             } else {
-                /* Check that the column does not belong to a view */
-                if pg_sys::get_rel_relkind(object.objectId) == 'v' as i8 {
-                    ereport!(
-                        ERROR,
-                        ERRCODE_FEATURE_NOT_SUPPORTED,
-                        "Masking a view is not supported"
-                    );
-                }
-                /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
-                if let Some(val) = re::capture_value(seclabel_cstr) {
-                    let check_val = input::check_value(val);
-                    if check_val.is_ok() { return; }
-                    ereport!(
-                        ERROR,
-                        ERRCODE_INVALID_NAME,
-                        format!("'{}' is not a valid label for a column", string_seclabel),
-                        format!("{}",check_val.unwrap_err())
-                    );
-                }
-
-                /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH FUNCTION $x$' */
-                if let Some(func) = re::capture_function(seclabel_cstr) {
-                    let check_func = input::check_function(func);
-                    if check_func.is_ok() { return ; }
-                    ereport!(
-                        ERROR,
-                        ERRCODE_INVALID_NAME,
-                        format!("'{}' is not a valid label for a column",string_seclabel),
-                        format!("{}",check_func.unwrap_err())
-                    );
-                }
-
-                /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'NOT MASKED */
-                if re::is_match_not_masked(seclabel_cstr) {
-                    return;
-                }
-                ereport!(
-                    ERROR,
-                    ERRCODE_INVALID_NAME,
-                    format!("'{}' is not a valid label for a column", string_seclabel),
-                    "syntax error"
-                );
+                /* SECURITY LABEL FOR anon ON COLUMN t.i IS '[...]' */
+                relabel_column(label,object.objectId)
             }
         }
 
         /* SECURITY LABEL FOR anon ON ROLE batman IS 'MASKED' */
-        pg_sys::AuthIdRelationId => {
-            if re::is_match_masked(seclabel_cstr) {
-                return
-            }
-            ereport!(
-                ERROR,
-                ERRCODE_INVALID_NAME,
-                format!("'{}' is not a valid label for a role", string_seclabel)
-            );
-        }
-        /* SECURITY LABEL FOR anon ON SCHEMA public IS 'TRUSTED' */
-        pg_sys::NamespaceRelationId => {
-            if !pg_sys::superuser() {
-                ereport!(
-                    ERROR,
-                    ERRCODE_INSUFFICIENT_PRIVILEGE,
-                    "only superuser can set an anon label for a schema"
-                );
-            }
-            if re::is_match_trusted(seclabel_cstr) {
-                return
-            }
-            ereport!(
-                ERROR,
-                ERRCODE_INVALID_NAME,
-                format!("'{}' is not a valid label for a schema", string_seclabel)
-            );
-        }
+        pg_sys::AuthIdRelationId => { relabel_role(label) }
 
-        /* Everything else is not supported */
-        _ => {
-            ereport!(
-                ERROR,
-                ERRCODE_FEATURE_NOT_SUPPORTED,
-                "The anon extension does not support labels on this object"
-            );
-        }
+        /* SECURITY LABEL FOR anon ON SCHEMA public IS 'TRUSTED' */
+        pg_sys::NamespaceRelationId => { relabel_schema(label) }
+
+        /* Any other label is refused */
+        _ => { error::feature_not_supported("Labeling this object").ereport() }
     }
+}
+
+fn relabel_column(label: &CStr, object_id: pg_sys::Oid) {
+    /* Check that the column does not belong to a view */
+    if unsafe { pg_sys::get_rel_relkind(object_id) == 'v' as i8 } {
+        error::feature_not_supported("Masking a view").ereport();
+    }
+
+    /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
+    if let Some(val) = re::capture_value(label) {
+        let check_val = input::check_value(val);
+        if check_val.is_ok() { return; }
+        error::invalid_label_for(
+            "a column",label,Some(check_val.unwrap_err())
+        ).ereport();
+    }
+
+    /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH FUNCTION $x$' */
+    if let Some(func) = re::capture_function(label) {
+        let check_func = input::check_function(func,"anon");
+        if check_func.is_ok() { return ; }
+        error::invalid_label_for(
+            "a column",label,Some(check_func.unwrap_err())
+        ).ereport();
+    }
+
+    /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'NOT MASKED */
+    if re::is_match_not_masked(label) { return; }
+
+    error::invalid_label_for("a column",label,None).ereport();
+}
+
+fn relabel_database(label: &CStr) {
+    let mut detail : Option<String> = None;
+
+    if re::is_match_tablesample(label) {
+        let check_tbs = input::check_tablesample(label.to_str().unwrap());
+        if check_tbs.is_ok() { return }
+        detail = Some(check_tbs.unwrap_err());
+    }
+
+    error::invalid_label_for("a database", label, detail).ereport();
+}
+
+fn relabel_function(label: &CStr) {
+
+    if ! unsafe { pg_sys::superuser() } {
+        error::insufficient_privilege(
+            "only a superuser can set an anon label for a function".to_string()
+        ).ereport();
+    }
+
+    if re::is_match_trusted(label) || re::is_match_untrusted(label) {
+                return
+    }
+
+    error::invalid_label_for("a function",label,None).ereport();
+}
+
+fn relabel_role(label: &CStr) {
+    if re::is_match_masked(label) { return }
+    error::invalid_label_for("a role",label,None).ereport();
+}
+
+fn relabel_schema(label: &CStr) {
+    if ! unsafe { pg_sys::superuser() } {
+        error::insufficient_privilege(
+            "only a superuser can set an anon label for a schema".to_string()
+        ).ereport();
+    }
+    if re::is_match_trusted(label) { return }
+
+    error::invalid_label_for("a schema",label,None ).ereport();
+}
+
+// relabel_table is **almost** equivalent to relabel_database
+fn relabel_table(label: &CStr) {
+    let mut detail : Option<String> = None;
+    if re::is_match_tablesample(label) {
+        let check_tbs = input::check_tablesample(label.to_str().unwrap());
+        if check_tbs.is_ok() { return; }
+        detail = Some(check_tbs.unwrap_err());
+    }
+    error::invalid_label_for("a table", label, detail).ereport();
 }

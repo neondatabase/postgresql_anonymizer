@@ -4,8 +4,8 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SELECT anon.is_initialized() IS FALSE;
 
--- 2 event triggers are defined
-SELECT evtname IN ('anon_trg_check_trusted_schemas','anon_trg_mask_update')
+-- 1 event trigger is defined
+SELECT evtname IN ('anon_trg_mask_update')
 FROM pg_event_trigger;
 
 -- basic usage

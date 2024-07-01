@@ -3,8 +3,8 @@
 ///
 
 use crate::compat;
+use crate::error;
 use pgrx::prelude::*;
-use pgrx::PgSqlErrorCode::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 
@@ -25,11 +25,7 @@ use std::ffi::CString;
 pub fn get_function_schema(function_call: String) -> String {
 
     if function_call.is_empty() {
-        ereport!(
-            ERROR,
-            ERRCODE_INVALID_NAME,
-            format!("function call is empty")
-        );
+        error::function_call_is_empty().ereport();
     }
 
     // build a simple SELECT statement and parse it
@@ -63,11 +59,7 @@ pub fn get_function_schema(function_call: String) -> String {
     };
 
     if !unsafe { pgrx::is_a(restarget.val, pg_sys::NodeTag::T_FuncCall) } {
-        ereport!(
-            ERROR,
-            ERRCODE_INVALID_NAME,
-            format!("'{function_call}' is not a valid function call")
-        );
+        error::function_is_not_valid(&function_call).ereport();
     }
 
     // if the function name is qualified, extract and return the schema name
@@ -114,12 +106,12 @@ mod tests {
         assert_eq!("", get_function_schema("publicfoo()".to_string()));
     }
 
-    #[pg_test(error = "function call is empty")]
+    #[pg_test(error = "Anon: function call is empty")]
     fn test_get_function_schema_error_empty() {
         get_function_schema("".to_string());
     }
 
-    #[pg_test(error = "'foo' is not a valid function call")]
+    #[pg_test(error = "Anon: 'foo' is not a valid function call")]
     fn test_get_function_schema_error_invalid() {
         get_function_schema("foo".to_string());
     }

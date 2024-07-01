@@ -11,7 +11,7 @@ IS 'MASKED     WITH    FUNCTION      anon.random_date()';
 SECURITY LABEL FOR anon ON ROLE batman IS 'MasKeD';
 -- This is not valid
 SECURITY LABEL FOR anon ON ROLE batman IS 'maskeeeed';
-ERROR:  'maskeeeed' is not a valid label for a role
+ERROR:  Anon: `maskeeeed` is not a valid label for a role
 -- Clean up
 DROP TABLE people CASCADE;
 DROP ROLE batman;

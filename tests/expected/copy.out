@@ -29,6 +29,6 @@ CONFIDENTIAL	50f25331bb9
 CONFIDENTIAL	f52c939aaf7
 SAVEPOINT feature_not_implemented;
 COPY (SELECT * FROM "Phone") TO stdout;
-ERROR:  not implemented yet
+ERROR:  Anon: not implemented yet
 ROLLBACK TO feature_not_implemented;
 ROLLBACK;
