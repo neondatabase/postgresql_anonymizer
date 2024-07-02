@@ -62,7 +62,8 @@ SECURITY LABEL FOR anon ON FUNCTION pg_catalog.btrim(TEXT) IS 'TRUSTED';
 SECURITY LABEL FOR anon ON FUNCTION pg_catalog.concat(VARIADIC "any") IS 'TRUSTED';
 SECURITY LABEL FOR anon ON FUNCTION pg_catalog.date_part(TEXT,TIMESTAMP) IS 'TRUSTED';
 SECURITY LABEL FOR anon ON FUNCTION pg_catalog.date_trunc(TEXT,TIMESTAMP) IS 'TRUSTED';
-SECURITY LABEL FOR anon ON FUNCTION gen_random_uuid IS 'TRUSTED';
+-- gen_random_uuid is not present in PG12, uncomment this in 2015
+--SECURITY LABEL FOR anon ON FUNCTION pg_catalog.gen_random_uuid IS 'TRUSTED';
 SECURITY LABEL FOR anon ON FUNCTION pg_catalog.json_build_array() IS 'TRUSTED';
 SECURITY LABEL FOR anon ON FUNCTION pg_catalog.jsonb_build_array() IS 'TRUSTED';
 SECURITY LABEL FOR anon ON FUNCTION pg_catalog.json_build_object() IS 'TRUSTED';
