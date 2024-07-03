@@ -12,7 +12,7 @@ PG_MAJOR_VERSION=$(PGVER:pg%=%)
 # use `TARGET=debug make run` for more detailed errors
 TARGET?=release
 TARGET_DIR?=target/$(TARGET)/anon-$(PGVER)/
-PG_CONFIG?=`$(PGRX) info pg-config $(PGVER)`
+PG_CONFIG?=`$(PGRX) info pg-config $(PGVER) 2> /dev/null || echo pg_config`
 PG_SHAREDIR?=$(shell $(PG_CONFIG) --sharedir)
 PG_LIBDIR?=$(shell $(PG_CONFIG) --libdir)
 PG_BINDIR?=$(shell $(PG_CONFIG) --bindir)
