@@ -19,9 +19,9 @@ use pgrx::prelude::*;
 pub fn create_masking_functions() -> pg_sys::Oid {
     Spi::run("
         CREATE SCHEMA outfit;
-        CREATE FUNCTION outfit.mask(SMALLINT) RETURNS SMALLINT LANGUAGE SQL AS $$ SELECT 0 $$;
+        CREATE FUNCTION outfit.mask(SMALLINT) RETURNS SMALLINT LANGUAGE SQL AS $$ SELECT 0::SMALLINT $$;
         CREATE FUNCTION outfit.mask(INT) RETURNS INT LANGUAGE SQL AS $$ SELECT 0 $$;
-        CREATE FUNCTION outfit.mask(BIGINT) RETURNS BIGINT LANGUAGE SQL AS $$ SELECT 0 $$;
+        CREATE FUNCTION outfit.mask(BIGINT) RETURNS BIGINT LANGUAGE SQL AS $$ SELECT 0::BIGINT $$;
         SECURITY LABEL FOR anon ON FUNCTION outfit.mask(SMALLINT) IS 'TRUSTED';
         SECURITY LABEL FOR anon ON FUNCTION outfit.mask(INT) IS 'TRUSTED';
 
