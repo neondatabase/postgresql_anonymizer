@@ -296,13 +296,6 @@ mod anon {
     //------------------------------------------------------------------------
     use crate::masking;
 
-    // this function was called `anon_init` in the C implementation
-    #[pg_extern]
-    pub fn init_masking_policies()
-    -> bool {
-        masking::init_masking_policies()
-    }
-
     #[pg_extern]
     pub fn masking_expressions_for_table(r: pg_sys::Oid, p: String )
     -> String {

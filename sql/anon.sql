@@ -901,7 +901,6 @@ DECLARE
   datapath_check TEXT;
   success BOOLEAN;
 BEGIN
-  PERFORM anon.init_masking_policies();
 
   IF anon.is_initialized() THEN
     RAISE NOTICE 'The anon extension is already initialized.';

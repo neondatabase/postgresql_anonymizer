@@ -14,6 +14,17 @@ use std::ffi::CStr;
 
 pub fn register_label_providers() {
 
+    // Register the main masking policy
+    // the name "anon" is hard-coded, we don't want user to modify it
+    unsafe {
+        let policy = "anon";
+        let c_ptr_policy = policy.as_ptr();
+        pg_sys::register_label_provider(
+            c_ptr_policy as *const i8,
+            Some(masking_policy_object_relabel)
+        );
+    }
+
     // Register the security label provider for k-anonymity
     unsafe {
         pg_sys::register_label_provider(
@@ -25,6 +36,8 @@ pub fn register_label_providers() {
             Some(k_anonymity_object_relabel),
         )
     };
+
+
 
     // Register the masking policies
     for policy in masking::list_masking_policies().iter() {

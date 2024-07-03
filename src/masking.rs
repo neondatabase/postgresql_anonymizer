@@ -47,18 +47,6 @@ pub fn get_masking_policy(roleid: pg_sys::Oid) ->  Option<String> {
     None
 }
 
-///
-/// Initialize the extension
-///
-pub fn init_masking_policies() -> bool {
-    // For some reasons, this can't be done int PG_init()
-    for _policy in list_masking_policies().iter() {
-        Spi::run("SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED'")
-            .expect("SPI Failed to set schema anon as trusted");
-    }
-    true
-}
-
 /// Return all the registered masking policies
 ///
 /// NOTE: we can't return a Vec<Option<String>> here because it seems that
@@ -433,11 +421,6 @@ mod tests {
         assert!( ! has_mask_in_policy(batman,"does_not_exist") );
         let not_a_real_roleid = pg_sys::Oid::from(99999999);
         assert!( ! has_mask_in_policy(not_a_real_roleid,"anon") );
-    }
-
-    #[pg_test]
-    fn test_init_masking_policies() {
-        assert!(init_masking_policies())
     }
 
     #[pg_test]
