@@ -2,7 +2,7 @@
    "name": "PostgreSQL_Anonymizer",
    "abstract": "Data Anonymization for Postgres",
    "description": "Mask or replace sensitive data with Postgres.",
-   "version": "1.3.3",
+   "version": "2.0.0-alpha.2",
    "maintainer": [
       "Damien Clochard <daamien@gmail.com>"
    ],
@@ -20,7 +20,7 @@
      "anon": {
        "file": "anon.sql",
        "docfile": "README.md",
-       "version": "1.3.3",
+       "version": "2.0.0-alpha.2",
        "abstract": "Data Anonymization for Postgres"
      }
    },

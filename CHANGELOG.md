@@ -1,10 +1,27 @@
 CHANGELOG
 ===============================================================================
 
-WIP : 2.0.0-alpha-2
+20240704 : 2.0.0-alpha.2 - Better, Faster, Safer
 -------------------------------------------------------------------------------
 
+* [CI] Activate Rust cache
+* [CI] Add workflow rules to prevent double pipelines
+* [CI] Activate clippy
+* [core] Trust more pg_catalog functions (thanks to @nocive)
+* [core] Improve management and errors for TRUSTED functions
+* [CI] add a release job for DEB/RPM packages
+* [doc] How to add tests
+* [docker] use PostgreSQL version 16 by default in the Dockerfile (@madtibo)
+* [core] Split test fixtures and extern functions into modules
+* [tests] Add elevation tests
+* [core] split the hooks in a separate file
+* [CI] fix how-to generation
 * [doc] build the doc of a previous version
+* [TDM] issue error on `COPY (SELECT ...) TO ...` statements
+* [meta] Add codespell and markdownlint to pre-commit
+* [faker] New fake data generator
+* [doc] new install methods
+* [doc] Officially drop Windows support
 
 
 20240408 : 2.0.0-alpha.1 - Better, Faster, Safer
