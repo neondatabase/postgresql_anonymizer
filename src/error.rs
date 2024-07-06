@@ -26,7 +26,7 @@ impl AnonError {
             );
         } else {
             let d = <Option<String> as Clone>::clone(&self.detail)
-                    .unwrap_or(String::new());
+                    .expect("Error details should be provided");
             pgrx::ereport!(
                 ERROR,
                 self.error_code,
@@ -90,6 +90,7 @@ pub fn internal(message: &str) -> AnonError {
     )
 }
 
+#[allow(dead_code)]
 pub fn not_implemented_yet() -> AnonError {
     AnonError::new(
         ERRCODE_FEATURE_NOT_SUPPORTED,

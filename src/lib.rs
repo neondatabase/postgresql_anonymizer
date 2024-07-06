@@ -15,9 +15,11 @@ mod masking;
 mod random;
 mod re;
 mod utils;
+mod walker;
 
 // Load the SQL functions AFTER the rust functions
-extension_sql_file!("../sql/anon.sql", finalize);
+extension_sql_file!("../sql/anon.sql", name="anon");
+extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires =["anon"]);
 
 pgrx::pg_module_magic!();
 

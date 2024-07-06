@@ -8,7 +8,6 @@ use pgrx::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 
-///
 #[derive(PartialEq, Eq)]
 #[derive(Clone)]
 struct InputError(u32);
@@ -394,15 +393,20 @@ mod tests {
     use crate::input::*;
 
     #[pg_test]
-    fn test_check_function(){
+    fn test_check_function_ok(){
+        let _outfit = fixture::create_masking_functions();
+        assert!(check_function("anon.lower('A')","anon").is_ok());
+        assert!(check_function("anon.lower(anon.upper('a'))","anon").is_ok());
+        assert!(check_function("outfit.mask(0)","anon").is_ok());
+    }
+
+    #[pg_test]
+    fn test_check_function_err(){
         let _outfit = fixture::create_masking_functions();
         assert!(check_function("foo()","anon").is_err());
         assert!(check_function("pg_catalog.does_not_exist()","anon").is_err());
         assert!(check_function("pg_catalog.pg_ls_dir('/)","anon").is_err());
         assert!(check_function("anon.lower(pg_catalog.pg_ls_dir())","anon").is_err());
-        assert!(check_function("anon.lower('A')","anon").is_ok());
-        assert!(check_function("anon.lower(anon.upper('a'))","anon").is_ok());
-        assert!(check_function("outfit.mask(0)","anon").is_ok());
         assert!(check_function("outfit.belt()","anon").is_err());
         assert!(check_function("","anon").is_err());
         assert!(check_function("foo(), bar()","anon").is_err());

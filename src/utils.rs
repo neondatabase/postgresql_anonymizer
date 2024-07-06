@@ -7,6 +7,7 @@ use crate::error;
 use pgrx::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
+use std::ffi::c_char;
 
 //----------------------------------------------------------------------------
 // Public functions
@@ -91,6 +92,25 @@ pub fn get_function_schema(function_call: String) -> String {
     "".to_string()
 }
 
+/// Returns the full name of a relation
+///
+pub fn get_relation_qualified_name(relid: pg_sys::Oid ) -> String
+{
+    let namespace = unsafe {
+        pg_sys::get_namespace_name(pg_sys::get_rel_namespace(relid))
+    };
+    let relname = unsafe { pg_sys::get_rel_name(relid) };
+    format!("{}.{}",quote_identifier(namespace),quote_identifier(relname))
+}
+
+/// Return the quoted name of a string
+/// if a schema is named `WEIRD_schema`, its quoted name is `"WEIRD_schema"`
+///
+pub fn quote_identifier(ident: *const c_char) -> &'static str {
+    return unsafe { CStr::from_ptr(pg_sys::quote_identifier(ident)) }
+        .to_str()
+        .unwrap();
+}
 //----------------------------------------------------------------------------
 // Tests
 //----------------------------------------------------------------------------
@@ -99,6 +119,7 @@ pub fn get_function_schema(function_call: String) -> String {
 #[pg_schema]
 mod tests {
     use crate::utils::*;
+    use crate::fixture;
 
     #[pg_test]
     fn test_get_function_schema() {
@@ -114,5 +135,20 @@ mod tests {
     #[pg_test(error = "Anon: 'foo' is not a valid function call")]
     fn test_get_function_schema_error_invalid() {
         get_function_schema("foo".to_string());
+    }
+
+    #[pg_test]
+    fn test_get_relation_qualified_name() {
+        let person_relid = fixture::create_table_person();
+        assert_eq!("public.person",get_relation_qualified_name(person_relid));
+        let location_relid = fixture::create_table_location();
+        assert_eq!("\"Postal_Info\".location", get_relation_qualified_name(location_relid));
+    }
+
+    #[pg_test]
+    fn test_quote_identifier() {
+        let schema_c_string = CString::new("WEIRD_schema").unwrap();
+        let schema_c_ptr = schema_c_string.as_c_str().as_ptr() as *const c_char;
+        assert_eq!("\"WEIRD_schema\"",quote_identifier(schema_c_ptr));
     }
 }

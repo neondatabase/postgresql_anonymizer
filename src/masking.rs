@@ -6,6 +6,7 @@ use c_str_macro::c_str;
 use crate::error;
 use crate::guc;
 use crate::re;
+use crate::utils;
 use pgrx::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -69,14 +70,19 @@ pub fn list_masking_policies() -> Vec<Option<&'static str>> {
     return masking_policies.split(',').map(Some).collect();
 }
 
-/// Returns the "select clause filters" that will mask the authentic data
+
+/// Returns a String and bool
+///
+/// The String is the "select clause filters" that will mask the authentic data
 /// of a table for a given masking policy
 ///
-pub fn masking_expressions_for_table(
+/// the bool indicate is the table as at least one masked column
+///
+pub fn masking_expressions(
     relid: pg_sys::Oid,
     policy: String
-) -> String {
-
+) -> (String,bool) {
+    let mut table_has_one_masked_column = false;
     let lockmode = pg_sys::AccessShareLock as i32;
 
     // `pg_sys::relation_open()` will raise XX000
@@ -98,7 +104,8 @@ pub fn masking_expressions_for_table(
         if a.attisdropped {
             continue;
         }
-        let filter_value = value_for_att(&relation, a, policy.clone());
+        let (filter_value, att_is_masked) = value_for_att(&relation, a, policy.clone());
+        if att_is_masked { table_has_one_masked_column = true; }
         let attname_quoted = quote_name_data(&a.attname);
         let filter = format!("{filter_value} AS {attname_quoted}");
         expressions.push(filter);
@@ -109,8 +116,22 @@ pub fn masking_expressions_for_table(
         pg_sys::relation_close(relation.as_ptr(), lockmode);
     }
 
-    expressions.join(", ").to_string()
+    (expressions.join(", ").to_string(), table_has_one_masked_column)
 }
+
+/// Returns the masking filters for a given table
+///
+/// This a wrapper around the `masking_expressions()` function used by
+/// the legacy dynamic masking system. It will be dropped in version 3
+///
+pub fn masking_expressions_for_table(
+    relid: pg_sys::Oid,
+    policy: String
+) -> String {
+    let (masking_expressions, _) = masking_expressions(relid,policy);
+    masking_expressions
+}
+
 
 /// Returns the masking filter that will mask the authentic data
 /// of a column for a given masking policy
@@ -147,7 +168,7 @@ pub fn masking_value_for_column(
         return None;
     }
 
-    let masking_value = value_for_att(&relation,&a,policy);
+    let (masking_value,_) = value_for_att(&relation,&a,policy);
 
     // pass the relation back to Postgres
     unsafe {
@@ -155,6 +176,46 @@ pub fn masking_value_for_column(
     }
 
     Some(masking_value)
+}
+
+/// Prepare a SQL Statement object that will replace the authentic relation
+///
+/// * relid is the oid of the relation
+/// * policy is the masking policy to apply
+///
+pub fn subquery( relid: pg_sys::Oid, policy: String) -> Option<String>
+{
+    let (masking_expressions,table_is_masked) = masking_expressions(relid, policy);
+
+    if ! table_is_masked { return None; }
+
+    Some(format!(
+        "SELECT {} FROM {};",
+        masking_expressions,
+        utils::get_relation_qualified_name(relid)
+    ))
+}
+
+/// Prepare a ParseTree object from a SQL query
+///
+pub fn parse_subquery(query_sql: String) -> PgBox<pg_sys::RawStmt>
+{
+
+    let query_c_string = CString::new(query_sql.as_str()).unwrap();
+    let query_ptr = query_c_string.as_c_str().as_ptr() as *const c_char;
+
+    let raw_parsetree_list = unsafe {
+        pg_sys::pg_parse_query(query_ptr)
+    };
+
+    // extract the raw statement
+    // this is the equivalent of the linitial_node C macro
+    // https://doxygen.postgresql.org/pg__list_8h.html#a213ac28ac83471f2a47d4e3918f720b4
+    unsafe {
+        PgBox::from_pg(
+            pg_sys::pgrx_list_nth(raw_parsetree_list, 0) as *mut pg_sys::RawStmt
+        )
+    }
 }
 
 /// Read the Security Label for a given object
@@ -183,48 +244,6 @@ pub fn rule(
         .execute()
 }
 
-/// Prepare a Raw Statement object that will replace the authentic relation
-///
-/// * relid is the oid of the relation
-/// * policy is the masking policy to apply
-///
-pub fn stmt_for_table(
-    relid: pg_sys::Oid,
-    policy: String
-) -> *mut pg_sys::Node {
-    let namespace = unsafe {
-        pg_sys::get_namespace_name(pg_sys::get_rel_namespace(relid))
-    };
-    let rel_name = unsafe { pg_sys::get_rel_name(relid) };
-    //spi::quote_identifier
-    let query_string = format!(
-        "SELECT {} FROM {}.{};",
-        masking_expressions_for_table(relid, policy),
-        quote_identifier(namespace),
-        quote_identifier(rel_name)
-    );
-    debug3!("Anon: Query = {}", query_string);
-
-    let query_c_string = CString::new(query_string.as_str()).unwrap();
-    let query_c_ptr = query_c_string.as_c_str().as_ptr() as *const c_char;
-
-    // WARNING: This will trigger the post_parse_hook !
-    let raw_parsetree_list = unsafe { pg_sys::pg_parse_query(query_c_ptr) };
-
-    // extract the raw statement
-    // this is the equivalent of the linitial_node C macro
-    // https://doxygen.postgresql.org/pg__list_8h.html#a213ac28ac83471f2a47d4e3918f720b4
-    let raw_stmt = unsafe {
-        PgBox::from_pg(
-            pg_sys::pgrx_list_nth(raw_parsetree_list, 0) as *mut pg_sys::RawStmt
-        )
-    };
-    debug3!("Anon: Copy raw_stmt = {:#?}", raw_stmt );
-
-    // return the statement
-    raw_stmt.stmt
-}
-
 //----------------------------------------------------------------------------
 // Private functions
 //----------------------------------------------------------------------------
@@ -248,7 +267,9 @@ fn has_mask_in_policy(
 }
 
 
-/// Return the value for an attribute based on its masking rule (if any),
+/// Returns a string and a bool
+/// the bool means whether the column is masked or not
+/// the string is the value of the attribute based on its masking rule (if any),
 /// which can be either:
 ///     - the attribute name (i.e. the authentic value)
 ///     - the function or value from the masking rule
@@ -259,7 +280,7 @@ fn value_for_att(
     rel: &PgBox<pg_sys::RelationData>,
     att: &pg_sys::FormData_pg_attribute,
     policy: String,
-) -> String {
+) -> (String, bool) {
 
     let attname = quote_name_data(&att.attname);
 
@@ -292,7 +313,7 @@ fn value_for_att(
     // No masking rule found and Privacy By Default is off,
     // the authentic value is revealed
     if seclabel_cstr.is_empty() && !guc::ANON_PRIVACY_BY_DEFAULT.get() {
-        return attname.to_string();
+        return (attname.to_string(), false);
     }
 
     // A masking rule was found
@@ -300,22 +321,22 @@ fn value_for_att(
     // Search for a masking function
     if let Some(function) = re::capture_function(seclabel_cstr) {
         if guc::ANON_STRICT_MODE.get() {
-            return cast_as_regtype(function.to_string(), att.atttypid);
+            return (cast_as_regtype(function.to_string(), att.atttypid),true);
         }
-        return function.to_string();
+        return (function.to_string(), true);
     }
 
     // Search for a masking value
     if let Some(value) = re::capture_value(seclabel_cstr) {
         if guc::ANON_STRICT_MODE.get() {
-            return cast_as_regtype(value.to_string(), att.atttypid);
+            return (cast_as_regtype(value.to_string(), att.atttypid), true);
         }
-        return value.to_string();
+        return (value.to_string(), true);
     }
 
     // The column is declared as not masked, the authentic value is shown
     if re::is_match_not_masked(seclabel_cstr) {
-        return attname.to_string();
+        return (attname.to_string(), false);
     }
 
     debug3!("Anon: Privacy by default is on");
@@ -358,32 +379,21 @@ fn value_for_att(
                 let default_value_c_str = unsafe {
                         CStr::from_ptr(default_value_c_ptr)
                 };
-                return default_value_c_str.to_str().unwrap().to_string();
+                return (default_value_c_str.to_str().unwrap().to_string(),true);
             }
         }
-        return "NULL".to_string();
+        return ("NULL".to_string(), true);
     }
 
     // No default value, "NULL" (the literal value) is the last possibility
-    "NULL".to_string()
+    ("NULL".to_string(),true)
 }
 
 /// Return the quoted name of a NameData identifier
 /// if a column is named `I`, its quoted name is `"I"`
 ///
-#[pg_guard]
 fn quote_name_data(name_data: &pg_sys::NameData) -> &str {
-    quote_identifier(name_data.data.as_ptr() as *const c_char)
-}
-
-/// Return the quoted name of a string
-/// if a schema is named `WEIRD_schema`, its quoted name is `"WEIRD_schema"`
-///
-#[pg_guard]
-fn quote_identifier(ident: *const c_char) -> &'static str {
-    return unsafe { CStr::from_ptr(pg_sys::quote_identifier(ident)) }
-        .to_str()
-        .unwrap();
+    utils::quote_identifier(name_data.data.as_ptr() as *const c_char)
 }
 
 //----------------------------------------------------------------------------
@@ -443,6 +453,24 @@ mod tests {
         assert_eq!(Some(expected),result);
     }
 
+
+    #[pg_test]
+    fn test_masking_expressions(){
+        let relid = fixture::create_table_person();
+        let policy = "anon";
+        let (result,masked) = masking_expressions(relid,policy.to_string());
+        let expected = "firstname AS firstname, CAST(NULL AS text) AS lastname"
+                        .to_string();
+        assert!(masked);
+        assert_eq!(expected, result);
+        // now with a non-existinf policy
+        let (result2,masked2) = masking_expressions(relid,"".to_string());
+        assert!(!masked2);
+        let expected2 = "firstname AS firstname, lastname AS lastname"
+                        .to_string();
+        assert_eq!(expected2, result2);
+    }
+
     #[pg_test]
     fn test_masking_expressions_for_table(){
         let relid = fixture::create_table_person();
@@ -465,13 +493,34 @@ mod tests {
     }
 
     #[pg_test]
-    fn test_pa_masking_stmt_for_table(){
+    fn test_subquery_some(){
         let relid = fixture::create_table_person();
         let policy = "anon".to_string();
+        let result = subquery(relid,policy);
+        assert!(result.is_some());
+        assert!(result.clone().unwrap().contains("firstname"));
+        assert!(result.clone().unwrap().contains("lastname"));
+        let another_policy = "does_not_exist".to_string();
+        let result_in_another_policy = subquery(relid,another_policy);
+        assert!(result_in_another_policy.is_none());
+    }
+
+    #[pg_test]
+    fn test_subquery_none(){
+        let relid = fixture::create_table_call();
+        let policy = "anon".to_string();
+        let result = subquery(relid,policy);
+        assert!(result.is_none());
+    }
+
+    #[pg_test]
+    fn test_parse_subquery() {
+        let relid = fixture::create_table_person();
+        let policy = "anon".to_string();
+        let subquery = subquery(relid,policy);
+        let raw_stmt = parse_subquery(subquery.clone().unwrap());
         let result = unsafe {
-            pgrx::nodes::node_to_string(
-                stmt_for_table(relid,policy)
-            ).unwrap()
+            pgrx::nodes::node_to_string(raw_stmt.stmt).unwrap()
         };
         assert!(result.contains("firstname"));
         assert!(result.contains("lastname"));

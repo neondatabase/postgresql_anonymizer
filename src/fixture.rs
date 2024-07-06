@@ -48,6 +48,21 @@ pub fn create_masked_role() -> pg_sys::Oid {
         .expect("should be an OID")
 }
 
+// an unmasked table
+#[allow(dead_code)]
+pub fn create_table_call() -> pg_sys::Oid {
+    Spi::run("
+         CREATE TABLE call AS
+         SELECT  '410-719-9009'::TEXT        AS sender,
+                 '410-258-4863'::TEXT        AS receiver,
+                 '2004-07-08'::DATE          AS day
+         ;
+    ").unwrap();
+    Spi::get_one::<pg_sys::Oid>("SELECT 'call'::REGCLASS::OID")
+        .unwrap()
+        .expect("should be an OID")
+}
+
 #[allow(dead_code)]
 pub fn create_table_person() -> pg_sys::Oid {
     Spi::run("
@@ -59,6 +74,20 @@ pub fn create_table_person() -> pg_sys::Oid {
            IS 'MASKED WITH VALUE NULL';
     ").unwrap();
     Spi::get_one::<pg_sys::Oid>("SELECT 'person'::REGCLASS::OID")
+        .unwrap()
+        .expect("should be an OID")
+}
+
+#[allow(dead_code)]
+pub fn create_table_location() -> pg_sys::Oid {
+    Spi::run("
+         CREATE SCHEMA \"Postal_Info\";
+         CREATE TABLE \"Postal_Info\".location AS
+         SELECT  '53540'::VARCHAR(5)        AS zipcode,
+                 'Gotham'::TEXT             AS city
+         ;
+    ").unwrap();
+    Spi::get_one::<pg_sys::Oid>("SELECT '\"Postal_Info\".location'::REGCLASS::OID")
         .unwrap()
         .expect("should be an OID")
 }
