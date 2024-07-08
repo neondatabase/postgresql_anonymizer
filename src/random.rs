@@ -176,8 +176,8 @@ pub fn int(r: Range<i32>) -> Option<i32> {
     Some(i32::try_from(range_usize(r)?.fake::<usize>()).expect("Out of Bound"))
 }
 
-pub fn number_with_format(format: &'static str) -> String {
-    NumberWithFormat(EN, format).fake()
+pub fn number_with_format(format: String) -> String {
+    NumberWithFormat(EN, &format).fake()
 }
 
 pub fn numeric(r: Range<pgrx::AnyNumeric>) -> Option<pgrx::AnyNumeric> {

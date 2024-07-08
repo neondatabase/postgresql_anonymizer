@@ -22,7 +22,7 @@ use pgrx::prelude::*;
 ///
 fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
     let command_type = pstmt.commandType;
-    assert!(command_type == pg_sys::CmdType_CMD_UTILITY);
+    assert!(command_type == pg_sys::CmdType::CMD_UTILITY);
 
     unsafe {
         if pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_ExplainStmt)
@@ -97,7 +97,7 @@ impl pgrx::hooks::PgHooks for AnonHooks {
         pstmt: PgBox<pg_sys::PlannedStmt>,
         query_string: &core::ffi::CStr,
         read_only_tree: Option<bool>,
-        context: pg_sys::ProcessUtilityContext,
+        context: pg_sys::ProcessUtilityContext::Type,
         params: PgBox<pg_sys::ParamListInfoData>,
         query_env: PgBox<pg_sys::QueryEnvironment>,
         dest: PgBox<pg_sys::DestReceiver>,
@@ -106,7 +106,7 @@ impl pgrx::hooks::PgHooks for AnonHooks {
             pstmt: PgBox<pg_sys::PlannedStmt>,
             query_string: &core::ffi::CStr,
             read_only_tree: Option<bool>,
-            context: pg_sys::ProcessUtilityContext,
+            context: pg_sys::ProcessUtilityContext::Type,
             params: PgBox<pg_sys::ParamListInfoData>,
             query_env: PgBox<pg_sys::QueryEnvironment>,
             dest: PgBox<pg_sys::DestReceiver>,

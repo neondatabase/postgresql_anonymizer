@@ -239,7 +239,7 @@ fn is_trusted_function(
     //
     let catlist= unsafe {
         PgBox::from_pg(pg_sys::SearchSysCacheList(
-            pg_sys::SysCacheIdentifier_PROCNAMEARGSNSP.try_into().unwrap(),
+            pg_sys::SysCacheIdentifier::PROCNAMEARGSNSP.try_into().unwrap(),
             1,
             pg_sys::Datum::from(func_name),
             pg_sys::Datum::from(0),

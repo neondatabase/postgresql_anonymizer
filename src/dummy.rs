@@ -13,7 +13,7 @@
 #[macro_export]
 macro_rules! dummy {
     ($struct: ident, $locale: ident ) => {
-        match $locale {
+        match &$locale as &str{
             "ar_SA" => $struct(AR_SA).fake(),
             "en_US" => $struct(EN).fake(),
             "fr_FR" => $struct(FR_FR).fake(),
@@ -43,7 +43,7 @@ macro_rules! range_usize {
 #[macro_export]
 macro_rules! dummy_with_range {
     ($struct: ident, $locale: ident, $range_i32: ident ) => {
-        match $locale {
+        match &$locale as &str{
 //            "ar_SA" => $struct(AR_SA,crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
             "en_US" => $struct(EN,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
             "fr_FR" => $struct(FR_FR,$crate::range_usize!($range_i32)).fake::<Vec<String>>().join(" "),
@@ -96,7 +96,7 @@ macro_rules! declare_l10n_fn_String {
     ($name: tt, $struct: ident) => {
         paste::paste! {
             #[pg_extern]
-            pub fn [ < $name _locale > ](locale: &'static str) -> String {
+            pub fn [ < $name _locale > ](locale: String) -> String {
                 dummy!($struct,locale)
             }
         }
@@ -117,7 +117,7 @@ macro_rules! declare_l10n_fn_with_range_to_string {
         paste::paste! {
             #[pg_extern]
             pub fn [ < $name _locale > ](
-                    locale: &'static str,
+                    locale: String,
                     r: pgrx::Range<i32>)
                 -> String {
                 return $crate::dummy_with_range!($struct,locale,r);

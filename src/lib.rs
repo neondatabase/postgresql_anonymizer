@@ -244,7 +244,7 @@ mod anon {
     { random::int(Range::<i32>::new(start,stop+1)) }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_number_with_format(format: &'static str) -> String
+    pub fn random_number_with_format(format: String) -> String
     { random::number_with_format(format) }
 
     // FLOATS
@@ -276,15 +276,15 @@ mod anon {
     // PHONE
     #[pg_extern(parallel_restricted)]
     pub fn random_phone() -> String
-    { random::number_with_format("0#########") }
+    { random::number_with_format("0#########".to_string()) }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_phone_with_format(format: &'static str) -> String
+    pub fn random_phone_with_format(format: String) -> String
     { random::number_with_format(format) }
 
     #[pg_extern(parallel_restricted)]
     pub fn random_zip() -> String
-    { random::number_with_format("#####") }
+    { random::number_with_format("#####".to_string()) }
 
     // Strings
     #[pg_extern(parallel_restricted)]
@@ -339,6 +339,7 @@ static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {
 ///
 #[pg_guard]
 pub unsafe extern "C" fn _PG_init() {
+    #[allow(static_mut_refs)]
     pgrx::hooks::register_hook(&mut HOOKS);
     guc::register_gucs();
     label_providers::register_label_providers();
@@ -376,5 +377,5 @@ pub mod pg_test {
     pub fn postgresql_conf_options() -> Vec<&'static str> {
         // return any postgresql.conf settings that are required for your tests
         vec![]
-    }
+   }
 }
