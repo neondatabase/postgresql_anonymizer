@@ -7,6 +7,7 @@ use crate::re;
 use pgrx::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
+use std::os::raw::c_char;
 
 #[derive(PartialEq, Eq)]
 #[derive(Clone)]
@@ -103,7 +104,7 @@ pub fn check_tablesample( expr: &str ) -> Result<(),String> {
         Some(unsafe {
             compat::raw_parser(
                 query_c_string.as_c_str().as_ptr()
-                as *const pgrx::ffi::c_char
+                as *const c_char
             )
         }))
         .catch_others(|_| None)
@@ -226,7 +227,7 @@ extern "C" fn is_untrusted(
 ///
 fn is_trusted_function(
     namespace_id: pg_sys::Oid,
-    func_name: *const i8,
+    func_name: *const c_char,
     policy: &str
 ) -> Result<(), InputError>
 {
@@ -344,7 +345,7 @@ fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>,String>
         Some(unsafe {
             compat::raw_parser(
                 query_c_string.as_c_str().as_ptr()
-                as *const pgrx::ffi::c_char
+                as *const c_char
             )
         }))
         .catch_others(|_| None)
@@ -440,11 +441,11 @@ mod tests {
     fn test_is_trusted_function(){
         let outfit = fixture::create_masking_functions();
         let mask_cstr = CString::new("mask").unwrap();
-        let mask = mask_cstr.as_ptr() as *const i8;
+        let mask = mask_cstr.as_ptr() as *const c_char;
         let belt_cstr = CString::new("belt").unwrap();
-        let belt = belt_cstr.as_ptr() as *const i8;
+        let belt = belt_cstr.as_ptr() as *const c_char;
         let cape_cstr = CString::new("cape").unwrap();
-        let cape = cape_cstr.as_ptr() as *const i8;
+        let cape = cape_cstr.as_ptr() as *const c_char;
 
         assert!(is_trusted_function(outfit,mask,"anon").is_ok());
         assert!(is_trusted_function(outfit,belt,"anon").is_err());

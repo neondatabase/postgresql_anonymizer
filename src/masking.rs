@@ -225,7 +225,7 @@ pub fn rule(
     object_id: pg_sys::Oid,
     object_sub_id: i32,
     policy: &str
-) -> Option<PgBox::<i8>> {
+) -> Option<PgBox::<c_char>> {
 
     let object = pg_sys::ObjectAddress {
         classId: class_id,

@@ -11,6 +11,7 @@ use crate::masking;
 use crate::re;
 use pgrx::prelude::*;
 use std::ffi::CStr;
+use std::os::raw::c_char;
 
 pub fn register_label_providers() {
 
@@ -20,7 +21,7 @@ pub fn register_label_providers() {
         let policy = "anon";
         let c_ptr_policy = policy.as_ptr();
         pg_sys::register_label_provider(
-            c_ptr_policy as *const i8,
+            c_ptr_policy as *const c_char,
             Some(masking_policy_object_relabel)
         );
     }
@@ -32,7 +33,7 @@ pub fn register_label_providers() {
                 .get()
                 .unwrap()
                 .to_bytes_with_nul()
-                .as_ptr() as *const i8,
+                .as_ptr() as *const c_char,
             Some(k_anonymity_object_relabel),
         )
     };
@@ -46,7 +47,7 @@ pub fn register_label_providers() {
         let c_ptr_policy = policy.unwrap().as_ptr();
         unsafe {
             pg_sys::register_label_provider(
-                c_ptr_policy as *const i8,
+                c_ptr_policy as *const c_char,
                 Some(masking_policy_object_relabel),
             )
         }
@@ -58,7 +59,7 @@ pub fn register_label_providers() {
 #[pg_guard]
 unsafe extern "C" fn k_anonymity_object_relabel(
     object_ptr: *const pg_sys::ObjectAddress,
-    seclabel_ptr: *const i8,
+    seclabel_ptr: *const c_char,
 ) {
 
     /* SECURITY LABEL FOR k_anonymity ON COLUMN client.zipcode IS NULL */
@@ -99,7 +100,7 @@ unsafe extern "C" fn k_anonymity_object_relabel(
 #[pg_guard]
 unsafe extern "C" fn masking_policy_object_relabel(
     object_ptr: *const pg_sys::ObjectAddress,
-    seclabel_ptr: *const i8,
+    seclabel_ptr: *const c_char,
 ) {
 
     /* SECURITY LABEL FOR anon ON COLUMN foo.bar IS NULL */
@@ -154,7 +155,7 @@ unsafe extern "C" fn masking_policy_object_relabel(
 
 fn relabel_column(label: &CStr, object_id: pg_sys::Oid) {
     /* Check that the column does not belong to a view */
-    if unsafe { pg_sys::get_rel_relkind(object_id) == 'v' as i8 } {
+    if unsafe { pg_sys::get_rel_relkind(object_id) == 'v' as c_char } {
         error::feature_not_supported("Masking a view").ereport();
     }
 
