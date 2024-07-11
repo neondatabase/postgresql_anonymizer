@@ -21,7 +21,7 @@ pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
 
 #[cfg(any(feature = "pg14", feature = "pg15", feature = "pg16"))]
 pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
-    pg_sys::raw_parser(query,pg_sys::RawParseMode_RAW_PARSE_DEFAULT)
+    pg_sys::raw_parser(query,pg_sys::RawParseMode::RAW_PARSE_DEFAULT)
 }
 
 ///
