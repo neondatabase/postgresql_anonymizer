@@ -2,7 +2,7 @@ use crate::error;
 use crate::guc;
 use crate::masking;
 use crate::utils;
-use crate::walker::PlanWalker;
+use crate::walker;
 use pgrx::prelude::*;
 use pgrx::HookResult;
 use pgrx::JumbleState;
@@ -182,7 +182,9 @@ impl pgrx::hooks::PgHooks for AnonHooks {
             let uid = unsafe { pg_sys::GetUserId() };
             if guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {
                 if let Some(masking_policy) = masking::get_masking_policy(uid) {
-                    PlanWalker::new(masking_policy).rewrite(&query);
+                    unsafe {
+                        walker::TreeWalker::new(masking_policy).rewrite(&query);
+                    }
                 }
             }
         }

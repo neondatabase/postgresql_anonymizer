@@ -4,35 +4,24 @@ use crate::masking;
 use crate::guc;
 use crate::macros;
 use crate::re;
+use crate::walker;
 use pgrx::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
+///
+/// The Reason enum describes a series of rules that will be enforces by
+/// the input checks. It will be used by check functions to explain
+/// why an input was rejected.
+///
 #[derive(PartialEq, Eq)]
 #[derive(Clone)]
-struct InputError(u32);
-
-const ERROR_UNKNOWN              : InputError = InputError(0);
-const ERROR_SCHEMA_NOT_TRUSTED   : InputError = InputError(1);
-const ERROR_FUNCTION_UNTRUSTED   : InputError = InputError(2);
-const ERROR_FUNCTION_UNQUALIFIED : InputError = InputError(3);
-
-///
-/// A context for the `is_untrusted` recursive function
-///
-struct CheckContext {
-    policy: &'static str,
-    error_code: Option<InputError>
-}
-
-impl CheckContext {
-    fn new(policy: &'static str) -> CheckContext {
-        CheckContext {
-            policy,
-            error_code: None
-        }
-    }
+#[derive(Debug)]
+pub enum Reason {
+    SchemaNotTrusted,
+    FunctionUntrusted,
+    FunctionUnqualified,
 }
 
 /// check that an expression is a valid masking function
@@ -52,37 +41,21 @@ pub fn check_function( expr: &str, policy: &'static str)
 
     if ! guc::ANON_RESTRICT_TO_TRUSTED_SCHEMAS.get() { return Ok(()); }
 
-
-    // Create a checkcontext and cast it as a generic context
-    let checkcontext_in = CheckContext::new(policy);
-    let context_ptr = std::ptr::addr_of!(checkcontext_in)
-                      as *mut std::ffi::c_void;
-
     // Walk through the parse tree and check that the function itself and
     // all other functions used as parameters belong to a trusted schema.
     // The goal is to block privilege escalation attacks using something like:
     //
     // `MASKED WITH FUNCTION pg_catalog.upper(public.elevate())`
     //
-    if is_untrusted(func.as_ptr(), context_ptr ) {
-        // re-cast the generic context into a checkcontext
-        // and return the error upstream
-        let checkcontext_out_ptr = context_ptr as *mut CheckContext;
-        let checkcontext_out = unsafe {
-            checkcontext_out_ptr
-                .as_mut()
-                .expect("check_function should return a context")
-            as &mut CheckContext
-        };
-
-        let error_code = <Option<InputError> as Clone>::clone(&checkcontext_out.error_code)
-                         .unwrap_or(ERROR_UNKNOWN);
-
-        match error_code {
-            ERROR_SCHEMA_NOT_TRUSTED => return Err(format!("{expr} does not belong in a TRUSTED schema")),
-            ERROR_FUNCTION_UNTRUSTED => return Err(format!("{expr} is UNTRUSTED")),
-            ERROR_FUNCTION_UNQUALIFIED => return Err(format!("{expr} is not qualified")),
-            _ => return Err("Unknown error".to_string()),
+    let mut walker = walker::TreeWalker::new(policy.to_string());
+    if unsafe {  walker.is_untrusted(&func) } {
+        match walker.reason.expect("The reason should be defined")  {
+            Reason::SchemaNotTrusted
+                => return Err(format!("{expr} does not belong in a TRUSTED schema")),
+            Reason::FunctionUntrusted
+                => return Err(format!("{expr} is UNTRUSTED")),
+            Reason::FunctionUnqualified
+                => return Err(format!("{expr} is not qualified")),
         }
     }
     Ok(())
@@ -134,88 +107,6 @@ pub fn check_value( expr: &str) -> Result<(),String> {
 }
 
 
-/// walk through a parsetree and check that all functions belong in a trusted
-/// schema
-///
-/// the function should not return true without defining an AnonError in
-/// the context
-///
-#[pg_guard]
-extern "C" fn is_untrusted(
-    node: *mut pg_sys::Node,
-    context: *mut ::core::ffi::c_void
-) -> bool {
-
-    if node.is_null() { return false ; }
-
-    // Fetch and cast the context
-    //let mut checkcontext_ptr = context as *mut CheckContext;
-    //let mut checkcontext : &mut CheckContext = unsafe {
-    //    checkcontext_ptr.as_ref()
-    //                    .expect("Pointer to the Check Context should be valid")
-    //};
-    let checkcontext_ptr = context as *mut CheckContext;
-    let checkcontext = unsafe { &mut *checkcontext_ptr };
-
-    if unsafe {
-        pgrx::is_a(node,pg_sys::NodeTag::T_FuncCall)
-    } {
-        let fc = unsafe {
-            PgBox::from_pg(node as *mut pg_sys::FuncCall)
-        };
-
-        // fc.funcname is a pointer to a pg_sys::List
-        let funcname = unsafe {
-            PgBox::from_pg(fc.funcname)
-        };
-
-        // if the function name is not qualified, we can't trust it
-        if funcname.length != 2 {
-            checkcontext.error_code = Some(ERROR_FUNCTION_UNQUALIFIED);
-            return true;
-        }
-
-        // Now we know the function name is qualified,
-        // the first element of the list is the schema name
-        let schema_val = unsafe {
-            PgBox::from_pg(
-                pg_sys::pgrx_list_nth(funcname.as_ptr(), 0)
-                as *mut compat::SchemaValue
-            )
-        };
-        let schema_c_ptr = unsafe{ compat::strVal(*schema_val) };
-
-        let namespaceId = unsafe {
-                pg_sys::get_namespace_oid(schema_c_ptr,false)
-        };
-
-        let name_val = unsafe {
-            PgBox::from_pg(
-                pg_sys::pgrx_list_nth(funcname.as_ptr(), 1)
-                as *mut compat::SchemaValue
-            )
-        };
-        let name_c_ptr = unsafe{ compat::strVal(*name_val) };
-
-        // Returning true will stop the tree walker right away
-        // So the logic is inverted: we stop the search once an unstrusted
-        // function is found.
-        if let Err(error) = is_trusted_function( namespaceId,
-                                                 name_c_ptr,
-                                                 checkcontext.policy)
-        {
-            checkcontext.error_code = Some(error);
-            return true;
-        }
-    }
-
-    unsafe {
-        pg_sys::raw_expression_tree_walker( node,
-                                            Some(is_untrusted),
-                                            context)
-    }
-}
-
 /// Check that a function is trusted
 ///
 /// A function may have multiple definitions, e.g. foo(INT) and foo(TEXT)
@@ -225,11 +116,11 @@ extern "C" fn is_untrusted(
 /// - none of its definition is labeled as `UNTRUSTED`
 /// - one its definitions is labeled as `TRUSTED` or it belongs to a `TRUSTED` schema
 ///
-fn is_trusted_function(
+pub fn is_trusted_function(
     namespace_id: pg_sys::Oid,
     func_name: *const c_char,
     policy: &str
-) -> Result<(), InputError>
+) -> Result<(), Reason>
 {
     let mut trusted: Option<bool> = None;
 
@@ -298,7 +189,7 @@ fn is_trusted_function(
 
     if trusted.is_some() {
         if trusted.unwrap() { return Ok(()) }
-        return Err(ERROR_FUNCTION_UNTRUSTED);
+        return Err(Reason::FunctionUntrusted);
     }
 
     // At this point, if we still don't know whether the function is trusted or
@@ -309,7 +200,7 @@ fn is_trusted_function(
 /// Check that a schema is trusted
 ///
 fn is_trusted_namespace(namespace_id: pg_sys::Oid, policy: &str)
--> Result<(), InputError>
+-> Result<(), Reason>
 {
     if ! macros::OidIsValid(namespace_id) {
         error::internal("Schema OID is invalid").ereport();
@@ -322,18 +213,18 @@ fn is_trusted_namespace(namespace_id: pg_sys::Oid, policy: &str)
         policy
     ) {
         if seclabel.is_null() {
-            return Err(ERROR_SCHEMA_NOT_TRUSTED);
+            return Err(Reason::SchemaNotTrusted);
         }
         let seclabel_cstr = unsafe { CStr::from_ptr(seclabel.as_ptr()) };
         if re::is_match_trusted(seclabel_cstr) { return Ok(()); }
     }
 
-    Err(ERROR_SCHEMA_NOT_TRUSTED)
+    Err(Reason::SchemaNotTrusted)
 }
 
 /// Parse a given expression and return its raw statement
 ///
-fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>,String>
+pub fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>,String>
 {
     if expr.is_empty() {
         return Err("Expression is empty".to_string());
@@ -405,6 +296,7 @@ mod tests {
     fn test_check_function_err(){
         let _outfit = fixture::create_masking_functions();
         assert!(check_function("foo()","anon").is_err());
+        assert!(check_function("public.foo(bar())","anon").is_err());
         assert!(check_function("pg_catalog.does_not_exist()","anon").is_err());
         assert!(check_function("pg_catalog.pg_ls_dir('/)","anon").is_err());
         assert!(check_function("anon.lower(pg_catalog.pg_ls_dir())","anon").is_err());

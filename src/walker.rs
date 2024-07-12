@@ -9,41 +9,142 @@
 ///
 use crate::compat;
 use crate::error;
+use crate::input;
 use crate::masking;
 use pgrx::*;
 use std::ffi::c_char;
 use std::ffi::CString;
 
-pub struct PlanWalker {
+///
+/// TreeWalker is the context object that will passed along at each stage
+/// of the recursive walks. We use it to carry information such as the masking
+/// policy name or store an error report
+///
+pub struct TreeWalker {
     policy: String,
+    pub reason: Option<input::Reason>
 }
 
-impl PlanWalker {
+impl TreeWalker {
     pub fn new(policy: String) -> Self {
-        PlanWalker {
+        TreeWalker {
             policy,
+            reason: None
         }
     }
 
-    pub fn rewrite(&mut self, query: &PgBox<pg_sys::Query>) {
-        unsafe {
-            pg_sys::query_tree_walker(
-                query.as_ptr(),
-                Some(rewrite_walker),
-                self as *mut PlanWalker as void_mut_ptr,
-                pg_sys::QTW_EXAMINE_RTES as i32,
-            );
-        }
+    pub unsafe fn is_untrusted(&mut self, node: &PgBox<pg_sys::Node>) -> bool {
+        // Calling raw_expression_tree_walker() directly here would skip the
+        // first node of the tree... Instead we call the walker function
+        // directly
+        is_untrusted_walker(
+            node.as_ptr(),
+            self as *mut TreeWalker as void_mut_ptr
+        )
+    }
+
+    pub unsafe fn rewrite(&mut self, query: &PgBox<pg_sys::Query>) -> bool {
+        if query.is_null() { return false ; }
+        pg_sys::query_tree_walker(
+            query.as_ptr(),
+            Some(rewrite_walker),
+            self as *mut TreeWalker as void_mut_ptr,
+            pg_sys::QTW_EXAMINE_RTES as i32,
+        )
     }
 }
 
+/// Recurvive walk through a Raw Expression ( a FuncCall ) and check that all
+/// functions are TRUSTED for anonymization
+///
+/// The walker should not return true without defining an input::Reason in
+/// the context
+///
 #[pg_guard]
-unsafe extern "C" fn rewrite_walker(node: *mut pg_sys::Node, context_ptr: void_mut_ptr) -> bool {
+extern "C" fn is_untrusted_walker(
+    node: *mut pg_sys::Node,
+    context_ptr: *mut ::core::ffi::c_void
+) -> bool {
+
+    if node.is_null() { return false ; }
+
+    // Fetch and cast the context
+    let mut context = unsafe {
+        PgBox::<TreeWalker>::from_pg(context_ptr as *mut TreeWalker)
+    };
+
+    if unsafe {
+        pgrx::is_a(node,pg_sys::NodeTag::T_FuncCall)
+    } {
+        let fc = unsafe {
+            PgBox::from_pg(node as *mut pg_sys::FuncCall)
+        };
+
+        // fc.funcname is a pointer to a pg_sys::List
+        let funcname = unsafe {
+            PgBox::from_pg(fc.funcname)
+        };
+
+        // if the function name is not qualified, we can't trust it
+        if funcname.length != 2 {
+            context.reason = Some(input::Reason::FunctionUnqualified);
+            return true;
+        }
+
+        // Now we know the function name is qualified,
+        // the first element of the list is the schema name
+        let schema_val = unsafe {
+            PgBox::from_pg(
+                pg_sys::pgrx_list_nth(funcname.as_ptr(), 0)
+                as *mut compat::SchemaValue
+            )
+        };
+        let schema_c_ptr = unsafe{ compat::strVal(*schema_val) };
+
+        let namespaceId = unsafe {
+            pg_sys::get_namespace_oid(schema_c_ptr,false)
+        };
+
+        let name_val = unsafe {
+            PgBox::from_pg(
+                pg_sys::pgrx_list_nth(funcname.as_ptr(), 1)
+                as *mut compat::SchemaValue
+            )
+        };
+        let name_c_ptr = unsafe{ compat::strVal(*name_val) };
+
+        // Returning true will stop the tree walker right away
+        // So the logic is inverted: we stop the search once an unstrusted
+        // function is found.
+        if let Err(error) = input::is_trusted_function( namespaceId,
+                                                        name_c_ptr,
+                                                        &context.policy)
+        {
+            context.reason = Some(error);
+            return true;
+        }
+    }
+
+    unsafe {
+        pg_sys::raw_expression_tree_walker( node,
+                                            Some(is_untrusted_walker),
+                                            context_ptr)
+    }
+}
+
+/// Resurively walk through a Query tree and replace each masked relation with
+/// its "Masking SubQuery" (msq)
+///
+#[pg_guard]
+unsafe extern "C" fn rewrite_walker(
+    node: *mut pg_sys::Node,
+    context_ptr: void_mut_ptr
+) -> bool {
     if node.is_null() {
         return false;
     }
 
-    let context = PgBox::<PlanWalker>::from_pg(context_ptr as *mut PlanWalker);
+    let context = PgBox::<TreeWalker>::from_pg(context_ptr as *mut TreeWalker);
     let policy = context.policy.clone();
 
     if is_a(node, pg_sys::NodeTag::T_RangeTblEntry) {
@@ -54,7 +155,7 @@ unsafe extern "C" fn rewrite_walker(node: *mut pg_sys::Node, context_ptr: void_m
         // This is a subquery, continue to the next node
         if rte.relid == 0.into() { return false; }
 
-        // Create a Masking Sub Query (msq) that will replace the relation
+        // Create the Masking Sub Query (msq) that will replace the relation
         let msq_sql = masking::subquery(rte.relid, policy);
 
         // This table is not masked, skip to the next node
@@ -141,4 +242,68 @@ unsafe extern "C" fn rewrite_walker(node: *mut pg_sys::Node, context_ptr: void_m
     }
 
     pg_sys::expression_tree_walker(node, Some(rewrite_walker), context_ptr)
+}
+
+#[cfg(any(test, feature = "pg_test"))]
+#[pg_schema]
+mod tests {
+    use crate::fixture;
+    use crate::input;
+    use crate::walker::*;
+    use pgrx::pg_sys::Node;
+    use pgrx::pg_sys::Query;
+
+    #[pg_test]
+    fn test_is_untrusted_null(){
+        let policy = "anon";
+        let mut walker = TreeWalker::new(policy.to_string());
+        let null_node = pgrx::PgBox::<Node>::null();
+        assert!(! unsafe { walker.is_untrusted(&null_node) } );
+    }
+
+    #[pg_test]
+    fn test_is_unstrusted_ok(){
+        let _outfit = fixture::create_masking_functions();
+        let policy = "anon";
+        let mask_func = input::parse_expression("outfit.mask(0)").unwrap();
+        let mut walker = TreeWalker::new(policy.to_string());
+        assert!(! unsafe { walker.is_untrusted(&mask_func) } );
+        assert_eq!(walker.reason,None);
+    }
+
+    #[pg_test]
+    fn test_is_unstrusted_schema_not_trusted(){
+        let _outfit = fixture::create_masking_functions();
+        let policy = "anon";
+        let cape_func = input::parse_expression("outfit.cape()").unwrap();
+        let mut walker = TreeWalker::new(policy.to_string());
+        assert!(unsafe { walker.is_untrusted(&cape_func) } );
+        assert_eq!(walker.reason,Some(input::Reason::SchemaNotTrusted));
+    }
+
+    #[pg_test]
+    fn test_is_untrusted_function_unqualified(){
+        let foo_func = input::parse_expression("foo()").unwrap();
+        let mut walker = TreeWalker::new(String::from("anon"));
+        assert!(unsafe { walker.is_untrusted(&foo_func) } );
+        assert_eq!(walker.reason,Some(input::Reason::FunctionUnqualified));
+    }
+
+    #[pg_test]
+    fn test_is_untrusted_function_untrusted(){
+        let _outfit = fixture::create_masking_functions();
+        let policy = "anon";
+        let belt_func = input::parse_expression("outfit.belt()").unwrap();
+        let mut walker = TreeWalker::new(policy.to_string());
+        assert!(unsafe { walker.is_untrusted(&belt_func) } );
+        assert_eq!(walker.reason,Some(input::Reason::FunctionUntrusted));
+    }
+
+    #[pg_test]
+    fn test_rewrite_null(){
+        let policy = "anon";
+        let mut walker = TreeWalker::new(policy.to_string());
+        let null_query = pgrx::PgBox::<Query>::null();
+        assert!(! unsafe{ walker.rewrite(&null_query)});
+    }
 }
