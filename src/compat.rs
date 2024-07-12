@@ -25,6 +25,34 @@ pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
 }
 
 ///
+/// ## rte_perminfo_index_disable
+///
+/// Since PG16, every top-level RTE_RELATION entry has a new plan node
+/// called RTEPermissionInfo and each RTE knows the index of its
+/// RTEPermissionInfo in the query's RTEPermissionInfo list.
+///
+/// When we replace a relation by its masking subquery, we need to disable the
+/// PermissionInfo check, otherwise the Executor will detect that the
+/// index of the PermissionInfo does not match provided RTE
+///
+/// https://github.com/postgres/postgres/commit/a61b1f74823c9c4f79c95226a461f1e7a367764b
+///
+
+#[cfg(any(feature = "pg12", feature = "pg13", feature = "pg14", feature = "pg15"))]
+#[macro_export]
+macro_rules! rte_perminfo_index_disable {
+    ($rte: ident) => { };
+}
+
+#[cfg(not(any(feature = "pg12", feature = "pg13", feature = "pg14", feature = "pg15")))]
+#[macro_export]
+macro_rules! rte_perminfo_index_disable {
+    ($rte: ident) => { $rte.perminfoindex = 0 };
+}
+
+pub(crate) use rte_perminfo_index_disable;
+
+///
 /// SchemaValue type
 ///
 

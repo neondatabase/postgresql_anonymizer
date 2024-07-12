@@ -7,6 +7,7 @@
 /// ZomboDB is the main inspiration for this module
 /// https://github.com/zombodb/zombodb/blob/v3000.2.5/src/walker/mod.rs
 ///
+use crate::compat;
 use crate::error;
 use crate::masking;
 use pgrx::*;
@@ -104,6 +105,8 @@ unsafe extern "C" fn rewrite_walker(node: *mut pg_sys::Node, context_ptr: void_m
         rte.subquery = msq_query.as_ptr();
         rte.relid = pg_sys::InvalidOid;
         rte.relkind = 0;
+        compat::rte_perminfo_index_disable!(rte);
+
         // TODO apply the table sampling ratio
         // rte.tablesample = ....;
 
