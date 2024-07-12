@@ -45,8 +45,10 @@ Now let's activate privacy by default:
 ALTER DATABASE foo SET anon.privacy_by_default = True;
 ```
 
-The setting will be applied for the next sessions and we can now anonymize the
-table without writing any masking rule.
+> The setting will be applied for the next sessions,
+> i.e. **You need to reconnect to the database for the change to visible**
+
+We can now anonymize the table without writing any masking rule.
 
 ```sql
 # SELECT anon.anonymize_database();

@@ -84,10 +84,15 @@ ALTER DATABASE foo SET session_preload_libraries = 'anon';
 
 (If you're already loading extensions that way, just add `anon` the current list)
 
+> The setting will be applied for the next sessions,
+> i.e. **You need to reconnect to the database for the change to visible**
+
+
+
 _Step 3:_  Close your session and open a new one. Create the extension.
 
 ```sql
-CREATE EXTENSION anon CASCADE;
+CREATE EXTENSION anon;
 ```
 
 _Step 4:_  Initialize the extension
