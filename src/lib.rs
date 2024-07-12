@@ -289,6 +289,7 @@ mod anon {
     { random::number_with_format("#####".to_string()) }
 
     // Strings
+
     #[pg_extern(parallel_restricted)]
     pub fn random_string( r: Range<i32>) -> Option<String>
     { random::string(r) }

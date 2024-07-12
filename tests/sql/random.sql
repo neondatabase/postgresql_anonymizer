@@ -14,6 +14,8 @@ SELECT pg_typeof(anon.random_zip()) = 'TEXT'::REGTYPE;
 
 -- string
 SELECT pg_typeof(anon.random_string(1)) = 'TEXT'::REGTYPE;
+SELECT anon.random_string(0) = '';
+SELECT length(anon.random_string(int4range('[3,3]'))) = 3;
 
 -- Range
 SELECT anon.random_in_int4range('[2001,2002)') = 2001;

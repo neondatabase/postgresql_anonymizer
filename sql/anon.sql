@@ -1153,12 +1153,13 @@ $$
 -- The random functions are written in Rust (see `src/random.rs`)
 
 -- Undocumented and kept for backward compatibility with v1
+-- returns an empty string when l=0 
 CREATE OR REPLACE FUNCTION anon.random_string(
   l integer
 )
 RETURNS text
 AS $$
-  SELECT anon.random_string(pg_catalog.int4range(1,l+1));
+  SELECT anon.random_string(pg_catalog.int4range(l,l+1));
 $$
   LANGUAGE SQL
   VOLATILE
