@@ -51,6 +51,7 @@ REGRESS_TESTS+= destruction random dummy faking partial
 REGRESS_TESTS+= pseudonymization hashing
 REGRESS_TESTS+= ldm transparent_dynamic_masking
 REGRESS_TESTS+= anon_catalog anonymize privacy_by_default
+REGRESS_TESTS+= multiple_masking_policies
 #REGRESS_TESTS+= restore
 REGRESS_TESTS+= hasmask masked_roles masking masking_search_path masking_foreign_tables
 REGRESS_TESTS+= generalization k_anonymity
@@ -114,6 +115,7 @@ installcheck:
 	dropdb $(PSQL_OPT) --if-exists $(PGDATABASE)
 	createdb $(PSQL_OPT) $(PGDATABASE)
 	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET session_preload_libraries = 'anon';"
+	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET anon.masking_policies = 'devtests, analytics';"
 	$(PG_REGRESS) \
 		$(PSQL_OPT) \
 		--use-existing \

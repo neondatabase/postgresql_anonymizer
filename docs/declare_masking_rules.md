@@ -1,7 +1,16 @@
 Put on your Masks !
 ===============================================================================
 
-The main idea of this extension is to offer **anonymization by design**.
+The main idea of this extension is to implement the concept of
+**[Privacy by Design]**, which is principle imposed by the
+[Article 25 of the GDPR].
+
+[Privacy by Design]: https://en.wikipedia.org/wiki/Privacy_by_design
+[Article 25 of the GDPR]: https://gdpr-info.eu/art-25-gdpr/
+
+With PostgreSQL Anonymizer, you can declare a **masking policy** which is a set
+of **masking rules** stored inside the database model and applied to various
+database objects.
 
 The data masking rules should be written by the people who develop the
 application because they have the best knowledge of how the data model works.
@@ -17,11 +26,11 @@ The data masking rules are declared simply by using [security labels]:
 <!-- demo/declare_masking_rules.sql -->
 
 ```sql
-CREATE TABLE player( id SERIAL, name TEXT, points INT);
+CREATE TABLE player( id SERIAL, name TEXT, total_points INT, highest_score INT);
 
 INSERT INTO player VALUES
-  ( 1, 'Kareem Abdul-Jabbar', 38387),
-  ( 5, 'Michael Jordan', 32292 );
+  ( 1, 'Kareem Abdul-Jabbar', 38387, 55),
+  ( 5, 'Michael Jordan', 32292, 69);
 
 SECURITY LABEL FOR anon ON COLUMN player.name
   IS 'MASKED WITH FUNCTION anon.fake_last_name()';
@@ -97,22 +106,63 @@ To remove all rules at once, you can use:
 SELECT anon.remove_masks_for_all_columns();
 ```
 
+
+Multiple Masking Policies
+------------------------------------------------------------------------------
+
+By default, there is only one masking policy named 'anon'. Most of the times,
+a single policy is enough. However in more complex situations, the database
+owner may want to define different sets of masking rules for different use
+cases.
+
+This can be achieved by declaring multiple masking policies.
+
+For instance, we can add 2 new policies with:
+
+```sql
+ALTER DATABASE foo SET anon.masking_policies TO 'devtests, analytics';
+```
+
+> Important:
+> You need to reconnect to the database so that the change takes effect !
+
+We can now define a "devtests" policy for a developer name "devin". Devin wants
+to run CI tests on his code using fake/random data.
+
+
+```sql
+SECURITY LABEL FOR devtests ON COLUMN player.name
+  IS 'MASKED WITH FUNCTION anon.fake_last_name()';
+
+SECURITY LABEL FOR devtests ON COLUMN player.highest_score
+  IS 'MASKED WITH FUNCTION anon.random_int_between(0,50)';
+
+SECURITY LABEL FOR devtests ON ROLE devin IS 'MASKED';
+```
+
+We can also define an "analytics" for a data scientist name "Anna". Anna needs
+to run global stats over the dataset, she want to keep the real value on the
+`highest_score` column but she does not need to know the players names
+
+
+```sql
+SECURITY LABEL FOR analytics ON COLUMN player.name
+  IS 'MASKED WITH VALUE NULL';
+
+SECURITY LABEL FOR analytics ON ROLE anna IS 'MASKED';
+```
+
+Only one policy can be applied to a role. If you define that a role is masked
+in several masking policies, only the first one in the list will be applied.
+
+The "anon" policy is always declared and cannot be removed.
+
+If you declare a function as `TRUSTED`, it will be trusted for all masking
+policies.
+
+
 Limitations
 ------------------------------------------------------------------------------
 
-* The maximum length of a masking rule is 1024 characters. If you need more,
-  you should probably [write a dedicated masking function].
-
 * The masking rules are **NOT INHERITED** ! If you have split a table into
   multiple partitions, you need to declare the masking rules for each partition.
-
-[write a dedicated masking function]: masking_functions.md#write-your-own-masks
-
-Declaring Rules with COMMENTs is deprecated.
-------------------------------------------------------------------------------
-
-Previous version of the extension allowed users to declare masking rules using
-the `COMMENT` syntax.
-
-This is not supported any more. `SECURITY LABELS` are now the only way to
-declare rules.

@@ -61,10 +61,30 @@ pub fn capture_value(haystack: &CStr) -> Option<&str> {
     capture_first(re,haystack)
 }
 
+///
+/// This is a naïve replacement for SplitGUCList
+///
+pub fn capture_guc_list(haystack: &CStr) -> Vec<&str>  {
+    let re = Regex::new(r"[^,(?! )]+").unwrap();
+    let hay = haystack.to_str().expect("haystack should be valid");
+    let mut v: Vec<&str> = vec!();
+    for c in re.captures_iter(hay) {
+        v.push(c.get(0).unwrap().as_str());
+    }
+    v
+}
+
 #[cfg(test)]
 mod tests {
     use c_str_macro::c_str;
     use crate::re::*;
+
+    #[test]
+    fn test_capture_guc_list() {
+       assert_eq!(capture_guc_list(c_str!("a,b , c")).len(),3);
+       assert_eq!(capture_guc_list(c_str!("a,,,,,,,,b,c")).len(),3);
+       assert_eq!(capture_guc_list(c_str!("abc dkeiij zofk355f")).len(),3);
+    }
 
     #[test]
     fn test_re_indirect_identifier() {

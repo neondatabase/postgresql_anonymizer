@@ -38,6 +38,19 @@ pub fn create_masking_functions() -> pg_sys::Oid {
 }
 
 #[allow(dead_code)]
+pub fn create_masked_role_in_policy(role: &str, policy: &str)
+-> pg_sys::Oid
+{
+    Spi::run(format!("
+        CREATE ROLE {role};
+        SECURITY LABEL FOR {policy} ON ROLE {role} is 'MASKED';
+    ").as_str()).unwrap();
+    Spi::get_one::<pg_sys::Oid>(format!("
+        SELECT '{role}'::REGROLE::OID;
+    ").as_str()).unwrap().expect("should be an OID")
+}
+
+#[allow(dead_code)]
 pub fn create_masked_role() -> pg_sys::Oid {
     Spi::run("
         CREATE ROLE batman;
@@ -121,6 +134,13 @@ pub fn create_untrusted_schema() -> pg_sys::Oid {
     Spi::get_one::<pg_sys::Oid>("SELECT 'arkham'::REGNAMESPACE::OID;")
         .unwrap()
         .expect("should be an OID")
+}
+
+#[allow(dead_code)]
+pub fn declare_masking_policies(){
+    Spi::run("
+        SET anon.masking_policies = 'devtests, analytics';
+    ").unwrap();
 }
 
 #[allow(dead_code)]

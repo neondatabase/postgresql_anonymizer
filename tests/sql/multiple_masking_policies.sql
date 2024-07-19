@@ -1,29 +1,102 @@
--- This cant be done in a transaction
-ALTER SYSTEM SET anon.masking_policies = 'anon, rgpd';
+-- This test relies on the following configuration
+--
+-- ALTER DATABASE contrib_regression
+--   SET anon.masking_policies = 'devtests, analytics';
+--
 
 BEGIN;
 
-CREATE EXTENSION anon CASCADE;
+CREATE EXTENSION anon;
 
-SAVEPOINT init;
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.floor(NUMERIC) IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.random() IS 'TRUSTED';
+SECURITY LABEL FOR anon ON FUNCTION pg_catalog.mod(INT,INT) IS 'TRUSTED';
 
--- Error
-SET anon.masking_policies = '';
-ROLLBACK TO init;
+CREATE SCHEMA nba;
 
--- Error
-SET anon.masking_policies = ',,,,';
-ROLLBACK TO init;
+CREATE TABLE nba.player(
+  id SERIAL,
+  name TEXT,
+  total_points INT,
+  highest_score INT
+);
 
-SELECT anon.init_masking_policies();
+INSERT INTO nba.player VALUES
+  ( 1, 'Kareem Abdul-Jabbar', 38387, 55),
+  ( 5, 'Michael Jordan', 32292, 69);
 
-SELECT COUNT(*)=2 FROM pg_seclabels WHERE provider='gdpr';
+-- Devin is a developer. He wants to run CI tests on his code using
+-- fake/random data.
 
-CREATE ROLE zoe;
-SECURITY LABEL FOR gdpr ON ROLE zoe IS 'MASKED';
+CREATE ROLE devin LOGIN;
 
-SELECT COUNT(*)=3 FROM pg_seclabels WHERE provider='gdpr';
+GRANT USAGE ON SCHEMA nba TO devin;
+GRANT SELECT ON ALL TABLES IN SCHEMA nba TO devin;
+
+SECURITY LABEL FOR devtests ON COLUMN nba.player.name
+  IS 'MASKED WITH FUNCTION pg_catalog.md5(name)';
+--  bug #452
+--  IS 'MASKED WITH FUNCTION anon.dummy_name()';
+
+SECURITY LABEL FOR devtests ON COLUMN nba.player.total_points
+  IS 'MASKED WITH FUNCTION pg_catalog.mod(total_points*263,30000)';
+--  bug #452
+--  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*40000)';
+
+SECURITY LABEL FOR devtests ON COLUMN nba.player.highest_score
+  IS 'MASKED WITH FUNCTION pg_catalog.mod(highest_score*2357,79)';
+--  bug #452
+--  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*80)';
+
+SECURITY LABEL FOR devtests ON ROLE devin IS 'MASKED';
+
+SECURITY LABEL FOR devtests ON FUNCTION anon.dummy_name IS 'TRUSTED';
+SECURITY LABEL FOR devtests ON FUNCTION anon.random_int_between IS 'TRUSTED';
+
+-- Anna is a Data Scientist. She needs to run global stats over the dataset,
+-- she wants to keep the real value on the `highest_score` column but she does
+-- not need to know the players names
+
+CREATE ROLE anna LOGIN;
+
+GRANT USAGE ON SCHEMA nba TO anna;
+GRANT SELECT ON ALL TABLES IN SCHEMA nba TO anna;
+
+SECURITY LABEL FOR analytics ON COLUMN nba.player.name
+  IS 'MASKED WITH VALUE NULL';
+
+SECURITY LABEL FOR analytics ON ROLE anna IS 'MASKED';
+
+-- We use dynamic masking for testing, but multiple masking policies will
+-- also work with static masking and anonymized dumps.
+
+SELECT * FROM nba.player;
+
+SET anon.transparent_dynamic_masking TO true;
+
+-- Devin sees fake data
+
+SET ROLE devin;
+
+SELECT * FROM nba.player;
+
+SELECT name IS NOT NULL FROM nba.player WHERE id = 5;
+
+SELECT name != 'Michael Jordan'  FROM nba.player WHERE id = 5;
+
+RESET ROLE;
+
+-- Anna sees real points but no names
+
+SET ROLE anna;
+
+SELECT * FROM nba.player;
+
+SELECT name IS NULL FROM nba.player WHERE id = 5;
+
+SELECT highest_score = 69 FROM nba.player WHERE id = 5;
+
+RESET ROLE;
+
 
 ROLLBACK;
-
-ALTER SYSTEM RESET anon.masking_policies;

@@ -1,4 +1,5 @@
 BEGIN;
+CREATE EXTENSION IF NOT EXISTS anon;
 CREATE TABLE "Phone" (
   phone_owner  TEXT,
   phone_number TEXT
@@ -42,7 +43,7 @@ IS 'MASKED WITH FUNCTION pg_catalog.substring(pg_catalog.md5(sender),0,12)';
 SECURITY LABEL FOR anon ON COLUMN calls.receiver
 IS 'MASKED WITH FUNCTION pg_catalog.substring(pg_catalog.md5(receiver),0,12)';
 SECURITY LABEL FOR anon ON COLUMN baltimore.locations.zipcode
-IS 'MASKED WITH VALUE NULL';
+IS 'MASKED WITH FUNCTION anon.partial(zipcode,2,$$xxx$$,0)';
 SECURITY LABEL FOR anon ON COLUMN baltimore.locations.name
 IS 'MASKED WITH VALUE NULL';
 SET anon.transparent_dynamic_masking TO true;
@@ -112,7 +113,7 @@ JOIN "Phone" b ON c.receiver = b.phone_number;
 (1 row)
 
 -- Masking rules are applied in different schemas
-SELECT bool_and(zipcode IS NULL) FROM baltimore.locations;
+SELECT bool_and(zipcode = '21xxx') FROM baltimore.locations;
  bool_and 
 ----------
  t

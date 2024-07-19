@@ -3,7 +3,6 @@
 ///
 
 use c_str_macro::c_str;
-use crate::error;
 use crate::guc;
 use crate::re;
 use crate::utils;
@@ -40,8 +39,9 @@ pub fn get_masking_policy(roleid: pg_sys::Oid) ->  Option<String> {
     // also the roles that the user belongs to
     // This may be done by using `roles_is_member_of()` ?
     for policy in list_masking_policies() {
-        if has_mask_in_policy(roleid,policy.unwrap()) {
-            return Some(policy.unwrap().to_string());
+        debug3!("Check if role is masked in policy '{policy}'");
+        if has_mask_in_policy(roleid,policy) {
+            return Some(policy.to_string());
         }
     }
     // Found nothing, return NULL
@@ -50,24 +50,30 @@ pub fn get_masking_policy(roleid: pg_sys::Oid) ->  Option<String> {
 
 /// Return all the registered masking policies
 ///
-/// NOTE: we can't return a Vec<Option<String>> here because it seems that
-/// `register_label_provider(...)` needs a &'static str
+/// We can't use pg_sys::SplitGUCList(...) here because extension are not
+/// allowed to define custom GUC_LIST_QUOTE variables and thus PGRX does not
+/// support the GUC_LIST_INPUT. So we split the variable here with a very basic
+/// approach (spaces are not handled) and we use `:` as separator to avoid
+/// confusion with traditional GUC_LIST_QUOTE parameters.
 ///
-/// TODO: `SplitGUCList` from varlena.h is not available in PGRX 0.11
-///
-pub fn list_masking_policies() -> Vec<Option<&'static str>> {
+pub fn list_masking_policies() -> Vec<&'static str> {
+    use crate::label_providers::ANON_DEFAULT_MASKING_POLICY;
 
-    // transform the GUC (CStr pointer) into a Rust String
-    let masking_policies = guc::ANON_MASKING_POLICIES.get()
-                          .unwrap().to_str().expect("Should be a string");
-
-                          // remove the white spaces
-    //masking_policies.retain(|c| !c.is_whitespace());
-    if masking_policies.is_empty() {
-        error::policy_not_defined().ereport();
-    }
-
-    return masking_policies.split(',').map(Some).collect();
+    let mut masking_policies = vec![ANON_DEFAULT_MASKING_POLICY];
+    masking_policies.append(
+        &mut re::capture_guc_list(guc::ANON_MASKING_POLICIES.get().unwrap())
+    );
+    masking_policies
+/*
+    let policies_ptr = guc::ANON_MASKING_POLICIES
+                        .get()
+                        .unwrap()
+                        .to_bytes_with_nul()
+                        .as_ptr() as *mut c_char;
+    let policies_cstr = unsafe { CStr::from_ptr(policies_ptr) };
+    let policies_str  = policies_cstr.to_str().unwrap();
+    policies_str.split(':').collect()
+*/
 }
 
 
@@ -404,7 +410,9 @@ fn quote_name_data(name_data: &pg_sys::NameData) -> &str {
 #[pg_schema]
 mod tests {
     use crate::fixture;
+    use crate::label_providers;
     use crate::masking::*;
+    use crate::label_providers::ANON_DEFAULT_MASKING_POLICY;
 
     #[pg_test]
     fn test_cast_as_regtype() {
@@ -417,38 +425,68 @@ mod tests {
     fn test_get_masking_policy() {
         let batman = fixture::create_masked_role();
         let bruce  = fixture::create_unmasked_role();
-        let expected = Some("anon".to_string());
+        let expected = Some(ANON_DEFAULT_MASKING_POLICY.to_string());
         assert_eq!( get_masking_policy(batman), expected);
         assert!(get_masking_policy(bruce).is_none())
     }
 
     #[pg_test]
-    fn test_has_mask_in_policy() {
-        let batman = fixture::create_masked_role();
-        let bruce  = fixture::create_unmasked_role();
-        assert!( has_mask_in_policy(batman,"anon") );
-        assert!( ! has_mask_in_policy(bruce,"anon") );
-        assert!( ! has_mask_in_policy(batman,"does_not_exist") );
-        let not_a_real_roleid = pg_sys::Oid::from(99999999);
-        assert!( ! has_mask_in_policy(not_a_real_roleid,"anon") );
+    fn test_get_multiple_policies() {
+        fixture::declare_masking_policies();
+        label_providers::register_label_providers();
+        let devin = fixture::create_masked_role_in_policy("devin","devtests");
+        let anna  = fixture::create_masked_role_in_policy("anna","analytics");
+        let devtests = Some("devtests".to_string());
+        let analytics = Some("analytics".to_string());
+        assert_eq!( get_masking_policy(devin), devtests);
+        assert_eq!( get_masking_policy(anna), analytics);
     }
 
     #[pg_test]
-    fn test_list_masking_policies() {
-        assert_eq!(vec![Some("anon")],list_masking_policies());
+    fn test_has_mask_in_policy_anon() {
+        let batman = fixture::create_masked_role();
+        let bruce  = fixture::create_unmasked_role();
+        assert!( has_mask_in_policy(batman,ANON_DEFAULT_MASKING_POLICY) );
+        assert!( ! has_mask_in_policy(bruce,ANON_DEFAULT_MASKING_POLICY) );
+        assert!( ! has_mask_in_policy(batman,"does_not_exist") );
+        let not_a_real_roleid = pg_sys::Oid::from(99999999);
+        assert!( ! has_mask_in_policy(not_a_real_roleid,ANON_DEFAULT_MASKING_POLICY) );
+    }
+
+    #[pg_test]
+    fn test_has_mask_in_multiple_policies() {
+        fixture::declare_masking_policies();
+        label_providers::register_label_providers();
+        let devin = fixture::create_masked_role_in_policy("devin","devtests");
+        let anna  = fixture::create_masked_role_in_policy("anna","analytics");
+        assert!( has_mask_in_policy(devin,"devtests") );
+        assert!( ! has_mask_in_policy(devin,ANON_DEFAULT_MASKING_POLICY) );
+        assert!( has_mask_in_policy(anna,"analytics") );
+        assert!( ! has_mask_in_policy(anna,"devtests") );
+    }
+
+    #[pg_test]
+    fn test_list_masking_policies_default() {
+        assert_eq!(vec![ANON_DEFAULT_MASKING_POLICY],list_masking_policies());
+    }
+
+    #[pg_test]
+    fn test_list_masking_policies_multiple() {
+        fixture::declare_masking_policies();
+        assert_eq!( vec![ANON_DEFAULT_MASKING_POLICY,"devtests","analytics"],
+                    list_masking_policies());
     }
 
     #[pg_test]
     fn test_masking_value_for_column(){
         let relid = fixture::create_table_person();
-        let policy = "anon";
 
         // testing the first column
-        let mut result = masking_value_for_column(relid,1,policy.to_string());
+        let mut result = masking_value_for_column(relid,1,ANON_DEFAULT_MASKING_POLICY.to_string());
         let mut expected = "firstname".to_string();
         assert_eq!(Some(expected),result);
         // testing the second column
-        result = masking_value_for_column(relid,2,policy.to_string());
+        result = masking_value_for_column(relid,2,ANON_DEFAULT_MASKING_POLICY.to_string());
         expected = "CAST(NULL AS text)".to_string();
         assert_eq!(Some(expected),result);
     }
@@ -457,13 +495,13 @@ mod tests {
     #[pg_test]
     fn test_masking_expressions(){
         let relid = fixture::create_table_person();
-        let policy = "anon";
-        let (result,masked) = masking_expressions(relid,policy.to_string());
+        let (result,masked) = masking_expressions(relid,ANON_DEFAULT_MASKING_POLICY.to_string());
         let expected = "firstname AS firstname, CAST(NULL AS text) AS lastname"
                         .to_string();
         assert!(masked);
         assert_eq!(expected, result);
-        // now with a non-existinf policy
+
+        // now with a non-existing policy
         let (result2,masked2) = masking_expressions(relid,"".to_string());
         assert!(!masked2);
         let expected2 = "firstname AS firstname, lastname AS lastname"
@@ -474,8 +512,7 @@ mod tests {
     #[pg_test]
     fn test_masking_expressions_for_table(){
         let relid = fixture::create_table_person();
-        let policy = "anon";
-        let result = masking_expressions_for_table(relid,policy.to_string());
+        let result = masking_expressions_for_table(relid,ANON_DEFAULT_MASKING_POLICY.to_string());
         let expected = "firstname AS firstname, CAST(NULL AS text) AS lastname"
                         .to_string();
         assert_eq!(expected, result);
@@ -485,9 +522,9 @@ mod tests {
     fn test_rule(){
         let batman = fixture::create_masked_role();
         let bruce  = fixture::create_unmasked_role();
-        assert!(rule(pg_sys::AuthIdRelationId,batman,0,"anon").is_some());
-        assert!(rule(pg_sys::AuthIdRelationId,bruce,0,"anon").unwrap().is_null());
-        assert!(rule(pg_sys::AuthIdRelationId,0.into(),0,"anon").unwrap().is_null());
+        assert!(rule(pg_sys::AuthIdRelationId,batman,0,ANON_DEFAULT_MASKING_POLICY).is_some());
+        assert!(rule(pg_sys::AuthIdRelationId,bruce,0,ANON_DEFAULT_MASKING_POLICY).unwrap().is_null());
+        assert!(rule(pg_sys::AuthIdRelationId,0.into(),0,ANON_DEFAULT_MASKING_POLICY).unwrap().is_null());
         assert!(rule(pg_sys::AuthIdRelationId,0.into(),0,"").unwrap().is_null());
         assert!(rule(0.into(),0.into(),0,"").unwrap().is_null());
     }
@@ -495,8 +532,7 @@ mod tests {
     #[pg_test]
     fn test_subquery_some(){
         let relid = fixture::create_table_person();
-        let policy = "anon".to_string();
-        let result = subquery(relid,policy);
+        let result = subquery(relid,ANON_DEFAULT_MASKING_POLICY.to_string());
         assert!(result.is_some());
         assert!(result.clone().unwrap().contains("firstname"));
         assert!(result.clone().unwrap().contains("lastname"));
@@ -508,16 +544,14 @@ mod tests {
     #[pg_test]
     fn test_subquery_none(){
         let relid = fixture::create_table_call();
-        let policy = "anon".to_string();
-        let result = subquery(relid,policy);
+        let result = subquery(relid,ANON_DEFAULT_MASKING_POLICY.to_string());
         assert!(result.is_none());
     }
 
     #[pg_test]
     fn test_parse_subquery() {
         let relid = fixture::create_table_person();
-        let policy = "anon".to_string();
-        let subquery = subquery(relid,policy);
+        let subquery = subquery(relid,ANON_DEFAULT_MASKING_POLICY.to_string());
         let raw_stmt = parse_subquery(subquery.clone().unwrap());
         let result = unsafe {
             pgrx::nodes::node_to_string(raw_stmt.stmt).unwrap()

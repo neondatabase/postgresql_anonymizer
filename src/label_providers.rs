@@ -11,22 +11,19 @@ use crate::masking;
 use crate::re;
 use pgrx::prelude::*;
 use std::ffi::CStr;
+use std::ffi::CString;
 use std::os::raw::c_char;
+
+///
+/// The default masking policy is named "anon".
+/// It cannot be renamed or removed
+///
+pub static ANON_DEFAULT_MASKING_POLICY: &'static str = "anon";
 
 pub fn register_label_providers() {
 
-    // Register the main masking policy
-    // the name "anon" is hard-coded, we don't want user to modify it
-    unsafe {
-        let policy = "anon";
-        let c_ptr_policy = policy.as_ptr();
-        pg_sys::register_label_provider(
-            c_ptr_policy as *const c_char,
-            Some(masking_policy_object_relabel)
-        );
-    }
-
     // Register the security label provider for k-anonymity
+    debug1!("Anon: registering k_anonymity provider");
     unsafe {
         pg_sys::register_label_provider(
             guc::ANON_K_ANONYMITY_PROVIDER
@@ -38,21 +35,20 @@ pub fn register_label_providers() {
         )
     };
 
-
-
-    // Register the masking policies
-    for policy in masking::list_masking_policies().iter() {
-        debug1!("Anon: registering masking policy '{}'", policy.unwrap());
-        // transform the str back into a C Pointer
-        let c_ptr_policy = policy.unwrap().as_ptr();
+    // Register the default masking policy and the user-defined masking policies
+    for policy_str in masking::list_masking_policies() {
+        let policy_cstring: CString = CString::new(policy_str).unwrap();
+        let policy_ptr: *const c_char = policy_cstring.as_ptr();
         unsafe {
+            debug1!("Anon: registering masking policy '{}'", policy_str );
             pg_sys::register_label_provider(
-                c_ptr_policy as *const c_char,
-                Some(masking_policy_object_relabel),
-            )
+                policy_ptr,
+                Some(masking_policy_object_relabel)
+            );
         }
     }
 }
+
 
 /// Checking the syntax of a k-anonymity rules
 ///
@@ -170,7 +166,18 @@ fn relabel_column(label: &CStr, object_id: pg_sys::Oid) {
 
     /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH FUNCTION $x$' */
     if let Some(func) = re::capture_function(label) {
-        let check_func = input::check_function(func,"anon");
+        //
+        // Inside a *_relabel function, we can't know the name of the label
+        // provider, because most of the extensions that use security labels
+        // will use only one label provider. We're probably the first extension
+        // to allow user-defined label providers, so nobody ever needed
+        // to access the name of the provider from within the _relabel function.
+        //
+        // Anyway this means that we can only check the function is trusted for
+        // the default masking policy. In consequence, if a function declared
+        // as trusted, it is trusted for all policies.
+        //
+        let check_func = input::check_function(func,ANON_DEFAULT_MASKING_POLICY);
         if check_func.is_ok() { return ; }
         error::invalid_label_for(
             "a column",label,Some(check_func.unwrap_err())

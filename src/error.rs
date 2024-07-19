@@ -99,14 +99,6 @@ pub fn not_implemented_yet() -> AnonError {
     )
 }
 
-pub fn policy_not_defined() -> AnonError {
-    AnonError::new(
-        ERRCODE_NO_DATA,
-        "the masking policy is not defined".to_string(),
-        None
-    )
-}
-
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {

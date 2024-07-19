@@ -534,6 +534,12 @@ ask a superuser to trust it with:
 SECURITY LABEL FOR anon ON FUNCTION pg_catalog.foo IS 'TRUSTED';
 ```
 
+> Note: Even when [multiple masking policies] are defined, the functions must be
+> declared as `TRUSTED` in the "anon" policy and they will be trusted for all
+> policies.
+
+[multiple masking policies]: declare_masking_rules.md#multiple_masking_policies
+
 
 Write your own Masks !
 ------------------------------------------------------------------------------

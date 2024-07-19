@@ -321,6 +321,27 @@ mod anon {
     pub fn get_function_schema(f: String) -> String {
         utils::get_function_schema(f)
     }
+
+    //------------------------------------------------------------------------
+    // DEBUG
+    //
+    // The functions below are not useful for the end user.
+    // However they can provide priceless information when we need to fix a bug
+    // or develop a new feature.
+    // All functions below are NOT exposed when the extension is compiled
+    // with `cargo pgrx run --release`
+    //
+    //------------------------------------------------------------------------
+    #[cfg(debug_assertions)]
+    #[pg_extern]
+    pub fn get_masking_policy(roleid: pg_sys::Oid) ->  Option<String>
+    { masking::get_masking_policy(roleid) }
+
+    #[cfg(debug_assertions)]
+    #[pg_extern]
+    pub fn list_masking_policies() ->  Vec<&'static str>
+    { masking::list_masking_policies() }
+
 }
 
 //----------------------------------------------------------------------------

@@ -18,7 +18,7 @@ pub static ANON_K_ANONYMITY_PROVIDER: GucSetting<Option<&'static CStr>> =
 
 pub static ANON_MASKING_POLICIES: GucSetting<Option<&'static CStr>> =
     GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"anon\0")
+        CStr::from_bytes_with_nul_unchecked(b"\0")
     }));
 
 pub static ANON_PRIVACY_BY_DEFAULT: GucSetting<bool> =
@@ -78,13 +78,21 @@ pub fn register_gucs() {
         GucFlags::SUPERUSER_ONLY,
     );
 
+    //
+    // As of PGRX 0.12, GUC_LIST_INPUT is not supported which means this
+    // parameter can't be properly handled by `SHOW anon.masking_policies` or
+    // in the pg_settings catalog. And SplitGUCList has a really weird
+    // behaviour with `anon.masking_policies` ¯\_(ツ)_/¯
+    //
+    // https://github.com/pgcentralfoundation/pgrx/commit/d096efe6fb2d86e87d117b520b9ccd2f90b2e0d1
+    //
     GucRegistry::define_string_guc(
         "anon.masking_policies",
-        "Define multiple masking policies (NOT IMPLEMENTED YET)",
+        "Define additional masking policies (the 'anon' policy is already defined)",
         "",
         &ANON_MASKING_POLICIES,
         GucContext::Suset,
-        GucFlags::SUPERUSER_ONLY, /* GUC_LIST_INPUT is not available ? */
+        GucFlags::SUPERUSER_ONLY, /* | GucFlags::LIST_INPUT */
     );
 
     GucRegistry::define_bool_guc(
