@@ -233,15 +233,20 @@ sudo make install
 ```
 
 **NOTE**: If you have multiple versions of PostgreSQL on the server, you may
-need to specify which version is your target by defining the `PG_CONFIG` env
-variable like this:
+need to specify which version is your target by defining the `PG_CONFIG` and
+`PGVER` env variable like this:
 
 ```console
-make extension PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config
-sudo make install PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config
+make extension PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER="14"
+sudo make install PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER="14"
 ```
 
 _Step 3:_  Load the extension:
+
+Please note that in order to load the extension you must connect to Postgresql
+with a user having superuser privileges. Also, the extension
+(as all Postgresql extensions) will be created only in the given database and
+not globally.
 
 ```sql
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
@@ -249,7 +254,8 @@ ALTER DATABASE foo SET session_preload_libraries = 'anon';
 
 (If you're already loading extensions that way, just add `anon` the current list)
 
-_Step 4:_  Close your session and open a new one. Create the extension.
+_Step 4:_  Close your session and open a new one on the same PostgreSQL
+database. Create the extension.
 
 ```sql
 CREATE EXTENSION anon CASCADE;
@@ -261,7 +267,7 @@ _Step 5:_  Initialize the extension:
 SELECT anon.init();
 ```
 
-All new connections to the database can now use the extension.
+All new connections to the given database can now use the extension.
 
 
 
