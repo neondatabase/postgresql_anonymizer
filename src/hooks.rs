@@ -82,10 +82,12 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
         //   `COPY (SELECT * FROM "public"."foo") TO [...]`
         // The subquery will be masked later by `rewrite_walker()`
         // when triggered by the post_parse_analyze hook
-        let msq_sql = format!(
-            "SELECT * FROM {}",
-            utils::get_relation_qualified_name(relid)
-        );
+        let Some(relname) = utils::get_relation_qualified_name(relid)
+                            else {
+                                error::internal("Cannot get relation name");
+                                return;
+                            };
+        let msq_sql = format!("SELECT * FROM {relname}");
         let msq_raw_stmt  = masking::parse_subquery(msq_sql.clone());
         debug3!("Anon: COPY subquery sql = {:#?}", msq_sql);
 

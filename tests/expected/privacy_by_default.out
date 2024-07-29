@@ -64,7 +64,7 @@ SELECT 'test4 must fail';
 -- Hide the CONTEXT message
 \set VERBOSITY terse
 SELECT anon.anonymize_table('public.access_logs') as test4;
-ERROR:  Cannot mask a "NOT NULL" column with a NULL value
+ERROR:  null value in column "date_open" of relation "access_logs" violates not-null constraint
 ROLLBACK TO initial_state;
 -- 5: foreign_key_violation
 CREATE TABLE public.os (name TEXT UNIQUE NOT NULL);

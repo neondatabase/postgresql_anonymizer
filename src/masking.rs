@@ -12,6 +12,24 @@ use std::ffi::CString;
 use std::os::raw::c_char;
 
 //----------------------------------------------------------------------------
+// Errors
+//----------------------------------------------------------------------------
+
+///
+/// The Reason enum describes a series of problem that may occur when trying
+/// to read the masking rule of an object
+///
+#[derive(PartialEq, Eq)]
+#[derive(Clone)]
+#[derive(Debug)]
+pub enum Reason {
+    NoRule,
+    InvalidObject,
+    InvalidInput
+}
+
+
+//----------------------------------------------------------------------------
 // Public functions
 //----------------------------------------------------------------------------
 
@@ -112,7 +130,7 @@ pub fn masking_expressions(
         }
         let (filter_value, att_is_masked) = value_for_att(&relation, a, policy.clone());
         if att_is_masked { table_has_one_masked_column = true; }
-        let attname_quoted = quote_name_data(&a.attname);
+        let attname_quoted = utils::quote_name_data(&a.attname);
         let filter = format!("{filter_value} AS {attname_quoted}");
         expressions.push(filter);
     }
@@ -140,7 +158,8 @@ pub fn masking_expressions_for_table(
 
 
 /// Returns the masking filter that will mask the authentic data
-/// of a column for a given masking policy
+/// of a column for a given masking policy.
+/// the 2nd return value is a bool that indicate if the column is masked or not
 ///
 /// * relid is the relation OID
 /// * colnum is the attribute position, numbered from 1 up
@@ -150,7 +169,7 @@ pub fn masking_value_for_column(
     relid: pg_sys::Oid,
     colnum: i32,
     policy: String
-) -> Option<String> {
+) -> Option<(String,bool)> {
 
     let lockmode = pg_sys::AccessShareLock as i32;
 
@@ -174,14 +193,14 @@ pub fn masking_value_for_column(
         return None;
     }
 
-    let (masking_value,_) = value_for_att(&relation,&a,policy);
+    let (masking_value, att_is_masked) = value_for_att(&relation,&a,policy);
 
     // pass the relation back to Postgres
     unsafe {
         pg_sys::relation_close(relation.as_ptr(), lockmode);
     }
 
-    Some(masking_value)
+    Some((masking_value, att_is_masked))
 }
 
 /// Prepare a SQL Statement object that will replace the authentic relation
@@ -195,11 +214,9 @@ pub fn subquery( relid: pg_sys::Oid, policy: String) -> Option<String>
 
     if ! table_is_masked { return None; }
 
-    Some(format!(
-        "SELECT {} FROM {};",
-        masking_expressions,
-        utils::get_relation_qualified_name(relid)
-    ))
+    let tablename = utils::get_relation_qualified_name(relid)?;
+
+    Some(format!("SELECT {masking_expressions} FROM {tablename}"))
 }
 
 /// Prepare a ParseTree object from a SQL query
@@ -226,12 +243,12 @@ pub fn parse_subquery(query_sql: String) -> PgBox<pg_sys::RawStmt>
 
 /// Read the Security Label for a given object
 ///
-pub fn rule(
+fn rule(
     class_id: pg_sys::Oid,
     object_id: pg_sys::Oid,
     object_sub_id: i32,
     policy: &str
-) -> Option<PgBox::<c_char>> {
+) -> Result<&str, Reason> {
 
     let object = pg_sys::ObjectAddress {
         classId: class_id,
@@ -242,13 +259,45 @@ pub fn rule(
     let policy_c_str = CString::new(policy).unwrap();
     let policy_c_ptr = policy_c_str.as_ptr();
 
-    PgTryBuilder::new(||
+    let seclabel_box = PgTryBuilder::new(||
         Some(unsafe {
             PgBox::from_pg(pg_sys::GetSecurityLabel(&object,policy_c_ptr))
         }))
-        .catch_others(|_| None)
-        .execute()
+        .catch_others(|_| None )
+        .execute();
+
+    // When the box is None, something went wrong
+    if seclabel_box.is_none() { return Err(Reason::InvalidObject); }
+
+    // When the seclabel is NULL, the object has no masking rule in this policy
+    if seclabel_box.clone().unwrap().is_null() { return Err(Reason::NoRule); }
+
+    let seclabel_cstr = unsafe {
+        CStr::from_ptr(seclabel_box.unwrap().as_ptr() as *const c_char )
+    };
+    let seclabel_str  = seclabel_cstr.to_str().expect("Failed to convert seclabel");
+    Ok(seclabel_str)
 }
+
+pub fn rule_on_database(object_id: pg_sys::Oid, policy: &str)
+-> Result<&str, Reason>
+{ rule(pg_sys::DatabaseRelationId,object_id,0,policy) }
+
+pub fn rule_on_function(object_id: pg_sys::Oid, policy: &str)
+-> Result<&str, Reason>
+{ rule(pg_sys::ProcedureRelationId,object_id,0,policy) }
+
+pub fn rule_on_role(object_id: pg_sys::Oid, policy: &str)
+-> Result<&str, Reason>
+{ rule(pg_sys::AuthIdRelationId,object_id,0,policy) }
+
+pub fn rule_on_table(object_id: pg_sys::Oid, policy: &str)
+-> Result<&str, Reason>
+{ rule(pg_sys::RelationRelationId,object_id,0,policy) }
+
+pub fn rule_on_schema(object_id: pg_sys::Oid, policy: &str)
+-> Result<&str, Reason>
+{ rule(pg_sys::NamespaceRelationId,object_id,0,policy) }
 
 //----------------------------------------------------------------------------
 // Private functions
@@ -261,13 +310,8 @@ fn has_mask_in_policy(
     policy: &'static str
 ) -> bool {
 
-    if let Some(seclabel) = rule(pg_sys::AuthIdRelationId,roleid,0,policy) {
-        if seclabel.is_null() { return false; }
-        let seclabel_cstr = unsafe {
-            CStr::from_ptr(seclabel.as_ptr())
-        };
-        // return true is the security label is `MASKED`
-        return re::is_match_masked(seclabel_cstr);
+    if let Ok(seclabel) = rule_on_role(roleid,policy) {
+        return re::is_match_masked(seclabel);
     }
     false
 }
@@ -282,13 +326,13 @@ fn has_mask_in_policy(
 ///     - the default value of the column
 ///     - "NULL"
 ///
-fn value_for_att(
+pub fn value_for_att(
     rel: &PgBox<pg_sys::RelationData>,
     att: &pg_sys::FormData_pg_attribute,
     policy: String,
 ) -> (String, bool) {
 
-    let attname = quote_name_data(&att.attname);
+    let attname = utils::quote_name_data(&att.attname);
 
     // Get the masking rule, if any
 
@@ -321,11 +365,12 @@ fn value_for_att(
     if seclabel_cstr.is_empty() && !guc::ANON_PRIVACY_BY_DEFAULT.get() {
         return (attname.to_string(), false);
     }
+    let seclabel = seclabel_cstr.to_str().expect("Failed to convert seclabel");
 
     // A masking rule was found
 
     // Search for a masking function
-    if let Some(function) = re::capture_function(seclabel_cstr) {
+    if let Some(function) = re::capture_function(seclabel) {
         if guc::ANON_STRICT_MODE.get() {
             return (cast_as_regtype(function.to_string(), att.atttypid),true);
         }
@@ -333,7 +378,7 @@ fn value_for_att(
     }
 
     // Search for a masking value
-    if let Some(value) = re::capture_value(seclabel_cstr) {
+    if let Some(value) = re::capture_value(seclabel) {
         if guc::ANON_STRICT_MODE.get() {
             return (cast_as_regtype(value.to_string(), att.atttypid), true);
         }
@@ -341,7 +386,7 @@ fn value_for_att(
     }
 
     // The column is declared as not masked, the authentic value is shown
-    if re::is_match_not_masked(seclabel_cstr) {
+    if re::is_match_not_masked(seclabel) {
         return (attname.to_string(), false);
     }
 
@@ -393,13 +438,6 @@ fn value_for_att(
 
     // No default value, "NULL" (the literal value) is the last possibility
     ("NULL".to_string(),true)
-}
-
-/// Return the quoted name of a NameData identifier
-/// if a column is named `I`, its quoted name is `"I"`
-///
-fn quote_name_data(name_data: &pg_sys::NameData) -> &str {
-    utils::quote_identifier(name_data.data.as_ptr() as *const c_char)
 }
 
 //----------------------------------------------------------------------------
@@ -480,15 +518,19 @@ mod tests {
     #[pg_test]
     fn test_masking_value_for_column(){
         let relid = fixture::create_table_person();
-
+        let anon = ANON_DEFAULT_MASKING_POLICY.to_string();
         // testing the first column
-        let mut result = masking_value_for_column(relid,1,ANON_DEFAULT_MASKING_POLICY.to_string());
-        let mut expected = "firstname".to_string();
-        assert_eq!(Some(expected),result);
+        let (result_1, is_masked_1) =
+            masking_value_for_column(relid,1,anon.clone()).unwrap();
+        let expected_1 = "firstname".to_string();
+        assert_eq!(expected_1,result_1);
+        assert!(!is_masked_1);
         // testing the second column
-        result = masking_value_for_column(relid,2,ANON_DEFAULT_MASKING_POLICY.to_string());
-        expected = "CAST(NULL AS text)".to_string();
-        assert_eq!(Some(expected),result);
+        let (result_2, is_masked_2) =
+            masking_value_for_column(relid,2,anon.clone()).unwrap();
+        let expected_2 = "CAST(NULL AS text)".to_string();
+        assert!(is_masked_2);
+        assert_eq!(expected_2,result_2);
     }
 
 
@@ -518,16 +560,89 @@ mod tests {
         assert_eq!(expected, result);
     }
 
+
     #[pg_test]
     fn test_rule(){
         let batman = fixture::create_masked_role();
-        let bruce  = fixture::create_unmasked_role();
-        assert!(rule(pg_sys::AuthIdRelationId,batman,0,ANON_DEFAULT_MASKING_POLICY).is_some());
-        assert!(rule(pg_sys::AuthIdRelationId,bruce,0,ANON_DEFAULT_MASKING_POLICY).unwrap().is_null());
-        assert!(rule(pg_sys::AuthIdRelationId,0.into(),0,ANON_DEFAULT_MASKING_POLICY).unwrap().is_null());
-        assert!(rule(pg_sys::AuthIdRelationId,0.into(),0,"").unwrap().is_null());
-        assert!(rule(0.into(),0.into(),0,"").unwrap().is_null());
+        assert_eq!(
+            Ok("MASKED"),
+            rule(pg_sys::AuthIdRelationId,batman,0,ANON_DEFAULT_MASKING_POLICY)
+        );
     }
+
+    #[pg_test]
+    fn test_rule_no_rule(){
+        let bruce  = fixture::create_unmasked_role();
+        assert_eq!(
+            Err(Reason::NoRule),
+            rule(pg_sys::AuthIdRelationId,bruce,0,ANON_DEFAULT_MASKING_POLICY)
+        );
+    }
+    #[pg_test]
+    fn test_rule_invalid_classid(){
+        let bruce  = fixture::create_unmasked_role();
+        assert!(rule(pg_sys::InvalidOid,bruce,0,ANON_DEFAULT_MASKING_POLICY).is_err());
+    }
+
+    #[pg_test]
+    fn test_rule_invalid_objectid(){
+        assert!(rule(pg_sys::AuthIdRelationId,pg_sys::InvalidOid,0,ANON_DEFAULT_MASKING_POLICY).is_err());
+    }
+
+    #[pg_test]
+    fn test_rule_on_role(){
+        let batman = fixture::create_masked_role();
+        assert_eq!(
+            Ok("MASKED"),
+            rule_on_role(batman,ANON_DEFAULT_MASKING_POLICY)
+        );
+    }
+
+    #[pg_test]
+    fn test_rule_on_role_no_rule(){
+        let bruce  = fixture::create_unmasked_role();
+        assert_eq!(
+            Err(Reason::NoRule),
+            rule_on_role(bruce,ANON_DEFAULT_MASKING_POLICY)
+        );
+    }
+
+    #[pg_test]
+    fn test_rule_on_role_invalid_input(){
+        assert!(rule_on_role(0.into(),ANON_DEFAULT_MASKING_POLICY).is_err());
+        assert!(rule_on_role(0.into(),"").is_err());
+        assert!(rule_on_role(pg_sys::InvalidOid,"").is_err());
+    }
+
+    #[pg_test]
+    fn test_rule_on_table() {
+        let relid = fixture::create_table_person();
+        assert!(rule_on_table(relid,ANON_DEFAULT_MASKING_POLICY).is_ok());
+    }
+
+    #[pg_test]
+    fn test_rule_on_table_no_rule() {
+        let relid = fixture::create_table_location();
+        assert_eq!(
+            Err(Reason::NoRule),
+            rule_on_table(relid,ANON_DEFAULT_MASKING_POLICY)
+        );
+    }
+
+    #[pg_test]
+    fn test_rule_on_table_invalid_input() {
+        let relid = fixture::create_table_person();
+        assert_eq!(
+            Err(Reason::NoRule),
+            rule_on_table(relid,"")
+        );
+        assert_eq!(
+            Err(Reason::NoRule),
+            rule_on_table(pg_sys::InvalidOid,ANON_DEFAULT_MASKING_POLICY)
+        );
+    }
+
+
 
     #[pg_test]
     fn test_subquery_some(){

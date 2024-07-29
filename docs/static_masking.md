@@ -100,6 +100,21 @@ all the data on disk. Depending on the database size, the hardware and the
 instance config, it may be faster to export the anonymized data (See
 [Anonymous Dumps] ) and reload it into the database.
 
+Static Masking and Multiple Masking Policies
+------------------------------------------------------------------------------
+
+When using multiple masking policies, you can simply add the policy name at
+the end of the static masking functions.
+
+For instance, if you defined a masking policy named "gdpr", you can apply it with
+
+```sql
+SELECT anon.anonymize_table('customer','rgpd');
+SELECT anon.anonymize_column('customer','zipcode','rgpd');
+```
+
+By default, there's a single masking policy named "anon".
+
 
 Shuffling
 ------------------------------------------------------------------------------

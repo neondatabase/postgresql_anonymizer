@@ -6,7 +6,6 @@ use crate::macros;
 use crate::re;
 use crate::walker;
 use pgrx::prelude::*;
-use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
@@ -166,21 +165,13 @@ pub fn is_trusted_function(
         };
 
         // Get the security label for this definition
-        if let Some(seclabel) = masking::rule(
-            pg_sys::ProcedureRelationId,
-            procform.oid,
-            0,
-            policy
-        ) {
+        if let Ok(seclabel) = masking::rule_on_function(procform.oid, policy) {
             // Found no label, skip to the next definition
-            if seclabel.is_null() { continue }
+            if seclabel.is_empty() { continue }
 
             // Read the security label and check its content
-            let seclabel_cstr = unsafe { CStr::from_ptr(seclabel.as_ptr()) };
-            if re::is_match_trusted(seclabel_cstr) { trusted = Some(true); }
-            if re::is_match_untrusted(seclabel_cstr) {
-                trusted = Some(false);
-            }
+            if re::is_match_trusted(seclabel) { trusted = Some(true); }
+            if re::is_match_untrusted(seclabel) { trusted = Some(false); }
         }
     }
 
@@ -206,17 +197,8 @@ fn is_trusted_namespace(namespace_id: pg_sys::Oid, policy: &str)
         error::internal("Schema OID is invalid").ereport();
     };
 
-    if let Some(seclabel) = masking::rule(
-        pg_sys::NamespaceRelationId,
-        namespace_id,
-        0,
-        policy
-    ) {
-        if seclabel.is_null() {
-            return Err(Reason::SchemaNotTrusted);
-        }
-        let seclabel_cstr = unsafe { CStr::from_ptr(seclabel.as_ptr()) };
-        if re::is_match_trusted(seclabel_cstr) { return Ok(()); }
+    if let Ok(seclabel) = masking::rule_on_schema(namespace_id,policy) {
+        if re::is_match_trusted(seclabel) { return Ok(()); }
     }
 
     Err(Reason::SchemaNotTrusted)

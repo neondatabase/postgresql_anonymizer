@@ -145,6 +145,9 @@ stop:
 run:
 	$(PGRX) run $(PGVER) $(RELEASE_OPT)
 
+psql:
+	psql --host localhost --port 288$(PG_MAJOR_VERSION)
+
 ##
 ## C L E A N
 ##

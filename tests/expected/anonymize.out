@@ -96,8 +96,6 @@ IS 'MASKED WITH VALUE ''xxxH'' ';
 --
 -- Should return a NOTICE but anonymize data anyway
 SELECT anon.anonymize_column('employee','lastname');
-NOTICE:  The faking data is not present.
-HINT:  You probably need to run 'SELECT anon.init()' 
  anonymize_column 
 ------------------
  t
@@ -238,7 +236,7 @@ SELECT anon.anonymize_column('employee','firstname') IS FALSE;
 -- Anonymize a column that does not exist
 -- returns FALSE and a WARNING
 SELECT anon.anonymize_column('employee','xxxxxxxxxxxxxxxx') IS FALSE;
-WARNING:  There is no masking rule for column xxxxxxxxxxxxxxxx in table public.employee
+WARNING:  There is no masking rule for column "xxxxxxxxxxxxxxxx" in table public.employee
  ?column? 
 ----------
  t

@@ -18,7 +18,7 @@ use std::os::raw::c_char;
 /// The default masking policy is named "anon".
 /// It cannot be renamed or removed
 ///
-pub static ANON_DEFAULT_MASKING_POLICY: &'static str = "anon";
+pub static ANON_DEFAULT_MASKING_POLICY: &str = "anon";
 
 pub fn register_label_providers() {
 
@@ -73,7 +73,8 @@ unsafe extern "C" fn k_anonymity_object_relabel(
      * SECURITY LABEL FOR k_anonymity ON COLUMN client.zipcode IS 'QUASI IDENTIFIER';
      */
     if object.classId == pg_sys::RelationRelationId {
-        let label = unsafe { CStr::from_ptr(seclabel_ptr) };
+        let label_cstr = unsafe { CStr::from_ptr(seclabel_ptr) };
+        let label = label_cstr.to_str().expect("Failed to convert seclabel");
         if re::is_match_indirect_identifier(label) { return }
         error::invalid_label_for("a column",label,None).ereport();
     }
@@ -110,7 +111,8 @@ unsafe extern "C" fn masking_policy_object_relabel(
     };
 
     // Extract the security label
-    let label = unsafe { CStr::from_ptr(seclabel_ptr) };
+    let label_cstr = unsafe { CStr::from_ptr(seclabel_ptr) };
+    let label = label_cstr.to_str().expect("Failed to convert seclabel");
 
     match object.classId {
         /* SECURITY LABEL FOR anon ON FUNCTION public.foo() IS 'TRUSTED' */
@@ -149,7 +151,7 @@ unsafe extern "C" fn masking_policy_object_relabel(
     }
 }
 
-fn relabel_column(label: &CStr, object_id: pg_sys::Oid) {
+fn relabel_column(label: &str, object_id: pg_sys::Oid) {
     /* Check that the column does not belong to a view */
     if unsafe { pg_sys::get_rel_relkind(object_id) == 'v' as c_char } {
         error::feature_not_supported("Masking a view").ereport();
@@ -190,11 +192,11 @@ fn relabel_column(label: &CStr, object_id: pg_sys::Oid) {
     error::invalid_label_for("a column",label,None).ereport();
 }
 
-fn relabel_database(label: &CStr) {
+fn relabel_database(label: &str) {
     let mut detail : Option<String> = None;
 
-    if re::is_match_tablesample(label) {
-        let check_tbs = input::check_tablesample(label.to_str().unwrap());
+    if re::capture_tablesample(label).is_some() {
+        let check_tbs = input::check_tablesample(label);
         if check_tbs.is_ok() { return }
         detail = Some(check_tbs.unwrap_err());
     }
@@ -202,7 +204,7 @@ fn relabel_database(label: &CStr) {
     error::invalid_label_for("a database", label, detail).ereport();
 }
 
-fn relabel_function(label: &CStr) {
+fn relabel_function(label: &str) {
 
     if ! unsafe { pg_sys::superuser() } {
         error::insufficient_privilege(
@@ -217,12 +219,12 @@ fn relabel_function(label: &CStr) {
     error::invalid_label_for("a function",label,None).ereport();
 }
 
-fn relabel_role(label: &CStr) {
+fn relabel_role(label: &str) {
     if re::is_match_masked(label) { return }
     error::invalid_label_for("a role",label,None).ereport();
 }
 
-fn relabel_schema(label: &CStr) {
+fn relabel_schema(label: &str) {
     if ! unsafe { pg_sys::superuser() } {
         error::insufficient_privilege(
             "only a superuser can set an anon label for a schema".to_string()
@@ -234,10 +236,10 @@ fn relabel_schema(label: &CStr) {
 }
 
 // relabel_table is **almost** equivalent to relabel_database
-fn relabel_table(label: &CStr) {
+fn relabel_table(label: &str) {
     let mut detail : Option<String> = None;
-    if re::is_match_tablesample(label) {
-        let check_tbs = input::check_tablesample(label.to_str().unwrap());
+    if re::capture_tablesample(label).is_some() {
+        let check_tbs = input::check_tablesample(label);
         if check_tbs.is_ok() { return; }
         detail = Some(check_tbs.unwrap_err());
     }

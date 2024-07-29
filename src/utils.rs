@@ -4,6 +4,7 @@
 
 use crate::compat;
 use crate::error;
+use crate::macros;
 use pgrx::prelude::*;
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -12,6 +13,45 @@ use std::ffi::c_char;
 //----------------------------------------------------------------------------
 // Public functions
 //----------------------------------------------------------------------------
+
+/// Returns the 1-based number of a column in a table
+///
+pub fn get_column_number(
+    relid: pg_sys::Oid,
+    attname: &str
+) -> Option<i16> {
+    let lockmode = pg_sys::AccessShareLock as i32;
+
+    // `pg_sys::relation_open()` will raise XX000
+    // if the specified oid isn't a valid relation
+    let relation = unsafe {
+        PgBox::from_pg(pg_sys::relation_open(relid, lockmode))
+    };
+
+    // reldesc is a TupleDescData object
+    // https://doxygen.postgresql.org/structTupleDescData.html
+    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
+    let natts = reldesc.natts;
+    let attrs = unsafe {
+        reldesc.attrs.as_slice(natts.try_into().unwrap())
+    };
+
+    let mut result: Option<i16> = None;
+    for a in attrs {
+        if a.attisdropped {
+            continue;
+        }
+        if macros::NameDataStr(a.attname) == attname {
+            result=Some(a.attnum);
+        }
+    }
+
+    // pass the relation back to Postgres
+    unsafe {
+        pg_sys::relation_close(relation.as_ptr(), lockmode);
+    }
+    result
+}
 
 /// Given a function call (e.g. 'anon.fake_city()'), return the namespace
 /// the function (e.g. 'anon') if possible
@@ -94,13 +134,20 @@ pub fn get_function_schema(function_call: String) -> String {
 
 /// Returns the full name of a relation
 ///
-pub fn get_relation_qualified_name(relid: pg_sys::Oid ) -> String
+pub fn get_relation_qualified_name(relid: pg_sys::Oid ) -> Option<String>
 {
-    let namespace = unsafe {
+    if ! macros::OidIsValid(relid) { return None; }
+
+    let namespace_ptr = unsafe {
         pg_sys::get_namespace_name(pg_sys::get_rel_namespace(relid))
     };
-    let relname = unsafe { pg_sys::get_rel_name(relid) };
-    format!("{}.{}",quote_identifier(namespace),quote_identifier(relname))
+    if namespace_ptr.is_null() { return None; }
+
+    let relname_ptr = unsafe { pg_sys::get_rel_name(relid) };
+    Some(format!(   "{}.{}",
+                    quote_identifier(namespace_ptr),
+                    quote_identifier(relname_ptr)
+    ))
 }
 
 /// Return the quoted name of a string
@@ -111,6 +158,15 @@ pub fn quote_identifier(ident: *const c_char) -> &'static str {
         .to_str()
         .unwrap();
 }
+
+
+/// Return the quoted name of a NameData identifier
+/// if a column is named `I`, its quoted name is `"I"`
+///
+pub fn quote_name_data(name_data: &pg_sys::NameData) -> &str {
+    quote_identifier(name_data.data.as_ptr() as *const c_char)
+}
+
 //----------------------------------------------------------------------------
 // Tests
 //----------------------------------------------------------------------------
@@ -120,6 +176,20 @@ pub fn quote_identifier(ident: *const c_char) -> &'static str {
 mod tests {
     use crate::utils::*;
     use crate::fixture;
+
+    #[pg_test]
+    fn test_get_column_number() {
+        let relid = fixture::create_table_person();
+        assert_eq!(Some(1 as i16), get_column_number(relid, "firstname"));
+        assert_eq!(Some(2 as i16), get_column_number(relid, "lastname"));
+        assert_eq!(None,get_column_number(relid, "does_not_exist"));
+    }
+
+    #[pg_test(error="could not open relation with OID 21")]
+    fn test_get_column_number_fail() {
+        let invalid_relid = pg_sys::Oid::from(21);
+        assert_eq!(None,get_column_number(invalid_relid, "does_not_exist"));
+    }
 
     #[pg_test]
     fn test_get_function_schema() {
@@ -138,13 +208,24 @@ mod tests {
     }
 
     #[pg_test]
-    fn test_get_relation_qualified_name() {
-        let person_relid = fixture::create_table_person();
-        assert_eq!("public.person",get_relation_qualified_name(person_relid));
-        let location_relid = fixture::create_table_location();
-        assert_eq!("\"Postal_Info\".location", get_relation_qualified_name(location_relid));
+    fn test_get_relation_qualified_name_invalid_oid() {
+        assert!(get_relation_qualified_name(pg_sys::InvalidOid).is_none());
+        assert!(get_relation_qualified_name(99999.into()).is_none());
     }
 
+    #[pg_test]
+    fn test_get_relation_qualified_name() {
+        let person_relid = fixture::create_table_person();
+        assert_eq!(
+            Some("public.person".to_string()),
+            get_relation_qualified_name(person_relid)
+        );
+        let location_relid = fixture::create_table_location();
+        assert_eq!(
+            Some("\"Postal_Info\".location".to_string()),
+            get_relation_qualified_name(location_relid)
+        );
+    }
     #[pg_test]
     fn test_quote_identifier() {
         let schema_c_string = CString::new("WEIRD_schema").unwrap();

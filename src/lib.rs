@@ -14,11 +14,14 @@ mod macros;
 mod masking;
 mod random;
 mod re;
+mod sampling;
+mod static_masking;
 mod utils;
 mod walker;
 
 // Load the SQL functions AFTER the rust functions
 extension_sql_file!("../sql/anon.sql", name="anon");
+extension_sql_file!("../sql/static_masking.sql", requires =["anon"]);
 extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires =["anon"]);
 
 pgrx::pg_module_magic!();
@@ -308,8 +311,96 @@ mod anon {
     #[pg_extern]
     pub fn masking_value_for_column(r: pg_sys::Oid, c: i32, p: String )
     -> Option<String> {
-        masking::masking_value_for_column(r,c,p)
+        let (val,_) = masking::masking_value_for_column(r,c,p)?;
+        Some(val)
     }
+
+    //
+    // The masking engine functions are used by the V1 dynamic masking engine
+    // They are exposed for backward compat' and may be made private in
+    // further versions
+    // Anyway they should not be used as masking filters !
+    //
+    extension_sql!(r#"
+    SECURITY LABEL FOR anon ON FUNCTION anon.masking_expressions_for_table IS 'UNTRUSTED';
+    SECURITY LABEL FOR anon ON FUNCTION anon.masking_value_for_column IS 'UNTRUSTED';
+    "#, name="unstrust_masking_engine_functions", requires =["anon"]
+    );
+
+    //------------------------------------------------------------------------
+    // Masking engine
+    //------------------------------------------------------------------------
+    use crate::static_masking;
+
+    //
+    // Here way need to declare manually the SQL mapping function for 2 reasons:
+    //
+    // 1. The PGRX does not handle default value for parameter in the SQL
+    //    functions. To maintain backward compat' when need to expose functions
+    //    without the `policy` parameter, where the default policy will be
+    //    "anon". We currently do that with multiple function signatures
+    //
+    // 2. Currently (july 2024), PGRX does not support the REGCLASS type
+    //    https://github.com/pgcentralfoundation/pgrx/issues/1773
+    //
+    // This is why we declare the SQL mapping functions
+    //
+
+    #[pg_extern(sql= "
+        CREATE FUNCTION anon.anonymize_column(tablename OID, colname TEXT, policy TEXT)
+        RETURNS BOOLEAN
+        AS 'MODULE_PATHNAME', 'anonymize_column_wrapper'
+        LANGUAGE C STRICT;
+
+        CREATE FUNCTION anon.anonymize_column(tablename TEXT, colname NAME, policy TEXT)
+        RETURNS BOOLEAN
+        AS $$ SELECT anon.anonymize_column(tablename::REGCLASS::OID, colname::TEXT, policy); $$
+        LANGUAGE SQL STRICT;
+
+        CREATE FUNCTION anon.anonymize_column(tablename TEXT, colname NAME)
+        RETURNS BOOLEAN
+        AS $$ SELECT anon.anonymize_column(tablename::REGCLASS::OID, colname::TEXT, 'anon'::TEXT); $$
+        LANGUAGE SQL STRICT;
+    ")]
+
+    pub fn anonymize_column(r: pg_sys::Oid, c: String, p: String )
+    -> Option<bool>
+    { static_masking::anonymize_column(r,c,p) }
+
+    #[pg_extern(sql= "
+        CREATE FUNCTION anon.anonymize_table(tablename OID, policy TEXT)
+        RETURNS BOOLEAN
+        AS 'MODULE_PATHNAME', 'anonymize_table_wrapper'
+        LANGUAGE C STRICT;
+
+        CREATE FUNCTION anon.anonymize_table(tablename TEXT, policy TEXT)
+        RETURNS BOOLEAN
+        AS $$ SELECT anon.anonymize_table(tablename::REGCLASS::OID, policy); $$
+        LANGUAGE SQL STRICT;
+
+        CREATE FUNCTION anon.anonymize_table(tablename REGCLASS)
+        RETURNS BOOLEAN
+        AS $$ SELECT anon.anonymize_table(tablename::OID, 'anon'); $$
+        LANGUAGE SQL STRICT;
+
+        CREATE FUNCTION anon.anonymize_table(tablename TEXT)
+        RETURNS BOOLEAN
+        AS $$ SELECT anon.anonymize_table(tablename::REGCLASS::OID, 'anon'); $$
+        LANGUAGE SQL STRICT;
+    ")]
+    pub fn anonymize_table(r: pg_sys::Oid, p: String )
+    -> Option<bool>
+    { static_masking::anonymize_table(r,p) }
+
+    //
+    // The static masking should not be used as masking filters, otherwise
+    // it would create infinite loops !
+    //
+    extension_sql!(r#"
+    SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_column(TEXT,NAME) IS 'UNTRUSTED';
+    SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_table(TEXT) IS 'UNTRUSTED';
+    "#, name="unstrust_static_masking_functions", requires =["anon"]
+    );
 
     //------------------------------------------------------------------------
     // Utils

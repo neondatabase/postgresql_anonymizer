@@ -85,6 +85,9 @@ pub fn create_table_person() -> pg_sys::Oid {
          ;
          SECURITY LABEL FOR anon ON COLUMN person.lastname
            IS 'MASKED WITH VALUE NULL';
+
+         SECURITY LABEL FOR anon ON TABLE person
+           IS 'TABLESAMPLE BERNOULLI(10)';
     ").unwrap();
     Spi::get_one::<pg_sys::Oid>("SELECT 'person'::REGCLASS::OID")
         .unwrap()
@@ -141,6 +144,14 @@ pub fn declare_masking_policies(){
     Spi::run("
         SET anon.masking_policies = 'devtests, analytics';
     ").unwrap();
+}
+
+#[allow(dead_code)]
+pub fn declare_sampling_for_database(db: String){
+    Spi::run(&format!("
+        SECURITY LABEL FOR anon ON DATABASE {db}
+            IS 'TABLESAMPLE SYSTEM(33)';
+    ")).unwrap();
 }
 
 #[allow(dead_code)]

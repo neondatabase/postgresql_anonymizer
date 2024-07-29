@@ -68,7 +68,7 @@ SELECT count(*) < 100 FROM mask.hundred;
 -- This should raise a notice
 SELECT anon.anonymize_column('hundred','h');
 NOTICE:  The TABLESAMPLE rule will be ignored.
-HINT:  Only anonymize_table() and anonymize_database() can apply sampling rules
+            Only anonymize_table() and anonymize_database() can apply sampling rules
  anonymize_column 
 ------------------
  t

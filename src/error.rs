@@ -1,7 +1,6 @@
 #[allow(unused_imports)]
 use pgrx::prelude::*;
 use pgrx::PgSqlErrorCode::*;
-use std::ffi::CStr;
 
 #[derive(Clone)]
 pub struct AnonError {
@@ -72,12 +71,11 @@ pub fn insufficient_privilege(reason: String) -> AnonError {
     )
 }
 
-pub fn invalid_label_for(an_object: &str, label: &CStr, hint: Option<String>)
+pub fn invalid_label_for(an_object: &str, label: &str, hint: Option<String>)
 -> AnonError {
-    let label_str = label.to_str().expect("label should be a correct CStr");
     AnonError::new(
         ERRCODE_SYNTAX_ERROR,
-        format!("`{label_str}` is not a valid label for {an_object}"),
+        format!("`{label}` is not a valid label for {an_object}"),
         hint
     )
 }
