@@ -108,4 +108,14 @@ SAVEPOINT before_truncate;
 TRUNCATE baltimore.locations;
 ROLLBACK TO before_truncate;
 
+-- Bug #452 : check that volatile functions work with transparent dynamic masking
+RESET ROLE;
+
+SECURITY LABEL FOR anon ON COLUMN calls.start_time IS
+  "MASKED WITH FUNCTION pg_catalog.now()";
+
+SET ROLE jimmy;
+
+SELECT  start_time IS NOT NULL FROM calls;
+
 ROLLBACK;

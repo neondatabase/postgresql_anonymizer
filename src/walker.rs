@@ -201,7 +201,7 @@ unsafe extern "C" fn rewrite_walker(
         debug1!("new_subquery= {:?}",*msq_query);
 
         // Do the substitution
-        pg_sys::AcquireRewriteLocks(msq_query.as_ptr(), true, false);
+        //pg_sys::AcquireRewriteLocks(msq_query.as_ptr(), true, false);
         rte.rtekind = pg_sys::RTEKind::RTE_SUBQUERY;
         rte.subquery = msq_query.as_ptr();
         rte.relid = pg_sys::InvalidOid;
