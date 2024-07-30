@@ -90,7 +90,9 @@ EXTRA_CLEAN?=target
 ## BUILD
 ##
 
-all:
+all: extension
+
+extension:
 	$(PGRX) package --pg-config $(PG_CONFIG)
 	mkdir -p $(TARGET_SHAREDIR)/extension/anon/
 	install data/*.csv $(TARGET_SHAREDIR)/extension/anon/
