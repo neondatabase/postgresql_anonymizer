@@ -208,6 +208,10 @@ unsafe extern "C" fn rewrite_walker(
         rte.relkind = 0;
         compat::rte_perminfo_index_disable!(rte);
 
+        // We must set `rte.inh` to false, otherwise the volatile functions
+        // are not executed
+        rte.inh = false;
+
         // TODO apply the table sampling ratio
         // rte.tablesample = ....;
 

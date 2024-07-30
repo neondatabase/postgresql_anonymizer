@@ -24,19 +24,12 @@ CREATE ROLE devin LOGIN;
 GRANT USAGE ON SCHEMA nba TO devin;
 GRANT SELECT ON ALL TABLES IN SCHEMA nba TO devin;
 SECURITY LABEL FOR devtests ON COLUMN nba.player.name
-  IS 'MASKED WITH FUNCTION pg_catalog.md5(name)';
---  bug #452
---  IS 'MASKED WITH FUNCTION anon.dummy_name()';
+  IS 'MASKED WITH FUNCTION anon.dummy_name()';
 SECURITY LABEL FOR devtests ON COLUMN nba.player.total_points
-  IS 'MASKED WITH FUNCTION pg_catalog.mod(total_points*263,30000)';
---  bug #452
---  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*40000)';
+  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*40000)';
 SECURITY LABEL FOR devtests ON COLUMN nba.player.highest_score
-  IS 'MASKED WITH FUNCTION pg_catalog.mod(highest_score*2357,79)';
---  bug #452
---  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*80)';
+  IS 'MASKED WITH FUNCTION anon.random_int_between(0,50)';
 SECURITY LABEL FOR devtests ON ROLE devin IS 'MASKED';
-SECURITY LABEL FOR devtests ON FUNCTION anon.dummy_name IS 'TRUSTED';
 SECURITY LABEL FOR devtests ON FUNCTION anon.random_int_between IS 'TRUSTED';
 -- Anna is a Data Scientist. She needs to run global stats over the dataset,
 -- she wants to keep the real value on the `highest_score` column but she does
@@ -59,13 +52,7 @@ SELECT * FROM nba.player;
 SET anon.transparent_dynamic_masking TO true;
 -- Devin sees fake data
 SET ROLE devin;
-SELECT * FROM nba.player;
- id |               name               | total_points | highest_score 
-----+----------------------------------+--------------+---------------
-  1 | 0c57d92dc959c8a64a898274dc9331c4 |        15781 |            75
-  5 | 79255a6e82615a1a2e610c99c42098d9 |         2796 |            51
-(2 rows)
-
+--SELECT * FROM nba.player;
 SELECT name IS NOT NULL FROM nba.player WHERE id = 5;
  ?column? 
 ----------
@@ -73,6 +60,12 @@ SELECT name IS NOT NULL FROM nba.player WHERE id = 5;
 (1 row)
 
 SELECT name != 'Michael Jordan'  FROM nba.player WHERE id = 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nba.player.highest_score <= 50 FROM nba.player WHERE id = 5;
  ?column? 
 ----------
  t

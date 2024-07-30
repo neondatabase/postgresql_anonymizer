@@ -111,11 +111,19 @@ ROLLBACK TO before_truncate;
 -- Bug #452 : check that volatile functions work with transparent dynamic masking
 RESET ROLE;
 
-SECURITY LABEL FOR anon ON COLUMN calls.start_time IS
-  "MASKED WITH FUNCTION pg_catalog.now()";
+CREATE SCHEMA bug452;
+CREATE TABLE bug452.t AS SELECT 0.0 as i;
+
+SECURITY LABEL FOR anon ON COLUMN bug452.t.i
+  IS $$ MASKED WITH FUNCTION pg_catalog.random() $$;
+
+GRANT USAGE ON SCHEMA bug452 TO jimmy;
+GRANT SELECT ON ALL TABLES IN SCHEMA bug452 TO jimmy;
 
 SET ROLE jimmy;
 
-SELECT  start_time IS NOT NULL FROM calls;
+SELECT i IS NOT NULL FROM bug452.t;
+
+SELECT i != 0 FROM bug452.t;
 
 ROLLBACK;

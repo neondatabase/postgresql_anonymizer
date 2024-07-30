@@ -34,23 +34,16 @@ GRANT USAGE ON SCHEMA nba TO devin;
 GRANT SELECT ON ALL TABLES IN SCHEMA nba TO devin;
 
 SECURITY LABEL FOR devtests ON COLUMN nba.player.name
-  IS 'MASKED WITH FUNCTION pg_catalog.md5(name)';
---  bug #452
---  IS 'MASKED WITH FUNCTION anon.dummy_name()';
+  IS 'MASKED WITH FUNCTION anon.dummy_name()';
 
 SECURITY LABEL FOR devtests ON COLUMN nba.player.total_points
-  IS 'MASKED WITH FUNCTION pg_catalog.mod(total_points*263,30000)';
---  bug #452
---  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*40000)';
+  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*40000)';
 
 SECURITY LABEL FOR devtests ON COLUMN nba.player.highest_score
-  IS 'MASKED WITH FUNCTION pg_catalog.mod(highest_score*2357,79)';
---  bug #452
---  IS 'MASKED WITH FUNCTION pg_catalog.floor(pg_catalog.random()*80)';
+  IS 'MASKED WITH FUNCTION anon.random_int_between(0,50)';
 
 SECURITY LABEL FOR devtests ON ROLE devin IS 'MASKED';
 
-SECURITY LABEL FOR devtests ON FUNCTION anon.dummy_name IS 'TRUSTED';
 SECURITY LABEL FOR devtests ON FUNCTION anon.random_int_between IS 'TRUSTED';
 
 -- Anna is a Data Scientist. She needs to run global stats over the dataset,
@@ -78,11 +71,13 @@ SET anon.transparent_dynamic_masking TO true;
 
 SET ROLE devin;
 
-SELECT * FROM nba.player;
+--SELECT * FROM nba.player;
 
 SELECT name IS NOT NULL FROM nba.player WHERE id = 5;
 
 SELECT name != 'Michael Jordan'  FROM nba.player WHERE id = 5;
+
+SELECT nba.player.highest_score <= 50 FROM nba.player WHERE id = 5;
 
 RESET ROLE;
 
