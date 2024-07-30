@@ -82,16 +82,6 @@ pub fn list_masking_policies() -> Vec<&'static str> {
         &mut re::capture_guc_list(guc::ANON_MASKING_POLICIES.get().unwrap())
     );
     masking_policies
-/*
-    let policies_ptr = guc::ANON_MASKING_POLICIES
-                        .get()
-                        .unwrap()
-                        .to_bytes_with_nul()
-                        .as_ptr() as *mut c_char;
-    let policies_cstr = unsafe { CStr::from_ptr(policies_ptr) };
-    let policies_str  = policies_cstr.to_str().unwrap();
-    policies_str.split(':').collect()
-*/
 }
 
 

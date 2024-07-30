@@ -2,74 +2,117 @@
 /// # Regular Expressions
 ///
 ///
+
 use core::ffi::CStr;
 use regex::Regex;
+use std::sync::OnceLock;
 
+//
+// These Regex are static and should be compiled once and for all.
+//
+// Currently there's no straitforward way to do this. We chose to use the
+// OnceLock method, which is available in std::sync
+// However it is a bit more verbose than once_cell or lazy_static.
+//
+// https://github.com/rust-lang/regex/issues/1034#issuecomment-1629989813
+// https://docs.rs/once_cell/latest/once_cell/#faq
+//
 
 //----------------------------------------------------------------------------
 // Matches
 //----------------------------------------------------------------------------
 
 pub fn is_match_indirect_identifier(haystack: &str) -> bool {
-    let re = Regex::new(r"(?is)^ *(QUASI|INDIRECT) +IDENTIFIER *$").unwrap();
-    re.is_match(haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(
+        r"(?is)^ *(QUASI|INDIRECT) +IDENTIFIER *$"
+    ).unwrap())
+    .is_match(haystack)
 }
 
 pub fn is_match_masked(haystack: &str) -> bool {
-    let re = Regex::new(r"(?is)^ *MASKED *$").unwrap();
-    re.is_match(haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(
+        r"(?is)^ *MASKED *$"
+    ).unwrap())
+    .is_match(haystack)
 }
 
 pub fn is_match_not_masked(haystack: &str) -> bool {
-    let re = Regex::new(r"(?is)^ *NOT +MASKED *$").unwrap();
-    re.is_match(haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(
+        r"(?is)^ *NOT +MASKED *$"
+    ).unwrap())
+    .is_match(haystack)
 }
 
 
 pub fn is_match_trusted(haystack: &str) -> bool {
-    let re = Regex::new(r"(?is)^ *TRUSTED *$").unwrap();
-    re.is_match(haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(
+        r"(?is)^ *TRUSTED *$"
+    ).unwrap())
+    .is_match(haystack)
 }
 
 pub fn is_match_untrusted(haystack: &str) -> bool {
-    let re = Regex::new(r"(?is)^ *UNTRUSTED *$").unwrap();
-    re.is_match(haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(
+        r"(?is)^ *UNTRUSTED *$"
+    ).unwrap())
+    .is_match(haystack)
 }
 
 //----------------------------------------------------------------------------
 // Captures
 //----------------------------------------------------------------------------
-fn capture_first(re: Regex, haystack: &str) -> Option<&str> {
-    let caps = re.captures(haystack);
-    if let Some(c) = caps {
-        return Some(c.get(1).unwrap().as_str());
-    }
-    None
-}
 
 pub fn capture_function(haystack: &str) -> Option<&str> {
-    let re = Regex::new(r"(?is)^ *MASKED +WITH +FUNCTION +(.*) *$").unwrap();
-    capture_first(re,haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    let caps = RE.get_or_init(|| Regex::new(
+        r"(?is)^ *MASKED +WITH +FUNCTION +(.*) *$"
+    ).unwrap())
+    .captures(haystack)?;
+    // return the first match
+    Some(caps.get(1).unwrap().as_str())
 }
 
+
 pub fn capture_tablesample(haystack: &str) -> Option<&str> {
-    let re = Regex::new(r"(?is)^ *TABLESAMPLE +(.*) *$").unwrap();
-    capture_first(re,haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    let caps = RE.get_or_init(|| Regex::new(
+        r"(?is)^ *TABLESAMPLE +(.*) *$"
+    ).unwrap())
+    .captures(haystack)?;
+    // return the first match
+    Some(caps.get(1).unwrap().as_str())
 }
 
 pub fn capture_value(haystack: &str) -> Option<&str> {
-    let re = Regex::new(r"(?is)^ *MASKED +WITH +VALUE +(.*) *$").unwrap();
-    capture_first(re,haystack)
+    static RE: OnceLock<Regex> = OnceLock::new();
+    let caps = RE.get_or_init(|| Regex::new(
+        r"(?is)^ *MASKED +WITH +VALUE +(.*) *$"
+    ).unwrap())
+    .captures(haystack)?;
+    // return the first match
+    Some(caps.get(1).unwrap().as_str())
 }
 
 ///
 /// This is a naïve replacement for SplitGUCList
 ///
+/// https://regex101.com/r/pJI5QU/1
+///
 pub fn capture_guc_list(haystack: &CStr) -> Vec<&str>  {
-    let re = Regex::new(r"[^,(?! )]+").unwrap();
     let hay = haystack.to_str().expect("haystack should be valid");
+    static RE: OnceLock<Regex> = OnceLock::new();
+    let caps_iter = RE.get_or_init(|| Regex::new(
+        r"[^,(?! )]+"
+    ).unwrap())
+    .captures_iter(hay);
+
     let mut v: Vec<&str> = vec!();
-    for c in re.captures_iter(hay) {
+    for c in caps_iter {
         v.push(c.get(0).unwrap().as_str());
     }
     v
@@ -97,8 +140,14 @@ mod tests {
             vec!["a","b","c"],
             capture_guc_list(c_str!("a,b , c"))
         );
-        assert_eq!(capture_guc_list(c_str!("a,,,,,,,,b,c")).len(),3);
-        assert_eq!(capture_guc_list(c_str!("abc dkeiij zofk355f")).len(),3);
+        assert_eq!(
+            vec!["a","b","c"],
+            capture_guc_list(c_str!("a,,,,,,,,b,c"))
+        );
+        assert_eq!(
+            vec!["abc","dkeiij","zofk355f"],
+            capture_guc_list(c_str!("abc dkeiij zofk355f"))
+        );
     }
 
     #[test]
