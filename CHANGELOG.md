@@ -2,9 +2,27 @@ CHANGELOG
 ===============================================================================
 
 
-WIP : 2.0.0-alpha.3 - Better, Faster, Safer
+20240918 : 2.0.0-beta.1 - Better, Faster, Safer
 -------------------------------------------------------------------------------
 
+* Revert Rust random date functions
+* Upgrade to PGRX 0.12.4
+* Add support for PostgreSQL 17
+* [tests] better error handling in the privacy_by_default test
+* [walker] support volatile functions with transparent dynamic masking
+* FIX #452 : use volatile functions in TDM
+* [doc] improve INSTALL procedure (Giampaolo Capelli)
+* [make] Add extension target
+* Use static regexp
+* Rewrite the static masking functions in Rust
+* Multiple Masking Policies
+* [core] Use TreeWalker for checking inputs
+* [doc] Database-level settings are visible only in future sessions
+* [dynamic] Disable permission check for the masking subquery
+* [random] random_string(0) must return an empty string (José Pedro Saraiva)
+* RawParseMode_RAW_PARSE_DEFAULT  is deprecated
+* Build on ARM64 (José Pedro Saraiva)
+* Transparent Dynamic Masking
 
 
 20240704 : 2.0.0-alpha.2 - Better, Faster, Safer

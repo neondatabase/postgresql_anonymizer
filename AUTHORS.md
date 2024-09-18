@@ -16,6 +16,8 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Giampaolo Capelli: Documentation
+* José Pedro Saraiva: Build on ARM64
 * Guillaume Risbourg: CI improvements
 * Austin Putman: Bug fixes
 * Carlos Ruiz: Documentation
