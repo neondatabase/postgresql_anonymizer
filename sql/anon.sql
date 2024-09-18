@@ -1150,10 +1150,27 @@ $$
 -- Random Generic Data
 -------------------------------------------------------------------------------
 
+
+CREATE OR REPLACE FUNCTION anon.random_date_between(
+  date_start timestamp WITH TIME ZONE,
+  date_end timestamp WITH TIME ZONE
+)
+RETURNS timestamp WITH TIME ZONE AS $$
+    SELECT (random()*(date_end-date_start))::interval+date_start;
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
 -- The random functions are written in Rust (see `src/random.rs`)
 
 -- Undocumented and kept for backward compatibility with v1
--- returns an empty string when l=0 
+-- returns an empty string when l=0
 CREATE OR REPLACE FUNCTION anon.random_string(
   l integer
 )
@@ -1256,6 +1273,70 @@ $$
   SET search_path=''
 ;
 
+CREATE OR REPLACE FUNCTION anon.random_in_daterange(
+  r DATERANGE
+)
+RETURNS DATE
+AS $$
+  SELECT CAST(
+      (
+        pg_catalog.random()
+        *(pg_catalog.upper(r)::TIMESTAMP-pg_catalog.lower(r)::TIMESTAMP)
+      )::INTERVAL
+      +pg_catalog.lower(r)
+      AS DATE
+  );
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+
+CREATE OR REPLACE FUNCTION anon.random_in_tsrange(
+  r TSRANGE
+)
+RETURNS TIMESTAMP WITHOUT TIME ZONE
+AS $$
+  SELECT CAST(
+    (
+      pg_catalog.random()
+      *(pg_catalog.upper(r)-pg_catalog.lower(r))
+    )::INTERVAL
+    +pg_catalog.lower(r)
+    AS TIMESTAMP WITHOUT TIME ZONE);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
+
+CREATE OR REPLACE FUNCTION anon.random_in_tstzrange(
+  r TSTZRANGE
+)
+RETURNS TIMESTAMP WITH TIME ZONE
+AS $$
+  SELECT CAST(
+    (
+      pg_catalog.random()
+      *(pg_catalog.upper(r)-pg_catalog.lower(r))
+    )::INTERVAL
+    +pg_catalog.lower(r)
+    AS TIMESTAMP WITH TIME ZONE);
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL RESTRICTED -- because random
+  SECURITY INVOKER
+  SET search_path=''
+;
 
 -------------------------------------------------------------------------------
 -- FAKE data

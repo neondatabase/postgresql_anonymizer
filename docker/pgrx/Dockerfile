@@ -2,7 +2,7 @@ FROM rust:1
 
 ARG UID=1000
 ARG GID=1000
-ARG PGRX_VERSION=0.12.0-beta.0
+ARG PGRX_VERSION=0.12.4
 
 # Create the postgres user with the given uid/gid
 # If you're not using Docker Desktop and your UID / GID is not 1000 then
@@ -19,6 +19,8 @@ RUN echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' \
     | tee /etc/apt/sources.list.d/goreleaser.list
 
 RUN apt-get update && apt-get install -y \
+    bison \
+    flex \
     gettext-base \
     libclang-dev \
     nfpm \

@@ -79,8 +79,7 @@ pub fn date() -> pgrx::datum::TimestampWithTimeZone {
 pub fn date_after(t: pgrx::datum::TimestampWithTimeZone)
     -> pgrx::datum::TimestampWithTimeZone
 {
-    use pgrx::ToIsoString;
-    let s: String = t.to_iso_string();
+    let s: String = t.to_string();
     let d = chrono::DateTime::parse_from_rfc3339(&s)
             .expect("DateTime conversion failed");
     let val: String = DateTimeAfter(EN,d.into()).fake();
@@ -90,69 +89,13 @@ pub fn date_after(t: pgrx::datum::TimestampWithTimeZone)
 pub fn date_before(t: pgrx::datum::TimestampWithTimeZone)
     -> pgrx::datum::TimestampWithTimeZone
 {
-    use pgrx::ToIsoString;
-    let s: String = t.to_iso_string();
+    let s: String = t.to_string();
     let d = chrono::DateTime::parse_from_rfc3339(&s)
             .expect("DateTime conversion failed");
     let val: String = DateTimeBefore(EN,d.into()).fake();
     pgrx::datum::TimestampWithTimeZone::from_str(&val).unwrap()
 }
 
-
-pub fn date_between(
-        start: pgrx::datum::TimestampWithTimeZone,
-        end: pgrx::datum::TimestampWithTimeZone
-    ) -> pgrx::datum::TimestampWithTimeZone
-{
-    use pgrx::ToIsoString;
-    let start_str: String = start.to_iso_string();
-    let start_date = chrono::DateTime::parse_from_rfc3339(&start_str)
-                     .expect("DateTime conversion failed");
-    let end_str: String = end.to_iso_string();
-    let end_date = chrono::DateTime::parse_from_rfc3339(&end_str)
-                   .expect("DateTime conversion failed");
-    let val: String = DateTimeBetween(EN,start_date.into(),end_date.into())
-                      .fake();
-    pgrx::datum::TimestampWithTimeZone::from_str(&val).unwrap()
-}
-
-pub fn date_in_daterange(r: Range<pgrx::Date>) -> Option<pgrx::Date>
-{
-    if r.is_infinite() { return None }
-
-    let start = r.lower().unwrap();
-    let end = r.upper().unwrap();
-
-    Some(date_between(
-            (*start.get().unwrap()).into(),
-            (*end.get().unwrap()).into()
-        ).into()
-    )
-}
-
-pub fn date_in_tsrange(r: Range<pgrx::Timestamp>) -> Option<pgrx::Timestamp>
-{
-    if r.is_infinite() { return None }
-
-    let start = r.lower().unwrap();
-    let end = r.upper().unwrap();
-
-    Some(date_between(
-            (*start.get().unwrap()).into(),
-            (*end.get().unwrap()).into()
-        ).into()
-    )
-}
-
-pub fn date_in_tstzrange(r: Range<pgrx::datum::TimestampWithTimeZone>)
-    -> Option<pgrx::datum::TimestampWithTimeZone>
-{
-    if r.is_infinite() { return None }
-
-    let start = r.lower().unwrap();
-    let end = r.upper().unwrap();
-    Some(date_between(*start.get().unwrap(),*end.get().unwrap()))
-}
 
 pub fn time() -> pgrx::datum::Time {
     let val: String = fake::faker::chrono::raw::Time(EN).fake();
@@ -203,7 +146,6 @@ pub fn string(r: Range<i32>) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-
 
     #[test]
     fn test_int() {

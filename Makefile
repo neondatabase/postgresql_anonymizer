@@ -15,6 +15,7 @@ TARGET_DIR?=target/$(TARGET)/anon-$(PGVER)/
 PG_CONFIG?=`$(PGRX) info pg-config $(PGVER) 2> /dev/null || echo pg_config`
 PG_SHAREDIR?=$(shell $(PG_CONFIG) --sharedir)
 PG_LIBDIR?=$(shell $(PG_CONFIG) --libdir)
+PG_PKGLIBDIR?=$(shell $(PG_CONFIG) --pkglibdir)
 PG_BINDIR?=$(shell $(PG_CONFIG) --bindir)
 
 # Be sure to use the PGRX version (PGVER) of the postgres binaries
@@ -23,9 +24,9 @@ PATH:=$(PG_BINDIR):${PATH}
 
 # This is where the package is placed
 TARGET_SHAREDIR?=$(TARGET_DIR)/$(PG_SHAREDIR)
-TARGET_LIBDIR?=$(TARGET_DIR)/$(PG_LIBDIR)
+TARGET_LIBDIR?=$(TARGET_DIR)/$(PG_PKGLIBDIR)
 
-PG_REGRESS?=$(PG_LIBDIR)/pgxs/src/test/regress/pg_regress
+PG_REGRESS?=$(PG_PKGLIBDIR)/pgxs/src/test/regress/pg_regress
 PG_SOCKET_DIR?=/var/lib/postgresql/.pgrx/
 PGHOST?=localhost
 PGPORT?=288$(subst pg,,$(PGVER))
@@ -113,9 +114,15 @@ install:
 ## These are the functional tests, the unit tests are run with Cargo
 ##
 
+# With PGXS: the postgres instance is created on-the-fly to run the test.
+# With PGRX: the postgres instance is created previously by `cargo run`. This
+# means we have some extra tasks to prepare the instance
+
 installcheck:
 	dropdb $(PSQL_OPT) --if-exists $(PGDATABASE)
 	createdb $(PSQL_OPT) $(PGDATABASE)
+	dropuser oscar_the_owner || echo 'ignored'
+	createuser $(PSQL_OPT) postgres --superuser || echo 'ignored'
 	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET session_preload_libraries = 'anon';"
 	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET anon.masking_policies = 'devtests, analytics';"
 	$(PG_REGRESS) \

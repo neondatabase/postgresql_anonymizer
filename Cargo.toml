@@ -14,6 +14,7 @@ pg13 = ["pgrx/pg13", "pgrx-tests/pg13" ]
 pg14 = ["pgrx/pg14", "pgrx-tests/pg14" ]
 pg15 = ["pgrx/pg15", "pgrx-tests/pg15" ]
 pg16 = ["pgrx/pg16", "pgrx-tests/pg16" ]
+pg17 = ["pgrx/pg17", "pgrx-tests/pg17" ]
 pg_test = []
 
 [dependencies]
@@ -21,12 +22,12 @@ c_str_macro = "1.0.3"
 chrono = "0.4.37"
 fake = { version = "2.9.2", features = ["bigdecimal", "chrono", "http", "rust_decimal", "uuid", "time","random_color"] }
 paste = "1.0"
-pgrx = "0.12.0-beta.0"
+pgrx = "0.12.4"
 rand = "0.8.5"
 regex = "1.10.2"
 
 [dev-dependencies]
-pgrx-tests = "0.12.0-beta.0"
+pgrx-tests = "0.12.4"
 
 [profile.dev]
 panic = "unwind"

@@ -4,8 +4,17 @@ use crate::masking;
 use crate::utils;
 use crate::walker;
 use pgrx::prelude::*;
+
+
+#[allow(deprecated)]
 use pgrx::HookResult;
+
+#[allow(deprecated)]
 use pgrx::JumbleState;
+
+
+
+
 
 /// Apply masking rules to a COPY statement
 /// In a COPY statement, substitute the masked relation by its masking view
@@ -111,6 +120,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
 pub struct AnonHooks {
 }
 
+#[allow(deprecated)]
 impl pgrx::hooks::PgHooks for AnonHooks {
 
     /// The process_utility_hook is called for each utility commands

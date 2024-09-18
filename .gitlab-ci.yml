@@ -44,6 +44,9 @@ include:
   - local: ci/build_and_test_pgver.yml
     inputs:
       pgver: pg16
+  - local: ci/build_and_test_pgver.yml
+    inputs:
+      pgver: pg17
   ## automatic SAST from Gitlab.com
   - template: Security/SAST.gitlab-ci.yml
 

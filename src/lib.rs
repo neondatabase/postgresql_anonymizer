@@ -187,34 +187,15 @@ mod anon {
     pub fn random_time() -> pgrx::datum::Time { random::time() }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_date() -> TimestampWithTimeZone { random::date() }
+    pub fn random_date() -> pgrx::datum::TimestampWithTimeZone { random::date() }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_date_after(t: TimestampWithTimeZone)
-        -> TimestampWithTimeZone { random::date_after(t) }
+    pub fn random_date_after(t: pgrx::datum::TimestampWithTimeZone)
+        -> pgrx::datum::TimestampWithTimeZone { random::date_after(t) }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_date_before(t: TimestampWithTimeZone)
-        -> TimestampWithTimeZone { random::date_before(t) }
-
-    #[pg_extern(parallel_restricted)]
-    pub fn random_date_between(
-        start: TimestampWithTimeZone,
-        end: TimestampWithTimeZone
-    ) -> TimestampWithTimeZone { random::date_between(start,end) }
-
-    #[pg_extern(parallel_restricted)]
-    pub fn random_in_daterange(r: Range<pgrx::Date>) -> Option<pgrx::Date>
-    { random::date_in_daterange(r)}
-
-    #[pg_extern(parallel_restricted)]
-    pub fn random_in_tsrange(r: Range<Timestamp>) -> Option<Timestamp>
-    { random::date_in_tsrange(r)}
-
-    #[pg_extern(parallel_restricted)]
-    pub fn random_in_tstzrange(r: Range<TimestampWithTimeZone>)
-        -> Option<TimestampWithTimeZone>
-    { random::date_in_tstzrange(r)}
+    pub fn random_date_before(t: pgrx::datum::TimestampWithTimeZone)
+        -> pgrx::datum::TimestampWithTimeZone { random::date_before(t) }
 
     // Random Numbers
 
@@ -454,7 +435,7 @@ static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {
 ///
 #[pg_guard]
 pub unsafe extern "C" fn _PG_init() {
-    #[allow(static_mut_refs)]
+    #[allow(static_mut_refs,deprecated)]
     pgrx::hooks::register_hook(&mut HOOKS);
     guc::register_gucs();
     label_providers::register_label_providers();
