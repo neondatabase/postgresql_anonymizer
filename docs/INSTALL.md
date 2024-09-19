@@ -5,12 +5,12 @@ The installation process is composed of 4 basic steps:
 
 * Step 1: **Deploy** the extension into the host server
 * Step 2: **Load** the extension in the PostgreSQL instance
-* Step 3: **Create** the extension inside the database
-* Step 4: **Initialize** the extension internal data
+* Step 3: **Create** and **Initialize** the extension inside the database
 
 There are multiple ways to install the extension :
 
 * [Install on RedHat / CentOS]
+* [Install on Debian / Ubuntu]
 * [Install with PGXN]
 * [Install from source]
 * [Install with docker]
@@ -27,6 +27,7 @@ See [Load the extension] for more details.
 If you're having any problem, check the [Troubleshooting] section.
 
 [Install on RedHat / CentOS]: #install-on-redhat-centos
+[Install on Debian / Ubuntu]: #install-on-debian-ubuntu
 [Install with PGXN]: #install-with-pgxn
 [Install from source]: #install-from-source
 [Install with docker]: #install-with-docker
@@ -52,18 +53,16 @@ This extension is available in two versions :
 Install on RedHat / Rocky Linux / Alma Linux
 ------------------------------------------------------------------------------
 
-> This is the recommended way to install the `stable` version
-> This method works for RHEL 8 and 9. If you're running an obsolete version of
-> RHEL consider upgrading or read the [Install With PGXN] section.
+> DO NOT use the version provided by the PGDG YUM repository.
+> It is obsolete.
 
-_Step 0:_ Add the [DaLibo Labs RPM Repo] to your system.
+_Step 0:_ Add the [DaLibo Labs RPM repository] to your system.
 
 ```console
-sudo dnf install https://.../pgdg-redhat-repo-latest.noarch.rpm
+sudo dnf install https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
 ```
 
-[Dalibo Labs RPM Repo]: https://yum.dalibo.org/labs/
-
+[Dalibo Labs RPM repository]: https://yum.dalibo.org/labs/
 
 Alternatively you can download the `latest` version from the
 [Gitlab Package Registry].
@@ -93,11 +92,6 @@ _Step 3:_  Close your session and open a new one. Create the extension.
 
 ```sql
 CREATE EXTENSION anon;
-```
-
-_Step 4:_  Initialize the extension
-
-```sql
 SELECT anon.init();
 ```
 
@@ -140,15 +134,13 @@ ALTER DATABASE foo SET session_preload_libraries = 'anon';
 
 (If you're already loading extensions that way, just add `anon` the current list)
 
+> The setting will be applied for the next sessions,
+> i.e. **You need to reconnect to the database for the change to visible**
+
 _Step 3:_  Close your session and open a new one. Create the extension.
 
 ```sql
-CREATE EXTENSION anon CASCADE;
-```
-
-_Step 4:_  Initialize the extension
-
-```sql
+CREATE EXTENSION anon;
 SELECT anon.init();
 ```
 
@@ -180,12 +172,7 @@ ALTER DATABASE foo SET session_preload_libraries = 'anon';
 _Step 3:_  Close your session and open a new one. Create the extension.
 
 ```sql
-CREATE EXTENSION anon CASCADE;
-```
-
-_Step 4:_  Initialize the extension
-
-```sql
+CREATE EXTENSION anon;
 SELECT anon.init();
 ```
 
@@ -214,18 +201,18 @@ Install From source
 **Important**: Building the extension requires a full Rust development
 environment. It is not recommended to build it on a production server.
 
-_Step 0:_ First you need to install the [PGRX System Requirements].
+Before anything else, you need to install the [PGRX System Requirements].
 
-_Step 1:_ Download the source from the
+_Step 0:_ Download the source from the
 [official repository on Gitlab](https://gitlab.com/dalibo/postgresql_anonymizer/),
 either the archive of the [latest release](https://gitlab.com/dalibo/postgresql_anonymizer/-/releases),
-or the latest version from the `master` branch:
+or clone the `latest` branch:
 
 ```console
 git clone https://gitlab.com/dalibo/postgresql_anonymizer.git
 ```
 
-_Step 2:_  Build the project like any other PostgreSQL extension:
+_Step 1:_  Build the project like any other PostgreSQL extension:
 
 ```console
 make extension
@@ -241,7 +228,7 @@ make extension PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER="14"
 sudo make install PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER="14"
 ```
 
-_Step 3:_  Load the extension:
+_Step 2:_  Load the extension:
 
 Please note that in order to load the extension you must connect to Postgresql
 with a user having superuser privileges. Also, the extension
@@ -254,16 +241,11 @@ ALTER DATABASE foo SET session_preload_libraries = 'anon';
 
 (If you're already loading extensions that way, just add `anon` the current list)
 
-_Step 4:_  Close your session and open a new one on the same PostgreSQL
+_Step 3:_  Close your session and open a new one on the same PostgreSQL
 database. Create the extension.
 
 ```sql
-CREATE EXTENSION anon CASCADE;
-```
-
-_Step 5:_  Initialize the extension:
-
-```sql
+CREATE EXTENSION anon;
 SELECT anon.init();
 ```
 
@@ -358,7 +340,7 @@ _Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`
 ```sql
 SELECT pg_catalog.set_config('search_path', 'public', false);
 
-CREATE EXTENSION anon CASCADE;
+CREATE EXTENSION anon;
 SELECT anon.init();
 
 SECURITY LABEL FOR anon ON COLUMN people.lastname
@@ -535,7 +517,7 @@ SELECT anon.is_initialized();
 ```
 
 If the result is not `t`, the extension data is not present.
-Go back to step 4.
+Go back to step 3.
 
 
 Uninstall
@@ -554,7 +536,7 @@ the database schema even if the anon extension is removed !
 _Step 2:_ Drop the extension
 
 ```sql
-DROP EXTENSION anon CASCADE;
+DROP EXTENSION anon;
 ```
 
 The `anon` extension also installs [pgcrypto] as a dependency, if you
@@ -583,3 +565,26 @@ sudo yum remove postgresql_anonymizer_14
 ```
 
 Replace 14 by the version of your postgresql instance.
+
+Compatibility Guide
+-------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is designed to work on the most current setups.
+As we are trying to find the right balance between innovation and backward
+compatibility, we define a comprehensive list of platforms and software that
+we officially support for each version.
+
+
+| Version  | Released   | EOL       | Postgres |    OS                  |
+|----------|------------|-----------|----------|------------------------|
+| 2.0      | dec. 2024  | dec. 2025 | 13 to 17 | RHEL 8 & 9, Debian 11 & 12, Ubuntu 24.04 |
+| 1.3      | mar. 2024  | dec. 2024 | 12 to 16 | RHEL 8 & 9 |
+| 1.2      | jan. 2024  | mar. 2024 | 12 to 16 | RHEL 8 & 9 |
+| 1.1      | sept. 2022 | jan. 2024 | 11 to 15 | RHEL 7 & 8 |
+
+The extension may work on other distributions than the ones above, however
+provide packages only for these versions and we do not guarantee free
+community support for other OS.
+
+If you need support on other platforms, we may offer commercial support for it.
+Please contact our commercial team at <contact@dalibo.com> for more details.
