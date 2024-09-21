@@ -26,6 +26,7 @@ workflow:
 
 include:
   - local: ci/doc.yml
+  - local: ci/smoke_tests.yml
   ## Default PG version is ALWAYS built and tested
   - local: ci/build_and_test_pgver.yml
     inputs:
