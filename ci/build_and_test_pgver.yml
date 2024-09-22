@@ -24,12 +24,12 @@ variables:
   FF_USE_FASTZIP: "true"               # Enable faster processing of many files in a cache
   CACHE_COMPRESSION_LEVEL: "fastest"
 
-cache: &rust_cache 
+cache: &rust_cache
   key: ${CI_COMMIT_REF_SLUG}  # Share cache between all jobs on one branch/tag
   paths:                      # Paths to cache
     - .cargo/
-    - target/    
-  policy: pull-push           
+    - target/
+  policy: pull-push
 
 ##
 ## L I N T
@@ -38,7 +38,7 @@ cache: &rust_cache
   stage: lint
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
   script:
-  - cargo clippy --release
+    - cargo clippy --release
   allow_failure: true
   cache:
     <<: *rust_cache  # Inherit the cache configuration `&rust_cache
@@ -56,7 +56,7 @@ cache: &rust_cache
 #
 "build-$[[ inputs.pgver ]]":
   stage: build
-  needs: 
+  needs:
     - lint-rs
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
   variables:
@@ -71,6 +71,9 @@ cache: &rust_cache
     # Launch a postgres instance and run the unit tests
     # The functional tests will be launched later with pg_regress
     - make test
+    # At this point we can build the packages too
+    - make deb
+    - make rpm
   rules:
     - if: $ALWAYS
     - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -81,7 +84,7 @@ cache: &rust_cache
       - target/release/anon-$[[ inputs.pgver ]]
     expire_in: 1 day
   cache:
-    <<: *rust_cache  # Inherit the cache configuration `&rust_cache` 
+    <<: *rust_cache  # Inherit the cache configuration `&rust_cache`
     policy: pull
 
 ##
@@ -118,32 +121,6 @@ cache: &rust_cache
     expire_in: 1 day
 
 ##
-## P A C K
-##
-
-"nfpm-$[[ inputs.pgver ]]":
-  stage: pack
-  dependencies:
-    - build-$[[ inputs.pgver ]]
-  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
-  variables:
-    PGVER: $[[ inputs.pgver ]]
-    ALWAYS: $[[ inputs.always ]]
-  script:
-    - make deb
-    - make rpm
-  rules:
-    - if: $ALWAYS
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: $CI_PIPELINE_SOURCE == "web"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  artifacts:
-    paths:
-      - target/release/anon-$[[ inputs.pgver ]]
-      - results
-    expire_in: 1 day
-
-##
 ## D E P L O Y
 ##
 
@@ -156,7 +133,7 @@ cache: &rust_cache
       allow_failure: true
   image: curlimages/curl:latest
   dependencies:
-    - nfpm-$[[ inputs.pgver ]]
+    - "build-$[[ inputs.pgver ]]"
   variables:
     GENERIC_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic"
     DEB_REGISTRY_URL: "$GENERIC_URL/deb/$CI_COMMIT_REF_NAME"

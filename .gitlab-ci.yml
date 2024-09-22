@@ -8,7 +8,6 @@ stages:
   - lint
   - build
   - test
-  - pack
   - deploy
   - release
 
