@@ -8,6 +8,7 @@
 PGRX?=cargo pgrx
 PGVER?=$(shell grep 'default = \[".*\"]' Cargo.toml | sed -e 's/.*\["//' | sed -e 's/"].*//')
 PG_MAJOR_VERSION=$(PGVER:pg%=%)
+ANON_MINOR_VERSION?=$(shell grep '^version *= *' Cargo.toml | sed 's/^version *= *//' | tr -d '\"' | tr -d ' ' )
 
 # use `TARGET=debug make run` for more detailed errors
 TARGET?=release
@@ -175,10 +176,13 @@ endif
 ## P A C K A G E S
 ##
 
+# The packages are built from the $(TARGET_DIR) folder.
+# So the $(PG_LIBDIR) and $(PG_SHAREDIR) are relative to that folder
 rpm deb: package
-	export PG_LIBDIR=.$(PG_LIBDIR) && \
-	export PG_SHAREDIR=.$(PG_SHAREDIR) && \
-	export PG_MAJOR_VERSION=$(PG_MAJOR_VERSION) && \
+	export PG_PKGLIBDIR=".$(PG_PKGLIBDIR)" && \
+	export PG_SHAREDIR=".$(PG_SHAREDIR)" && \
+	export PG_MAJOR_VERSION="$(PG_MAJOR_VERSION)" && \
+	export ANON_MINOR_VERSION="$(ANON_MINOR_VERSION)" && \
 	envsubst < nfpm.template.yaml > $(TARGET_DIR)/nfpm.yaml
 	cd $(TARGET_DIR) && nfpm package --packager $@
 
