@@ -93,7 +93,7 @@ mod anon {
     dummy::declare_l10n_fn_String!(dummy_buzzword,Buzzword);
     dummy::declare_l10n_fn_String!(dummy_buzzword_middle,BuzzwordMiddle);
     dummy::declare_l10n_fn_String!(dummy_buzzword_tail,BuzzwordTail);
-    dummy::declare_l10n_fn_String!(dummy_catchphrase,CatchPhase);
+    dummy::declare_l10n_fn_String!(dummy_catchphrase,CatchPhrase);
     dummy::declare_l10n_fn_String!(dummy_bs_verb,BsVerb);
     dummy::declare_l10n_fn_String!(dummy_bs_adj,BsAdj);
     dummy::declare_l10n_fn_String!(dummy_bs_noun,BsNoun);

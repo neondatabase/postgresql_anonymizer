@@ -20,7 +20,7 @@ pg_test = []
 [dependencies]
 c_str_macro = "1.0.3"
 chrono = "0.4.37"
-fake = { version = "2.9.2", features = ["bigdecimal", "chrono", "http", "rust_decimal", "uuid", "time","random_color"] }
+fake = { version = "2.10.0", features = ["bigdecimal", "chrono", "http", "rust_decimal", "uuid", "time","random_color"] }
 paste = "1.0"
 pgrx = "0.12.4"
 rand = "0.8.5"
