@@ -17,33 +17,6 @@ spec:
 ---
 
 ##
-## Cache
-##
-variables:
-  CARGO_HOME: ${CI_PROJECT_DIR}/.cargo # Move cargo data into the project
-  FF_USE_FASTZIP: "true"               # Enable faster processing of many files in a cache
-  CACHE_COMPRESSION_LEVEL: "fastest"
-
-cache: &rust_cache
-  key: ${CI_COMMIT_REF_SLUG}  # Share cache between all jobs on one branch/tag
-  paths:                      # Paths to cache
-    - .cargo/
-    - target/
-  policy: pull-push
-
-##
-## L I N T
-##
-"lint-rs":
-  stage: lint
-  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
-  script:
-    - cargo clippy --release
-  allow_failure: true
-  cache:
-    <<: *rust_cache  # Inherit the cache configuration `&rust_cache
-
-##
 ## B U I L D
 ##
 
@@ -56,16 +29,13 @@ cache: &rust_cache
 #
 "build-$[[ inputs.pgver ]]":
   stage: build
-  needs:
-    - lint-rs
   image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
   variables:
     PGVER: $[[ inputs.pgver ]]
     ALWAYS: $[[ inputs.always ]]
-  before_script:
-    # Check the cache
-    - ls -lha .cargo target
   script:
+    # lint only for the default PG version
+    - test -z "${ALWAYS}" || make lint
     # Build the extension package
     - make
     # Launch a postgres instance and run the unit tests
@@ -83,9 +53,6 @@ cache: &rust_cache
     paths:
       - target/release/anon-$[[ inputs.pgver ]]
     expire_in: 1 day
-  cache:
-    <<: *rust_cache  # Inherit the cache configuration `&rust_cache`
-    policy: pull
 
 ##
 ## T E S T

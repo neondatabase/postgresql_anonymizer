@@ -231,4 +231,4 @@ docker_init: #: start a docker container
 ##
 
 lint:
-	cargo clippy
+	cargo clippy --release
