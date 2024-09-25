@@ -1,6 +1,20 @@
 CHANGELOG
 ===============================================================================
 
+<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
+
+20240925 : 2.0.0-beta.2 - Better, Faster, Safer
+-------------------------------------------------------------------------------
+
+* Bump to fake-rs 2.10
+* [rpm] [deb] Improve packaging
+* [CI] remove cache
+* [docker] PGRX image is now based on Rocky 8
+* [docs] allow long lines in markdown tables
+* [docs] Update deb/rpm Install methods
+* [tests] Manual smoke tests to check the install process on various platforms
+
+
 
 20240918 : 2.0.0-beta.1 - Better, Faster, Safer
 -------------------------------------------------------------------------------
@@ -104,7 +118,7 @@ __Changes:__
 -------------------------------------------------------------------------------
 
 <!-- https://gitlab.com/dalibo/postgresql_anonymizer/-/milestones/19 -->
-<!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
+
 
 __Breaking Changes__:
 
