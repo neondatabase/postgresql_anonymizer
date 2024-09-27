@@ -25,7 +25,7 @@ smoketest_rhel:
     - dnf -qy module disable postgresql
     - dnf install -y postgresql$PG_MAJOR_VERSION-server postgresql$PG_MAJOR_VERSION-contrib
     - dnf install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
-    - dnf install -y glibc  postgresql_anonymizer_$PG_MAJOR_VERSION
+    - dnf install -y postgresql_anonymizer_$PG_MAJOR_VERSION
     - mkdir -p $PGDATA
     - chown $PGUSER $PGDATA
     - su $PGUSER -c /usr/pgsql-$PG_MAJOR_VERSION/bin/initdb $PGDATA
@@ -61,7 +61,7 @@ smoketest_debian:
     - echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
     - curl -fsSL -o /etc/apt/trusted.gpg.d/dalibo-labs.gpg https://apt.dalibo.org/labs/debian-dalibo.gpg
     - apt-get update
-    - apt-get install -y postgresql_anonymizer_$PG_MAJOR_VERSION
+    - apt-get install -y postgresql-$PG_MAJOR_VERSION postgresql_anonymizer_$PG_MAJOR_VERSION
     - mkdir -p $PGDATA
     - chown $PGUSER $PGDATA
     - su $PGUSER -c "/usr/lib/postgresql/$PG_MAJOR_VERSION/bin/initdb $PGDATA"
@@ -97,7 +97,7 @@ smoketest_ubuntu:
     - echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
     - curl -fsSL -o /etc/apt/trusted.gpg.d/dalibo-labs.gpg https://apt.dalibo.org/labs/debian-dalibo.gpg
     - apt-get update
-    - apt-get install -y postgresql_anonymizer_$PG_MAJOR_VERSION
+    - apt-get install -y postgresql-$PG_MAJOR_VERSION postgresql_anonymizer_$PG_MAJOR_VERSION
     - mkdir -p $PGDATA
     - chown $PGUSER $PGDATA
     - su $PGUSER -c "/usr/lib/postgresql/$PG_MAJOR_VERSION/bin/initdb $PGDATA"
