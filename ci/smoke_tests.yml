@@ -64,8 +64,8 @@ smoketest_debian:
     - apt-get install -y postgresql_anonymizer_$PG_MAJOR_VERSION
     - mkdir -p $PGDATA
     - chown $PGUSER $PGDATA
-    - su $PGUSER -c /usr/pgsql-$PG_MAJOR_VERSION/bin/initdb $PGDATA
-    - su $PGUSER -c "/usr/pgsql-$PG_MAJOR_VERSION/bin/pg_ctl start"
+    - su $PGUSER -c "/usr/lib/postgresql/$PG_MAJOR_VERSION/bin/initdb $PGDATA"
+    - su $PGUSER -c "/usr/lib/postgresql/$PG_MAJOR_VERSION/bin/pg_ctl start"
     - createdb $PGDATABASE
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
@@ -100,8 +100,8 @@ smoketest_ubuntu:
     - apt-get install -y postgresql_anonymizer_$PG_MAJOR_VERSION
     - mkdir -p $PGDATA
     - chown $PGUSER $PGDATA
-    - su $PGUSER -c /usr/pgsql-$PG_MAJOR_VERSION/bin/initdb $PGDATA
-    - su $PGUSER -c "/usr/pgsql-$PG_MAJOR_VERSION/bin/pg_ctl start"
+    - su $PGUSER -c "/usr/lib/postgresql/$PG_MAJOR_VERSION/bin/initdb $PGDATA"
+    - su $PGUSER -c "/usr/lib/postgresql/$PG_MAJOR_VERSION/bin/pg_ctl start"
     - createdb $PGDATABASE
     - psql -c "ALTER SYSTEM SET session_preload_libraries = 'anon'"
     - psql -c "SELECT pg_reload_conf();"
