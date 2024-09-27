@@ -54,15 +54,14 @@ smoketest_debian:
   stage: test
   needs: []
   script:
-    - apt update
-    - apt install -y postgresql-common gnupg
+    - apt-get update
+    - apt-get install -y postgresql-common gnupg
     - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-    - apt install -y postgresql-$PG_MAJOR_VERSION
-    - apt install -y curl lsb-release
+    - apt-get install -y curl lsb-release
     - echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
     - curl -fsSL -o /etc/apt/trusted.gpg.d/dalibo-labs.gpg https://apt.dalibo.org/labs/debian-dalibo.gpg
-    - apt update
-    - apt install libc6 postgresql_anonymizer_$PG_MAJOR_VERSION
+    - apt-get update
+    - apt-get install -y postgresql_anonymizer_$PG_MAJOR_VERSION
     - mkdir -p $PGDATA
     - chown $PGUSER $PGDATA
     - su $PGUSER -c /usr/pgsql-$PG_MAJOR_VERSION/bin/initdb $PGDATA
@@ -91,15 +90,14 @@ smoketest_ubuntu:
   stage: test
   needs: []
   script:
-    - apt update
-    - apt install -y postgresql-common gnupg
+    - apt-get update
+    - apt-get install -y postgresql-common gnupg
     - /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-    - apt install -y postgresql-$PG_MAJOR_VERSION
-    - apt install -y curl lsb-release
+    - apt-get install -y curl lsb-release
     - echo deb http://apt.dalibo.org/labs $(lsb_release -cs)-dalibo main > /etc/apt/sources.list.d/dalibo-labs.list
     - curl -fsSL -o /etc/apt/trusted.gpg.d/dalibo-labs.gpg https://apt.dalibo.org/labs/debian-dalibo.gpg
-    - apt update
-    - apt install libc6 postgresql_anonymizer_$PG_MAJOR_VERSION
+    - apt-get update
+    - apt-get install -y postgresql_anonymizer_$PG_MAJOR_VERSION
     - mkdir -p $PGDATA
     - chown $PGUSER $PGDATA
     - su $PGUSER -c /usr/pgsql-$PG_MAJOR_VERSION/bin/initdb $PGDATA
