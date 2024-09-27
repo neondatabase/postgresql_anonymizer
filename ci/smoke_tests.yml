@@ -9,6 +9,7 @@
 ##
 
 variables:
+  DEBIAN_FRONTEND: noninteractive
   PGDATA: /var/lib/postgresql/data
   PGUSER: postgres
   PGDATABASE: contrib_regression
