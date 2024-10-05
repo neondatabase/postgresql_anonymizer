@@ -2,7 +2,7 @@
 # This instructions must be declared before any FROM
 # You can override it and build your own image based another version
 # like this: `PG_MAJOR_VERSION=13 make docker_image`
-ARG PG_MAJOR_VERSION=16
+ARG PG_MAJOR_VERSION=17
 
 ##
 ## First Stage: build pg_dump_anon
@@ -15,38 +15,27 @@ RUN CGO_ENABLED=0 GOOS=linux go build .
 ##
 ## Second Stage
 ##
-ARG PG_MAJOR_VERSION=16
+ARG PG_MAJOR_VERSION=17
 FROM postgres:$PG_MAJOR_VERSION
 
 # An ARG declared before a FROM is outside of a build stage, so it can’t be
 # used in any instruction after a FROM. We need to declare it again.
-ARG PG_MAJOR_VERSION
+ARG PG_MAJOR_VERSION=17
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    git \
-    make \
-    postgresql-server-dev-$PG_MAJOR_VERSION \
-    postgresql-plpython3-$PG_MAJOR_VERSION \
-    pgxnclient \
-    libc6-dev \
-    wget \
-    python3 \
-    python3-pip \
-    zip \
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      wget \
  && rm -rf /var/lib/apt/lists/*
 
 # Import source files into the image
-WORKDIR /src
-COPY . .
-
-# Install PostgreSQL Faker
-RUN pip3 install pip --upgrade --break-system-packages && \
-    pip3 install --no-cache-dir -r python/requirements.txt --break-system-packages && \
-    pgxn install postgresql_faker
+#WORKDIR /src
+#COPY . .
 
 # Install anon extension
-RUN make clean && make && make install
+ARG ANON_VERSION=latest
+RUN wget https://gitlab.com/api/v4/projects/7709206/packages/generic/deb/$ANON_VERSION/postgresql_anonymizer_pg17-$ANON_VERSION.amd64.deb \
+ && dpkg -i postgresql_anonymizer_pg17-$ANON_VERSION.amd64.deb
 
 # Install pg_dump_anon from the previous stage
 COPY --from=gobuilder /go/src/pg_dump_anon /usr/bin/
@@ -55,5 +44,9 @@ COPY --from=gobuilder /go/src/pg_dump_anon /usr/bin/
 RUN mkdir -p /docker-entrypoint-initdb.d
 COPY ./docker/init_anon.sh /docker-entrypoint-initdb.d/init_anon.sh
 
-# Alternative Entrypoint
+# Entrypoint for Anonymized Dumps (pg_dump_anon / V1)
+# This is deprecated but kept for backward compatibility
 COPY docker/anon.sh /anon.sh
+
+# Entrypoint for Anonymized Dumps (pg_dump / V2)
+COPY docker/dump.sh /dump.sh

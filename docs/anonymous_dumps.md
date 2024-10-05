@@ -2,14 +2,12 @@ Anonymous Dumps
 ===============================================================================
 
 
-EXPERIMENTAL : Transparent Anonymous Dumps
+![PostgreSQL Anonymous Dumps](images/anon-Dump.drawio.png)
+
+Transparent Anonymous Dumps
 ------------------------------------------------------------------------------
 
-> WARNING: This feature is under development and will not be officially
-> supported until version 2.0 is released. Use with care. For a more stable
-> solution, see the [pg_dump_anon] section.
-
-To export the anonymized data from a database, follow these 2 steps:
+To export the anonymized data from a database, follow these 3 steps:
 
 ### 1. Create a masked user
 
@@ -22,7 +20,15 @@ SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
 __NOTE:__ You can replace the name `dump_anon` by another name.
 
 
-### 2. Grant read access to that user
+### 2. Grant read access to that masked user
+
+```sql
+GRANT pg_read_all_data to dump_anon;
+```
+
+__NOTE:__ If you are running PostgreSQL 13 or if you want a more fine-grained
+access policy you can grant access more precisely, for instance:
+
 
 ```sql
 GRANT USAGE ON SCHEMA public TO dump_anon;
@@ -34,7 +40,6 @@ GRANT SELECT ON ALL TABLES IN SCHEMA foo TO dump_anon;
 GRANT SELECT ON ALL SEQUENCES IN SCHEMA foo TO dump_anon;
 ```
 
-__NOTE:__ Replace `foo` with any other schema you have inside you database.
 
 ### 3. Launch pg_dump with the masked user
 
@@ -64,7 +69,81 @@ __NOTES:__
 * `--format=custom` is supported
 
 
-pg_dump_anon
+Anonymizing an SQL file
+-----------------------------------------------------------------------------
+
+![](images/anon-Files.drawio.png)
+
+[Install with docker]: INSTALL.md#install-with-docker
+
+> In previous versions of the documentation, this method was also called
+> « anonymizing black box ».
+
+You can also apply masking rules directly on a database backup file !
+
+The PostgreSQL Anonymizer docker image contains a specific entrypoint script
+called `/dump.sh`. You pass the original data and the masking rules to
+to that `/dump.sh` script and it will return an anonymized dump.
+
+Here's an example in 4 steps:
+
+_Step 1:_  Dump your original data (for instance `dump.sql`)
+
+```console
+pg_dump --format=plain [...] my_db > dump.sql
+```
+
+Note this method only works with plain sql format (`-Fp`). You **cannot**
+use the custom format (`-Fc`) and the directory format (`-Fd`) here.
+
+If you want to maintain the owners and grants, you need export them with
+`pg_dumpall --roles-only` like this:
+
+```console
+(pg_dumpall -Fp [...] --roles-only && pg_dump -Fp [...] my_db ) > dump.sql
+```
+
+_Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`)
+
+```sql
+
+SECURITY LABEL FOR anon ON COLUMN people.lastname
+IS 'MASKED WITH FUNCTION anon.dummy_last_name()';
+
+-- etc.
+```
+
+_Step 3:_  Pass the dump and the rules through the docker image and receive an
+anonymized dump !
+
+```console
+IMG=registry.gitlab.com/dalibo/postgresql_anonymizer
+ANON="docker run --rm -i $IMG /dump.sh"
+cat dump.sql rules.sql | $ANON > anon_dump.sql
+```
+
+(this last step is written on 3 lines for clarity)
+
+_NB:_ You can also gather _step 1_ and _step 3_ in a single command:
+
+```console
+(pg_dumpall --roles-only && pg_dump my_db && cat rules.sql) | $ANON > anon_dump.sql
+```
+
+__NOTES:__
+
+* You can use most the [pg_dump options] with the `/dump.sh` script, for instance:
+
+  ```console
+  cat dump.sql rules.sql | $ANON --data-only --inserts > anon_dump.sql
+  ```
+
+
+
+[pg_dump options]: https://www.postgresql.org/docs/current/app-pgdump.html#PG-DUMP-OPTIONS
+
+
+DEPRECATED : pg_dump_anon
 ------------------------------------------------------------------------------
 
 The `pg_dump_anon` command support most of the options of the regular [pg_dump]
@@ -120,16 +199,3 @@ sudo install pg_dump_anon $(pg_config --bindir)
 
 [PGPASSWORD]: https://www.postgresql.org/docs/current/libpq-envars.html
 [PGPASSFILE]: https://www.postgresql.org/docs/current/libpq-envars.html
-
-
-Obsolete: pg_dump_anon.sh
-------------------------------------------------------------------------------
-
-Before version 1.0, `pg_dump_anon` was a bash script. This script was nice and
-simple, however under certain conditions the backup were not consistent. See
-[issue #266] for more details.
-
-[issue #266]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/266
-
-This script is now renamed to `pg_dump_anon.sh` and it is still available for
-backwards compatibility. But it will be deprecated in version 2.0.

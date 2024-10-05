@@ -305,66 +305,15 @@ not plan to provide a docker image for each version of PostgreSQL. However you
 can build your own image based on the version you need like this:
 
 ```shell
-PG_MAJOR_VERSION=11 make docker_image
+PG_MAJOR_VERSION=16 make docker_image
 ```
 
 Install as a "Black Box"
 ------------------------------------------------------------------------------
 
+see [Anonymous Dumps]
 
-You can also treat the docker image as an "anonymizing black box" by using a
-specific entrypoint script called `/anon.sh`. You pass the original data
-and the masking rules to the `/anon.sh` script and it will return a anonymized
-dump.
-
-Here's an example in 4 steps:
-
-_Step 1:_  Dump your original data (for instance `dump.sql`)
-
-```console
-pg_dump --format=plain [...] my_db > dump.sql
-```
-
-Note this method only works with plain sql format (`-Fp`). You **cannot**
-use the custom format (`-Fc`) and the directory format (`-Fd`) here.
-
-If you want to maintain the owners and grants, you need export them with
-`pg_dumpall --roles-only` like this:
-
-```console
-(pg_dumpall -Fp [...] --roles-only && pg_dump -Fp [...] my_db ) > dump.sql
-```
-
-_Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`)
-
-```sql
-SELECT pg_catalog.set_config('search_path', 'public', false);
-
-CREATE EXTENSION anon;
-SELECT anon.init();
-
-SECURITY LABEL FOR anon ON COLUMN people.lastname
-IS 'MASKED WITH FUNCTION anon.fake_last_name()';
-
--- etc.
-```
-
-_Step 3:_  Pass the dump and the rules through the docker image and receive an
-anonymized dump !
-
-```console
-IMG=registry.gitlab.com/dalibo/postgresql_anonymizer
-ANON="docker run --rm -i $IMG /anon.sh"
-cat dump.sql rules.sql | $ANON > anon_dump.sql
-```
-
-(this last step is written on 3 lines for clarity)
-
-_NB:_ You can also gather _step 1_ and _step 3_ in a single command:
-
-```console
-(pg_dumpall --roles-only && pg_dump my_db && cat rules.sql) | $ANON > anon_dump.sql
-```
+[Anonymous Dumps]: anonymous_dumps.md
 
 
 Install on MacOS
