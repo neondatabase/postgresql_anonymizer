@@ -5,6 +5,8 @@ You can hide some data from a role by declaring this role as "MASKED".
 
 Other roles will still access the original data.
 
+![PostgreSQL Dynamic Masking](images/anon-Dynamic.drawio.png)
+
 **Example**:
 
 <!-- demo/masking.sql -->

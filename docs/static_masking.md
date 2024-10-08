@@ -11,6 +11,8 @@ do that with different methods:
 
 These methods will destroy the original data. Use with care.
 
+![PostgreSQL Static Masking](images/anon-Static.drawio.png)
+
 Applying masking rules
 --------------------------------------------------------------------------------
 

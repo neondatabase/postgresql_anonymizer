@@ -1,8 +1,14 @@
-Generalization
+Masking Views
 ===============================================================================
 
+The principe of a masking view is simply to build dedicated interface upon a
+table. This is useful when the masking policy needs to modify the database
+model.
 
-Reducing the accuracy of sensitive data
+![PostgreSQL Masking Views](images/anon-Views.drawio.png)
+
+
+Generalization
 --------------------------------------------------------------------------------
 
 The idea of generalization is to replace data with a broader, less accurate
@@ -26,7 +32,7 @@ Example
 Here's a basic table containing medical data:
 
 ```sql
-# SELECT * FROM patient;
+# SELECT * FROM confidential.patient;
      ssn     | firstname | zipcode |   birth    |    disease
 -------------+-----------+---------+------------+---------------
  253-51-6170 | Alice     |   47012 | 1989-12-29 | Heart Disease
@@ -47,13 +53,16 @@ used for statistics. We can build a view upon this table to remove
 useless columns and generalize the indirect identifiers :
 
 ```sql
-CREATE MATERIALIZED VIEW generalized_patient AS
+CREATE SCHEMA stats;
+
+CREATE MATERIALIZED VIEW stats.generalized_patient AS
 SELECT
   'REDACTED'::TEXT AS firstname,
   anon.generalize_int4range(zipcode,1000) AS zipcode,
   anon.generalize_daterange(birth,'decade') AS birth,
   disease
-FROM patient;
+FROM confidential.patient;
+
 ```
 
 This will give us a less accurate view of the data:
@@ -74,6 +83,19 @@ This will give us a less accurate view of the data:
  REDACTED  | [47000,48000) | [1990-01-01,2000-01-01) | Diabetes
 (10 rows)
 ```
+
+Now we can give read access only to the masking views for a given user:
+
+``` sql
+CREATE USER bob;
+
+REVOKE USAGE          ON SCHEMA confidential                FROM bob;
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA confidential  FROM bob;
+GRANT  USAGE          ON SCHEMA stats                       TO bob;
+GRANT  SELECT         ON ALL TABLES IN SCHEMA stats         TO bob;
+```
+
+
 
 Generalization Functions
 --------------------------------------------------------------------------------
