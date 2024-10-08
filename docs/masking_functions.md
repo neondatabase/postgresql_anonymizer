@@ -231,27 +231,135 @@ For TEXT and VARCHAR columns, you can use the classic [Lorem Ipsum] generator:
 Advanced Faking
 ------------------------------------------------------------------------------
 
-Generating fake data is a complex topic. The functions provided here are
-limited to basic use case. For more advanced faking methods, in particular
-if you are looking for **localized fake data**, take a look at
-[PostgreSQL Faker], an extension based upon the well-known [Faker python library].
+Generating fake data is a complex topic. The `fake_` functions provided above
+are limited to basic use case. For more advanced faking methods, in particular
+if you are looking for **localized fake data**, PostgreSQL Anonymizer
+provides an advanced faking engine with localisation support.
 
-[PostgreSQL Faker]: https://gitlab.com/dalibo/postgresql_faker
-[Faker python library]: https://faker.readthedocs.io
+This engine ([fake-rs]) is available via more than 70 functions with the
+`dummy_` prefix:
 
-This extension provides an advanced faking engine with localisation support.
+<!--
+SELECT format(
+  '* %I.%I(%s)', ns.nspname, p.proname, oidvectortypes(p.proargtypes)
+)
+FROM pg_proc p
+INNER JOIN pg_namespace ns ON (p.pronamespace = ns.oid)
+WHERE ns.nspname = 'anon'
+  AND p.proname LIKE 'dummy_%'
+  AND p.proname NOT LIKE '%_locale'
+ORDER BY 1;
+-->
+
+* anon.dummy_bic()
+* anon.dummy_bs()
+* anon.dummy_bs_adj()
+* anon.dummy_bs_noun()
+* anon.dummy_bs_verb()
+* anon.dummy_building_number()
+* anon.dummy_buzzword()
+* anon.dummy_buzzword_middle()
+* anon.dummy_buzzword_tail()
+* anon.dummy_catchphrase()
+* anon.dummy_cell_number()
+* anon.dummy_city_name()
+* anon.dummy_city_prefix()
+* anon.dummy_city_suffix()
+* anon.dummy_color()
+* anon.dummy_company_name()
+* anon.dummy_company_suffix()
+* anon.dummy_country_code()
+* anon.dummy_country_name()
+* anon.dummy_credit_card_number()
+* anon.dummy_currency_code()
+* anon.dummy_currency_name()
+* anon.dummy_currency_symbol()
+* anon.dummy_dir_path()
+* anon.dummy_domain_suffix()
+* anon.dummy_file_extension()
+* anon.dummy_file_name()
+* anon.dummy_file_path()
+* anon.dummy_first_name()
+* anon.dummy_free_email()
+* anon.dummy_free_email_provider()
+* anon.dummy_health_insurance_code()
+* anon.dummy_hex_color()
+* anon.dummy_hsl_color()
+* anon.dummy_hsla_color()
+* anon.dummy_industry()
+* anon.dummy_ip()
+* anon.dummy_ipv4()
+* anon.dummy_ipv6()
+* anon.dummy_isbn()
+* anon.dummy_isbn13()
+* anon.dummy_isin()
+* anon.dummy_last_name()
+* anon.dummy_latitude()
+* anon.dummy_licence_plate()
+* anon.dummy_longitude()
+* anon.dummy_mac_address()
+* anon.dummy_name()
+* anon.dummy_name_with_title()
+* anon.dummy_phone_number()
+* anon.dummy_post_code()
+* anon.dummy_profession()
+* anon.dummy_rfc_status_code()
+* anon.dummy_rgb_color()
+* anon.dummy_rgba_color()
+* anon.dummy_safe_email()
+* anon.dummy_secondary_address()
+* anon.dummy_secondary_address_type()
+* anon.dummy_state_abbr()
+* anon.dummy_state_name()
+* anon.dummy_street_name()
+* anon.dummy_street_suffix()
+* anon.dummy_suffix()
+* anon.dummy_timezone()
+* anon.dummy_title()
+* anon.dummy_user_agent()
+* anon.dummy_username()
+* anon.dummy_uuidv1()
+* anon.dummy_uuidv3()
+* anon.dummy_uuidv4()
+* anon.dummy_uuidv5()
+* anon.dummy_valid_statux_code()
+* anon.dummy_word()
+* anon.dummy_words(int4range)
+* anon.dummy_zip_code()
+
+For each of this function, you can add the `_locale(...)` suffix and specify
+in which local context you want.
 
 For example:
 
 ```sql
-CREATE SCHEMA faker;
-CREATE EXTENSION faker SCHEMA faker;
-SELECT faker.faker('de_DE');
-SELECT faker.first_name_female();
- first_name_female
--------------------
- Mirja
+
+SELECT anon.dummy_last_name();
+ dummy_last_name
+------------------------
+ Tillman
+
+SELECT anon.dummy_last_name_locale('fr_FR');
+ dummy_last_name_locale
+------------------------
+ Granier
+
+SELECT anon.dummy_last_name_locale('pt_BR');
+ dummy_last_name_locale
+------------------------
+ Barreto
 ```
+
+Currently 7 locales are available: ar_SA, en_US(default), fr_FR, ja_JP,
+pt_BR, zh_CN, zh_TW.
+
+Not that some `dummy_` functions are not implemented for certain locales.
+If you wish to contribute or ask for missing fake data, please contact directly
+the [fake-rs] project, which the library that this extension is using under the
+hood !
+
+[fake-rs]: https://github.com/cksac/fake-rs
+
 
 Pseudonymization
 ------------------------------------------------------------------------------
