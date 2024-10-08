@@ -32,26 +32,32 @@ Step 2 : Declare the masking rules
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN people.name
-IS 'MASKED WITH FUNCTION anon.random_last_name()';
+IS 'MASKED WITH FUNCTION anon.dummy_last_name()';
 
 SECURITY LABEL FOR anon ON COLUMN people.phone
 IS 'MASKED WITH FUNCTION anon.partial(phone,2,$$******$$,2)';
 ```
 
-Step 3 : Declare a masked user with read access on the tables
+Step 3 : Declare a masked user with read access
 
 ```sql
 =# CREATE ROLE skynet LOGIN;
 =# SECURITY LABEL FOR anon ON ROLE skynet IS 'MASKED';
 ```
 
-
 ```sql
-GRANT USAGE ON SCHEMA public TO jimmy;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO jimmy;
+GRANT pg_read_all_data to skynet;
 ```
 
-( You can adapt this as much as you want. )
+**NOTE:** If you are running PostgreSQL 13 or if you want a more
+fine-grained access policy you can grant access more precisely, for instance:
+
+```sql
+GRANT USAGE ON SCHEMA public TO skynet;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO skynet;
+-- etc.
+```
+
 
 
 

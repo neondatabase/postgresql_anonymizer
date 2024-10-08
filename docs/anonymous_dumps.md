@@ -132,15 +132,16 @@ _NB:_ You can also gather _step 1_ and _step 3_ in a single command:
 
 __NOTES:__
 
-* You can use most the [pg_dump options] with the `/dump.sh` script, for instance:
+You can use most the [pg_dump output options] with the `/dump.sh` script,
+for instance:
 
-  ```console
-  cat dump.sql rules.sql | $ANON --data-only --inserts > anon_dump.sql
-  ```
+```console
+cat dump.sql rules.sql | $ANON --data-only --inserts > anon_dump.sql
+```
 
 
 
-[pg_dump options]: https://www.postgresql.org/docs/current/app-pgdump.html#PG-DUMP-OPTIONS
+[pg_dump output options]: https://www.postgresql.org/docs/current/app-pgdump.html#PG-DUMP-OPTIONS
 
 
 DEPRECATED : pg_dump_anon
