@@ -190,6 +190,9 @@ SELECT anon.generalize_tsrange('19041107','millennium');
  ["Thu Jan 01 00:00:00 1001","Mon Jan 01 00:00:00 2001")
 (1 row)
 
+-- Define the timezone to avoid the LMT/PST issue
+-- https://gitlab.com/dalibo/postgresql_anonymizer/-/commit/199f0a392b37c59d92ae441fb8f037e094a11a52#note_2148017485
+SET TIME ZONE 'PST8PDT';
 -- generalize_tstzrange
 SELECT anon.generalize_tstzrange('19041107');
                       generalize_tstzrange                       
@@ -281,10 +284,12 @@ SELECT anon.generalize_tstzrange('19041107','century');
  ["Tue Jan 01 00:00:00 1901 PST","Mon Jan 01 00:00:00 2001 PST")
 (1 row)
 
--- PG17 introduced a weird change of timezone here
--- This may be a bug, but this use case is so unlikely to happen that
--- we just skip that test for now...
---SELECT anon.generalize_tstzrange('19041107','millennium');
+SELECT anon.generalize_tstzrange('19041107','millennium');
+                      generalize_tstzrange                       
+-----------------------------------------------------------------
+ ["Thu Jan 01 00:00:00 1001 PST","Mon Jan 01 00:00:00 2001 PST")
+(1 row)
+
 -- generalize_daterange
 SELECT anon.generalize_daterange('19041107');
   generalize_daterange   
