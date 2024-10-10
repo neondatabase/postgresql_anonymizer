@@ -30,16 +30,18 @@ INSERT INTO test.cards VALUES
 (999999,0, E'(,Very"Weird\'\'value\t trying\n to\,break '' CSV\)export)');
 
 CREATE TABLE test.customer (
-  id SERIAL,
+  id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   name TEXT,
-  "CreditCard" TEXT
+  "CreditCard" TEXT,
+  height_cm NUMERIC,
+  height_in NUMERIC GENERATED ALWAYS AS (height_cm / 2.54) STORED
 );
 
-INSERT INTO test.customer(name,"CreditCard")
+INSERT INTO test.customer(name,"CreditCard",height_cm)
 VALUES
-('Schwarzenegger','1234567812345678'),
-('Stalone'       ,'2683464645336781'),
-('Lundgren'      ,'6877322588932345');
+('Schwarzenegger','1234567812345678',188),
+('Stalone'       ,'2683464645336781',177),
+('Lundgren'      ,'6877322588932345',192);
 
 SECURITY LABEL FOR anon ON COLUMN test.customer.name
 IS E'MASKED WITH FUNCTION pg_catalog.md5(''0'') ';

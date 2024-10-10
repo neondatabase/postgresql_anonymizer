@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE TABLE "Phone" (
-  phone_owner  TEXT,
+  "phone_Owner"  TEXT,
   phone_number TEXT
 );
 
@@ -19,7 +19,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO jimmy;
 
 SECURITY LABEL FOR anon ON ROLE jimmy IS 'MASKED';
 
-SECURITY LABEL FOR anon ON COLUMN "Phone".phone_owner
+SECURITY LABEL FOR anon ON COLUMN "Phone"."phone_Owner"
 IS 'MASKED WITH VALUE $$CONFIDENTIAL$$ ';
 
 SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
@@ -34,6 +34,12 @@ COPY public."Phone" TO stdout;
 SET ROLE jimmy;
 
 COPY public."Phone" TO stdout;
+
+COPY public."Phone" ("phone_Owner") TO stdout;
+
+COPY public."Phone" (phone_number) TO stdout;
+
+COPY public."Phone" (phone_number, "phone_Owner") TO stdout;
 
 COPY (SELECT * FROM "Phone") TO stdout;
 

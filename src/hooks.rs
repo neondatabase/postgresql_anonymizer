@@ -12,6 +12,7 @@ use pgrx::HookResult;
 #[allow(deprecated)]
 use pgrx::JumbleState;
 
+use pgrx::list::old_list::PgList;
 
 
 
@@ -86,17 +87,50 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
 
         // Generate the masking subquery (aka msq)
         // Here we just replace
-        //   `COPY foo TO [...]`
+        //  ```
+        //  COPY foo (a,b,c) TO [...]
+        //  ```
         // with
-        //   `COPY (SELECT * FROM "public"."foo") TO [...]`
-        // The subquery will be masked later by `rewrite_walker()`
+        //  ```
+        //  COPY (
+        //     SELECT a,b,c FROM "public"."foo"
+        //  ) TO [...]
+        //  ```
+        //
+        // The SELECT subquery will be masked later by `rewrite_walker()`
         // when triggered by the post_parse_analyze hook
+        //
+        // The final statement will be
+        //  ```
+        //  COPY (
+        //     SELECT a,b,c FROM (
+        //         SELECT <masking_filters> FROM "public"."foo"
+        //     ) AS foo
+        //  ) TO [...]
+        //  ```
+        //
+
+        let mut attributes: Vec<String> = vec![];
+        let att_nodes = unsafe {
+            // SAFETY: when there's no attributes, the pgList is empty
+            PgList::<pg_sys::Node>::from_pg(copystmt.attlist)
+        };
+        for node in att_nodes.iter_ptr() {
+            let attname = unsafe {
+                // SAFETY : a Postgres pg_sys::List, and by extension PgList,
+                // wont contain null pointer
+                pgrx::node_to_string(node).unwrap()
+            };
+            attributes.push(attname.to_string());
+        }
+        if attributes.is_empty() { attributes = vec!["*".into()]; }
+
         let Some(relname) = utils::get_relation_qualified_name(relid)
                             else {
                                 error::internal("Cannot get relation name");
                                 return;
                             };
-        let msq_sql = format!("SELECT * FROM {relname}");
+        let msq_sql = format!("SELECT {} FROM {relname}", attributes.join(","));
         let msq_raw_stmt  = masking::parse_subquery(msq_sql.clone());
         debug3!("Anon: COPY subquery sql = {:#?}", msq_sql);
 
