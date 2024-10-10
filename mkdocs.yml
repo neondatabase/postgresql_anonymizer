@@ -14,7 +14,7 @@ nav:
   - 'Static Masking': 'static_masking.md'
   - 'Dynamic Masking': 'dynamic_masking.md'
   - 'Anonymous Dumps': 'anonymous_dumps.md'
-  - 'Generalization': 'generalization.md'
+  - 'Masking Views': 'masking_views.md'
   - 'Privacy By Default': 'privacy_by_default.md'
   - 'Sampling': 'sampling.md'
   - 'Detecting Identifiers': 'detection.md'
