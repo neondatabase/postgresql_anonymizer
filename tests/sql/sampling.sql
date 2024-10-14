@@ -40,9 +40,40 @@ IS 'MASKED WITH VALUE 0';
 
 SELECT count(*) = 100 FROM hundred;
 
+--
+-- Legacy Dynamic Masking
+--
 SELECT anon.start_dynamic_masking();
 
 SELECT count(*) < 100 FROM mask.hundred;
+
+SELECT anon.stop_dynamic_masking();
+
+--
+-- Transparent Dynamic Masking
+--
+CREATE ROLE jimmy LOGIN;
+SECURITY LABEL FOR anon ON ROLE jimmy IS 'MASKED';
+
+GRANT USAGE ON SCHEMA public TO jimmy;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO jimmy;
+
+SET ROLE jimmy;
+SELECT count(*) = 100 FROM hundred;
+RESET ROLE;
+
+SET anon.transparent_dynamic_masking TO true;
+
+SET ROLE jimmy;
+SELECT count(*) < 100 FROM hundred;
+RESET ROLE;
+
+SET anon.transparent_dynamic_masking TO false;
+
+--
+-- Static Masking
+--
+
 
 -- This should raise a notice
 SELECT anon.anonymize_column('hundred','h');

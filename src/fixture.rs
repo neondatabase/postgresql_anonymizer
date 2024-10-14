@@ -13,7 +13,7 @@ use pgrx::prelude::*;
 
 // dead_code warnings are disabled because this mod is loaded in lib.rs
 // in order to make it available to all the others mod test section,
-// but `cargo pgrx run` can't see where this function are used
+// but `cargo pgrx run` can't see where these functions are used
 
 #[allow(dead_code)]
 pub fn create_masking_functions() -> pg_sys::Oid {
@@ -106,6 +106,30 @@ pub fn create_table_location() -> pg_sys::Oid {
     Spi::get_one::<pg_sys::Oid>("SELECT '\"Postal_Info\".location'::REGCLASS::OID")
         .unwrap()
         .expect("should be an OID")
+}
+
+#[allow(dead_code)]
+pub fn create_table_with_defaults() -> pg_sys::Oid {
+    Spi::connect(|mut client| {
+        client.update("
+            CREATE TABLE test_defaults (
+                id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+                col_with_default TEXT DEFAULT 'default_value',
+                col_with_complex_default TIMESTAMP DEFAULT now(),
+                col_without_default INTEGER,
+                col_generated NUMERIC GENERATED ALWAYS AS (col_without_default / 2.54) STORED
+            )
+        ", None, None).unwrap();
+
+        let relid = client
+            .select("SELECT 'test_defaults'::REGCLASS::OID", None, None)
+            .unwrap()
+            .first()
+            .get_one::<pg_sys::Oid>()
+            .unwrap();
+
+        relid
+    }).unwrap()
 }
 
 #[allow(dead_code)]

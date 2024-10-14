@@ -14,7 +14,10 @@ SET ROLE oscar_the_owner;
 
 CREATE SCHEMA test;
 
-CREATE TABLE test.no_masks AS SELECT 1 ;
+--
+-- C. Unmasked Data
+--
+CREATE TABLE test.no_masks AS SELECT 1 AS i;
 
 CREATE TABLE test.cards (
   id integer NOT NULL,
@@ -37,6 +40,9 @@ CREATE TABLE test.customer (
   height_in NUMERIC GENERATED ALWAYS AS (height_cm / 2.54) STORED
 );
 
+--
+-- D. Masked Data
+--
 INSERT INTO test.customer(name,"CreditCard",height_cm)
 VALUES
 ('Schwarzenegger','1234567812345678',188),
@@ -64,12 +70,26 @@ IS E'MASKED WITH FUNCTION pg_catalog.md5(''0'') ';
 SECURITY LABEL FOR anon ON COLUMN test."COMPANY".brand
 IS E'MASKED WITH VALUE $$CONFIDENTIAL$$ ';
 
-
+--
+-- E. Sequences
+--
 CREATE SEQUENCE public.seq42;
 ALTER SEQUENCE public.seq42 RESTART WITH 42;
 
+--
+-- F. Sampling
+--
+CREATE TABLE test.hundred AS
+SELECT generate_series(1,100) AS h;
+
+SECURITY LABEL FOR anon ON TABLE test.hundred
+IS 'TABLESAMPLE BERNOULLI(33)';
+
 RESET ROLE;
 
+--
+-- Prepare the dump_anon role
+--
 CREATE ROLE dump_anon LOGIN PASSWORD 'x';
 ALTER ROLE dump_anon SET anon.transparent_dynamic_masking = True;
 SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
@@ -103,21 +123,31 @@ SET ROLE oscar_the_owner;
 
 \! psql -f tests/tmp/_pg_dump_A.sql contrib_regression >/dev/null
 
+
 --
--- C. Masked Data is Masked
+-- C. Unmasked data is present
+--
+SELECT i=1 FROM test.no_masks;
+
+--
+-- D. Masked Data is Masked
 --
 SELECT "IBAN" = md5('0') FROM test."COMPANY";
 SELECT brand = 'CONFIDENTIAL' FROM test."COMPANY";
 
 --
--- D. Check the sequence values
+-- E. Sequences
 --
 SELECT pg_catalog.nextval('test.customer_id_seq') = 4;
 SELECT pg_catalog.nextval('public.seq42') = 42;
 
+--
+-- F. Sampling
+--
+SELECT count(*) < 100 FROM test.hundred;
 
 --
--- E. Remove Anon extension
+-- G. Remove Anon extension
 --
 -- WORKS ONLY WITH pg_dump > 14
 --\! pg_dump --extension pg_catalog.plpgsql contrib_regression | grep 'CREATE EXTENSION' | grep anon

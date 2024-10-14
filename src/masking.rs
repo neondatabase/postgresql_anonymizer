@@ -5,8 +5,10 @@
 use c_str_macro::c_str;
 use crate::guc;
 use crate::re;
+use crate::sampling;
 use crate::utils;
 use pgrx::prelude::*;
+use md5::{Md5, Digest};
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
@@ -47,6 +49,7 @@ pub fn cast_as_regtype(value: String, atttypid: pg_sys::Oid) -> String {
     format!("CAST({value} AS {type_be})")
 }
 
+
 /// For a given role, returns the policy in which he/she is masked
 /// or the NULL if the role is not masked.
 ///
@@ -57,11 +60,11 @@ pub fn get_masking_policy(roleid: pg_sys::Oid) ->  Option<String> {
     // also the roles that the user belongs to
     // This may be done by using `roles_is_member_of()` ?
     for policy in list_masking_policies() {
-        debug3!("Check if role is masked in policy '{policy}'");
         if has_mask_in_policy(roleid,policy) {
             return Some(policy.to_string());
         }
     }
+
     // Found nothing, return NULL
     None
 }
@@ -198,15 +201,74 @@ pub fn masking_value_for_column(
 /// * relid is the oid of the relation
 /// * policy is the masking policy to apply
 ///
+/// The masking subquery is composed of 2 SELECT
+///   - The first will apply the masking filters and the tablesample ratio
+///   - The second will apply the generated column expressions (if any)
+///
+/// Example:
+///
+/// Imagine the table below:
+///
+///   ```sql
+///   CREATE TABLE nba.player (
+///     name TEXT,
+///     height_cm SMALLINT,
+///     height_in NUMERIC GENERATED ALWAYS AS (height_cm / 2.54) STORED
+///   );
+///
+///   SECURITY LABEL FOR anon ON COLUMN nba.player.height_cm
+///     IS 'MASKED WITH FUNCTION pg_catalog.random(170,220)';
+///
+///   SECURITY LABEL FOR anon ON TABLE nba.player
+///     IS 'TABLESAMPLE BERNOULLI(50)';
+///   ```
+///
+/// The masking subquery for this table would be
+///
+///   ``` sql
+///   SELECT name, height_cm, height_cm / 2.54 AS height_in
+///   FROM (
+///      SELECT name, pg_catalog.random(170,220), height_in
+///      FROM nba.player
+///      TABLESAMPLE BERNOULLI(50)
+///   ) AS anon_tmp_5eb63bbbe01eeed093cb22bb8f5acdc3;
+///   ```
+///
 pub fn subquery( relid: pg_sys::Oid, policy: String) -> Option<String>
 {
-    let (masking_expressions,table_is_masked) = masking_expressions(relid, policy);
+    let (masking_expressions,table_is_masked) = masking_expressions(relid, policy.clone());
+    let ratio = sampling::get_ratio(relid,&policy);
 
-    if ! table_is_masked { return None; }
+    // if there's no mask and no tablesample ratio,
+    // do not provide a subquery for this table
+    if ! table_is_masked && ! ratio.is_ok() { return None; }
+
+    let gen_expressions =  generation_expressions(relid);
 
     let tablename = utils::get_relation_qualified_name(relid)?;
 
-    Some(format!("SELECT {masking_expressions} FROM {tablename}"))
+    let tablesample: String = if ratio.is_ok() {
+        format!("TABLESAMPLE {}",ratio.unwrap())
+    } else {
+        "".into()
+    };
+
+    // build an alias for the masking subquery and use the hash of the table
+    // name to avoid collisions.
+    // Alias on subqueries are no longer required since PG16
+    //
+    let mut hasher = Md5::new();
+    hasher.update(tablename.clone());
+    let tablename_hash = format!("{:X}",hasher.finalize());
+
+    Some(format!("
+        SELECT {gen_expressions}
+        FROM (
+            SELECT {masking_expressions}
+            FROM {tablename}
+            {tablesample}
+        ) AS anon_alias_{tablename_hash}"
+    ))
 }
 
 /// Prepare a ParseTree object from a SQL query
@@ -293,6 +355,64 @@ pub fn rule_on_schema(object_id: pg_sys::Oid, policy: &str)
 // Private functions
 //----------------------------------------------------------------------------
 
+/// Returns a String and bool
+///
+/// The String is the list of "select clause filters" containing the column
+/// names or the generation expression for generated columns.
+///
+/// the bool indicate is the table as at least one generated column
+///
+fn generation_expressions(
+    relid: pg_sys::Oid,
+) -> String {
+
+    let mut table_has_one_generated_column = false;
+    let lockmode = pg_sys::AccessShareLock as i32;
+
+    // `pg_sys::relation_open()` will raise XX000
+    // if the specified oid isn't a valid relation
+    let relation = unsafe {
+        PgBox::from_pg(pg_sys::relation_open(relid, lockmode))
+    };
+
+    // reldesc is a TupleDescData object
+    // https://doxygen.postgresql.org/structTupleDescData.html
+    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
+    let natts = reldesc.natts;
+    let attrs = unsafe {
+        reldesc.attrs.as_slice(natts.try_into().unwrap())
+    };
+
+    let mut expressions = Vec::new();
+    for a in attrs {
+        if a.attisdropped {
+            continue;
+        }
+        let attname_quoted = utils::quote_name_data(&a.attname);
+        let generation_expression = default_for_att(&relation, a, true);
+
+        if generation_expression.is_some() {
+            let filter_value = generation_expression.unwrap();
+            table_has_one_generated_column = true;
+            expressions.push(format!("{filter_value} AS {attname_quoted}"));
+        } else {
+            expressions.push(attname_quoted.into());
+        }
+    }
+
+    // pass the relation back to Postgres
+    unsafe {
+        pg_sys::relation_close(relation.as_ptr(), lockmode);
+    }
+
+    if table_has_one_generated_column {
+        expressions.join(", ").to_string()
+    }else {
+        "*".into()
+    }
+
+}
+
 /// Check that a role is masked in the given policy
 ///
 fn has_mask_in_policy(
@@ -306,13 +426,93 @@ fn has_mask_in_policy(
     false
 }
 
+/// Checks weither a column is generated or not
+fn is_generated (att: &pg_sys::FormData_pg_attribute) -> bool
+{ att.attgenerated != '\0' as i8 }
 
-/// Returns a string and a bool
+/// Returns the default value or generated value for a column
+///
+/// this is similar to `SELECT pg_get_expr(adbin, adrelid) FROM pg_attrdef`
+///
+fn default_for_att(
+    rel: &PgBox<pg_sys::RelationData>,
+    att: &pg_sys::FormData_pg_attribute,
+    generated: bool
+) -> Option<String> {
+
+    // skip if this is a generated column and we don't want them
+    if generated != is_generated(att) {
+        return None;
+    }
+
+    // reldesc is a TupleDescData object
+    // https://doxygen.postgresql.org/structTupleDescData.html
+    let reldesc = unsafe {
+        // SAFETY: rd_att is always defined
+        PgBox::from_pg(rel.rd_att)
+    };
+
+    // constr is a TupleConstr object
+    // https://doxygen.postgresql.org/structTupleConstr.html
+    let constr = unsafe {
+        // SAFETY:  constr is always defined
+        PgBox::from_pg(reldesc.constr)
+    };
+
+    // loop over the constraints of the relation in search of
+    // the default value of this column
+    for i in 0..constr.num_defval {
+        // defval is a AttrDefault object
+        // https://doxygen.postgresql.org/structAttrDefault.html
+        let defval = unsafe {
+            // SAFETY: constr.defval is an array with an entry per column
+            PgBox::from_pg(constr.defval.wrapping_add(i.into()))
+        };
+
+        if defval.adnum == att.attnum {
+            // Found it !
+
+            // Extract the textual representation of the default value of
+            // this column. The default value is stored in a binary format
+            let context = unsafe {
+                pg_sys::deparse_context_for(
+                    pg_sys::get_rel_name(att.attrelid),
+                    att.attrelid
+                )
+            };
+
+            let default_value_c_ptr = unsafe {
+                // SAFETY: deparse_expression is unsafe but we can assume
+                // that `defval.adbin` is always a correct Node
+                pg_sys::deparse_expression(
+                    pg_sys::stringToNode(defval.adbin) as *mut pg_sys::Node,
+                    context,
+                    false,
+                    false
+                ) as *mut c_char
+            };
+
+            // Convert the c_char pointer into a string
+            let default_value_c_str = unsafe {
+                CStr::from_ptr(default_value_c_ptr)
+            };
+
+            // Stop the loop once we found the right column
+            return Some(default_value_c_str.to_str().unwrap().to_string());
+        }
+    }
+    // found nothing
+    None
+}
+
+/// Returns the masking value for a column, with a string and a bool
+///
 /// the bool means whether the column is masked or not
 /// the string is the value of the attribute based on its masking rule (if any),
 /// which can be either:
 ///     - the attribute name (i.e. the authentic value)
 ///     - the function or value from the masking rule
+///     - the "generation expression" of a generated column
 ///     - the default value of the column
 ///     - "NULL"
 ///
@@ -355,6 +555,7 @@ pub fn value_for_att(
     if seclabel_cstr.is_empty() && !guc::ANON_PRIVACY_BY_DEFAULT.get() {
         return (attname.to_string(), false);
     }
+
     let seclabel = seclabel_cstr.to_str().expect("Failed to convert seclabel");
 
     // A masking rule was found
@@ -380,49 +581,17 @@ pub fn value_for_att(
         return (attname.to_string(), false);
     }
 
+    // There's no masking
+
     debug3!("Anon: Privacy by default is on");
     // At this stage, we know privacy_by_default is on
     // Let's try to find the default value of the column
     if att.atthasdef {
-        let reldesc = unsafe {
-            // reldesc is a TupleDescData object
-            // https://doxygen.postgresql.org/structTupleDescData.html
-            PgBox::from_pg(rel.rd_att)
-        };
-        debug3!("Anon: reldesc = {:#?}", reldesc);
-        // loop over the constraints of relation in search of
-        // the default value of this column
-
-        let constr = unsafe {
-            // constr is a TupleConstr object
-            // https://doxygen.postgresql.org/structTupleConstr.html
-            PgBox::from_pg(reldesc.constr)
-        };
-        debug3!("Anon: constr = {:#?}", constr);
-
-        for i in 0..constr.num_defval {
-            let defval = unsafe {
-                //https://doxygen.postgresql.org/structAttrDefault.html
-                PgBox::from_pg(constr.defval.wrapping_add(i.into()))
-            };
-            if defval.adnum == att.attnum {
-                // Extract the textual representation of the default value of
-                // this column. The default value is stored in a binary format
-                let default_value_c_ptr = unsafe {
-                    pg_sys::deparse_expression(
-                        pg_sys::stringToNode(defval.adbin) as *mut pg_sys::Node,
-                        std::ptr::null_mut::<pg_sys::List>(), // NIL
-                        false,
-                        false
-                    ) as *mut c_char
-                };
-                // Convert the c_char pointer into a string
-                let default_value_c_str = unsafe {
-                        CStr::from_ptr(default_value_c_ptr)
-                };
-                return (default_value_c_str.to_str().unwrap().to_string(),true);
-            }
+        if let Some(default_value) = default_for_att(rel, att, false) {
+            // mask with the default value
+            return (default_value, true);
         }
+        // no defaut value, mask with "NULL"
         return ("NULL".to_string(), true);
     }
 
@@ -447,6 +616,86 @@ mod tests {
         let oid = pg_sys::Oid::from(21);
         assert_eq!( "CAST(0 AS smallint)",
                     cast_as_regtype('0'.to_string(),oid));
+    }
+
+    #[pg_test]
+    fn test_default_for_att() {
+        // Create a table with default values
+        let relid = fixture::create_table_with_defaults();
+        let lockmode = pg_sys::AccessShareLock as i32;
+        let relation = unsafe {
+            PgBox::from_pg(pg_sys::relation_open(relid, lockmode))
+        };
+        let reldesc = unsafe {
+            PgBox::from_pg(relation.rd_att)
+        };
+
+        let natts = reldesc.natts;
+        let attrs = unsafe {
+            reldesc.attrs.as_slice(natts.try_into().unwrap())
+        };
+
+        // Test column with default value
+        // Assuming the second column has a default value
+        let att_with_default = attrs[1];
+        let default_value = default_for_att(&relation, &att_with_default, false);
+        assert_eq!(default_value, Some("'default_value'::text".to_string()));
+        let generation_expr = default_for_att(&relation, &att_with_default, true);
+        assert_eq!(generation_expr,None);
+
+        // Test column with complex default expression
+        // Assuming the third column has a complex default
+        let att_with_complex_default = attrs[2];
+        let complex_default_value = default_for_att(&relation, &att_with_complex_default, false);
+        assert_eq!(complex_default_value, Some("now()".to_string()));
+
+        // Test column without default value
+        // Assuming the fourth column has no default
+        let att_without_default = attrs[3];
+        let no_default_value = default_for_att(&relation, &att_without_default, false);
+        assert_eq!(no_default_value, None);
+
+        // Test column without generated value
+        // Assuming the fifth column a generation expression
+        let att_generated = attrs[4];
+        let generation_expr = default_for_att(&relation, &att_generated, true);
+        assert_eq!(
+            generation_expr,
+            Some("((col_without_default)::numeric / 2.54)".into())
+        );
+
+        let not_generation_expr = default_for_att(&relation, &att_generated, false);
+        assert_eq!(not_generation_expr,None);
+
+        // Clean up
+        unsafe {
+            pg_sys::relation_close(relation.as_ptr(), lockmode);
+        }
+    }
+
+    #[pg_test]
+    fn test_default_for_att_non_existent_column() {
+        let relid = fixture::create_table_with_defaults();
+        let lockmode = pg_sys::AccessShareLock as i32;
+        let relation = unsafe {
+            PgBox::from_pg(pg_sys::relation_open(relid, lockmode))
+        };
+
+        // Create a fake attribute that doesn't exist in the table
+        let fake_att = pg_sys::FormData_pg_attribute {
+            attnum: 999, // A column number that doesn't exist
+            ..Default::default()
+        };
+
+        let default_value = default_for_att(&relation, &fake_att,false);
+        assert_eq!(default_value, None);
+        let generated_value = default_for_att(&relation, &fake_att,true);
+        assert_eq!(generated_value, None);
+
+        // Clean up
+        unsafe {
+            pg_sys::relation_close(relation.as_ptr(), lockmode);
+        }
     }
 
     #[pg_test]

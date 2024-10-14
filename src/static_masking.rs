@@ -131,7 +131,6 @@ pub fn anonymize_table(
         //
         // /!\ If the table has a foreign key, this will likely fail
         //
-        let ratio_str = ratio.unwrap();
         let Some(masking_subquery) = masking::subquery(relid,policy)
                                      else { return Some(false); };
         let relint: u32 = relid.into();
@@ -141,8 +140,7 @@ pub fn anonymize_table(
 
         format!("
             CREATE TEMPORARY TABLE {swap_table}
-                AS {masking_subquery}
-                   TABLESAMPLE {ratio_str};
+                AS {masking_subquery};
             TRUNCATE TABLE {tablename};
             INSERT INTO {tablename} SELECT * FROM {swap_table};
             DROP TABLE {swap_table};

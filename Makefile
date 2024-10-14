@@ -59,6 +59,7 @@ REGRESS_TESTS+= hasmask masked_roles masking masking_search_path masking_foreign
 REGRESS_TESTS+= generalization k_anonymity
 REGRESS_TESTS+= permissions_owner permissions_masked_role injection syntax_checks
 REGRESS_TESTS+= views elevation_via_mask
+REGRESS_TESTS+= generated_columns
 
 # We try our best to write tests that produce the same output on all the 5
 # current Postgres major versions. But sometimes it's really hard to do and

@@ -104,7 +104,9 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
         //  ```
         //  COPY (
         //     SELECT a,b,c FROM (
-        //         SELECT <masking_filters> FROM "public"."foo"
+        //         SELECT <masking_filters>
+        //         FROM "public"."foo"
+        //         TABLESAMPLE SYSTEM(33)
         //     ) AS foo
         //  ) TO [...]
         //  ```
