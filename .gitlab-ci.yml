@@ -49,6 +49,9 @@ include:
       pgver: pg17
   ## automatic SAST from Gitlab.com
   - template: Security/SAST.gitlab-ci.yml
-
+  ## Tests coverage
+  - local: ci/coverage.yml
+    inputs:
+      pgver: pg17
 
 

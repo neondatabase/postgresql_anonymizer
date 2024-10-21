@@ -33,7 +33,15 @@ spec:
   variables:
     PGVER: $[[ inputs.pgver ]]
     ALWAYS: $[[ inputs.always ]]
+    # Enable LLVM instrumentation
+    RUSTFLAGS: "-Cinstrument-coverage"
+    # Set an environment variable which causes LLVM to write coverage data to the specified location.
+    # This is arbitrary, but the path passed to grcov (the first argument) must contain these files
+    # or the coverage data won't be noticed.
+    LLVM_PROFILE_FILE: "target/coverage/%p-%m.profraw"
   script:
+    # Create the coverage output directory
+    - mkdir -p target/coverage
     # lint only for the default PG version
     - test -z "${ALWAYS}" || make lint
     # Build the extension package
@@ -44,6 +52,11 @@ spec:
     # At this point we can build the packages too
     - make deb
     - make rpm
+    # coverage report
+    - grcov target/coverage --binary-path target/release -s . -o target/coverage --keep-only 'src/*' --output-types html,cobertura
+    # Extract just the top-level coverage number from the XML report.
+    #- xmllint --xpath "concat('Coverage: ', 100 * string(//coverage/@line-rate), '%')" target/coverage/cobertura.xml
+  coverage: '/Coverage: \d+(?:\.\d+)?/'
   rules:
     - if: $ALWAYS
     - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -52,6 +65,11 @@ spec:
   artifacts:
     paths:
       - target/release/anon-$[[ inputs.pgver ]]
+      - target/coverage/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: target/coverage.xml
     expire_in: 1 day
 
 ##

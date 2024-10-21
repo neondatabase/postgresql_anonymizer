@@ -88,6 +88,7 @@ REGRESS?=$(REGRESS_TESTS)
 
 EXTRA_CLEAN?=target
 
+
 ##
 ## BUILD
 ##
@@ -119,7 +120,7 @@ install:
 # With PGRX: the postgres instance is created previously by `cargo run`. This
 # means we have some extra tasks to prepare the instance
 
-installcheck:
+installcheck: target/coverage
 	dropdb $(PSQL_OPT) --if-exists $(PGDATABASE)
 	createdb $(PSQL_OPT) $(PGDATABASE)
 	dropuser oscar_the_owner || echo 'ignored'
@@ -159,10 +160,44 @@ psql:
 	psql --host localhost --port 288$(PG_MAJOR_VERSION)
 
 ##
+## Coverage
+##
+
+COVERAGE_DIR?=target/$(TARGET)/coverage
+
+clean_profiles:
+	rm -fr *.profraw
+
+coverage: clean_profiles coverage_test covergage_report
+
+coverage_test:
+	export RUSTFLAGS=-Cinstrument-coverage \
+	export LLVM_PROFILE_FILE=$(TARGET)-%p-%m.profraw \
+	&& $(PGRX) test $(PGVER) $(RELEASE_OPT) --verbose
+
+coverage_report:
+	mkdir -p $(COVERAGE_DIR)
+	export LLVM_PROFILE_FILE=$(TARGET)-%p-%m.profraw \
+	&& grcov . \
+	      --binary-path target/$(TARGET) \
+	      --source-dir . \
+	      --output-path $(COVERAGE_DIR)\
+	      --keep-only 'src/*' \
+	      --llvm \
+	      --ignore-not-existing \
+	      --output-types html,cobertura
+	# Terse output
+	grep '<p class="heading">Lines</p>' -A2 $(COVERAGE_DIR)/html/index.html \
+	  | tail -n 1 \
+	  | xargs \
+	  | sed 's,%.*,,' \
+	  | sed 's/.*>/Coverage: /'
+
+##
 ## C L E A N
 ##
 
-clean:
+clean: clean_profiles
 ifdef EXTRA_CLEAN
 	rm -rf $(EXTRA_CLEAN)
 endif
