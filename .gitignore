@@ -1,3 +1,5 @@
+# coverage files
+*.profraw
 # pgxn
 _pgxn
 # unit tests
