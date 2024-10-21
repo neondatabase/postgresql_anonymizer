@@ -62,6 +62,7 @@ REGRESS_TESTS+= views elevation_via_mask
 REGRESS_TESTS+= generated_columns
 REGRESS_TESTS+= rls
 REGRESS_TESTS+= fdw
+REGRESS_TESTS+= identity
 
 # We try our best to write tests that produce the same output on all the 5
 # current Postgres major versions. But sometimes it's really hard to do and

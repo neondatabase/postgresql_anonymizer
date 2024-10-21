@@ -48,7 +48,7 @@ Principles
 
 * [Row Security Policies] aka `RLS` are respected.
 
-* A masking rule may break data integrity. For instance, you can mask a i
+* A masking rule may break data integrity. For instance, you can mask a
   `NOT NULL` column with the value `NULL`. This is up to you to decide
   wether or not the masked users need data integrity.
 
@@ -188,3 +188,11 @@ Limitations
 
 * The masking rules are **NOT INHERITED** ! If you have split a table into
   multiple partitions, you need to declare the masking rules for each partition.
+
+* Masking identity columns is tricky. If an identity column is defined as
+  `GENERATED ALWAYS`, then static masking will not work on that column. Note
+  identity columns are used most of the time for surrogate keys ( also known
+  as "factless keys" ) and in general those keys should not required to be
+  masked. However if you really need to mask and identity column you can
+  redefine it as `GENERATED DEFAULT`.
+
