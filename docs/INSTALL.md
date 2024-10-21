@@ -305,7 +305,7 @@ not plan to provide a docker image for each version of PostgreSQL. However you
 can build your own image based on the version you need like this:
 
 ```shell
-PG_MAJOR_VERSION=16 make docker_image
+DOCKER_PG_MAJOR_VERSION=16 make docker_image
 ```
 
 Install as a "Black Box"

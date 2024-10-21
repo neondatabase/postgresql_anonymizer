@@ -198,15 +198,16 @@ package:
 ##
 
 DOCKER_IMAGE?=registry.gitlab.com/dalibo/postgresql_anonymizer
+
+ifneq ($(DOCKER_PG_MAJOR_VERSION),)
+DOCKER_BUILD_ARG := --build-arg DOCKER_PG_MAJOR_VERSION=$(DOCKER_PG_MAJOR_VERSION)
+endif
+
 PGRX_IMAGE?=$(DOCKER_IMAGE):pgrx
 PGRX_BUILD_ARGS?=
 
-ifneq ($(PG_MAJOR_VERSION),)
-BUILD_ARG := --build-arg PG_MAJOR_VERSION=$(PG_MAJOR_VERSION)
-endif
-
 docker_image: docker/Dockerfile #: build the docker image
-	docker build --tag $(DOCKER_IMAGE) . --file $^  $(BUILD_ARG)
+	docker build --tag $(DOCKER_IMAGE) . --file $^  $(DOCKER_BUILD_ARG)
 
 pgrx_image: docker/pgrx/Dockerfile
 	docker build --tag $(PGRX_IMAGE) . --file $^ $(PGRX_BUILD_ARGS)
