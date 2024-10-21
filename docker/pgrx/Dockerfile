@@ -64,7 +64,8 @@ ENV PATH="/home/postgres/.cargo/bin/:${PATH}"
 FROM rhel8_rust AS rhel8_pgrx
 
 RUN rustup self update \
- && rustup component add clippy \
+ && rustup component add clippy llvm-tools-preview \
+ && cargo install grcov \
  && cargo install --locked --version "${PGRX_VERSION}" cargo-pgrx \
  && cargo pgrx init
 
