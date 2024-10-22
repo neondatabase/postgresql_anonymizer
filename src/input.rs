@@ -234,14 +234,16 @@ pub fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>,String>
     let raw_stmt = unsafe {
         // this is the equivalent of the linitial_node C macro
         // https://doxygen.postgresql.org/pg__list_8h.html#a213ac28ac83471f2a47d4e3918f720b4
-        PgBox::from_pg(
-            pg_sys::pgrx_list_nth(raw_parsetree_list.unwrap(), 0)
+        PgBox::<pg_sys::RawStmt>::from_pg(
+            pg_sys::list_nth(raw_parsetree_list.unwrap(), 0)
             as *mut pg_sys::RawStmt
         )
     };
 
     let stmt = unsafe {
-        PgBox::from_pg( raw_stmt.stmt as *mut pg_sys::SelectStmt )
+        PgBox::<pg_sys::SelectStmt>::from_pg(
+            raw_stmt.stmt as *mut pg_sys::SelectStmt
+        )
     };
 
     // Only one expression in the target is allowed
@@ -250,13 +252,13 @@ pub fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>,String>
     }
 
     let restarget = unsafe {
-        PgBox::from_pg(
-            pg_sys::pgrx_list_nth(stmt.targetList, 0)
+        PgBox::<pg_sys::ResTarget>::from_pg(
+            pg_sys::list_nth(stmt.targetList, 0)
             as *mut pg_sys::ResTarget
         )
     };
 
-    Ok(unsafe { PgBox::from_pg( restarget.val ) })
+    Ok(unsafe { PgBox::<pg_sys::Node>::from_pg( restarget.val ) })
 }
 
 

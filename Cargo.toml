@@ -22,12 +22,12 @@ c_str_macro = "1.0.3"
 chrono = "0.4.37"
 fake = { version = "2.10.0", features = ["bigdecimal", "chrono", "http", "rust_decimal", "uuid", "time","random_color"] }
 paste = "1.0"
-pgrx = "0.12.5"
+pgrx = "0.12.6"
 rand = "0.8.5"
 regex = "1.10.2"
 
 [dev-dependencies]
-pgrx-tests = "0.12.5"
+pgrx-tests = "0.12.6"
 
 [profile.dev]
 panic = "unwind"

@@ -226,7 +226,7 @@ pub fn parse_subquery(query_sql: String) -> PgBox<pg_sys::RawStmt>
     // https://doxygen.postgresql.org/pg__list_8h.html#a213ac28ac83471f2a47d4e3918f720b4
     unsafe {
         PgBox::from_pg(
-            pg_sys::pgrx_list_nth(raw_parsetree_list, 0) as *mut pg_sys::RawStmt
+            pg_sys::list_nth(raw_parsetree_list, 0) as *mut pg_sys::RawStmt
         )
     }
 }

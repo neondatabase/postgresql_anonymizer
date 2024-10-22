@@ -95,7 +95,7 @@ extern "C" fn is_untrusted_walker(
         // the first element of the list is the schema name
         let schema_val = unsafe {
             PgBox::from_pg(
-                pg_sys::pgrx_list_nth(funcname.as_ptr(), 0)
+                pg_sys::list_nth(funcname.as_ptr(), 0)
                 as *mut compat::SchemaValue
             )
         };
@@ -107,7 +107,7 @@ extern "C" fn is_untrusted_walker(
 
         let name_val = unsafe {
             PgBox::from_pg(
-                pg_sys::pgrx_list_nth(funcname.as_ptr(), 1)
+                pg_sys::list_nth(funcname.as_ptr(), 1)
                 as *mut compat::SchemaValue
             )
         };
