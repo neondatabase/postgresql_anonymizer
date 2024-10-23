@@ -3,10 +3,23 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-WIP : 2.0.0-beta.3 - Better, Faster, Safer
+
+20241023 : 2.0.0-beta.3 - Better, Faster, Safer
 -------------------------------------------------------------------------------
 
-* Upgrade to PGRX 0.12.5
+* [tests] Masking a view is supported
+* [tests] RLS policies are supported
+* [core] Upgrade to PGRX 0.12.6
+* [CI] Enable test coverage
+* [docker] Add code coverage tools to the PGRX image
+* [CI] track the lock file
+* [core] Support generated columns
+* [doc] Generalization sections become 'Masking Views'
+* [generalization] Fix timezone for the tests
+* [doc] Advanced Faking
+* [black_box] Using black box with pg_dump parameters
+* [pg_dump_anon] remove bats submodules
+* [CI] fix deb smoketest
 
 20240925 : 2.0.0-beta.2 - Better, Faster, Safer
 -------------------------------------------------------------------------------
