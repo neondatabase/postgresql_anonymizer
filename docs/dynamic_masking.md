@@ -74,6 +74,19 @@ Step 4 : Connect with the masked user
 (1 row)
 ```
 
+Principles
+------------------------------------------------------------------------------
+
+* You can mask table in multiple schemas.
+* Generated columns are respected.
+* You can apply [Row Security Policies] aka `RLS` to a masked role.
+* A masking rule may break data integrity. For instance, you can mask a column
+  having a UNIQUE constraint with the value `NULL`. This is up to you to decide
+  wether or not the mask users need data integrity.
+
+[Row Security Policies]: https://www.postgresql.org/docs/current/ddl-rowsecurity.html
+
+
 How to unmask a role
 ------------------------------------------------------------------------------
 
