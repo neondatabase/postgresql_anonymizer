@@ -153,9 +153,11 @@ unsafe extern "C" fn masking_policy_object_relabel(
 
 fn relabel_column(label: &str, object_id: pg_sys::Oid) {
     /* Check that the column does not belong to a view */
+    /*
     if unsafe { pg_sys::get_rel_relkind(object_id) == 'v' as c_char } {
         error::feature_not_supported("Masking a view").ereport();
     }
+    */
 
     /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
     if let Some(val) = re::capture_value(label) {

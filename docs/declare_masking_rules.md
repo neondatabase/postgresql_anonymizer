@@ -39,6 +39,28 @@ SECURITY LABEL FOR anon ON COLUMN player.id
   IS 'MASKED WITH VALUE NULL';
 ```
 
+Principles
+------------------------------------------------------------------------------
+
+* You can mask tables in multiple schemas
+
+* Generated columns are respected.
+
+* [Row Security Policies] aka `RLS` are respected.
+
+* A masking rule may break data integrity. For instance, you can mask a i
+  `NOT NULL` column with the value `NULL`. This is up to you to decide
+  wether or not the masked users need data integrity.
+
+* You need to declare masking rules on views. By default, the masking rules
+  declared on the underlying tables are **NOT APPLIED** on the view. For
+  instance, if a view `v_foo` is based upon a table `foo`, then the masking
+  rules of table `foo` will not be applied to `v_foo`. You will need to declare
+  specific masking rules for `v_foo`. Remember that PostgreSQL uses the view
+  owner (not the current user) to check permissions on the underlying tables.
+
+[Row Security Policies]: https://www.postgresql.org/docs/current/ddl-rowsecurity.html
+
 Escaping String literals
 ------------------------------------------------------------------------------
 
