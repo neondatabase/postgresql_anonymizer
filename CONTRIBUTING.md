@@ -292,6 +292,32 @@ FAKE_DATA_LOCALES=fr_FR make fake_data
 ```
 
 
+Compatibility with ARM
+--------------------------------------------------------------------------------
+
+We do not offcially support this extension on ARM64 architectures.
+
+However some people have successfully build the extension for ARM64 and here's
+some good practice to maintain compatibility.
+
+On some ARM platforms a "char" is actually an "unsigned integer" (u8) while on
+AMD64 it is a signed integer (i8). To avoid compilation errors, we use the
+`std::os::raw::c_char` type instead of `i8`, especially for C char pointers.
+
+For example:
+
+``` rust
+let belt = belt_cstr.as_ptr() as *const i8;
+```
+
+becomes
+
+``` rust
+use std::os::raw::c_char;
+let belt = belt_cstr.as_ptr() as *const c_char;
+```
+
+
 Security
 --------------------------------------------------------------------------------
 

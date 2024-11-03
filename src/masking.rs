@@ -428,7 +428,7 @@ fn has_mask_in_policy(
 
 /// Checks weither a column is generated or not
 fn is_generated (att: &pg_sys::FormData_pg_attribute) -> bool
-{ att.attgenerated != '\0' as i8 }
+{ att.attgenerated != '\0' as c_char }
 
 /// Returns the default value or generated value for a column
 ///
