@@ -12,19 +12,20 @@ The project has a **declarative approach** of anonymization. This means you can
 [declare the masking rules] using the PostgreSQL Data Definition Language (DDL)
 and specify your anonymization strategy inside the table definition itself.
 
-Once the maskings rules are defined, you can access the anonymized data in 3
-different ways :
+Once the maskings rules are defined, you can apply them using 5 different
+**masking methods** :
 
 * [Anonymous Dumps] : Simply export the masked data into an SQL file
 * [Static Masking] : Remove the PII according to the rules
 * [Dynamic Masking] : Hide PII only for the masked users
+* [Masking Views] : Build dedicated views for the masked users
+* [Masking Data Wrappers] : Apply masking rules on external data
+
+Each method has its pros and cons. Different masking methods may be used in
+different contexts.
 
 In addition, various [Masking Functions] are available : randomization, faking,
 partial scrambling, shuffling, noise or even your own custom function!
-
-Beyond masking, it is also possible to use a fourth approach called
-[Masking Views], which are perfect for [generalization], statistics and data
-analytics.
 
 Finally, the extension offers a panel of [detection] functions that will try to
 guess which columns need to be anonymized.
@@ -37,6 +38,7 @@ guess which columns need to be anonymized.
 [Dynamic Masking]: dynamic_masking.md
 [Masking Functions]: masking_functions.md
 [Masking_Views]: masking_views.md
+[Masking Data Wrappers]: masking_data_wrappers.md
 [generalization]: masking_views.md#generalization
 [detection]: detection.md
 
