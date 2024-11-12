@@ -1,13 +1,11 @@
+--
+-- This is a practical example for randomization functions
+--
 BEGIN;
 
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+CREATE EXTENSION IF NOT EXISTS anon;
 
-SELECT anon.load();
-
---let's use `TEMPORARY` instead of `pg_temp` for clarity
---SET search_path TO pg_temp, public;
-
-CREATE TEMPORARY TABLE customer(
+CREATE TABLE customer(
   id SERIAL,
   full_name TEXT,
   hair_color TEXT,

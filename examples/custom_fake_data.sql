@@ -1,6 +1,24 @@
+--
+-- How to add custom fake data
+--
+-- Let's say we want to add more fake emails
+--
+
 BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS anon;
+
+SELECT anon.init();
+
+-- We don't have enough fake emails:w
+SELECT COUNT(*) FROM anon.email;
+
+-- copy the email table
 CREATE TEMPORARY TABLE tmp_email
 AS SELECT * FROM anon.email;
+
+-- generate additional values based on the current ones
+
 TRUNCATE anon.email;
 INSERT INTO anon.email
 SELECT
@@ -20,4 +38,7 @@ FROM
   LIMIT 5
 ) d
 ;
-COMMIT;
+
+SELECT COUNT(*) FROM anon.email;
+
+ROLLBACK;

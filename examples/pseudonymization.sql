@@ -1,8 +1,8 @@
 BEGIN;
 
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
+CREATE EXTENSION IF NOT EXISTS anon;
 
-SELECT anon.load();
+SELECT anon.init();
 
 CREATE TABLE people (
   id   TEXT,

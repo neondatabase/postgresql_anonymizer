@@ -1,6 +1,10 @@
+--
+-- This is a basic example of static masking
+--
+
 BEGIN;
 
--- STEP 1 : Basic Example
+-- STEP 1: Create the table
 
 CREATE TABLE customer(
 	id SERIAL,
@@ -21,17 +25,15 @@ SELECT * FROM customer;
 
 -- STEP 2: Load the extension
 
-CREATE EXTENSION IF NOT EXISTS anon CASCADE;
-
-SELECT anon.load();
+CREATE EXTENSION IF NOT EXISTS anon;
 
 -- STEP 3: Declare the masking rules
 
 SECURITY LABEL FOR anon ON COLUMN customer.full_name
-IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
+IS 'MASKED WITH FUNCTION anon.dummy_first_name() || '' '' || anon.dummy_last_name()';
 
 SECURITY LABEL FOR anon ON COLUMN customer.employer
-IS 'MASKED WITH FUNCTION anon.fake_company()';
+IS 'MASKED WITH FUNCTION anon.dummy_company_name()';
 
 SECURITY LABEL FOR anon ON COLUMN customer.zipcode
 IS 'MASKED WITH FUNCTION anon.random_zip()';
