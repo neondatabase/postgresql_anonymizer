@@ -1,3 +1,83 @@
+PostgreSQL Anonymizer 2.0: Better, Faster, Safer
+================================================================================
+
+Eymoutiers, France, December 10, 2024
+
+We're thrilled to announce PostgreSQL Anonymizer 2.0, a major leap forward in
+database privacy protection.
+
+This comprehensive data anonymization extension now offers five powerful
+strategies: [Dynamic Masking], [Static Masking], [Anonymous Dumps], [Masking Views],
+and [Masking Data Wrappers].
+
+Each strategy is complemented by our enhanced suite of Masking Functions, including
+advanced techniques such as: Substitution, Randomization, Faking, Pseudonymization,
+Partial Scrambling, Shuffling, Noise Addition and Generalization.
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+[Masking Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
+[Masking Data Wrappers]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_data_wrappers/
+
+
+A Complete Rewrite in Rust
+--------------------------------------------------------------------------------
+
+Version 2.0 represents a fundamental transformation of our codebase, completely
+rewritten in Rust using the groundbreaking [PGRX] framework. This strategic shift
+delivers exceptional improvements in Memory safety and security, resource
+efficiency, testing and code maintainability.
+
+This milestone release introduces powerful capabilities that significantly expand
+your data protection toolkit:
+
+* Advanced Fake Data Generator with improved realism
+* Role-based Transparent Dynamic Masking
+* Multiple Masking Policies
+* Seamless Anonymized Exports with pg_dump
+* Debian Packages
+
+To help users get started quickly, we're releasing a comprehensive tutorial that
+walks through practical anonymization scenario
+
+See https://postgresql-anonymizer.readthedocs.io/en/stable/tutorials/0-intro/
+
+For existing users, we've ensured a smooth transition from version 1.x.
+See our comprehensive [UPGRADE] guide for a straightforward migration process.
+
+[UPGRADE]: https://postgresql-anonymizer.readthedocs.io/en/stable/UPGRADE/
+[PGRX]: https://github.com/pgcentralfoundation/pgrx
+
+Thanks
+--------------------------------------------------------------------------------
+
+This release includes code, bugfixes, documentation, code reviews and ideas
+from Giampaolo Capelli, José Pedro Saraiva, Guillaume Risbourg, Austin Putman,
+Carlos Ruiz, Thibaut Madeleine and many other [contributors].
+
+And also special thanks for the [PGRX] team for their amazing work !
+
+[contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+
+How to contribute
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+--------------------------------------------------------------------------------
+
 PostgreSQL Anonymizer 1.3: Important Security Update
 ================================================================================
 

@@ -40,13 +40,11 @@ guess which columns need to be anonymized.
 [personally identifiable information]: https://en.wikipedia.org/wiki/Personally_identifiable_information
 [declare the masking rules]: https://postgresql-anonymizer.readthedocs.io/en/stable/declare_masking_rules/
 
-https://postgresql-anonymizer.readthedocs.io/en/stable/anonymous_dumps/
-
 [Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/stable/anonymous_dumps/
 [Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/stable/static_masking/
 [Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/stable/dynamic_masking/
 [Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_functions/
-[Masking_Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
+[Masking Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
 [Masking Data Wrappers]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_data_wrappers/
 [generalization]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/#generalization
 [detection]: https://postgresql-anonymizer.readthedocs.io/en/stable/detection/
