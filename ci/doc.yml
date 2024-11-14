@@ -22,27 +22,6 @@ variables:
     - mdl docs/*.md *.md
 
 ##
-## B U I L D
-##
-"how-to":
-  image:
-    name: dalibo/pandocker:latest
-    entrypoint: [""]
-  stage: build
-  script:
-    - cd docs/how-to
-    - ./init_postgres.sh
-    - export PGUSER=paul
-    - export PGDATABASE=boutique
-    - export PGPASSWORD=CHANGEME
-    - make how-to
-  # when: manual
-  artifacts:
-    paths:
-      - docs/how-to
-    expire_in: 1 day
-
-##
 ## T E S T
 ##
 
@@ -70,22 +49,3 @@ demo:
       - demo/*.out
     expire_in: 1 day
 
-##
-## D E P L O Y
-##
-pages:
-  stage: deploy
-  image: alpine
-  script:
-    - apk add tree
-    - mkdir public
-    - cp docs/how-to/_build/* public
-    - tree ./public -H '.' -T "$title" -I "" --noreport --charset utf-8
-        > ./public/index.html
-  artifacts:
-    paths:
-      - public
-  only:
-    variables:
-      # git push -o ci.variable="CI_PUBLISH_PAGES=1"
-      - $CI_COMMIT_BRANCH == 'master' || $CI_PUBLISH_PAGES
