@@ -21,6 +21,7 @@ mod walker;
 
 // Load the SQL functions AFTER the rust functions
 extension_sql_file!("../sql/anon.sql", name="anon", finalize);
+extension_sql_file!("../sql/random.sql", requires =["anon"]);
 extension_sql_file!("../sql/static_masking.sql", requires =["anon"]);
 extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires =["anon"]);
 

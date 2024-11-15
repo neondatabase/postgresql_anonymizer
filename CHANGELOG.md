@@ -9,6 +9,7 @@ FIXME : 2.0.0-beta.4 - Better, Faster, Safer
 
 * [core] Drop Support for PostgreSQL 12
 * [core] FIX #479 Allow privacy by default for anonymous dumps (Konrad Kucharski)
+* [random] Generate a random but unique value with anon.random_id
 
 20241023 : 2.0.0-beta.3 - Better, Faster, Safer
 -------------------------------------------------------------------------------

@@ -63,6 +63,28 @@ CREATE TYPE CARD AS ENUM ('visa', 'mastercard', 'amex');
 SELECT pg_typeof(anon.random_in(enum_range(null::CARD))) = 'CARD'::REGTYPE;
 SELECT pg_typeof(anon.random_in_enum(NULL::CARD)) = 'CARD'::REGTYPE;
 
+-- id
+SELECT COUNT(DISTINCT anon.random_id()) = 100000
+FROM generate_series(1,100000);
+
+SELECT pg_typeof(anon.random_id()) = 'BIGINT'::REGTYPE;
+SELECT pg_typeof(anon.random_id_int()) = 'INT'::REGTYPE;
+SELECT pg_typeof(anon.random_id_smallint()) = 'SMALLINT'::REGTYPE;
+
+CREATE TABLE public.customer (
+  id          INT PRIMARY KEY,
+  firstname   TEXT,
+  lastname    TEXT,
+  email       TEXT
+);
+
+INSERT INTO public.customer
+SELECT
+  anon.random_id_int(),
+  anon.dummy_first_name(),
+  anon.dummy_last_name(),
+  anon.dummy_free_email()
+FROM generate_series(1,2000);
 
 DROP EXTENSION anon CASCADE;
 

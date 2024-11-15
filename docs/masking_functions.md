@@ -96,7 +96,6 @@ data :
 
 ### Basic Random values
 
-
 * `anon.random_date()` returns a date
 * `anon.random_string(n)` returns a TEXT value containing `n` letters
 * `anon.random_zip()` returns a 5-digit code
@@ -165,7 +164,7 @@ There a function for each subtype of range:
 
 * `anon.random_in_int4range('[5,6)')` returns an INT of value 5
 * `anon.random_in_int8range('(6,7]')` returns a BIGINT of value 7
-* `anon.random_in_numrange('[0.1,0.9]') returns a NUMERIC between 0.1 and 0.9
+* `anon.random_in_numrange('[0.1,0.9]')` returns a NUMERIC between 0.1 and 0.9
 * `anon.random_in_daterange('[2001-01-01, 2001-12-31)')` returns a date in 2001
 * `anon.random_in_tsrange('[2022-10-01,2022-10-31]')` returns a
   TIMESTAMP in october 2022
@@ -178,6 +177,26 @@ infinite bound. For example `anon.random_in_int4range('[2022,)')` returns NULL.
 
 [RANGE types]: https://www.postgresql.org/docs/current/rangetypes.html
 
+### Random Sequence ID
+
+When masking a SERIAL columns it can be useful to general a `UNIQUE` value
+based on a sequence.
+
+* `anon.random_id()` returns a BIGINT
+* `anon.random_id_int()` returns a INT
+* `anon.random_id_small_int()` returns a SMALLINT
+
+Each call to these functions will return a incremented value much like the
+[nextval()] function.
+
+[netval()]: https://www.postgresql.org/docs/current/functions-sequence.html
+
+At any time, you can reset the current sequence value with a new value.
+For instance:
+
+``` sql
+SELECT pg_catalog.setval('anon.random_id_seq', 42);
+```
 
 
 Faking
