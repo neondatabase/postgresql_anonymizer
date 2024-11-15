@@ -14,12 +14,12 @@ use std::os::raw::c_char;
 /// rawparser function
 ///
 
-#[cfg(any(feature = "pg12", feature = "pg13"))]
+#[cfg(any(feature = "pg13"))]
 pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
     pg_sys::raw_parser(query)
 }
 
-#[cfg(not(any(feature = "pg12", feature = "pg13")))]
+#[cfg(not(any(feature = "pg13")))]
 pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
     pg_sys::raw_parser(query,pg_sys::RawParseMode::RAW_PARSE_DEFAULT)
 }
@@ -38,13 +38,13 @@ pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
 /// https://github.com/postgres/postgres/commit/a61b1f74823c9c4f79c95226a461f1e7a367764b
 ///
 
-#[cfg(any(feature = "pg12", feature = "pg13", feature = "pg14", feature = "pg15"))]
+#[cfg(any(feature = "pg13", feature = "pg14", feature = "pg15"))]
 #[macro_export]
 macro_rules! rte_perminfo_index_disable {
     ($rte: ident) => { };
 }
 
-#[cfg(not(any(feature = "pg12", feature = "pg13", feature = "pg14", feature = "pg15")))]
+#[cfg(not(any(feature = "pg13", feature = "pg14", feature = "pg15")))]
 #[macro_export]
 macro_rules! rte_perminfo_index_disable {
     ($rte: ident) => { $rte.perminfoindex = 0 };
@@ -56,10 +56,10 @@ pub(crate) use rte_perminfo_index_disable;
 /// SchemaValue type
 ///
 
-#[cfg(not(any(feature = "pg12", feature = "pg13", feature = "pg14")))]
+#[cfg(not(any(feature = "pg13", feature = "pg14")))]
 pub use pgrx::pg_sys::String as SchemaValue;
 
-#[cfg(any(feature = "pg12", feature = "pg13", feature = "pg14"))]
+#[cfg(any(feature = "pg13", feature = "pg14"))]
 pub use pgrx::pg_sys::Value as SchemaValue;
 
 ///
@@ -67,11 +67,11 @@ pub use pgrx::pg_sys::Value as SchemaValue;
 ///
 
 #[allow(non_snake_case)]
-#[cfg(not(any(feature = "pg12", feature = "pg13", feature = "pg14")))]
+#[cfg(not(any(feature = "pg13", feature = "pg14")))]
 pub unsafe fn strVal(v: SchemaValue) -> *const c_char { v.sval }
 
 #[allow(non_snake_case)]
-#[cfg(any(feature = "pg12", feature = "pg13", feature = "pg14"))]
+#[cfg(any(feature = "pg13", feature = "pg14"))]
 pub unsafe fn strVal(v: SchemaValue) -> *const c_char { v.val.str_ }
 
 

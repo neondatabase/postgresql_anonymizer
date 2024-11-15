@@ -151,7 +151,7 @@ unsafe extern "C" fn masking_policy_object_relabel(
     }
 }
 
-fn relabel_column(label: &str, object_id: pg_sys::Oid) {
+fn relabel_column(label: &str, _object_id: pg_sys::Oid) {
     /* Check that the column does not belong to a view */
     /*
     if unsafe { pg_sys::get_rel_relkind(object_id) == 'v' as c_char } {
