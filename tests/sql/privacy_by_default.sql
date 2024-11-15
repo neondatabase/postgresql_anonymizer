@@ -115,8 +115,8 @@ SET anon.transparent_dynamic_masking = True;
 CREATE ROLE dump_anon;
 SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
 SET ROLE dump_anon;
-SELECT TRUE
-FROM (SELECT tableoid FROM pg_extension) AS catalog_relations_are_not_masked
+SELECT TRUE AS catalog_relations_are_not_masked
+FROM (SELECT tableoid FROM pg_extension) AS x
 LIMIT 1;
 
 ROLLBACK TO initial_state;
