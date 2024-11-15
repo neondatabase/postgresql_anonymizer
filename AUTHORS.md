@@ -16,6 +16,7 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Konrad Kucharski: Beta Testing
 * Giampaolo Capelli: Documentation
 * José Pedro Saraiva: Build on ARM64
 * Guillaume Risbourg: CI improvements

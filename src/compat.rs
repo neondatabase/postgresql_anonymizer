@@ -73,3 +73,12 @@ pub unsafe fn strVal(v: SchemaValue) -> *const c_char { v.sval }
 #[allow(non_snake_case)]
 #[cfg(any(feature = "pg12", feature = "pg13", feature = "pg14"))]
 pub unsafe fn strVal(v: SchemaValue) -> *const c_char { v.val.str_ }
+
+
+///
+/// IsCatalogRelationOid
+/// Remove this when catalog.c is available in PGRX
+///
+#[allow(non_snake_case)]
+pub fn IsCatalogRelationOid(relid: pg_sys::Oid ) -> bool
+{ u32::from(relid) < pg_sys::FirstNormalObjectId }

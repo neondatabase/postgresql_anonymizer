@@ -152,6 +152,9 @@ unsafe extern "C" fn rewrite_walker(
         let mut rte = PgBox::from_pg(node as *mut pg_sys::RangeTblEntry);
         debug1!("rte= {:?}",rte);
 
+        // We do not mask catalog relations
+        if compat::IsCatalogRelationOid(rte.relid) { return false; }
+
         // This is a subquery, continue to the next node
         if rte.relid == 0.into() { return false; }
 
