@@ -34,9 +34,6 @@ include:
   ## Other PG versions are built and tested only on the `main` branch
   - local: ci/build_and_test_pgver.yml
     inputs:
-      pgver: pg12
-  - local: ci/build_and_test_pgver.yml
-    inputs:
       pgver: pg14
   - local: ci/build_and_test_pgver.yml
     inputs:
