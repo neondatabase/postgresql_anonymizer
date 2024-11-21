@@ -112,14 +112,25 @@ ROLLBACK TO initial_state;
 -- see https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/479
 
 SET anon.transparent_dynamic_masking = True;
+SELECT anon.init();
+
 CREATE ROLE dump_anon;
+
 SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
+
 SET ROLE dump_anon;
+
 SELECT TRUE AS catalog_relations_are_not_masked
 FROM (SELECT tableoid FROM pg_extension) AS x
 LIMIT 1;
 
+SELECT TRUE AS anon_relations_are_not_masked
+FROM (SELECT val FROM anon.last_name ) AS x
+LIMIT 1;
+
 ROLLBACK TO initial_state;
+
+
 
 -- Clean up
 

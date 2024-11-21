@@ -11,6 +11,7 @@ use crate::compat;
 use crate::error;
 use crate::input;
 use crate::masking;
+use crate::utils;
 use pgrx::*;
 use std::ffi::c_char;
 use std::ffi::CString;
@@ -154,6 +155,9 @@ unsafe extern "C" fn rewrite_walker(
 
         // We do not mask catalog relations
         if compat::IsCatalogRelationOid(rte.relid) { return false; }
+
+        // We do not mask anon relations
+        if utils::is_anon_relation_oid(rte.relid) { return false; }
 
         // This is a subquery, continue to the next node
         if rte.relid == 0.into() { return false; }

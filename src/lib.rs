@@ -421,6 +421,8 @@ mod anon {
 // Initialization
 //----------------------------------------------------------------------------
 
+const ANON: &core::ffi::CStr = c"anon";
+
 static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {
 };
 

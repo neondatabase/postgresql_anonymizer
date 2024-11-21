@@ -152,6 +152,19 @@ pub fn get_relation_qualified_name(relid: pg_sys::Oid ) -> Option<String>
     ))
 }
 
+
+/// Check if a relation belongs in the `anon` namespace
+///
+pub fn is_anon_relation_oid(relid: pg_sys::Oid) -> bool
+{
+    use crate::ANON;
+    unsafe {
+        pg_sys::get_rel_namespace(relid)
+        ==
+        pg_sys::get_namespace_oid(ANON.as_ptr(),false)
+    }
+}
+
 /// Return the quoted name of a string
 /// if a schema is named `WEIRD_schema`, its quoted name is `"WEIRD_schema"`
 ///
@@ -228,6 +241,21 @@ mod tests {
             get_relation_qualified_name(location_relid)
         );
     }
+
+    #[pg_test]
+    fn test_is_anon_relation_oid() {
+        assert!(! is_anon_relation_oid(pg_sys::InvalidOid));
+
+        let person_relid = fixture::create_table_person();
+        assert!(! is_anon_relation_oid(person_relid));
+
+        let last_name_relid = Spi::get_one::<pg_sys::Oid>(
+            "SELECT 'anon.last_name'::REGCLASS::OID;"
+        ).unwrap()
+         .expect("should be an OID");
+        assert!(is_anon_relation_oid(last_name_relid));
+    }
+
     #[pg_test]
     fn test_quote_identifier() {
         let schema_c_string = CString::new("WEIRD_schema").unwrap();
