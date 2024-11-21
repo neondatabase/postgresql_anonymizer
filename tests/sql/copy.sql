@@ -1,5 +1,7 @@
 BEGIN;
 
+CREATE EXTENSION anon;
+
 CREATE TABLE "Phone" (
   "phone_Owner"  TEXT,
   phone_number TEXT
