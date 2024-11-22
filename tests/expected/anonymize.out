@@ -96,6 +96,10 @@ IS 'MASKED WITH VALUE ''xxxH'' ';
 --
 -- Should return a NOTICE but anonymize data anyway
 SELECT anon.anonymize_column('employee','lastname');
+NOTICE:  The anon extension is not initialized.
+HINT:  Use 'SELECT anon.init()' before running this function
+NOTICE:  The anon extension is not initialized.
+HINT:  Use 'SELECT anon.init()' before running this function
  anonymize_column 
 ------------------
  t

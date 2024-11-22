@@ -118,6 +118,10 @@ CREATE ROLE dump_anon;
 
 SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
 
+GRANT USAGE ON SCHEMA anon TO dump_anon;
+GRANT SELECT ON ALL TABLES IN SCHEMA anon TO dump_anon;
+
+
 SET ROLE dump_anon;
 
 SELECT TRUE AS catalog_relations_are_not_masked
