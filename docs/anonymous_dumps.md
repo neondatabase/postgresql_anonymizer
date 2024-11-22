@@ -50,7 +50,7 @@ Now to export the anonymous data from a database named `foo`, let's use
 pg_dump foo \
         --user dump_anon \
         --no-security-labels \
-        --extension pgcatalog.plpgsql \
+        --exclude-extension="anon" \
         --file=foo_anonymized.sql
 ```
 
@@ -62,9 +62,8 @@ __NOTES:__
   This is really important because masked users should not have access to the
   masking policy.
 
-* `--extension pgcatalog.plpgsql` will remove the `anon` extension, which
-  useless inside the anonymized dump. This option is only available with
-  `pg_dump 14` and later.
+* `--exclude-extension` is only available with `pg_dump 17` and later.
+  As an alternative you can use `--extension plpgsql`.
 
 * `--format=custom` is supported
 

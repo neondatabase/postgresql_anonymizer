@@ -20,5 +20,4 @@ gosu postgres psql -c "GRANT pg_read_all_data to dump_anon;"
 cat | gosu postgres psql
 } &> /dev/null
 
-#/usr/bin/pg_dump -U dump_anon --no-security-labels --extension="pgcatalog.plpgsql"
-/usr/bin/pg_dump "$@" -U dump_anon --no-security-labels
+/usr/bin/pg_dump "$@" -U dump_anon --no-security-labels --exclude-extension="anon"
