@@ -55,7 +55,8 @@ Thanks
 
 This release includes code, bugfixes, documentation, code reviews and ideas
 from Giampaolo Capelli, José Pedro Saraiva, Guillaume Risbourg, Austin Putman,
-Carlos Ruiz, Thibaut Madeleine, Konrad Kucharski and many other [contributors].
+Carlos Ruiz, Thibaut Madeleine, Konrad Kucharski, Leo Long and many other
+[contributors].
 
 And also special thanks for the [PGRX] team for their amazing work !
 
