@@ -2,7 +2,7 @@
 /// # Static Masking
 ///
 
-//use crate::error;
+use crate::log;
 use crate::masking;
 use crate::sampling;
 use crate::utils;
@@ -108,7 +108,7 @@ pub fn anonymize_column(
         SET CONSTRAINTS ALL DEFERRED;
         UPDATE {tablename} SET {assign};
     ");
-    debug1!("Anon: {sql}");
+    log::debug1!("Anon: {sql}");
 
     Spi::run(&sql).expect("Failed to anonymize column");
 
@@ -153,7 +153,7 @@ pub fn anonymize_table(
         format!("UPDATE {tablename} SET {masking_assignments}")
     };
 
-    debug1!("Anon: {sql}");
+    log::debug1!("Anon: {sql}");
     Spi::run(&sql).expect("Failed to anonymize table");
 
     Some(true)

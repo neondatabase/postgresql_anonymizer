@@ -7,6 +7,7 @@
 use crate::error;
 use crate::guc;
 use crate::input;
+use crate::log;
 use crate::masking;
 use crate::re;
 use pgrx::prelude::*;
@@ -23,7 +24,7 @@ pub static ANON_DEFAULT_MASKING_POLICY: &str = "anon";
 pub fn register_label_providers() {
 
     // Register the security label provider for k-anonymity
-    debug1!("Anon: registering k_anonymity provider");
+    log::debug1!("Anon: registering k_anonymity provider");
     unsafe {
         pg_sys::register_label_provider(
             guc::ANON_K_ANONYMITY_PROVIDER
@@ -40,7 +41,7 @@ pub fn register_label_providers() {
         let policy_cstring: CString = CString::new(policy_str).unwrap();
         let policy_ptr: *const c_char = policy_cstring.as_ptr();
         unsafe {
-            debug1!("Anon: registering masking policy '{}'", policy_str );
+            log::debug1!("Anon: registering masking policy '{}'", policy_str );
             pg_sys::register_label_provider(
                 policy_ptr,
                 Some(masking_policy_object_relabel)

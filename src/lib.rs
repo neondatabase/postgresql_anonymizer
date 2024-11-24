@@ -10,6 +10,7 @@ mod guc;
 mod hooks;
 mod input;
 mod label_providers;
+mod log;
 mod macros;
 mod masking;
 mod random;
@@ -448,7 +449,7 @@ pub unsafe extern "C" fn _PG_init() {
     pgrx::hooks::register_hook(&mut HOOKS);
     guc::register_gucs();
     label_providers::register_label_providers();
-    debug1!("Anon: extension initialized");
+    log::debug1!("Anon: extension initialized");
 }
 
 

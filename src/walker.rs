@@ -10,6 +10,7 @@
 use crate::compat;
 use crate::error;
 use crate::input;
+use crate::log;
 use crate::masking;
 use crate::utils;
 use pgrx::*;
@@ -151,7 +152,7 @@ unsafe extern "C" fn rewrite_walker(
     if is_a(node, pg_sys::NodeTag::T_RangeTblEntry) {
         // The node is a Range Table Entry
         let mut rte = PgBox::from_pg(node as *mut pg_sys::RangeTblEntry);
-        debug1!("rte= {:?}",rte);
+        log::debug1!("rte= {:?}",rte);
 
         // We do not mask catalog relations
         if compat::IsCatalogRelationOid(rte.relid) { return false; }
@@ -168,11 +169,11 @@ unsafe extern "C" fn rewrite_walker(
         // This table is not masked, skip to the next node
         if msq_sql.is_none() { return false; }
 
-        debug1!("msq_sql= {}",msq_sql.clone().unwrap());
+        log::debug1!("msq_sql= {}",msq_sql.clone().unwrap());
 
         // Create the Raw Statement from the SQL subquery
         let msq_raw_stmt = masking::parse_subquery(msq_sql.clone().unwrap());
-        debug1!("msq_raw_stmt= {:?}",*msq_raw_stmt);
+        log::debug1!("msq_raw_stmt= {:?}",*msq_raw_stmt);
 
         // Create the Parse State with the SQL subquery within
         let mut msq_pstate = unsafe {
@@ -205,7 +206,7 @@ unsafe extern "C" fn rewrite_walker(
         // NOT be masked otherwise we'd trapped in an infinite loop
         //
         msq_query.querySource = pg_sys::QuerySource::QSRC_PARSER;
-        debug1!("new_subquery= {:?}",*msq_query);
+        log::debug1!("new_subquery= {:?}",*msq_query);
 
         // Do the substitution
         //pg_sys::AcquireRewriteLocks(msq_query.as_ptr(), true, false);

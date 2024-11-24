@@ -237,6 +237,31 @@ make test
 # etc.
 ```
 
+Debug mode
+--------------------------------------------------------------------------------
+
+By default, the extension is built with the Rust `--release` mode.
+
+For a more verbose output, you can enable the debug mode with
+
+``` bash
+TARGET=debug make run
+```
+
+This will give you access to:
+
+* the extension debug logs produced by the `log::debug1!` and `log::debug3!`
+  macros
+
+* Additional SQL functions that provide priceless information when we need to
+  fix a bug or develop a new feature, suh as
+  `SELECT anon.get_masking_policy(OID)`.
+
+In CI, the extension is built with the release mode, which means that the DEB
+and RPM packages are also in release mode.
+
+
+
 Build the docs
 --------------------------------------------------------------------------------
 

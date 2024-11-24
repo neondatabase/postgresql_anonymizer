@@ -1,5 +1,6 @@
 use crate::error;
 use crate::guc;
+use crate::log;
 use crate::masking;
 use crate::utils;
 use crate::walker;
@@ -53,7 +54,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
     }
 
     if unsafe { pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_CopyStmt) } {
-        debug1!("Anon: COPY found");
+        log::debug1!("Anon: COPY found");
         // The utilityStmt is provided as a pointer to a generice Node
         // But we now know that this Node is a CopyStmt
         // So we cast the Node pointer as a CopyStmt pointer to access the
@@ -134,7 +135,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
                             };
         let msq_sql = format!("SELECT {} FROM {relname}", attributes.join(","));
         let msq_raw_stmt  = masking::parse_subquery(msq_sql.clone());
-        debug3!("Anon: COPY subquery sql = {:#?}", msq_sql);
+        log::debug3!("Anon: COPY subquery sql = {:#?}", msq_sql);
 
         // Replace the relation by the masking subquery
         copystmt.relation = core::ptr::null_mut();
