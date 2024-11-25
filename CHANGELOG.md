@@ -3,8 +3,11 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
+FIXME : 2.0.0-rc.1 - Better, Faster, Safer
+-------------------------------------------------------------------------------
 
-FIXME : 2.0.0-beta.4 - Better, Faster, Safer
+
+20241125 : 2.0.0-beta.4 - Better, Faster, Safer
 -------------------------------------------------------------------------------
 
 * Bump to PGRX 0.12.9
