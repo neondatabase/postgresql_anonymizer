@@ -380,3 +380,25 @@ Therefore all functions should be defined with `SET search_path=''` even if
 they are not `SECURITY DEFINER`.
 
 [search_path attacks]: https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
+
+
+Publishing a new Release
+--------------------------------------------------------------------------------
+
+* [ ] Check that **all** CI jobs run without errors on the `master` branch
+* [ ] Close all remaining issues on the current milestone
+* [ ] Update the [Changelog]
+* [ ] Write the announcement in [NEWS.md]
+* [ ] Rebuild the docker image and upload it (`make docker_image docker_push`)
+* [ ] Upload the zipball to PGXN
+* [ ] Close the current milestone and open the next one
+* [ ] Rebase the `stable` branch from `latest`
+* [ ] Tag the `latest` branch
+* [ ] Bump to the new version number in [Cargo.toml] and [META.json]
+* [ ] Publish the announcement
+
+[Changelog]: CHANGELOG.md
+[NEWS.md]: NEWS.md
+[Cargo.toml]: Cargo.toml
+[META.json]: META.json
+
