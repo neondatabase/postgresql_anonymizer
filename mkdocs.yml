@@ -1,7 +1,7 @@
 site_name: PostgreSQL Anonymizer
 site_description: Anonymization and Data Masking with PostgreSQL
 site_author: www.dalibo.com
-copyright: Copyright 2018-2024 <a href="http://www.dalibo.com">dalibo</a>
+copyright: Copyright 2018-2025 <a href="http://www.dalibo.com">dalibo</a>
 repo_url: https://gitlab.com/dalibo/postgresql_anonymizer
 theme:
   name: readthedocs
