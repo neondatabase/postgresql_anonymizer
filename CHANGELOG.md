@@ -3,9 +3,19 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-FIXME : 2.0.0-rc.1 - Better, Faster, Safer
+20241202 : 2.0.0-rc.1 - Better, Faster, Safer
 -------------------------------------------------------------------------------
 
+* Update years
+* [V1] Remove deprecated bash tests
+* [V1] Remove useless git modules config
+* [V1] Remove the shell code
+* [V1] remove ancient debian folder
+* [V1] Remove Python code
+* [V1] Remove C code
+* Remove useless files
+* [CI] move the job templates
+* [doc] update and merge the release process
 
 20241125 : 2.0.0-beta.4 - Better, Faster, Safer
 -------------------------------------------------------------------------------
