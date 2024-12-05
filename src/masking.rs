@@ -242,7 +242,7 @@ pub fn subquery( relid: pg_sys::Oid, policy: String) -> Option<String>
 
     // if there's no mask and no tablesample ratio,
     // do not provide a subquery for this table
-    if ! table_is_masked && ! ratio.is_ok() { return None; }
+    if ! table_is_masked && ratio.is_err() { return None; }
 
     let gen_expressions =  generation_expressions(relid);
 
@@ -262,7 +262,7 @@ pub fn subquery( relid: pg_sys::Oid, policy: String) -> Option<String>
     hasher.update(tablename.clone());
     let tablename_hash = format!("{:X}",hasher.finalize());
 
-    Some(format!("
+     Some(format!("
         SELECT {gen_expressions}
         FROM (
             SELECT {masking_expressions}
@@ -361,8 +361,6 @@ pub fn rule_on_schema(object_id: pg_sys::Oid, policy: &str)
 /// The String is the list of "select clause filters" containing the column
 /// names or the generation expression for generated columns.
 ///
-/// the bool indicate is the table as at least one generated column
-///
 fn generation_expressions(
     relid: pg_sys::Oid,
 ) -> String {
@@ -408,7 +406,7 @@ fn generation_expressions(
 
     if table_has_one_generated_column {
         expressions.join(", ").to_string()
-    }else {
+    } else {
         "*".into()
     }
 
@@ -440,6 +438,11 @@ fn default_for_att(
     att: &pg_sys::FormData_pg_attribute,
     generated: bool
 ) -> Option<String> {
+
+    // Skip if the attribute is dropped
+    if att.attisdropped {
+        return None;
+    }
 
     // skip if this is a generated column and we don't want them
     if generated != is_generated(att) {
@@ -668,6 +671,11 @@ mod tests {
         let not_generation_expr = default_for_att(&relation, &att_generated, false);
         assert_eq!(not_generation_expr,None);
 
+        // Test dropped column
+        let att_dropped = attrs[5];
+        let nothing = default_for_att(&relation, &att_dropped, true);
+        assert_eq!(nothing,None);
+
         // Clean up
         unsafe {
             pg_sys::relation_close(relation.as_ptr(), lockmode);
@@ -759,18 +767,24 @@ mod tests {
     fn test_masking_value_for_column(){
         let relid = fixture::create_table_person();
         let anon = ANON_DEFAULT_MASKING_POLICY.to_string();
+
+        // testing a dropped column
+        let none = masking_value_for_column(relid,1,anon.clone());
+        assert_eq!(None,none);
+
         // testing the first column
-        let (result_1, is_masked_1) =
-            masking_value_for_column(relid,1,anon.clone()).unwrap();
-        let expected_1 = "firstname".to_string();
-        assert_eq!(expected_1,result_1);
-        assert!(!is_masked_1);
-        // testing the second column
         let (result_2, is_masked_2) =
             masking_value_for_column(relid,2,anon.clone()).unwrap();
-        let expected_2 = "CAST(NULL AS text)".to_string();
-        assert!(is_masked_2);
+        let expected_2 = "firstname".to_string();
         assert_eq!(expected_2,result_2);
+        assert!(!is_masked_2);
+
+        // testing the second column
+        let (result_3, is_masked_3) =
+            masking_value_for_column(relid,3,anon.clone()).unwrap();
+        let expected_3 = "CAST(NULL AS text)".to_string();
+        assert!(is_masked_3);
+        assert_eq!(expected_3,result_3);
     }
 
 
@@ -914,4 +928,51 @@ mod tests {
         assert!(result.contains("firstname"));
         assert!(result.contains("lastname"));
     }
+
+
+    #[pg_test]
+    fn test_value_for_att() {
+        // Create a table
+        let relid = fixture::create_table_person();
+        let lockmode = pg_sys::AccessShareLock as i32;
+        let relation = unsafe {
+            PgBox::from_pg(pg_sys::relation_open(relid, lockmode))
+        };
+        let reldesc = unsafe {
+            PgBox::from_pg(relation.rd_att)
+        };
+
+        let natts = reldesc.natts;
+        let attrs = unsafe {
+            reldesc.attrs.as_slice(natts.try_into().unwrap())
+        };
+
+        // Test column with default value
+        // Assuming the second column has a default value
+        let att_dropped   = attrs[0];
+        let att_firstname = attrs[1];
+        let att_lastname  = attrs[2];
+
+        let (val1, masked1) = value_for_att(&relation,&att_firstname,"anon".into());
+        assert_eq!(val1,"firstname");
+        assert!(!masked1);
+
+        let (val2, masked2) = value_for_att(&relation,&att_firstname,"does_not_exists".into());
+        assert_eq!(val2,"firstname");
+        assert!(!masked2);
+
+        let (val3, masked3) = value_for_att(&relation,&att_lastname,"anon".into());
+        assert_eq!(val3,"CAST(NULL AS text)");
+        assert!(masked3);
+
+        let (val4, masked4) = value_for_att(&relation,&att_lastname,"does_not_exists".into());
+        assert_eq!(val4,"lastname");
+        assert!(!masked4);
+
+        let (val5, masked5) = value_for_att(&relation,&att_dropped,"anon".into());
+        assert_eq!(val5,"\"........pg.dropped.1........\"");
+        assert!(!masked5);
+
+    }
+
 }

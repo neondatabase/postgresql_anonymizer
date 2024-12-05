@@ -208,6 +208,32 @@ unsafe extern "C" fn rewrite_walker(
         msq_query.querySource = pg_sys::QuerySource::QSRC_PARSER;
         log::debug1!("new_subquery= {:?}",*msq_query);
 
+        //
+        // Somehow later in the process, the optimizer will run a callback
+        // named `pullup_replace_vars_callback` on each Range_Table_Entry
+        // variable and use the original attribute number (attnum/resno) in
+        // order to find the attribute.
+        // Since we replace the original table with a masking subquery, there
+        // may be some inconsistencies when the original tables contains a
+        // dropped column.
+        // For instance, if a table has 4 columns a,b,c,d and the c column was
+        // dropped, then the attribute numbers of a,b,d would be 1,2,4.
+        // But in the masking subquery the attribute numbers would be 1,2,3
+        // This would lead to an error during the optimizer stage.
+        //
+        // We avoid this issue by assigning the attribute numbers of the
+        // original table upon the columns of the masking subquery
+        //
+        let original_attnums = utils::get_column_numbers(rte.relid).unwrap();
+        let target_list =
+            PgList::<pg_sys::TargetEntry>::from_pg(msq_query.targetList);
+
+        for (i,target_ptr) in target_list.iter_ptr().enumerate() {
+            let mut target = PgBox::<pg_sys::TargetEntry>::from_pg(target_ptr);
+            target.resno = original_attnums[i];
+            target.into_pg();
+        }
+
         // Do the substitution
         //pg_sys::AcquireRewriteLocks(msq_query.as_ptr(), true, false);
         rte.rtekind = pg_sys::RTEKind::RTE_SUBQUERY;
@@ -219,6 +245,7 @@ unsafe extern "C" fn rewrite_walker(
         // We must set `rte.inh` to false, otherwise the volatile functions
         // are not executed
         rte.inh = false;
+
 
         // TODO apply the table sampling ratio
         // rte.tablesample = ....;

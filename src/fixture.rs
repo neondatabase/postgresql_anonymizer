@@ -68,8 +68,10 @@ pub fn create_table_call() -> pg_sys::Oid {
          CREATE TABLE call AS
          SELECT  '410-719-9009'::TEXT        AS sender,
                  '410-258-4863'::TEXT        AS receiver,
-                 '2004-07-08'::DATE          AS day
+                 '2004-07-08'::DATE          AS day,
+                 1035::INT                   AS duration
          ;
+         ALTER TABLE call DROP COLUMN duration;
     ").unwrap();
     Spi::get_one::<pg_sys::Oid>("SELECT 'call'::REGCLASS::OID")
         .unwrap()
@@ -80,9 +82,14 @@ pub fn create_table_call() -> pg_sys::Oid {
 pub fn create_table_person() -> pg_sys::Oid {
     Spi::run("
          CREATE TABLE person AS
-         SELECT  'Sarah'::VARCHAR(30)        AS firstname,
-                 'Connor'::TEXT              AS lastname
+         SELECT
+            'She/Her'                   AS pronouns,
+            'Sarah'::VARCHAR(30)        AS firstname,
+            'Connor'::TEXT              AS lastname
          ;
+
+         ALTER TABLE person DROP COLUMN pronouns;
+
          SECURITY LABEL FOR anon ON COLUMN person.lastname
            IS 'MASKED WITH VALUE NULL';
 
@@ -117,8 +124,10 @@ pub fn create_table_with_defaults() -> pg_sys::Oid {
                 col_with_default TEXT DEFAULT 'default_value',
                 col_with_complex_default TIMESTAMP DEFAULT now(),
                 col_without_default INTEGER,
-                col_generated NUMERIC GENERATED ALWAYS AS (col_without_default / 2.54) STORED
-            )
+                col_generated NUMERIC GENERATED ALWAYS AS (col_without_default / 2.54) STORED,
+                col_dropped TEXT DEFAULT NULL
+            );
+            ALTER TABLE test_defaults DROP COLUMN col_dropped;
         ", None, None).unwrap();
 
         let relid = client

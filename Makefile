@@ -45,6 +45,7 @@ REGRESS_TESTS = initialize
 REGRESS_TESTS+= ternary
 REGRESS_TESTS+= noise shuffle
 REGRESS_TESTS+= detection
+REGRESS_TESTS+= dropped_columns
 REGRESS_TESTS+= get_function_schema trusted_schemas
 REGRESS_TESTS+= copy pg_dump
 REGRESS_TESTS+= masking_expressions

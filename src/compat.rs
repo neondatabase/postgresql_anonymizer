@@ -14,12 +14,12 @@ use std::os::raw::c_char;
 /// rawparser function
 ///
 
-#[cfg(any(feature = "pg13"))]
+#[cfg(feature = "pg13")]
 pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
     pg_sys::raw_parser(query)
 }
 
-#[cfg(not(any(feature = "pg13")))]
+#[cfg(not(feature = "pg13"))]
 pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
     pg_sys::raw_parser(query,pg_sys::RawParseMode::RAW_PARSE_DEFAULT)
 }

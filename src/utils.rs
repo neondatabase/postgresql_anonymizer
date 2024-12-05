@@ -53,6 +53,43 @@ pub fn get_column_number(
     result
 }
 
+
+/// Returns the 1-based numbers of all the columns in a table
+///
+pub fn get_column_numbers(
+    relid: pg_sys::Oid
+) -> Option<Vec<i16>> {
+    let lockmode = pg_sys::AccessShareLock as i32;
+
+    // `pg_sys::relation_open()` will raise XX000
+    // if the specified oid isn't a valid relation
+    let relation = unsafe {
+        PgBox::from_pg(pg_sys::relation_open(relid, lockmode))
+    };
+
+    // reldesc is a TupleDescData object
+    // https://doxygen.postgresql.org/structTupleDescData.html
+    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
+    let natts = reldesc.natts;
+    let attrs = unsafe {
+        reldesc.attrs.as_slice(natts.try_into().unwrap())
+    };
+
+    let mut result = vec![];
+    for a in attrs {
+        if a.attisdropped {
+            continue;
+        }
+        result.push(a.attnum);
+    }
+
+    // pass the relation back to Postgres
+    unsafe {
+        pg_sys::relation_close(relation.as_ptr(), lockmode);
+    }
+    Some(result)
+}
+
 /// Given a function call (e.g. 'anon.fake_city()'), return the namespace
 /// the function (e.g. 'anon') if possible
 ///
@@ -195,8 +232,10 @@ mod tests {
     #[pg_test]
     fn test_get_column_number() {
         let relid = fixture::create_table_person();
-        assert_eq!(Some(1 as i16), get_column_number(relid, "firstname"));
-        assert_eq!(Some(2 as i16), get_column_number(relid, "lastname"));
+        assert_eq!(Some(2 as i16), get_column_number(relid, "firstname"));
+        assert_eq!(Some(3 as i16), get_column_number(relid, "lastname"));
+        // dropped column
+        assert_eq!(None, get_column_number(relid, "pronouns"));
         assert_eq!(None,get_column_number(relid, "does_not_exist"));
     }
 
@@ -204,6 +243,18 @@ mod tests {
     fn test_get_column_number_fail() {
         let invalid_relid = pg_sys::Oid::from(21);
         assert_eq!(None,get_column_number(invalid_relid, "does_not_exist"));
+    }
+
+    #[pg_test]
+    fn test_get_column_numbers() {
+        let relid = fixture::create_table_person();
+        assert_eq!(Some(vec![2, 3]), get_column_numbers(relid));
+    }
+
+    #[pg_test(error="could not open relation with OID 21")]
+    fn test_get_column_numbers_fail() {
+        let invalid_relid = pg_sys::Oid::from(21);
+        assert_eq!(None,get_column_numbers(invalid_relid));
     }
 
     #[pg_test]
