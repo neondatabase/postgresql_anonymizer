@@ -1,5 +1,5 @@
 -- given a schema with a masked column
--- when the schema is renamed
+-- when the schema is dropped
 -- then the masking rule is removed
 
 BEGIN;
@@ -58,10 +58,21 @@ SELECT employee_id,last_name,birth_date FROM employees;
 
 SELECT count(*) = 1 FROM anon.pg_masking_rules;
 
-ALTER SCHEMA northwind RENAME TO nw;
+SAVEPOINT before_drop_table;
+DROP TABLE northwind;
+SELECT count(*) = 0 FROM anon.pg_masking_rules;
+ROLLBACK TO before_drop_table;
 
-SELECT count(*) = 1 FROM anon.pg_masking_rules;
 
-SELECT employee_id,last_name,birth_date FROM nw.employees;
+SAVEPOINT before_drop_schema;
+DROP SCHEMA northwind CASCADE;
+SELECT count(*) = 0 FROM anon.pg_masking_rules;
+ROLLBACK TO before_drop_schema;
+
+SAVEPOINT before_drop_column;
+ALTER TABLE employees DROP COLUMN birth_date;
+SELECT count(*) = 0 FROM anon.pg_masking_rules;
+ROLLBACK TO before_drop_column;
+
 
 ROLLBACK;

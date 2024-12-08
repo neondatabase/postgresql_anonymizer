@@ -1,6 +1,6 @@
 -- given a schema with a masked column
--- when the column is renamed
--- then the masking rule is still present and the data is still masked
+-- when the schema is renamed
+-- then the masking rule is removed
 
 BEGIN;
 
@@ -58,10 +58,23 @@ SELECT employee_id,last_name,birth_date FROM employees;
 
 SELECT count(*) = 1 FROM anon.pg_masking_rules;
 
-ALTER TABLE employees RENAME COLUMN birth_date TO date_of_birth;
-
+SAVEPOINT before_rename_schema;
+ALTER SCHEMA northwind RENAME TO nw;
 SELECT count(*) = 1 FROM anon.pg_masking_rules;
+SELECT employee_id,last_name,birth_date FROM nw.employees;
+ROLLBACK TO before_rename_schema;
 
+
+SAVEPOINT before_rename_table;
+ALTER TABLE employees RENAME TO new_employees;
+SELECT count(*) = 1 FROM anon.pg_masking_rules;
+SELECT employee_id,last_name,birth_date FROM new_employees;
+ROLLBACK TO before_rename_table;
+
+SAVEPOINT before_rename_column;
+ALTER TABLE employees RENAME COLUMN birth_date TO date_of_birth;
+SELECT count(*) = 0 FROM anon.pg_masking_rules;
 SELECT employee_id,last_name,date_of_birth FROM employees;
+ROLLBACK TO before_rename_column;
 
 ROLLBACK;

@@ -64,7 +64,7 @@ REGRESS_TESTS+= generated_columns
 REGRESS_TESTS+= rls
 REGRESS_TESTS+= fdw
 REGRESS_TESTS+= identity
-REGRESS_TESTS+= drop_schema rename_schema drop_column rename_column
+REGRESS_TESTS+= drop_objects rename_objects
 
 # We try our best to write tests that produce the same output on all the 5
 # current Postgres major versions. But sometimes it's really hard to do and
