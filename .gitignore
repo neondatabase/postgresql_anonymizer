@@ -53,7 +53,5 @@ dput
 /target
 *.iml
 **/*.rs.bk
-Cargo.lock
 .idea
-.
 .vscode
