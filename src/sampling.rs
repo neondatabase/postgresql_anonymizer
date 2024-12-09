@@ -41,16 +41,25 @@ mod tests {
     use crate::fixture;
     use crate::masking;
     use crate::sampling::*;
+    use std::ffi::CStr;
 
-/*
     #[pg_test]
-    fn get_current_database_ratio() {
+    fn test_get_current_database_ratio() {
         let db_name_ptr = unsafe {
-            pg_sysget_database_name(pg_sys::MyDatabaseId);
-        let ratio_cstr = unsafe { CStr::from_ptr(ratio_ptr.as_ptr()) };
-        assert!(get_current_database_ratio(ANON_DEFAULT_MASKING_POLICY).is_none());
+            pg_sys::get_database_name(pg_sys::MyDatabaseId)
+        };
+        let db_name_cstr = unsafe { CStr::from_ptr(db_name_ptr) };
+        assert!(
+            get_current_database_ratio(ANON_DEFAULT_MASKING_POLICY).is_err()
+        );
+        fixture::declare_sampling_for_database(
+            db_name_cstr.to_str().unwrap().to_string()
+        );
+        assert!(
+            get_current_database_ratio(ANON_DEFAULT_MASKING_POLICY).is_ok()
+        );
     }
-*/
+
     #[pg_test]
     fn test_get_current_database_ratio_none() {
         assert!(

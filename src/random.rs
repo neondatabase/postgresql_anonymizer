@@ -1,4 +1,4 @@
-
+use pgrx::prelude::*;
 use fake::Fake;
 use fake::faker::chrono::raw::*;
 use fake::faker::number::raw::*;
@@ -14,22 +14,22 @@ use std::str::FromStr;
 /// Convert a pgrx::Range<AnyNumeric> into a Rust Range::<f32>
 /// /!\ unbounded range are not allowed
 fn range_f32(r: Range<pgrx::AnyNumeric>) -> Option<core::ops::Range::<f32>> {
-    let s = &r.lower().unwrap();
-    let e = &r.upper().unwrap();
+    let s = &r.lower()?;
+    let e = &r.upper()?;
     if r.is_infinite() { return None; }
-    let s_f32 = f32::try_from((*s.get().unwrap()).clone()).expect("Conversion error");
-    let e_f32 = f32::try_from((*e.get().unwrap()).clone()).expect("Conversion error");
+    let s_f32 = f32::try_from((*s.get()?).clone()).expect("Conversion error");
+    let e_f32 = f32::try_from((*e.get()?).clone()).expect("Conversion error");
     Some(core::ops::Range::<f32> { start: s_f32, end: e_f32 } )
 }
 
 /// Convert a pgrx::Range<AnyNumeric> into a Rust Range::<f64>
 /// /!\ unbounded range are not allowed
 fn range_f64(r: Range<pgrx::AnyNumeric>) -> Option<core::ops::Range::<f64>> {
-    let s = &r.lower().unwrap();
-    let e = &r.upper().unwrap();
+    let s = &r.lower()?;
+    let e = &r.upper()?;
     if r.is_infinite() { return None; }
-    let s_f64 = f64::try_from((*s.get().unwrap()).clone()).expect("Conversion error");
-    let e_f64 = f64::try_from((*e.get().unwrap()).clone()).expect("Conversion error");
+    let s_f64 = f64::try_from((*s.get()?).clone()).expect("Conversion error");
+    let e_f64 = f64::try_from((*e.get()?).clone()).expect("Conversion error");
     Some(core::ops::Range::<f64> { start: s_f64, end: e_f64 } )
 }
 
@@ -144,12 +144,14 @@ pub fn string(r: Range<i32>) -> Option<String> {
 // Tests
 //----------------------------------------------------------------------------
 
-#[cfg(test)]
+#[cfg(any(test, feature = "pg_test"))]
+#[pg_schema]
 mod tests {
+    use crate::random::*;
+    use std::str::FromStr;
 
-    #[test]
+    #[pg_test]
     fn test_int() {
-        use crate::random::int;
         assert!(int(pgrx::Range::<i32>::new(1, 10)).is_some());
         assert_eq!(int(pgrx::Range::<i32>::new(1, 2)),Some(1));
         assert!(int(pgrx::Range::<i32>::new(None, 10)).is_none());
@@ -157,14 +159,109 @@ mod tests {
         assert!(int(pgrx::Range::<i32>::new(None, None)).is_none());
     }
 
-    #[test]
+    #[pg_test]
     fn test_string() {
-        use crate::random::string;
         assert!(string(pgrx::Range::<i32>::new(1, 10)).is_some());
         assert!(string(pgrx::Range::<i32>::new(None, 10)).is_none());
         assert!(string(pgrx::Range::<i32>::new(1, None)).is_none());
         assert!(string(pgrx::Range::<i32>::new(None, None)).is_none());
     }
 
+    #[pg_test]
+    fn test_bigint() {
+        assert!(bigint(pgrx::Range::<i64>::new(1, 10)).is_some());
+        assert!(bigint(pgrx::Range::<i64>::new(None, 10)).is_none());
+        assert!(bigint(pgrx::Range::<i64>::new(1, None)).is_none());
+        assert!(bigint(pgrx::Range::<i64>::new(None, None)).is_none());
+    }
 
+
+    #[pg_test]
+    fn test_range_f32() {
+        let one = pgrx::AnyNumeric::from(1);
+        let two = pgrx::AnyNumeric::from(2);
+        let six = pgrx::AnyNumeric::from(6);
+        let ten = pgrx::AnyNumeric::from(10);
+        assert!(range_f32(pgrx::Range::<pgrx::AnyNumeric>::new(one,ten)).is_some());
+        assert!(range_f32(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
+        assert!(range_f32(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
+        assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
+    }
+
+    #[pg_test]
+    fn test_range_f64() {
+        let one = pgrx::AnyNumeric::from(1);
+        let two = pgrx::AnyNumeric::from(2);
+        let six = pgrx::AnyNumeric::from(6);
+        let ten = pgrx::AnyNumeric::from(10);
+        assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(one,ten)).is_some());
+        assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
+        assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
+        assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
+    }
+
+    #[pg_test]
+    fn test_double_precision() {
+        let one = pgrx::AnyNumeric::from(1);
+        let two = pgrx::AnyNumeric::from(2);
+        let six = pgrx::AnyNumeric::from(6);
+        let ten = pgrx::AnyNumeric::from(10);
+        assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(one,ten)).is_some());
+        assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
+        assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
+        assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
+    }
+
+    #[pg_test]
+    fn test_numeric() {
+        let one = pgrx::AnyNumeric::from(1);
+        let two = pgrx::AnyNumeric::from(2);
+        let six = pgrx::AnyNumeric::from(6);
+        let ten = pgrx::AnyNumeric::from(10);
+        assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(one, ten)).is_some());
+        assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
+        assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
+        assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
+    }
+
+    #[pg_test]
+    fn test_real() {
+        let one = pgrx::AnyNumeric::from(1);
+        let two = pgrx::AnyNumeric::from(2);
+        let six = pgrx::AnyNumeric::from(6);
+        let ten = pgrx::AnyNumeric::from(10);
+        assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(one, ten)).is_some());
+        assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
+        assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
+        assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
+    }
+
+    #[pg_test]
+    fn test_date() {
+        assert!(date().to_string().len() > 0);
+    }
+
+    #[pg_test]
+    #[ignore]
+    fn test_date_after() {
+        let t = pgrx::datum::TimestampWithTimeZone::from_str("1977-03-20 04:42:00 PDT").unwrap();
+        assert!(date_after(t).to_string().len() > 0);
+    }
+
+    #[pg_test]
+    #[ignore]
+    fn test_date_before() {
+        let t = pgrx::datum::TimestampWithTimeZone::from_str("1977-03-20 04:42:00 PDT").unwrap();
+        assert!(date_before(t).to_string().len() > 0);
+    }
+
+    #[pg_test]
+    fn test_time() {
+        assert!(time().to_string().len() > 0);
+    }
+
+    #[pg_test]
+    fn test_number_with_format() {
+        assert_eq!(number_with_format("###-###".to_string()).len(), 7);
+    }
 }

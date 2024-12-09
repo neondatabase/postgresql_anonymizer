@@ -53,7 +53,7 @@ dependencies = [
 
 [[package]]
 name = "anon"
-version = "2.0.0-beta.4"
+version = "2.0.0-rc.1"
 dependencies = [
  "c_str_macro",
  "chrono",

@@ -137,7 +137,7 @@ unsafe extern "C" fn masking_policy_object_relabel(
                 relabel_table(label)
             } else {
                 /* SECURITY LABEL FOR anon ON COLUMN t.i IS '[...]' */
-                relabel_column(label,object.objectId)
+                relabel_column(label)
             }
         }
 
@@ -152,13 +152,7 @@ unsafe extern "C" fn masking_policy_object_relabel(
     }
 }
 
-fn relabel_column(label: &str, _object_id: pg_sys::Oid) {
-    /* Check that the column does not belong to a view */
-    /*
-    if unsafe { pg_sys::get_rel_relkind(object_id) == 'v' as c_char } {
-        error::feature_not_supported("Masking a view").ereport();
-    }
-    */
+fn relabel_column(label: &str) {
 
     /* SECURITY LABEL FOR anon ON COLUMN t.i IS 'MASKED WITH VALUE $x$' */
     if let Some(val) = re::capture_value(label) {
@@ -247,4 +241,78 @@ fn relabel_table(label: &str) {
         detail = Some(check_tbs.unwrap_err());
     }
     error::invalid_label_for("a table", label, detail).ereport();
+}
+
+//----------------------------------------------------------------------------
+// Tests
+//----------------------------------------------------------------------------
+
+#[cfg(any(test, feature = "pg_test"))]
+#[pg_schema]
+mod tests {
+    use crate::label_providers::*;
+
+
+    #[pg_test]
+    fn test_relabel_database_valid_label() {
+        relabel_database("TABLESAMPLE SYSTEM(10)")
+    }
+
+    #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a database")]
+    fn test_relabel_database_invalid_label() {
+        relabel_database("INVALID LABEL")
+    }
+
+    #[pg_test]
+    fn test_relabel_table_valid_label() {
+        relabel_table("TABLESAMPLE SYSTEM(10)")
+    }
+
+    #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a table")]
+    fn test_relabel_table_invalid_label() {
+        relabel_table("INVALID LABEL")
+    }
+
+    #[pg_test]
+    fn test_relabel_schema_valid_label() {
+        relabel_schema("TRUSTED")
+    }
+
+    #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a schema")]
+    fn test_relabel_schema_invalid_label() {
+        relabel_schema("INVALID LABEL")
+    }
+
+    #[pg_test]
+    fn test_relabel_function_valid_label() {
+        relabel_function("TRUSTED")
+    }
+
+    #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a function")]
+    fn test_relabel_function_invalid_label() {
+        relabel_function("INVALID LABEL")
+    }
+
+    #[pg_test]
+    fn test_relabel_role_valid_label() {
+        relabel_role("MASKED")
+    }
+
+    #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a role")]
+    fn test_relabel_role_invalid_label() {
+        relabel_role("INVALID LABEL")
+    }
+
+    #[pg_test]
+    fn test_relabel_column_valid_label() {
+        relabel_column("MASKED WITH VALUE NULL");
+        relabel_column("MASKED WITH VALUE 'x'");
+        relabel_column("MASKED WITH FUNCTION anon.firstname()");
+    }
+
+    #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a column")]
+    fn test_relabel_column_invalid_label() {
+        relabel_column("INVALID LABEL")
+    }
+
 }

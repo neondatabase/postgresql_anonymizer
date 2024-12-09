@@ -248,21 +248,40 @@ impl pgrx::hooks::PgHooks for AnonHooks {
 #[pg_schema]
 mod tests {
     use pgrx::prelude::*;
+    use crate::fixture;
+
+    //
+    // The unit tests for the hooks are a bit complex because we would have
+    // to create planned statements from scratch and pass them to the function.
+    //
+    // Alternatively, we run SQL commands just like we would do in the
+    // functional tests.
+    //
 
     #[pg_test]
     #[ignore]
-    fn test_pa_rewrite_utility(){
-        //
-        // The unit tests for pa_rewrite_utility() are a bit complex
-        // to write because the function is called by the rewrite_utility hook
-        // and we would have to create planned statements from scratch and
-        // pass them to function.
-        //
-        // Alternatively, the functional tests are way simpler to write, so
-        // currently we focus on them and ignore this unit test.
-        //
-        // See `tests/sql/copy.sql` and `test/sql/pg_dump.sql` for more details
-        //
+    fn test_process_utility_hook(){
+        fixture::create_table_person();
+        fixture::create_masked_role();
+        Spi::run("
+            SET anon.transparent_dynamic_masking TO TRUE;
+            GRANT USAGE ON SCHEMA public TO batman;
+            GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman;
+            SET ROLE batman;
+            COPY person TO stdout;
+         ").unwrap();
     }
 
+    #[pg_test]
+    fn test_post_parse_analyze(){
+        fixture::create_table_person();
+        fixture::create_masked_role();
+        Spi::run("
+            SET anon.transparent_dynamic_masking TO TRUE;
+            GRANT USAGE ON SCHEMA public TO batman;
+            GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman;
+            SET ROLE batman;
+            SELECT lastname IS NULL FROM person LIMIT 1;
+         ").unwrap();
+    }
 }
