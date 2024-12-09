@@ -1,4 +1,4 @@
--- given a schema with a masked column
+-- given a table with a masked column
 -- when the schema or table or column is dropped
 -- then the masking rule is removed and no errors are raised
 
