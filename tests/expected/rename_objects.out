@@ -1,6 +1,6 @@
 -- given a schema with a masked column
--- when the schema is renamed
--- then the masking rule is removed
+-- when the schema or a table or a column is renamed
+-- then the masking rule is not removed and no errors are raised and masking is still applied.
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon;
 DROP SCHEMA IF EXISTS northwind CASCADE;

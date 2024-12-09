@@ -1,6 +1,6 @@
--- given a schema with a masked column
--- when the schema is dropped
--- then the masking rule is removed
+-- given a table with a masked column
+-- when the schema or table or column is dropped
+-- then the masking rule is removed and no errors are raised
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon;
 DROP SCHEMA IF EXISTS northwind CASCADE;
