@@ -62,7 +62,9 @@ ORDER BY attnum;
 
 SET ROLE usuario_restrito;
 
-SELECT TRUE FROM (SELECT * FROM tb_pessoas) AS t LIMIT 1;
+SELECT TRUE AS masking_subquery_is_ok
+FROM (SELECT * FROM tb_pessoas) AS t
+LIMIT 1;
 
 SELECT bool_and(nome = 'CONFIDENCIAL')  FROM tb_pessoas;
 

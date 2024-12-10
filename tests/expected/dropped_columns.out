@@ -49,9 +49,11 @@ ORDER BY attnum;
 (1 row)
 
 SET ROLE usuario_restrito;
-SELECT TRUE FROM (SELECT * FROM tb_pessoas) AS t LIMIT 1;
- bool 
-------
+SELECT TRUE AS masking_subquery_is_ok
+FROM (SELECT * FROM tb_pessoas) AS t
+LIMIT 1;
+ masking_subquery_is_ok 
+------------------------
  t
 (1 row)
 
