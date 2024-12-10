@@ -1,8 +1,10 @@
-use pgrx::prelude::*;
 use fake::Fake;
 use fake::faker::chrono::raw::*;
 use fake::faker::number::raw::*;
 use fake::locales::EN;
+
+#[allow(unused_imports)]
+use pgrx::prelude::*;
 use pgrx::Range;
 use std::str::FromStr;
 
@@ -143,6 +145,9 @@ pub fn string(r: Range<i32>) -> Option<String> {
 //----------------------------------------------------------------------------
 // Tests
 //----------------------------------------------------------------------------
+
+#[allow(unused_imports)]
+use pgrx::prelude::*;
 
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
