@@ -16,6 +16,9 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Ben Dempsey: Beta Testing
+* Pierre-Marie Petit: multiples contributions
+* Danilo Lourenço Costa Oliveira: Beta Testing
 * Leo Long: Testing
 * Konrad Kucharski: Beta Testing
 * Giampaolo Capelli: Documentation

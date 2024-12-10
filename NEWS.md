@@ -1,7 +1,7 @@
 PostgreSQL Anonymizer 2.0: Better, Faster, Safer
 ================================================================================
 
-Eymoutiers, France, December 10, 2024
+Eymoutiers, France, December 17, 2024
 
 We're thrilled to announce PostgreSQL Anonymizer 2.0, a major leap forward in
 database privacy protection.
@@ -55,8 +55,8 @@ Thanks
 
 This release includes code, bugfixes, documentation, code reviews and ideas
 from Giampaolo Capelli, José Pedro Saraiva, Guillaume Risbourg, Austin Putman,
-Carlos Ruiz, Thibaut Madeleine, Konrad Kucharski, Leo Long and many other
-[contributors].
+Carlos Ruiz, Thibaut Madeleine, Konrad Kucharski, Leo Long, Ben Dempsey,
+Pierre-Marie Petit, Danilo Lourenço Costa Oliveira and many other [contributors].
 
 And also special thanks for the [PGRX] team for their amazing work !
 

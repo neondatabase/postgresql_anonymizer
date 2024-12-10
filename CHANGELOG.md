@@ -3,6 +3,22 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
+
+
+20241210 : 2.0.0-rc.2 - Better, Faster, Safer
+-------------------------------------------------------------------------------
+
+* [random] remove useless warning
+* [core] FIX #493 - Support CHAR(n) type in transparent dynamic masking
+  (Thanks to Ben Dempsey)
+* [tests] fix the dropped_columns test for PG15+
+* [tests] add tests on schema & column (Pierre-Marie Petit)
+* add gitignore for vscode (Pierre-Marie Petit)
+* [doc] Fix Typo (Pierre-Marie Petit)
+* [core] Fix #492: Error when a table has a dropped column
+  (Thanks to Danilo Lourenço Costa Oliveira)
+* [tests] Add more unit tests
+
 20241202 : 2.0.0-rc.1 - Better, Faster, Safer
 -------------------------------------------------------------------------------
 
