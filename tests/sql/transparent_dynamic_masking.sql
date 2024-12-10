@@ -25,7 +25,7 @@ INSERT INTO calls VALUES
 CREATE SCHEMA baltimore;
 
 CREATE TABLE baltimore.locations(
-  zipcode TEXT,
+  zipcode CHAR(5),
   name TEXT
 );
 
@@ -94,7 +94,12 @@ JOIN "Phone" a ON c.sender = a.phone_number
 JOIN "Phone" b ON c.receiver = b.phone_number;
 
 -- Masking rules are applied in different schemas
-SELECT bool_and(zipcode = '21xxx') FROM baltimore.locations;
+SELECT  pg_catalog.bool_and(zipcode = '21xxx')
+FROM baltimore.locations;
+
+-- type with a typmod, for instance `CHAR(N)` are handled correctly
+SELECT pg_catalog.bool_and(pg_catalog.length(zipcode)=5)
+FROM baltimore.locations;
 
 SAVEPOINT error_anon_role_is_masked;
 EXPLAIN ANALYZE SELECT * FROM "Phone";

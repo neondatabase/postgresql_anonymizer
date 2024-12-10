@@ -36,20 +36,6 @@ pub enum Reason {
 // Public functions
 //----------------------------------------------------------------------------
 
-/// Decorate a value with a CAST function
-///
-/// Example: the value `1` will be transformed into `CAST(1 AS INT)`
-///
-/// * value is the value to transform
-/// * atttypid is the id of the type for this data
-///
-pub fn cast_as_regtype(value: String, atttypid: pg_sys::Oid) -> String {
-    let type_be = unsafe { CStr::from_ptr(pg_sys::format_type_be(atttypid)) }
-        .to_str()
-        .unwrap();
-    format!("CAST({value} AS {type_be})")
-}
-
 
 /// For a given role, returns the policy in which he/she is masked
 /// or the NULL if the role is not masked.
@@ -356,6 +342,32 @@ pub fn rule_on_schema(object_id: pg_sys::Oid, policy: &str)
 // Private functions
 //----------------------------------------------------------------------------
 
+/// Decorate a value with a CAST function
+///
+/// Example: the value `1` will be transformed into `CAST(1 AS INT)`
+///
+/// * value is the value to transform
+/// * atttypid is the id of the type for this data
+/// * atttypmod is the type modifier (for ARRAY types)
+///
+fn cast_as_regtype(
+    value: String,
+    atttypid: pg_sys::Oid,
+    atttypmod: i32
+) -> String {
+    let type_extended = unsafe {
+        CStr::from_ptr(
+            pg_sys::format_type_extended(
+                atttypid,
+                atttypmod,
+                pg_sys::FORMAT_TYPE_TYPEMOD_GIVEN.try_into().unwrap()
+            )
+        )
+    }.to_str()
+     .unwrap();
+    format!("CAST({value} AS {type_extended})")
+}
+
 /// Returns a String and bool
 ///
 /// The String is the list of "select clause filters" containing the column
@@ -567,7 +579,14 @@ pub fn value_for_att(
     // Search for a masking function
     if let Some(function) = re::capture_function(seclabel) {
         if guc::ANON_STRICT_MODE.get() {
-            return (cast_as_regtype(function.to_string(), att.atttypid),true);
+            return (
+                cast_as_regtype(
+                    function.to_string(),
+                    att.atttypid,
+                    att.atttypmod
+                ),
+                true
+            );
         }
         return (function.to_string(), true);
     }
@@ -575,7 +594,14 @@ pub fn value_for_att(
     // Search for a masking value
     if let Some(value) = re::capture_value(seclabel) {
         if guc::ANON_STRICT_MODE.get() {
-            return (cast_as_regtype(value.to_string(), att.atttypid), true);
+            return (
+                cast_as_regtype(
+                    value.to_string(),
+                    att.atttypid,
+                    att.atttypmod
+                ),
+                true
+            );
         }
         return (value.to_string(), true);
     }
@@ -617,9 +643,14 @@ mod tests {
 
     #[pg_test]
     fn test_cast_as_regtype() {
-        let oid = pg_sys::Oid::from(21);
+        let smallint_oid = pg_sys::Oid::from(21);
         assert_eq!( "CAST(0 AS smallint)",
-                    cast_as_regtype('0'.to_string(),oid));
+                    cast_as_regtype('0'.to_string(),smallint_oid,-1)
+        );
+        let char_oid = pg_sys::Oid::from(18);
+        assert_eq!( "CAST('abcd' AS \"char\"(4))",
+                    cast_as_regtype("'abcd'".to_string(),char_oid,4)
+        );
     }
 
     #[pg_test]

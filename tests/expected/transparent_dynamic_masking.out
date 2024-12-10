@@ -18,7 +18,7 @@ INSERT INTO calls VALUES
 ('410-617-7308','410-385-2983', '2004-07-08 13:05:33.614284+00', '2024-07-08 13:08:09.046126+00');
 CREATE SCHEMA baltimore;
 CREATE TABLE baltimore.locations(
-  zipcode TEXT,
+  zipcode CHAR(5),
   name TEXT
 );
 INSERT INTO baltimore.locations VALUES
@@ -113,7 +113,16 @@ JOIN "Phone" b ON c.receiver = b.phone_number;
 (1 row)
 
 -- Masking rules are applied in different schemas
-SELECT bool_and(zipcode = '21xxx') FROM baltimore.locations;
+SELECT  pg_catalog.bool_and(zipcode = '21xxx')
+FROM baltimore.locations;
+ bool_and 
+----------
+ t
+(1 row)
+
+-- type with a typmod, for instance `CHAR(N)` are handled correctly
+SELECT pg_catalog.bool_and(pg_catalog.length(zipcode)=5)
+FROM baltimore.locations;
  bool_and 
 ----------
  t
