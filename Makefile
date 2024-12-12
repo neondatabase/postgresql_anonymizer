@@ -41,30 +41,54 @@ PGDATABASE?=contrib_regression
 # PGXS is used only for functional testing with `make installcheck`
 # For unit tests, we use `cargo` via `make test`
 
+# /!\ The test files should not have the same name that source files located
+# in the `src` folder
+
 REGRESS_TESTS = initialize
-REGRESS_TESTS+= ternary
-REGRESS_TESTS+= noise shuffle
+REGRESS_TESTS+= anon_catalog
+REGRESS_TESTS+= copy
+REGRESS_TESTS+= destruction
 REGRESS_TESTS+= detection
+REGRESS_TESTS+= drop_objects
 REGRESS_TESTS+= dropped_columns
-REGRESS_TESTS+= get_function_schema trusted_schemas
-REGRESS_TESTS+= copy pg_dump
-REGRESS_TESTS+= masking_expressions
-REGRESS_TESTS+= sampling
-REGRESS_TESTS+= destruction random_functions dummy faking partial
-REGRESS_TESTS+= pseudonymization hashing
-REGRESS_TESTS+= ldm transparent_dynamic_masking
-REGRESS_TESTS+= anon_catalog test_static_masking privacy_by_default
-REGRESS_TESTS+= multiple_masking_policies
-#REGRESS_TESTS+= restore
-REGRESS_TESTS+= hasmask masked_roles masking masking_search_path masking_foreign_tables
-REGRESS_TESTS+= generalization k_anonymity
-REGRESS_TESTS+= permissions_owner permissions_masked_role injection syntax_checks
-REGRESS_TESTS+= views elevation_via_mask
-REGRESS_TESTS+= generated_columns
-REGRESS_TESTS+= rls
+REGRESS_TESTS+= dummy
+REGRESS_TESTS+= elevation_via_mask
+REGRESS_TESTS+= faking
 REGRESS_TESTS+= fdw
+REGRESS_TESTS+= generalization
+REGRESS_TESTS+= generated_columns
+REGRESS_TESTS+= get_function_schema
+REGRESS_TESTS+= hashing
+REGRESS_TESTS+= hasmask
 REGRESS_TESTS+= identity
-REGRESS_TESTS+= drop_objects rename_objects
+REGRESS_TESTS+= injection
+REGRESS_TESTS+= k_anonymity
+REGRESS_TESTS+= ldm
+REGRESS_TESTS+= masked_roles
+REGRESS_TESTS+= masking
+REGRESS_TESTS+= masking_expressions
+REGRESS_TESTS+= masking_foreign_tables
+REGRESS_TESTS+= masking_search_path
+REGRESS_TESTS+= multiple_masking_policies
+REGRESS_TESTS+= noise
+REGRESS_TESTS+= partial
+REGRESS_TESTS+= permissions_masked_role
+REGRESS_TESTS+= permissions_owner
+REGRESS_TESTS+= pg_dump
+REGRESS_TESTS+= privacy_by_default
+REGRESS_TESTS+= pseudonymization
+REGRESS_TESTS+= random_functions
+REGRESS_TESTS+= rename_objects
+#REGRESS_TESTS+= restore
+REGRESS_TESTS+= rls
+REGRESS_TESTS+= sampling
+REGRESS_TESTS+= shuffle
+REGRESS_TESTS+= syntax_checks
+REGRESS_TESTS+= ternary
+REGRESS_TESTS+= test_static_masking
+REGRESS_TESTS+= transparent_dynamic_masking
+REGRESS_TESTS+= trusted_schemas
+REGRESS_TESTS+= views
 
 # We try our best to write tests that produce the same output on all the 5
 # current Postgres major versions. But sometimes it's really hard to do and
@@ -75,7 +99,6 @@ REGRESS_TESTS+= drop_objects rename_objects
 # * the _PG15+ suffix means PostgreSQL 15 and all the major versions after
 # * the _PG13- suffix means PostgreSQL 13 and all the major versions below
 
-REGRESS_TESTS_PG12 = elevation_via_rule_PG15-
 REGRESS_TESTS_PG13 = elevation_via_rule_PG15-
 REGRESS_TESTS_PG14 = elevation_via_rule_PG15-
 REGRESS_TESTS_PG15 = elevation_via_rule_PG15-
