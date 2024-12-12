@@ -107,4 +107,10 @@ mod tests {
         let i = internal("This is a test of the internal error");
         i.ereport();
     }
+
+    #[pg_test(error = "Anon: not implemented yet")]
+    fn test_not_implemented_yet(){
+        let niy = not_implemented_yet();
+        niy.ereport();
+    }
 }

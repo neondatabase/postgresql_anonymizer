@@ -182,7 +182,7 @@ mod tests {
             Some("\"lastname\" = CAST(NULL AS text)".to_string()),
             column_assignment(relid,"lastname".to_string(),anon.clone())
         );
-      }
+    }
 
     #[pg_test]
     fn test_anonymize_column(){

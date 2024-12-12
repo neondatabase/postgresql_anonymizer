@@ -21,6 +21,7 @@ mod utils;
 mod walker;
 
 // Load the SQL functions AFTER the rust functions
+// GCOVR_EXCL_START
 extension_sql_file!("../sql/anon.sql", name="anon", finalize);
 
 extension_sql_file!("../sql/fake_data_tables.sql", name="fake_data_tables", requires=["anon"]);
@@ -31,6 +32,7 @@ extension_sql_file!("../sql/pseudo.sql", requires=["init"]);
 extension_sql_file!("../sql/random.sql", requires =["anon"]);
 extension_sql_file!("../sql/static_masking.sql", requires =["anon"]);
 extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires =["anon"]);
+// GCOVR_EXCL_STOP
 
 pgrx::pg_module_magic!();
 
@@ -447,6 +449,7 @@ pub unsafe extern "C" fn _PG_init() {
 mod tests {
     use pgrx::prelude::*;
     use crate::anon::*;
+    use crate::fixture;
 
     #[pg_test]
     #[ignore]
@@ -536,6 +539,99 @@ mod tests {
         assert!(random_string(range).is_some());
     }
 
+    #[pg_test]
+    fn test_anon_masking_expressions_for_table(){
+        let oid =  fixture::create_table_person();
+        assert_eq!(
+            masking_expressions_for_table(oid,"anon".into()),
+            "firstname AS firstname, CAST(NULL AS text) AS lastname"
+        );
+        assert_eq!(
+            masking_expressions_for_table(oid,"does_not_exist".into()),
+            "firstname AS firstname, lastname AS lastname"
+        );
+    }
+
+    #[pg_test(error = "could not open relation with OID 0")]
+    fn test_anon_masking_expressions_for_table_invalid_oid(){
+        masking_expressions_for_table(pg_sys::InvalidOid,"anon".into());
+    }
+
+    #[pg_test]
+    fn test_anon_masking_value_for_column(){
+        let oid =  fixture::create_table_person();
+        // dropped column
+        assert_eq!(
+            masking_value_for_column(oid,1,"anon".into()),
+            None
+        );
+        // column without a mask
+        assert_eq!(
+            masking_value_for_column(oid,2,"anon".into()),
+            Some("firstname".into())
+        );
+        assert_eq!(
+            masking_value_for_column(oid,2,"does_not_exist".into()),
+            Some("firstname".into())
+        );
+        // masked_column
+        assert_eq!(
+            masking_value_for_column(oid,3,"anon".into()),
+            Some("CAST(NULL AS text)".into())
+        );
+        assert_eq!(
+            masking_value_for_column(oid,3,"does_not_exist".into()),
+            Some("lastname".into())
+        );
+    }
+
+    #[pg_test(error = "could not open relation with OID 0")]
+    fn test_anon_masking_value_for_column_invalid_oid(){
+        masking_value_for_column(pg_sys::InvalidOid,2,"anon".into());
+    }
+
+    #[pg_test]
+    fn test_anon_anonymize_table(){
+        let oid =  fixture::create_table_person();
+        assert_eq!(anonymize_table(oid,"anon".into()), Some(true));
+        assert_eq!(anonymize_table(oid,"does_not_exist".into()), None);
+    }
+
+    #[pg_test]
+    fn test_anon_anonymize_table_invalid_oid(){
+        assert_eq!(
+            anonymize_table(pg_sys::InvalidOid,"anon".into()),
+            None
+        );
+    }
+
+    #[pg_test]
+    fn test_anon_anonymize_column(){
+        let oid =  fixture::create_table_person();
+        assert!(anonymize_column(oid,"lastname".into(),"anon".into()).unwrap());
+        assert!(!anonymize_column(oid,"lastname".into(),"does_not_exist".into()).unwrap());
+    }
+
+    #[pg_test]
+    fn test_anon_anonymize_column_invalid_oid(){
+        assert_eq!( 
+            anonymize_column(pg_sys::InvalidOid,"lastname".into(),"anon".into()),
+            None
+        );
+    }
+
+    #[pg_test]
+    fn test_anon_get_function_schema() {
+        assert_eq!(
+            get_function_schema("pg_catalog.now()".into()),
+            "pg_catalog".to_string()
+        );
+
+        assert_eq!(
+            get_function_schema("now()".into()),
+            "".to_string()
+        );
+    }
 }
 
 /// This module is required by `cargo pgrx test` invocations.

@@ -273,6 +273,30 @@ mod tests {
     }
 
     #[pg_test]
+    fn test_security_label(){
+        fixture::create_table_person();
+        fixture::create_masked_role();
+        Spi::run("
+            CREATE TABLE wayne_manor AS
+                SELECT '224 Park Dr., Gotham City' as address;
+            ALTER TABLE wayne_manor OWNER TO batman;
+            SET ROLE batman;
+            SECURITY LABEL FOR anon ON COLUMN wayne_manor.address
+                IS 'MASKED WITH VALUE $$CONFIDENTIAL$$ ';
+        ").unwrap();
+    }
+
+    #[pg_test]
+    fn test_explain(){
+        fixture::create_table_person();
+        fixture::create_masked_role();
+        Spi::run("
+            SET ROLE batman;
+            EXPLAIN SELECT 1;
+        ").unwrap();
+    }
+
+    #[pg_test]
     fn test_post_parse_analyze(){
         fixture::create_table_person();
         fixture::create_masked_role();
@@ -282,6 +306,7 @@ mod tests {
             GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman;
             SET ROLE batman;
             SELECT lastname IS NULL FROM person LIMIT 1;
-         ").unwrap();
+        ").unwrap();
     }
+
 }

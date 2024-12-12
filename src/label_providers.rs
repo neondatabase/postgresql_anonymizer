@@ -251,7 +251,7 @@ fn relabel_table(label: &str) {
 #[pg_schema]
 mod tests {
     use crate::label_providers::*;
-
+    use crate::fixture;
 
     #[pg_test]
     fn test_relabel_database_valid_label() {
@@ -313,6 +313,37 @@ mod tests {
     #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a column")]
     fn test_relabel_column_invalid_label() {
         relabel_column("INVALID LABEL")
+    }
+
+    #[pg_test(error = "Anon: Labeling this object is not supported")]
+    fn test_label_on_type() {
+        Spi::run("
+           SECURITY LABEL FOR anon ON TYPE int IS 'SHOULD NOT WORK';
+        ").unwrap();
+    }
+
+    #[pg_test]
+    fn test_kanonymity_null(){
+        fixture::create_table_person();
+        Spi::run("
+            SECURITY LABEL FOR k_anonymity ON COLUMN person.lastname IS NULL;
+        ").unwrap();
+    }
+
+    #[pg_test]
+    fn test_kanonymity_indirect_identifier(){
+        fixture::create_table_person();
+        Spi::run("
+            SECURITY LABEL FOR k_anonymity ON COLUMN person.lastname IS 'INDIRECT IDENTIFIER';
+        ").unwrap();
+    }
+
+    #[pg_test(error = "Anon: Placing a k_anonymity label on this object is not supported")]
+    fn test_kanonymity_not_supported(){
+        fixture::create_table_person();
+        Spi::run("
+            SECURITY LABEL FOR k_anonymity ON TYPE int IS 'INDIRECT IDENTIFIER';
+        ").unwrap();
     }
 
 }
