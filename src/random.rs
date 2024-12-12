@@ -78,6 +78,7 @@ pub fn date() -> pgrx::datum::TimestampWithTimeZone {
     pgrx::datum::TimestampWithTimeZone::from_str(&val).unwrap()
 }
 
+/*
 pub fn date_after(t: pgrx::datum::TimestampWithTimeZone)
     -> pgrx::datum::TimestampWithTimeZone
 {
@@ -97,7 +98,7 @@ pub fn date_before(t: pgrx::datum::TimestampWithTimeZone)
     let val: String = DateTimeBefore(EN,d.into()).fake();
     pgrx::datum::TimestampWithTimeZone::from_str(&val).unwrap()
 }
-
+*/
 
 pub fn time() -> pgrx::datum::Time {
     let val: String = fake::faker::chrono::raw::Time(EN).fake();
@@ -153,7 +154,6 @@ use pgrx::prelude::*;
 #[pg_schema]
 mod tests {
     use crate::random::*;
-    use std::str::FromStr;
 
     #[pg_test]
     fn test_int() {
@@ -246,6 +246,7 @@ mod tests {
         assert!(date().to_string().len() > 0);
     }
 
+/*
     #[pg_test]
     #[ignore]
     fn test_date_after() {
@@ -259,6 +260,7 @@ mod tests {
         let t = pgrx::datum::TimestampWithTimeZone::from_str("1977-03-20 04:42:00 PDT").unwrap();
         assert!(date_before(t).to_string().len() > 0);
     }
+*/
 
     #[pg_test]
     fn test_time() {

@@ -197,20 +197,9 @@ mod anon {
     #[pg_extern(parallel_restricted)]
     pub fn random_date() -> pgrx::datum::TimestampWithTimeZone { random::date() }
 
-    #[pg_extern(parallel_restricted)]
-    pub fn random_date_after(t: pgrx::datum::TimestampWithTimeZone)
-        -> pgrx::datum::TimestampWithTimeZone { random::date_after(t) }
-
-    #[pg_extern(parallel_restricted)]
-    pub fn random_date_before(t: pgrx::datum::TimestampWithTimeZone)
-        -> pgrx::datum::TimestampWithTimeZone { random::date_before(t) }
-
     // Random Numbers
 
     // BIGINT
-    #[pg_extern(parallel_restricted)]
-    pub fn random_bigint() -> Option<i64>
-    { random::bigint(Range::<i64>::new(i64::MIN,i64::MAX)) }
 
     #[pg_extern(parallel_restricted)]
     pub fn random_in_int8range(r: Range<i64> ) -> Option<i64>
@@ -223,10 +212,6 @@ mod anon {
     { random::bigint(Range::<i64>::new(start,stop+1)) }
 
     // INT
-    #[pg_extern(parallel_restricted)]
-    pub fn random_int() -> Option<i32>
-    { random::int(Range::<i32>::new(i32::MIN,i32::MAX)) }
-
     #[pg_extern(parallel_restricted)]
     pub fn random_in_int4range(r: Range<i32> ) -> Option<i32>
     { random::int(r) }
@@ -244,13 +229,13 @@ mod anon {
     // FLOATS
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_double_precision() -> Option<f64>
+    pub fn random_double_precision(start: f64, stop: f64) -> Option<f64>
     {
-        let r: Range<AnyNumeric> = Range::<AnyNumeric>::new(
-            AnyNumeric::try_from(f64::MIN).unwrap(),
-            AnyNumeric::try_from(f64::MAX).unwrap()
+        let range = Range::<AnyNumeric>::new(
+            AnyNumeric::try_from(start).unwrap(),
+            AnyNumeric::try_from(stop).unwrap(),
         );
-        random::double_precision(r)
+        random::double_precision(range)
     }
 
     #[pg_extern(parallel_restricted)]
@@ -258,13 +243,13 @@ mod anon {
     { random::numeric(r) }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_real() -> Option<f32>
+    pub fn random_real(start: f32, stop: f32) -> Option<f32>
     {
-        let r: Range<AnyNumeric> = Range::<AnyNumeric>::new(
-            AnyNumeric::try_from(f32::MIN).unwrap(),
-            AnyNumeric::try_from(f32::MAX).unwrap()
+        let range = Range::<AnyNumeric>::new(
+            AnyNumeric::try_from(start).unwrap(),
+            AnyNumeric::try_from(stop).unwrap(),
         );
-        random::real(r)
+        random::real(range)
     }
 
     // PHONE
@@ -461,13 +446,94 @@ pub unsafe extern "C" fn _PG_init() {
 #[pg_schema]
 mod tests {
     use pgrx::prelude::*;
+    use crate::anon::*;
 
     #[pg_test]
     #[ignore]
     fn test_pg_init(){
-        //
         // not sure how to handle the _PG_init() tests at this level
         // This function is tested via `make installcheck`
+    }
+
+    #[pg_test]
+    fn test_random_time() {
+        assert!(random_time().into_datum().is_some());
+    }
+
+    #[pg_test]
+    fn test_random_date() {
+        assert!(random_date().into_datum().is_some());
+    }
+
+    #[pg_test]
+    fn test_random_in_int8range() {
+        let range = Range::<i64>::new(1, 10);
+        assert!(random_in_int8range(range).is_some());
+    }
+
+    #[pg_test]
+    fn test_random_bigint_between() {
+        assert!(random_bigint_between(1, 10).is_some());
+    }
+
+    #[pg_test]
+    fn test_random_in_int4range() {
+        let range = Range::<i32>::new(1, 10);
+        assert!(random_in_int4range(range).is_some());
+    }
+
+    #[pg_test]
+    fn test_random_int_between() {
+        assert!(random_int_between(1, 10).is_some());
+    }
+
+    #[pg_test]
+    fn test_random_number_with_format() {
+        let format = "###-###".to_string();
+        assert!(random_number_with_format(format).into_datum().is_some());
+    }
+
+    #[pg_test]
+    fn test_random_double_precision() {
+        assert!(random_double_precision(111.1,999.9).unwrap() > 0.0);
+        assert!(random_double_precision(111.1,999.9).unwrap() < 1000.0);
+    }
+
+    #[pg_test]
+    fn test_random_in_numrange() {
+        let range = Range::<AnyNumeric>::new(
+            AnyNumeric::try_from(1).unwrap(),
+            AnyNumeric::try_from(10).unwrap(),
+        );
+        assert!(random_in_numrange(range).is_some());
+    }
+
+    #[pg_test]
+    fn test_random_real() {
+        assert!(random_real(1.1,10.333).unwrap() > 0.0 );
+        assert!(random_real(1.1,10.333).unwrap() < 11.0);
+    }
+
+    #[pg_test]
+    fn test_random_phone() {
+        assert!(random_phone().into_datum().is_some());
+    }
+
+    #[pg_test]
+    fn test_random_phone_with_format() {
+        let format = "###-###-####".to_string();
+        assert!(random_phone_with_format(format).into_datum().is_some());
+    }
+
+    #[pg_test]
+    fn test_random_zip() {
+        assert!(random_zip().into_datum().is_some());
+    }
+
+    #[pg_test]
+    fn test_random_string() {
+        let range = Range::<i32>::new(5, 10);
+        assert!(random_string(range).is_some());
     }
 
 }
