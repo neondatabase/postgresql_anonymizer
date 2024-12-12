@@ -61,7 +61,7 @@ pub fn create_masked_role() -> pg_sys::Oid {
         .expect("should be an OID")
 }
 
-// an unmasked table
+// An unmasked table
 #[allow(dead_code)]
 pub fn create_table_call() -> pg_sys::Oid {
     Spi::run("
@@ -78,6 +78,24 @@ pub fn create_table_call() -> pg_sys::Oid {
         .expect("should be an OID")
 }
 
+// A masked table with quotes
+#[allow(dead_code)]
+pub fn create_table_user() -> pg_sys::Oid {
+    Spi::run("
+        CREATE TABLE \"User\"
+            AS SELECT
+                'foo@bar.com' AS \"Email\",
+                'foobar'      AS \"LoGiN\"
+        ;
+        SECURITY LABEL FOR anon ON COLUMN \"User\".\"Email\"
+            IS 'MASKED WITH FUNCTION anon.fake_email()';
+    ").unwrap();
+    Spi::get_one::<pg_sys::Oid>("SELECT '\"User\"'::REGCLASS::OID")
+        .unwrap()
+        .expect("should be an OID")
+}
+
+// A masked table with a dropped column
 #[allow(dead_code)]
 pub fn create_table_person() -> pg_sys::Oid {
     Spi::run("

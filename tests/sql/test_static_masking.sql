@@ -18,7 +18,7 @@ CREATE TABLE employee (
   firstname TEXT,
   lastname TEXT,
   phone TEXT UNIQUE,
-  ssn TEXT UNIQUE,
+  ssn TEXT,
   iban TEXT UNIQUE,
   linkedin_url TEXT
 );
@@ -63,7 +63,7 @@ INSERT INTO profile
 SELECT i, (i % 2) + 1,'personal data A '|| i, 'personal data B '|| i, 'personal data C '|| i, 'personal data D '|| i,'personal data E '|| i, 'personal data F '|| i, 'personal data G '|| i, 'personal data H '|| i
 FROM GENERATE_SERIES(1, 50000) i;
 
-
+CREATE TABLE "Users" AS SELECT 'foo@bar.com' AS "Email";
 
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
@@ -122,6 +122,11 @@ IS 'MASKED WITH VALUE ''xxxG'' ';
 SECURITY LABEL FOR anon ON COLUMN profile.personalDataH
 IS 'MASKED WITH VALUE ''xxxH'' ';
 
+-- quotes
+SECURITY LABEL FOR anon ON COLUMN "Users"."Email"
+  IS 'MASKED WITH FUNCTION anon.fake_email()';
+
+
 --
 -- T E S T S
 --
@@ -134,14 +139,6 @@ SELECT anon.init();
 SAVEPOINT after_init;
 
 -- Anonymize all
-
--- This should fail because of the UNIQUE constraint on the ssn column
--- DISABLED because the error output differs between PG11- and PG12+
---SELECT anonymize_database();
---ROLLBACK TO after_init;
-
--- Remove uniquess and it should work
-ALTER TABLE employee DROP CONSTRAINT employee_ssn_key;
 SELECT anon.anonymize_database();
 
 -- Issue #114 : Check if all columns are masked
@@ -150,17 +147,32 @@ SELECT phone != '0609110911' FROM employee WHERE id=1;
 -- Issue #181
 SELECT bool_and(linkedin_url IS NOT NULL) FROM employee;
 
+-- Add a unique constraint and it should fails
+ROLLBACK TO after_init;
+ALTER TABLE employee ADD CONSTRAINT employee_ssn_key UNIQUE(ssn);
+
+DO $$
+BEGIN
+  PERFORM anon.anonymize_database();
+  EXCEPTION WHEN unique_violation
+  THEN RAISE NOTICE 'unique_violation';
+END$$;
+
 -- Anonymize a masked table
+ROLLBACK TO after_init;
 SELECT anon.anonymize_table('employee');
 
 -- Anonymize a table with no mask
 -- returns NULL
+ROLLBACK TO after_init;
 SELECT anon.anonymize_table('stock') IS NULL;
 
 -- Anonymize a table that does not exist
+ROLLBACK TO after_init;
 SELECT anon.anonymize_table('employee');
 
 -- Issue #185 : improve perfs
+ROLLBACK TO after_init;
 SELECT anon.anonymize_table('profile');
 SELECT count(*)=0 FROM profile WHERE personalDataA != 'xxxA';
 SELECT count(*)=0 FROM profile WHERE personalDataB != 'xxxB';
@@ -172,18 +184,32 @@ SELECT count(*)=0 FROM profile WHERE personalDataG != 'xxxG';
 SELECT count(*)=0 FROM profile WHERE personalDataH != 'xxxH';
 
 -- Anonymize a masked column
+ROLLBACK TO after_init;
 SELECT anon.anonymize_column('employee','phone');
 
 -- Anonymize an unmasked column
 -- returns FALSE and a WARNING
+ROLLBACK TO after_init;
 SELECT anon.anonymize_column('employee','firstname') IS FALSE;
 
 -- Anonymize a column that does not exist
 -- returns FALSE and a WARNING
+ROLLBACK TO after_init;
 SELECT anon.anonymize_column('employee','xxxxxxxxxxxxxxxx') IS FALSE;
 
 -- Remove all masking rules
+ROLLBACK TO after_init;
 SELECT anon.remove_masks_for_all_columns();
 SELECT COUNT(*)=0 FROM anon.pg_masking_rules;
+
+-- FIX #497 - Masking a column with quotes
+ROLLBACK TO after_init;
+SELECT anon.anonymize_table('"Users"');
+SELECT "Email" != 'foo@bar.com' FROM "Users";
+
+ROLLBACK TO after_init;
+SELECT anon.anonymize_database();
+SELECT "Email" != 'foo@bar.com' FROM "Users";
+
 
 ROLLBACK;

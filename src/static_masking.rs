@@ -59,9 +59,8 @@ fn table_assignments(
             masking::value_for_att(&relation, a, policy.clone());
 
         if att_is_masked {
-            let attname_quoted = utils::quote_name_data(&a.attname);
             assignments.push(
-                format!("{:?} = {}",attname_quoted,filter_value)
+                format!("{:?} = {}",name_data_to_str(&a.attname),filter_value)
             );
         }
     }
@@ -185,6 +184,40 @@ mod tests {
     }
 
     #[pg_test]
+    fn test_column_assignment_with_quotes(){
+        let anon=ANON_DEFAULT_MASKING_POLICY.to_string();
+        let relid=fixture::create_table_user();
+        assert_eq!(
+            column_assignment(relid,"Email".to_string(),anon),
+            Some("\"Email\" = CAST(anon.fake_email() AS text)".into())
+        );
+    }
+
+    #[pg_test]
+    fn test_table_assignments(){
+        let anon=ANON_DEFAULT_MASKING_POLICY.to_string();
+        let relid = fixture::create_table_person();
+        assert_eq!(
+            table_assignments(relid,"does_not_exits".into()),
+            None
+        );
+        assert_eq!(
+            table_assignments(relid,anon.clone()),
+            Some("\"lastname\" = CAST(NULL AS text)".into())
+        );
+    }
+
+    #[pg_test]
+    fn test_table_assignments_with_quotes(){
+        let anon=ANON_DEFAULT_MASKING_POLICY.to_string();
+        let relid=fixture::create_table_user();
+        assert_eq!(
+            table_assignments(relid,anon),
+            Some("\"Email\" = CAST(anon.fake_email() AS text)".into())
+        );
+    }
+
+    #[pg_test]
     fn test_anonymize_column(){
         let anon=ANON_DEFAULT_MASKING_POLICY.to_string();
         let relid = fixture::create_table_person();
@@ -234,7 +267,6 @@ mod tests {
         );
     }
 
-
     #[pg_test]
     fn test_anonymize_table(){
         let anon=ANON_DEFAULT_MASKING_POLICY.to_string();
@@ -244,7 +276,6 @@ mod tests {
             anonymize_table(relid,anon.clone())
         );
     }
-
 
     #[pg_test]
     fn test_anonymize_table_does_not_exist(){

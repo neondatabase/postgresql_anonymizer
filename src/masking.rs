@@ -1006,4 +1006,34 @@ mod tests {
 
     }
 
+    #[pg_test]
+    fn test_value_for_att_with_quotes() {
+        // Create a table
+        let relid = fixture::create_table_user();
+        let lockmode = pg_sys::AccessShareLock as i32;
+        let relation = unsafe {
+            PgBox::from_pg(pg_sys::relation_open(relid, lockmode))
+        };
+        let reldesc = unsafe {
+            PgBox::from_pg(relation.rd_att)
+        };
+
+        let natts = reldesc.natts;
+        let attrs = unsafe {
+            reldesc.attrs.as_slice(natts.try_into().unwrap())
+        };
+
+        // Test column with default value
+        // Assuming the second column has a default value
+        let att_email   = attrs[0];
+        let att_login   = attrs[1];
+
+        let (val1, masked1) = value_for_att(&relation,&att_email,"anon".into());
+        assert_eq!(val1,"CAST(anon.fake_email() AS text)");
+        assert!(masked1);
+
+        let (val2, masked2) = value_for_att(&relation,&att_login,"anon".into());
+        assert_eq!(val2,"\"LoGiN\"");
+        assert!(!masked2);
+    }
 }
