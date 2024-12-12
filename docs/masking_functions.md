@@ -258,6 +258,20 @@ provides an advanced faking engine with localisation support.
 This engine ([fake-rs]) is available via more than 70 functions with the
 `dummy_` prefix:
 
+*tips:*
+
+*The fake_\* and dummy_\* functions achieve the same goal.*
+
+*The fake_\* functions are the first implementation in pl/pgsql. They were
+introduced in Version 1. It's a rather naïve and limited approach.*
+
+*The dummy_\* functions are a new implementation based on a Rust library.
+It provides a more advanced fake generator and adds localization.
+It was introduced in Version 2.*
+
+*New users should always prefer the dummy_\* functions. The fake_\* functions
+are kept for backward compatibility.*
+
 <!--
 SELECT format(
   '* %I.%I(%s)', ns.nspname, p.proname, oidvectortypes(p.proargtypes)
