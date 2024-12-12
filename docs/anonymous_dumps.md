@@ -143,8 +143,10 @@ cat dump.sql rules.sql | $ANON --data-only --inserts > anon_dump.sql
 [pg_dump output options]: https://www.postgresql.org/docs/current/app-pgdump.html#PG-DUMP-OPTIONS
 
 
-DEPRECATED : pg_dump_anon
+DEPRECATED : pg_dump_anon.sh script
 ------------------------------------------------------------------------------
+
+The script pg_dump_anon.sh is deprecated, but kept for backward compatibilties. Use `pg_dump_anon` command instead.
 
 The `pg_dump_anon` command support most of the options of the regular [pg_dump]
 command. The [PostgreSQL environment variables] ($PGHOST, PGUSER, etc.) and
