@@ -2,7 +2,8 @@
 
 > In many situation, what we want is simply to export the anonymized
 > data into another database (for testing or to produce statistics).
-> This is what **pg_dump_anon** does!
+> This is what **pg_dump_anon** did!.
+> In the last version, pg_dump_anon is now deprecated. Use pg_dump instead.
 
 ## The Story
 
@@ -130,6 +131,7 @@ SECURITY LABEL
 FOR anon ON COLUMN website_comment.message IS 'MASKED WITH FUNCTION my_masks.remove_content(message)';
 ```
 
+We create a specific role to do the dump `anon_dumper`, of course you can use an other one. Avoid using a personal account for this kind of action.
 ``` sql
 CREATE ROLE dump_anon LOGIN PASSWORD 'CHANGEME';
 
