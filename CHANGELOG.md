@@ -5,9 +5,14 @@ CHANGELOG
 
 
 
-202412107 : 2.0.0-rc.3 - Better, Faster, Safer
+20241218 : 2.0.0-rc.3 - Better, Faster, Safer
 -------------------------------------------------------------------------------
 
+* [doc] Improve examples
+* [make] reorder test files
+* [static] masking a quoted column
+* [tests] Add more unit tests
+* [random] remove random_date_after and random_date_before
 
 
 20241210 : 2.0.0-rc.2 - Better, Faster, Safer
