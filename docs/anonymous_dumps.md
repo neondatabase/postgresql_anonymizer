@@ -12,18 +12,18 @@ To export the anonymized data from a database, follow these 3 steps:
 ### 1. Create a masked user
 
 ```sql
-CREATE ROLE dump_anon LOGIN PASSWORD 'x';
-ALTER ROLE dump_anon SET anon.transparent_dynamic_masking = True;
-SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
+CREATE ROLE anon_dumper LOGIN PASSWORD 'x';
+ALTER ROLE anon_dumper SET anon.transparent_dynamic_masking = True;
+SECURITY LABEL FOR anon ON ROLE anon_dumper IS 'MASKED';
 ```
 
-__NOTE:__ You can replace the name `dump_anon` by another name.
+__NOTE:__ You can replace the name `anon_dumper` by another name.
 
 
 ### 2. Grant read access to that masked user
 
 ```sql
-GRANT pg_read_all_data to dump_anon;
+GRANT pg_read_all_data to anon_dumper;
 ```
 
 __NOTE:__ If you are running PostgreSQL 13 or if you want a more fine-grained
@@ -31,13 +31,13 @@ access policy you can grant access more precisely, for instance:
 
 
 ```sql
-GRANT USAGE ON SCHEMA public TO dump_anon;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO dump_anon;
-GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO dump_anon;
+GRANT USAGE ON SCHEMA public TO anon_dumper;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon_dumper;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO anon_dumper;
 
-GRANT USAGE ON SCHEMA foo TO dump_anon;
-GRANT SELECT ON ALL TABLES IN SCHEMA foo TO dump_anon;
-GRANT SELECT ON ALL SEQUENCES IN SCHEMA foo TO dump_anon;
+GRANT USAGE ON SCHEMA foo TO anon_dumper;
+GRANT SELECT ON ALL TABLES IN SCHEMA foo TO anon_dumper;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA foo TO anon_dumper;
 ```
 
 
@@ -48,7 +48,7 @@ Now to export the anonymous data from a database named `foo`, let's use
 
 ```bash
 pg_dump foo \
-        --user dump_anon \
+        --user anon_dumper \
         --no-security-labels \
         --exclude-extension="anon" \
         --file=foo_anonymized.sql
@@ -143,61 +143,14 @@ cat dump.sql rules.sql | $ANON --data-only --inserts > anon_dump.sql
 [pg_dump output options]: https://www.postgresql.org/docs/current/app-pgdump.html#PG-DUMP-OPTIONS
 
 
-DEPRECATED : pg_dump_anon.sh script
+DEPRECATED : pg_dump_anon.sh and pg_dump_anon
 ------------------------------------------------------------------------------
 
-The script pg_dump_anon.sh is deprecated, but kept for backward compatibilties. Use `pg_dump_anon` command instead.
+In version 0.x, the anonymous dumps were done with a shell script named
+`pg_dump_anon.sh`. In version 1.x it was done with a golang script named
+`pg_dump_anon`. **Both commands are now deprecated.**
 
-The `pg_dump_anon` command support most of the options of the regular [pg_dump]
-command. The [PostgreSQL environment variables] ($PGHOST, PGUSER, etc.) and
-the [.pgpass] file are also supported.
+However `pg_dump_anon` is kept for backward compatibility. If you are still
+using `pg_dump_anon`, you should switch to the `pg_dump` method described above
+as soon as possible.
 
-[PostgreSQL environment variables]: https://www.postgresql.org/docs/current/libpq-envars.html
-[.pgpass]: https://www.postgresql.org/docs/current/libpq-pgpass.html
-
-
-### Example
-
-A user named `bob` can export an anonymous dump of the `app` database like
-this:
-
-```bash
-pg_dump_anon -h localhost -U bob --password --file=anonymous_dump.sql app
-```
-
-**WARNING**: The name of the database must be the last parameter.
-
-For more details about the supported options, simply type `pg_dump_anon --help`
-
-
-### Install With Go
-
-```console
-go install gitlab.com/dalibo/postgresql_anonymizer/pg_dump_anon
-```
-
-### Install With docker
-
-If you do not want to install Go on your production servers, you can fetch the
-binary with:
-
-```console
-docker run --rm -v "$PWD":/go/bin golang go get gitlab.com/dalibo/postgresql_anonymizer/pg_dump_anon
-sudo install pg_dump_anon $(pg_config --bindir)
-```
-
-
-
-### Limitations
-
-* The user password is asked automatically. This means you must either add
-  the `--password` option to define it interactively or declare it in the
-  [PGPASSWORD] variable or put it inside the [.pgpass] file ( however on
-  Windows,the [PGPASSFILE] variable must be specified explicitly)
-
-* The `plain` format is the only supported format. The other formats (`custom`,
-  `dir` and `tar`) are not supported
-
-
-[PGPASSWORD]: https://www.postgresql.org/docs/current/libpq-envars.html
-[PGPASSFILE]: https://www.postgresql.org/docs/current/libpq-envars.html
