@@ -190,7 +190,7 @@ JOIN best_client b ON (c.id = b.fk_customer_id)
 [Singling Out]: https://www.pnas.org/content/117/15/8344
 
 We need to anonymize even further by removing the link between a person
-and its company. In the `order` table, this link is materialized by a
+and its company. In the `payout` table, this link is materialized by a
 foreign key on the field `fk_company_id`. However we can't remove
 values from this column or insert fake identifiers because if would
 break the foreign key constraint.
