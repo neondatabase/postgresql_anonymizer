@@ -7,9 +7,9 @@ run-sql:
 
 # 3- Anonymous Dumps
 
-> In many situation, what we want is simply to export the anonymized
+> In many situation, what we want is basically to export the anonymized
 > data into another database (for testing or to produce statistics).
-> This is what **pg_dump_anon** does!
+> We will simply use pg_dump for that !
 
 ## The Story
 
@@ -148,22 +148,25 @@ SECURITY LABEL FOR anon ON COLUMN website_comment.message
 IS 'MASKED WITH FUNCTION my_masks.remove_content(message)';
 ```
 
+Then we need to create a dedicated role to export the masked data. We will call
+this role `anon_dumper` (the name does not matter) and declare that this role
+is masked.
 
 ``` run-postgres
-CREATE ROLE dump_anon LOGIN PASSWORD 'CHANGEME';
+CREATE ROLE anon_dumper LOGIN PASSWORD 'CHANGEME';
 
-ALTER ROLE dump_anon SET anon.transparent_dynamic_masking TO TRUE;
+ALTER ROLE anon_dumper SET anon.transparent_dynamic_masking TO TRUE;
 
-SECURITY LABEL FOR anon ON ROLE dump_anon IS 'MASKED';
+SECURITY LABEL FOR anon ON ROLE anon_dumper IS 'MASKED';
 
-GRANT pg_read_all_data TO dump_anon;
+GRANT pg_read_all_data TO anon_dumper;
 ```
 
 For convenience, add a new entry in the `.pgpass` file.
 
 ``` console
 cat > ~/.pgpass << EOL
-*:*:boutique:dump_anon:CHANGEME
+*:*:boutique:anon_dumper:CHANGEME
 EOL
 ```
 
@@ -173,7 +176,7 @@ Finally we can export an **anonymous dump** of the table with `pg_dump`:
 ``` bash
 export PATH=$PATH:$(pg_config --bindir)
 export PGHOST=localhost
-pg_dump -U dump_anon boutique --table=website_comment > /tmp/dump.sql
+pg_dump -U anon_dumper boutique --table=website_comment > /tmp/dump.sql
 ```
 
 ## Exercices
@@ -210,7 +213,7 @@ export PATH=$PATH:$(pg_config --bindir)
 export PGHOST=localhost
 dropdb -U paul --if-exists boutique_anon
 createdb -U paul boutique_anon --owner paul
-pg_dump -U dump_anon boutique | psql -U paul --quiet boutique_anon
+pg_dump -U anon_dumper boutique | psql -U paul --quiet boutique_anon
 ```
 
 ``` bash

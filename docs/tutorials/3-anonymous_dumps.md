@@ -1,9 +1,8 @@
 # 3- Anonymous Dumps
 
-> In many situation, what we want is simply to export the anonymized
-> data into another database (for testing or to produce statistics).
-> This is what **pg_dump_anon** did!.
-> In the last version, pg_dump_anon is now deprecated. Use pg_dump instead.
+> In many situation, what we want is basically to export the anonymized
+> data into another database (for testing or to produce statistics). We
+> will simply use pg_dump for that !
 
 ## The Story
 
@@ -131,25 +130,28 @@ SECURITY LABEL
 FOR anon ON COLUMN website_comment.message IS 'MASKED WITH FUNCTION my_masks.remove_content(message)';
 ```
 
-We create a specific role to do the dump `anon_dumper`, of course you can use an other one. Avoid using a personal account for this kind of action.
+Then we need to create a dedicated role to export the masked data. We
+will call this role `anon_dumper` (the name does not matter) and declare
+that this role is masked.
+
 ``` sql
-CREATE ROLE dump_anon LOGIN PASSWORD 'CHANGEME';
+CREATE ROLE anon_dumper LOGIN PASSWORD 'CHANGEME';
 
 
-ALTER ROLE dump_anon
+ALTER ROLE anon_dumper
 SET anon.transparent_dynamic_masking TO TRUE;
 
 SECURITY LABEL
-FOR anon ON ROLE dump_anon IS 'MASKED';
+FOR anon ON ROLE anon_dumper IS 'MASKED';
 
-GRANT pg_read_all_data TO dump_anon;
+GRANT pg_read_all_data TO anon_dumper;
 ```
 
 For convenience, add a new entry in the `.pgpass` file.
 
 ``` console
 cat > ~/.pgpass << EOL
-*:*:boutique:dump_anon:CHANGEME
+*:*:boutique:anon_dumper:CHANGEME
 EOL
 ```
 
@@ -158,7 +160,7 @@ Finally we can export an **anonymous dump** of the table with `pg_dump`:
 ``` bash
 export PATH=$PATH:$(pg_config --bindir)
 export PGHOST=localhost
-pg_dump -U dump_anon boutique --table=website_comment > /tmp/dump.sql
+pg_dump -U anon_dumper boutique --table=website_comment > /tmp/dump.sql
 ```
 
 ## Exercices
@@ -195,7 +197,7 @@ export PATH=$PATH:$(pg_config --bindir)
 export PGHOST=localhost
 dropdb -U paul --if-exists boutique_anon
 createdb -U paul boutique_anon --owner paul
-pg_dump -U dump_anon boutique | psql -U paul --quiet boutique_anon
+pg_dump -U anon_dumper boutique | psql -U paul --quiet boutique_anon
 ```
 
 ``` bash
@@ -216,9 +218,9 @@ FROM website_comment;
 
 | clean_comment |
 |----|
-| {\'meta\': {\'name\': \'Marshall\', \'email\': None, \'ip_address\': \'1d8cbcdef988d55982af1536922ddcd1\'}} |
-| {\'meta\': {\'name\': \'Campbell\', \'email\': None, \'ip_address\': None}} |
-| {\'meta\': {\'name\': \'Dodson\', \'email\': None, \'ip_address\': None}} |
+| {\'meta\': {\'name\': \'Hicks\', \'email\': None, \'ip_address\': \'1d8cbcdef988d55982af1536922ddcd1\'}} |
+| {\'meta\': {\'name\': \'Galloway\', \'email\': None, \'ip_address\': None}} |
+| {\'meta\': {\'name\': \'Grant\', \'email\': None, \'ip_address\': None}} |
 
 ``` sql
 SECURITY LABEL

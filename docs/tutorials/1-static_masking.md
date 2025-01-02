@@ -107,9 +107,9 @@ FROM customer;
 
 | id  | firstname | lastname | phone        |
 |-----|-----------|----------|--------------|
-| 107 | Sarah     | Mayert   | 06X-XXX-XX11 |
-| 258 | Luke      | Anderson | None         |
-| 341 | Don       | Mraz     | 34X-XXX-XX23 |
+| 107 | Sarah     | Hessel   | 06X-XXX-XX11 |
+| 258 | Luke      | Hammes   | None         |
+| 341 | Don       | Carroll  | 34X-XXX-XX23 |
 
 ------------------------------------------------------------------------
 
@@ -170,7 +170,7 @@ JOIN best_client b ON (c.id = b.fk_customer_id)
 
 | id  | firstname | lastname | phone        | birth      | postcode |
 |-----|-----------|----------|--------------|------------|----------|
-| 341 | Don       | Mraz     | 34X-XXX-XX23 | 1926-06-01 | 04520    |
+| 341 | Don       | Carroll  | 34X-XXX-XX23 | 1926-06-01 | 04520    |
 
 !!! note
 
@@ -281,7 +281,7 @@ JOIN best_client b ON (c.id = b.fk_customer_id);
 
 | id  | firstname | lastname | phone        | birth      | postcode |
 |-----|-----------|----------|--------------|------------|----------|
-| 341 | Sadye     | Bins     | 34X-XXX-XX23 | 1926-01-01 | 04xxx    |
+| 341 | Orland    | Lubowitz | 34X-XXX-XX23 | 1926-01-01 | 04xxx    |
 
 ------------------------------------------------------------------------
 

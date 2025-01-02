@@ -238,11 +238,11 @@ SELECT *
 FROM company;
 ```
 
-| id  | name                    | vat_id     |
-|-----|-------------------------|------------|
-| 952 | Rodriguez Inc           | 71OpaHtCFe |
-| 194 | Price and Gutkowski LLC | j4LYmBIucc |
-| 346 | Swift Inc               | iebs1Z1Y6t |
+| id  | name                   | vat_id     |
+|-----|------------------------|------------|
+| 952 | Thiel and Hudson LLC   | kG6CBmpRHZ |
+| 194 | Little and Bernier Inc | CRpk4yez0x |
+| 346 | Purdy LLC              | 92sMlGfRoV |
 
 Pierre will see different "fake data" every time he reads the table:
 
@@ -251,11 +251,11 @@ SELECT *
 FROM company;
 ```
 
-| id  | name                     | vat_id     |
-|-----|--------------------------|------------|
-| 952 | Lindgren Inc             | Ap1zaZIoDq |
-| 194 | Bergstrom Group          | SvWITD9ICh |
-| 346 | Harvey and Effertz Group | RQBklYW37E |
+| id  | name                             | vat_id     |
+|-----|----------------------------------|------------|
+| 952 | Yundt and Sons                   | k2HE9JaEpT |
+| 194 | Schuster and Konopelski and Sons | 8SPYpX1866 |
+| 346 | Ziemann and Wisoky Inc           | 1G2Ot6LjUE |
 
 ### S203
 
@@ -273,9 +273,9 @@ FROM company;
 
 | id  | name            | vat_id     |
 |-----|-----------------|------------|
-| 952 | Wilkinson LLC   | tEQhb3GUyt |
-| 194 | Johnson PLC     | bBFuAgq0L3 |
-| 346 | Young-Carpenter | pNvs6kF71y |
+| 952 | Wilkinson LLC   | Ifsi290QIn |
+| 194 | Johnson PLC     | LzgMedlx2A |
+| 346 | Young-Carpenter | HbcZDZ2hTT |
 
 ``` sql
 SELECT *
@@ -284,8 +284,8 @@ FROM company;
 
 | id  | name            | vat_id     |
 |-----|-----------------|------------|
-| 952 | Wilkinson LLC   | E1Bq5c88p9 |
-| 194 | Johnson PLC     | 4Y02gRPdK2 |
-| 346 | Young-Carpenter | sIpwWOKL55 |
+| 952 | Wilkinson LLC   | YQPTtQXfWM |
+| 194 | Johnson PLC     | EVwSatDJ51 |
+| 346 | Young-Carpenter | UzRp4fKpSO |
 
 Now the fake company name is always the same.
