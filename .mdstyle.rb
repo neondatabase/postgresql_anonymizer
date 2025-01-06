@@ -9,4 +9,6 @@ exclude_rule 'MD026'
 exclude_rule 'MD029'
 exclude_rule 'MD034'
 exclude_rule 'MD041'
-rule 'MD046', :style => :consistent
+# Disable codeblock_style because we use a mix of fenced and indented in the doc
+#rule 'MD046', :style => :consistent
+exclude_rule 'MD046'

@@ -15,16 +15,16 @@ With version 2, the entire core library was rewritten in Rust. This is a major
 change that brings new features, better performances and improved stability.
 
 However the changes are mostly internal and for the most part the public
-interface of the extension does not change. An masking policy written with
+interface of the extension does not change. A masking policy written with
 version 1.3 should work with version 2.0 !
 
-<!--
-Unfortunatelly there are a few breaking changes that could not avoid:
+!!! warning New RPM repository !
 
-* The function `anon.random_phone('+33')` is now replaced by
-  `anon.random_phone_with_format('+33# ## ## ## ##')`. This new function gives
-  you more flexibility to specify to output format of the phone numbers.
--->
+    Version 2.0 is not available on the PGDG RPM repository.
+    If you installed PostgreSQL Anonymizer 1.x using the RPM package, you need
+    to install the Dalibo Labs repository with the following command:
+    `dnf install https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm`
+
 
 Upgrade to version 1.3 and further versions
 -------------------------------------------------------------------------------

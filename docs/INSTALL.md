@@ -9,7 +9,7 @@ The installation process is composed of 4 basic steps:
 
 There are multiple ways to install the extension :
 
-* [Install on RedHat / CentOS]
+* [Install on RedHat / Rocky Linux / Alma Linux]
 * [Install on Debian / Ubuntu]
 * [Install with PGXN]
 * [Install from source]
@@ -26,7 +26,7 @@ See [Load the extension] for more details.
 
 If you're having any problem, check the [Troubleshooting] section.
 
-[Install on RedHat / CentOS]: #install-on-redhat-centos
+[Install on RedHat / Rocky Linux / Alma Linux]: #install-on-redhat-rocky-linux-alma-linux
 [Install on Debian / Ubuntu]: #install-on-debian-ubuntu
 [Install with PGXN]: #install-with-pgxn
 [Install from source]: #install-from-source
@@ -53,8 +53,10 @@ This extension is available in two versions :
 Install on RedHat / Rocky Linux / Alma Linux
 ------------------------------------------------------------------------------
 
-> DO NOT use the version provided by the PGDG YUM repository.
-> It is obsolete.
+!!! warning New RPM repository !
+
+    DO NOT use the package provided by the PGDG RPM repository.
+    It is obsolete.
 
 _Step 0:_ Add the [DaLibo Labs RPM repository] to your system.
 

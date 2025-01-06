@@ -1,7 +1,7 @@
 PostgreSQL Anonymizer 2.0: Better, Faster, Safer
 ================================================================================
 
-Eymoutiers, France, December 17, 2024
+Eymoutiers, France, January 6th, 2025
 
 We're thrilled to announce PostgreSQL Anonymizer 2.0, a major leap forward in
 database privacy protection.
@@ -27,7 +27,7 @@ A Complete Rewrite in Rust
 
 Version 2.0 represents a fundamental transformation of our codebase, completely
 rewritten in Rust using the groundbreaking [PGRX] framework. This strategic shift
-delivers exceptional improvements in Memory safety and security, resource
+delivers exceptional improvements in memory safety and security, resource
 efficiency, testing and code maintainability.
 
 This milestone release introduces powerful capabilities that significantly expand
@@ -76,6 +76,16 @@ If you want to help, you can find a list of `Junior Jobs` here:
 
 https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
 
+
+PostgreSQL Anonymizer 2025 Survey
+--------------------------------------------------------------------------------
+
+We're launching a quick survey to learn more about our users.
+Please take a couple of minutes, click the link below and answer 10 questions!
+
+https://dali.bo/anon_survey_2025
+
+You will help us improve the PostgreSQL Anonymizer extension.
 
 --------------------------------------------------------------------------------
 

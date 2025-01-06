@@ -23,7 +23,7 @@ be way faster.
 With PostgreSQL Anonymizer, you can use 2 different sampling methods :
 
 * [Sampling with TABLESAMPLE](#sampling_with_tablesample)
-* [Sampling with RLS Policies](#sampling_with_RLS_policies)
+* [Sampling with RLS Policies](#sampling_with_rls_policies)
 
 
 Sampling with TABLESAMPLE
@@ -119,8 +119,10 @@ grow in size and complexity.
 Maintaining Referential Integrity
 -------------------------------------------------------------------------------
 
-> **NOTE** : The sampling methods described above **MAY FAIL** if you have
-> foreign keys pointing at the table you want to sample.
+!!! note
+
+    The sampling methods described above **MAY FAIL** if you have
+    foreign keys pointing at the table you want to sample.
 
 Extracting a subset of a database while maintaining referential integrity is
 tricky and it is not supported by this extension.

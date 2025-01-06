@@ -4,6 +4,17 @@ CHANGELOG
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
 
+20250106 : 2.0.0 - Better, Faster, Safer
+-------------------------------------------------------------------------------
+
+* [doc] sampling with RLS
+* [doc] clarify deprecation note for pg_dump_anon (pmpetit)
+* [doc] explain a little more what is deprecated (pmpetit)
+* [tutorial] clarify the anonymous dump tutorial (pmpetit)
+* [doc] fix pg_dump_anon deprecated message, explain that user can use their
+  own exporter role to do the job (pmpetit)
+* [tutorial] wrong table name (pmpetit)
+* [doc] add tips about dummy and fake functions (pmpetit)
 
 20241218 : 2.0.0-rc.3 - Better, Faster, Safer
 -------------------------------------------------------------------------------
