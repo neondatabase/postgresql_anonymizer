@@ -11,6 +11,7 @@ There are multiple ways to install the extension :
 
 * [Install on RedHat / Rocky Linux / Alma Linux]
 * [Install on Debian / Ubuntu]
+* [Install with Ansible]
 * [Install with PGXN]
 * [Install from source]
 * [Install with docker]
@@ -28,6 +29,7 @@ If you're having any problem, check the [Troubleshooting] section.
 
 [Install on RedHat / Rocky Linux / Alma Linux]: #install-on-redhat-rocky-linux-alma-linux
 [Install on Debian / Ubuntu]: #install-on-debian-ubuntu
+[Install with Ansible]: #install-with-ansible
 [Install with PGXN]: #install-with-pgxn
 [Install from source]: #install-from-source
 [Install with docker]: #install-with-docker
@@ -147,6 +149,59 @@ SELECT anon.init();
 ```
 
 All new connections to the database can now use the extension.
+
+Install with Ansible
+------------------------------------------------------------------------------
+
+> This method will install the `stable` extension
+
+_Step 1a:_  Install the [Dalibo PostgreSQL Essential Ansible Collection]
+
+```console
+ansible-galaxy collection install dalibo.advanced
+```
+
+[Dalibo PostgreSQL Essential Ansible Collection]: https://galaxy.ansible.com/ui/repo/published/dalibo/advanced/
+
+
+_Step 1b:_ Write a playbook (e.g. `anon.yml`) to the `postgresql_anonymizer`
+role to the database servers. For instance:
+
+```yaml
+---
+- name: Install the PostgreSQL Anonymizer extension on all hosts of the pgsql group
+  hosts: pgsql
+  roles:
+    - dalibo.advanced.anon
+```
+
+_Step 1c:_ Launch the playbook
+
+```console
+ansible-playbook anon.yml
+```
+
+_Step 2:_  Load the extension.
+
+```sql
+ALTER DATABASE foo SET session_preload_libraries = 'anon';
+```
+
+(If you're already loading extensions that way, just add `anon` the current list)
+
+> The setting will be applied for the next sessions,
+> i.e. **You need to reconnect to the database for the change to visible**
+
+_Step 3:_  Close your session and open a new one. Create the extension.
+
+```sql
+CREATE EXTENSION anon;
+SELECT anon.init();
+```
+
+All new connections to the database can now use the extension.
+
+
 
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
