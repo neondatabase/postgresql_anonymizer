@@ -53,7 +53,7 @@ This extension is available in two versions :
 Install on RedHat / Rocky Linux / Alma Linux
 ------------------------------------------------------------------------------
 
-!!! warning New RPM repository !
+!!! warning "New RPM repository !"
 
     DO NOT use the package provided by the PGDG RPM repository.
     It is obsolete.
@@ -151,8 +151,14 @@ All new connections to the database can now use the extension.
 Install With [PGXN](https://pgxn.org/) :
 ------------------------------------------------------------------------------
 
-> This method will install the `stable` extension
+!!! warning
 
+    This method is not available currently but you can use the
+    "Install From Source" method below which is very similar.
+
+<!--
+
+> This method will install the `stable` extension
 
 _Step 1:_  Deploy the extension into the host server with:
 
@@ -192,8 +198,9 @@ All new connections to the database can now use the extension.
 [pgxn install documentation]: https://github.com/pgxn/pgxnclient/blob/master/docs/usage.rst#pgxn-install
 [Issue #93]: https://gitlab.com/dalibo/postgresql_anonymizer/issues/93
 
+-->
 
-Install From source
+Install From Source
 ------------------------------------------------------------------------------
 
 [PGRX System Requirements]: https://github.com/pgcentralfoundation/pgrx?tab=readme-ov-file#system-requirements

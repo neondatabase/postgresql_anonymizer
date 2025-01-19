@@ -3,6 +3,12 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
+WIP : 2.1.0 - Masking Images
+-------------------------------------------------------------------------------
+
+* feat(image): add blur image functions (pmpetit)
+* [doc] Install With PGXN is not possible currently
+* [doc] Remove Privacy By Default disclaimer
 
 20250106 : 2.0.0 - Better, Faster, Safer
 -------------------------------------------------------------------------------
