@@ -409,6 +409,25 @@ mod anon {
     pub fn list_masking_policies() ->  Vec<&'static str>
     { masking::list_masking_policies() }
 
+    #[pg_extern(sql= "
+        CREATE FUNCTION anon.image_blur(data BYTEA)
+        RETURNS BYTEA
+        AS 'MODULE_PATHNAME', 'image_blur_without_sigma_wrapper'
+        LANGUAGE C STRICT;
+    ")]
+    pub fn image_blur_without_sigma(data: Vec<u8>) -> Vec<u8>  { image_blur(data, 10.0) }
+
+
+    use image::guess_format;
+    #[pg_extern]
+    pub fn image_blur(data: Vec<u8>, sigma: f32) -> Vec<u8>  {
+        let format = guess_format(&data).expect("Failed to guess image format");
+        let img = image::load_from_memory_with_format(&data,format).expect("Failed to load image");
+        let mut output = std::io::Cursor::new(Vec::new());
+        img.blur(sigma).write_to(&mut output, format).expect("Failed to write image");
+        output.into_inner()
+    }
+
 }
 
 //----------------------------------------------------------------------------
@@ -614,7 +633,7 @@ mod tests {
 
     #[pg_test]
     fn test_anon_anonymize_column_invalid_oid(){
-        assert_eq!( 
+        assert_eq!(
             anonymize_column(pg_sys::InvalidOid,"lastname".into(),"anon".into()),
             None
         );
@@ -631,6 +650,15 @@ mod tests {
             get_function_schema("now()".into()),
             "".to_string()
         );
+    }
+
+    #[pg_test]
+    fn test_image_blur() {
+        let mut file = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        file.push("tests/sql/barcode1.jpg");
+        let data = std::fs::read(file).unwrap();
+        image_blur(data.clone(), 99.9);
+        image_blur_without_sigma(data.clone());
     }
 }
 

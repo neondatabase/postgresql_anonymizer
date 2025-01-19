@@ -61,6 +61,7 @@ REGRESS_TESTS+= get_function_schema
 REGRESS_TESTS+= hashing
 REGRESS_TESTS+= hasmask
 REGRESS_TESTS+= identity
+REGRESS_TESTS+= image_blur
 REGRESS_TESTS+= injection
 REGRESS_TESTS+= k_anonymity
 REGRESS_TESTS+= ldm

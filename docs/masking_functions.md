@@ -14,6 +14,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 * [Conditional masking]
 * [Generalization]
 * [Using pg_catalog functions]
+* [Image bluring]
 * [Write your own Masks !]
 
 [Destruction]: #destruction
@@ -28,6 +29,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Generalization]: #generalization
 [Shuffling]: static_masking.md#shuffling
 [Using pg_catalog functions]: #using-pg_catalog-functions
+[Image bluring]: #image-bluring
 [Write your own Masks !]: #write-your-own-masks
 
 Depending on your data, you may need to use different strategies on different
@@ -680,6 +682,40 @@ SECURITY LABEL FOR anon ON FUNCTION pg_catalog.foo IS 'TRUSTED';
 > policies.
 
 [multiple masking policies]: declare_masking_rules.md#multiple_masking_policies
+
+Image bluring
+------------------------------------------------------------------------------
+
+Images can show some sensitive data, for example
+
+- A photo concerning personal data.
+- A barcode representing personal data.
+
+it is possible to blur this image using
+
+* `anon.image_blur(data,sigma)` returns a bytea
+* data type `bytea`: the image data
+* sigma type `numeric`: This parameter controls the amount of blurring.
+  A higher sigma value results in a more blurred image,
+  while a lower sigma value results in a less blurred image.
+
+usage :
+
+```sql
+CREATE TABLE images (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    image_data BYTEA NOT NULL
+);
+create extension anon;
+SELECT anon.init();
+
+SECURITY LABEL FOR anon ON COLUMN images.image_data
+IS 'MASKED WITH FUNCTION anon.image_blur(image_data,1.0)';
+
+SELECT anon.anonymize_database();
+
+```
 
 
 Write your own Masks !
