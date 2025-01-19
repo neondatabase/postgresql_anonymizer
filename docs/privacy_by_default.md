@@ -1,14 +1,6 @@
 Privacy By Default
 ===============================================================================
 
-Disclaimer
---------------------------------------------------------------------------------
-
-**This feature is considered in beta and not ready for production until version
-2.O is published.**
-
-**Use with care.**
-
 Principle
 --------------------------------------------------------------------------------
 
