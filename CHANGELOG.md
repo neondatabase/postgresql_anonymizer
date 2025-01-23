@@ -9,7 +9,9 @@ WIP : 2.1.0 - Masking Images
 * feat(image): add blur image functions (pmpetit)
 * [doc] Install With PGXN is not possible currently
 * [doc] Remove Privacy By Default disclaimer
-* [doc] sha1 hashing is not available in v2
+* [doc] sha1 hashing is not available in v2 (Anthony DUMONTOIS)
+* [doc] Install with Ansible
+* [doc] Fix Anonymous Dump schema
 
 20250106 : 2.0.0 - Better, Faster, Safer
 -------------------------------------------------------------------------------
