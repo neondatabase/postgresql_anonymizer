@@ -473,9 +473,9 @@ relatively unusual source data. Therefore, the
 * `anon.hash(value)`  will return a text hash of the value using a secret salt
   (defined by the `anon.salt` parameter) and hash algorithm (defined by the
   `anon.algorithm` parameter). The default value of `anon.algorithm` is
-  `sha256` and possible values are: md5, sha1, sha224, sha256, sha384 or
-  sha512. The default value of `anon.salt` is an empty string. You can
-  modify these values with:
+  `sha256` and possible values are: md5, sha224, sha256, sha384 or sha512.
+  The default value of `anon.salt` is an empty string. You can modify these
+  values with:
 
   ```sql
   ALTER DATABASE foo SET anon.salt TO 'xsfnjefnjsnfjsnf';
