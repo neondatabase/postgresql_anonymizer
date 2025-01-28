@@ -43,10 +43,10 @@ FROM patient;
 SELECT * FROM generalized_patient;
 
 -- Declare the remaining indirect identifiers of the generalized view
-SECURITY LABEL FOR anon ON COLUMN generalized_patient.zipcode
+SECURITY LABEL FOR k_anonymity ON COLUMN generalized_patient.zipcode
 IS 'INDIRECT IDENTIFIER';
 
-SECURITY LABEL FOR anon ON COLUMN generalized_patient.birth
+SECURITY LABEL FOR k_anonymity ON COLUMN generalized_patient.birth
 IS 'INDIRECT IDENTIFIER';
 
 -- the k factor

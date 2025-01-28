@@ -113,10 +113,10 @@ Pierre just proved that asthma is caused by green eyes.
 The \'asthma\' and \'eyes\' are considered as indirect identifiers.
 
 ``` run-postgres
-SECURITY LABEL FOR anon ON COLUMN v_asthma_eyes.eyes
+SECURITY LABEL FOR k_anonymity ON COLUMN v_asthma_eyes.eyes
 IS 'INDIRECT IDENTIFIER';
 
-SECURITY LABEL FOR anon ON COLUMN v_asthma_eyes.asthma
+SECURITY LABEL FOR k_anonymity ON COLUMN v_asthma_eyes.asthma
 IS 'INDIRECT IDENTIFIER';
 ```
 
@@ -178,6 +178,8 @@ SELECT anon.k_anonymity('v_staff_per_month');
 
 In this case, the k factor is 1 which means that at least one unique
 individual can be identified directly by his/her first and last dates.
+
+Note that the security label provider is `k_anonymity` and not `anon`.
 
 ## Exercices
 
