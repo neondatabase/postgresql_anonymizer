@@ -421,9 +421,10 @@ that most Database As A Service platforms (DBaaS), such as Amazon RDS or
 Microsoft Azure SQL, do not allow. They must add the extension to their catalog
 in order for you to use it.
 
-At the time we are writing this (March 2024), the following platforms provide
+At the time we are writing this (Feb. 2025), the following platforms provide
 PostgreSQL Anonymizer:
 
+* [Alibaba Cloud]
 * [Crunchy Bridge]
 * [Google Cloud SQL]
 * [Microsoft Azure Database]
@@ -431,6 +432,7 @@ PostgreSQL Anonymizer:
 * [Postgres.ai]
 * [Tembo]
 
+[Alibaba Cloud]: https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/extensions-supported-by-apsaradb-rds-for-postgresql
 [Crunchy Bridge]: https://access.crunchydata.com/documentation/postgresql-anonymizer/latest/
 [Google Cloud SQL]: https://cloud.google.com/sql/docs/postgres/extensions#postgresql_anonymizer
 [Microsoft Azure Database]: https://learn.microsoft.com/fr-fr/azure/postgresql/flexible-server/concepts-extensions
