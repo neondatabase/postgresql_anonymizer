@@ -2,16 +2,17 @@
 run-sql:
   - dbname: boutique
   - user: paul
-  - parse_query: False
 ...
 
-# 3- Anonymous Dumps
+3- Anonymous Dumps
+===============================================================================
 
-> In many situation, what we want is basically to export the anonymized
-> data into another database (for testing or to produce statistics).
-> We will simply use pg_dump for that !
+💡 In many situation, what we want is basically to export the anonymized
+data into another database (for testing or to produce statistics).
+We will simply use pg_dump for that !
 
-## The Story
+The Story
+-------------------------------------------------------------------------------
 
 Paul has a website and a comment section where customers can express
 their views.
@@ -21,16 +22,19 @@ agency asked for a SQL export (dump) of the current website database.
 Paul wants to `clean` the database export and remove any personal
 information contained in the comment section.
 
-## How it works
+How it works
+-------------------------------------------------------------------------------
 
 ![](../images/anon-Dump.drawio.png)
 
-## Learning Objective
+Learning Objective
+-------------------------------------------------------------------------------
 
--   Extract the anonymized data from the database
--   Write a custom masking function to handle a JSON field.
+- Extract the anonymized data from the database
+- Write a custom masking function to handle a JSON field.
 
-## Load the data
+Load the data
+-------------------------------------------------------------------------------
 
 ``` run-postgres
 DROP TABLE IF EXISTS website_comment CASCADE;
@@ -68,16 +72,18 @@ SELECT
   message->'meta'->'name' AS name,
   message->'content' AS content
 FROM website_comment
-ORDER BY id ASC
+ORDER BY id ASC;
 ```
 
-## Activate the extension
+Activate the extension
+-------------------------------------------------------------------------------
 
 ``` run-postgres
 CREATE EXTENSION IF NOT EXISTS anon;
 ```
 
-## Masking a JSON column
+Masking a JSON column
+-------------------------------------------------------------------------------
 
 The `comment` field is filled with personal information and the fact
 the field does not have a standard schema makes our tasks harder.
@@ -88,19 +94,18 @@ As we can see, web visitors can write any kind of information in the
 comment section. Our best option is to remove this key entirely because
 there's no way to extract personal data properly.
 
-
-------------------------------------------------------------------------
+---
 
 We can *clean* the comment column simply by removing the `content`
-key!
+key in the `message` column !
 
 ``` run-postgres
-SELECT message - ARRAY['content']
+SELECT message - ARRAY['content'] AS message_without_content
 FROM website_comment
 WHERE id=1;
 ```
 
-------------------------------------------------------------------------
+---
 
 First let's create a dedicated schema and declare it as trusted. This
 means the `anon` extension will accept the functions located in this
@@ -114,8 +119,7 @@ CREATE SCHEMA IF NOT EXISTS my_masks;
 SECURITY LABEL FOR anon ON SCHEMA my_masks IS 'TRUSTED';
 ```
 
-
-------------------------------------------------------------------------
+---
 
 Now we can write a function that remove the message content:
 
@@ -129,14 +133,13 @@ LANGUAGE SQL
 ;
 ```
 
-
-------------------------------------------------------------------------
+---
 
 Let's try it!
 
 ``` run-postgres
 SELECT my_masks.remove_content(message)
-FROM website_comment
+FROM website_comment;
 ```
 
 
@@ -179,32 +182,40 @@ export PGHOST=localhost
 pg_dump -U anon_dumper boutique --table=website_comment > /tmp/dump.sql
 ```
 
-## Exercises
+Exercises
+-------------------------------------------------------------------------------
 
 ### E301 - Dump the anonymized data into a new database
 
 Create a database named `boutique_anon` and transfer the entire
 database into it.
 
-### E302 - Pseudonymize the meta fields of the comments
+### E302 - Remove the email address
+
+
+Replace the `remove_content` function with a better one called
+`remove_content_and_ip` that will nullify the `email` key.
+
+💡 HINT: you can use `jsonb_set(message, '{meta, email}', '{}')`
+to remove the email value.
+
+
+### E303 - Pseudonymize the IP address
 
 Pierre plans to extract general information from the metadata. For
 instance, he wants to calculate the number of unique visitors based on
-the different IP addresses. But an IP address is an **indirect
-identifier**, so Paul needs to anonymize this field while maintaining
-the fact that some values appear multiple times.
+the different IP addresses.
 
-Replace the `remove_content` function with a better one called
-`clean_comment` that will:
+But an IP address is an **indirect identifier**, so Paul needs to anonymize
+this field while maintaining the fact that some values appear multiple times.
 
--   Remove the content key
--   Replace the `name` value with a fake last name
--   Replace the `ip_address` value with its MD5 signature
--   Nullify the `email` key
 
-> HINT: Look at the `jsonb_set()` and `jsonb_build_object()` functions
+💡 HINT: First you can create a new `meta` object using `jsonb_build_object()`
+and then use function `jsonb_set` replace the `meta` key
 
-## Solutions
+
+Solutions
+-------------------------------------------------------------------------------
 
 ### S301
 
@@ -222,6 +233,30 @@ psql -U paul boutique_anon -c 'SELECT COUNT(*) FROM company'
 ```
 
 ### S302
+
+```run-postgres
+CREATE OR REPLACE FUNCTION my_masks.remove_content_and_ip(message JSONB)
+RETURNS JSONB
+VOLATILE
+LANGUAGE SQL
+AS $func$
+SELECT
+  jsonb_set(message, '{meta, email}', '{}')
+  - ARRAY['content'];
+$func$;
+```
+
+``` run-postgres
+SELECT my_masks.remove_content_and_ip(message)
+FROM website_comment;
+```
+
+``` run-postgres
+SECURITY LABEL FOR anon ON COLUMN website_comment.message
+IS 'MASKED WITH FUNCTION my_masks.remove_content_and_ip(message)';
+```
+
+### S303
 
 ```run-postgres
 CREATE OR REPLACE FUNCTION my_masks.clean_comment(message JSONB)
