@@ -5,11 +5,17 @@ run-sql:
   - parse_query: False
 ...
 
-# 1 - Static Masking
+# 1- Static Masking
 
-> Static Masking is the simplest way to hide personal information! This
-> idea is simply to destroy the original data or replace it with an
-> artificial one.
+💡 Static Masking is the simplest way to hide personal information! 
+This idea is simply to destroy the original data or replace it with 
+an artificial one.
+
+## Requirements
+
+**Please check out the [intro] of this tutorial if you haven't read it yet**
+
+[intro]: tutorials/0-intro/
 
 ## The story
 
@@ -139,7 +145,7 @@ again.
 
 Paul realizes that the postcode gives a clear indication of where his
 customers live. However he would like to have statistics based on their
-`postcode area`.
+postcode area.
 
 **Add a new masking rule to replace the last 3 digits by 'x'.**
 
@@ -155,9 +161,9 @@ date of the customers.
 Replace all the birth dates by January 1rst, while keeping the real
 year.
 
-!!! hint
+💡 You can use the [make_date] or [date_trunc] functions !
 
-    You can use the [make_date] or [date_trunc] functions !
+See <https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE>
 
 [make_date]: https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE
 [date_trunc]: https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE
@@ -182,9 +188,7 @@ FROM customer c
 JOIN best_client b ON (c.id = b.fk_customer_id)
 ```
 
-!!! note
-
-    This is called **[Singling Out] a person.**
+💡 This is called **[Singling Out] a person.**
 
 
 [Singling Out]: https://www.pnas.org/content/117/15/8344
@@ -203,12 +207,10 @@ the integrity of the data?
 Find a function that will shuffle the column `fk_company_id` of the
 `payout` table
 
-!!! tip
-
-    Check out the [static masking] section of the [documentation].
+💡 Check out the [shuffling] section of the [documentation].
 
 
-[shuffling]: https://postgresql-anonymizer.readthedocs.io/en/stable/static_masking#shuffling
+[shuffling]: static_masking#shuffling
 [documentation]: https://postgresql-anonymizer.readthedocs.io/en/stable/
 
 ## Solutions

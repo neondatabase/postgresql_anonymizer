@@ -1,17 +1,22 @@
-# 2- How to use Dynamic Masking
+# 2- Dynamic Masking
 
-> With Dynamic Masking, the database owner can hide personal data for
-> some users, while other users are still allowed to read and write the
-> authentic data.
+💡 With Dynamic Masking, the database owner can hide personal data for
+some users, while other users are still allowed to read and write the
+authentic data.
+
+## Requirements
+
+**Please check out the [intro](tutorials/0-intro/) of this tutorial if
+you haven't read it yet**
 
 ## The Story
 
 Paul has 2 employees:
 
--   Jack is operating the new sales application, he needs access to the
-    real data. He is what the GPDR would call a **\"data processor\"**.
--   Pierre is a data analyst who runs statistic queries on the database.
-    He should not have access to any personal data.
+- Jack is operating the new sales application, he needs access to the
+  real data. He is what the GPDR would call a **\"data processor\"**.
+- Pierre is a data analyst who runs statistic queries on the database.
+  He should not have access to any personal data.
 
 ## How it works
 
@@ -21,28 +26,36 @@ Paul has 2 employees:
 
 In this section, we will learn:
 
--   How to write simple masking rules
--   The advantage and limitations of dynamic masking
--   The concept of \"Linkability\" of a person
+- How to write simple masking rules
+- The advantage and limitations of dynamic masking
+- The concept of \"Linkability\" of a person
 
 ## The `company` table
 
-``` sql
+``` {.sql parse_query="False"}
+
 DROP TABLE IF EXISTS supplier CASCADE;
+
 DROP TABLE IF EXISTS company CASCADE;
-CREATE TABLE company ( id SERIAL PRIMARY KEY, name TEXT, vat_id TEXT UNIQUE );
+
+CREATE TABLE company (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    vat_id TEXT UNIQUE
+);
 ```
 
 ``` sql
 INSERT INTO company
-VALUES (952,'Shadrach', 'FR62684255667'),
-       (194,E'Johnny\'s Shoe Store','CHE670945644'),
-       (346,'Capitol Records','GB663829617823') ;
+VALUES
+(952,'Shadrach', 'FR62684255667'),
+(194,E'Johnny\'s Shoe Store','CHE670945644'),
+(346,'Capitol Records','GB663829617823')
+;
 ```
 
 ``` sql
-SELECT *
-FROM company;
+SELECT * FROM company;
 ```
 
 | id  | name                 | vat_id         |
@@ -53,19 +66,26 @@ FROM company;
 
 ## The `supplier` table
 
-``` sql
-CREATE TABLE supplier ( id SERIAL PRIMARY KEY, fk_company_id INT REFERENCES company(id), contact TEXT, phone TEXT, job_title TEXT );
+``` {.sql parse_query="False"}
+CREATE TABLE supplier (
+    id SERIAL PRIMARY KEY,
+    fk_company_id INT REFERENCES company(id),
+    contact TEXT,
+    phone TEXT,
+    job_title TEXT
+);
 ```
 
 ``` sql
 INSERT INTO supplier
-VALUES (299,194,'Johnny Ryall','597-500-569','CEO'),
-       (157,346,'George Clinton', '131-002-530','Sales manager') ;
+VALUES
+(299,194,'Johnny Ryall','597-500-569','CEO'),
+(157,346,'George Clinton', '131-002-530','Sales manager')
+;
 ```
 
 ``` sql
-SELECT *
-FROM supplier;
+SELECT * FROM supplier;
 ```
 
 | id  | fk_company_id | contact        | phone       | job_title     |
@@ -77,11 +97,9 @@ FROM supplier;
 
 ``` sql
 ALTER DATABASE boutique
-SET session_preload_libraries TO 'anon';
-
+  SET session_preload_libraries TO 'anon';
 
 CREATE EXTENSION IF NOT EXISTS anon;
-
 
 SELECT anon.init();
 ```
@@ -90,24 +108,23 @@ SELECT anon.init();
 
 ### Activate the masking engine
 
-``` sql
-ALTER DATABASE boutique SET anon.transparent_dynamic_masking TO true;
+``` {.sql parse_query="False"}
+ALTER DATABASE boutique
+  SET anon.transparent_dynamic_masking TO true;
 ```
 
 ### Masking a role
 
 ``` sql
-SECURITY LABEL
-FOR anon ON ROLE pierre IS 'MASKED';
+SECURITY LABEL FOR anon ON ROLE pierre IS 'MASKED';
 
-GRANT pg_read_all_data TO pierre;
+GRANT pg_read_all_data to pierre;
 ```
 
 Now connect as Pierre and try to read the supplier table:
 
-``` sql
-SELECT *
-FROM supplier;
+``` {.sql user="pierre"}
+SELECT * FROM supplier;
 ```
 
 | id  | fk_company_id | contact        | phone       | job_title     |
@@ -123,17 +140,16 @@ data in each table.
 Connect as Paul and define a masking rule on the supplier table:
 
 ``` sql
-SECURITY LABEL
-FOR anon ON COLUMN supplier.contact IS 'MASKED WITH VALUE $$CONFIDENTIAL$$';
+SECURITY LABEL FOR anon ON COLUMN supplier.contact
+  IS 'MASKED WITH VALUE $$CONFIDENTIAL$$';
 ```
 
 ------------------------------------------------------------------------
 
 Now connect as Pierre and try to read the supplier table again:
 
-``` sql
-SELECT *
-FROM supplier;
+``` {.sql user="pierre"}
+SELECT * FROM supplier;
 ```
 
 | id  | fk_company_id | contact      | phone       | job_title     |
@@ -145,9 +161,8 @@ FROM supplier;
 
 Now connect as Jack and try to read the real data:
 
-``` sql
-SELECT *
-FROM supplier;
+``` {.sql user="jack"}
+SELECT * FROM supplier;
 ```
 
 | id  | fk_company_id | contact        | phone       | job_title     |
@@ -159,17 +174,19 @@ FROM supplier;
 
 ### E201 - Guess who is the CEO of "Johnny's Shoe Store"
 
-Masking the supplier name is clearly not enough to provide anonymity.
+Masking the supplier contact is clearly not enough to provide anonymity.
 
-**Connect as Pierre and write a simple SQL query that would reindentify
-some suppliers based on their job and their company.**
+**Connect as Pierre and write a simple SQL query that joins the
+`supplier` and the `company` tables. See how that could reindentify some
+suppliers based on their job and their company.**
 
-Company names and job positions are available in many public datasets. A
-simple search on Linkedin or Google, would give you the names of the top
-executives of most companies..
+With this request we managed to link a person to a company and we know
+it's job title. Since company names and job positions are available in
+many public datasets: a simple search on Linkedin or Google would give
+us the real names of many of the employees of these companies...
 
-> This is called **Linkability**: the ability to connect multiple
-> records concerning the same data subject.
+💡 This is called **Linkability**: the ability to connect multiple
+records concerning the same data subject.
 
 ### E202 - Anonymize the companies
 
@@ -177,16 +194,21 @@ We need to anonymize the `company` table, too. Even if they don't
 contain personal information, some fields can be used to **infer** the
 identity of their employees...
 
-**Write 2 masking rules for the company table. The first one will
-replace the `name` field with a fake name. The second will replace the
-`vat_id` with a random sequence of 10 characters**
+**Connect as Paul and write 2 masking rules (security labels) for the
+company table.**
 
-!!! tip
+- The first one will replace the `name` field with a fake name.
+- The second rule will replace the `vat_id` with a random sequence of 10
+  characters
 
-    Go to the[documentation] and look at the [faking functions] and the
-    [random functions] !
+💡 Go to
+the[documentation](https://postgresql-anonymizer.readthedocs.io/en/stable/)
+and look at the [faking functions](masking_functions#faking) and the
+[random functions](masking_functions#randomization) !
 
 Connect as Pierre and check that he cannot view the real company info.
+
+Connect as Jack and check that he can view the real values.
 
 ### E203 - Pseudonymize the company name
 
@@ -194,24 +216,23 @@ Because of dynamic masking, the fake values will be different every time
 Pierre tries to read the table.
 
 Pierre would like to have always the same fake values for a given
-company. **This is called pseudonymization.**
+company.
 
-**Write a new masking rule over the `vat_id` field by generating 10
-random characters using the md5() function.**
+💡 **This is called pseudonymization.**
+
+**Connect as Paul and write a new masking rule over the `vat_id` field
+by generating a hash of 10 characters using the `anon.digest()`
+function.**
 
 **Write a new masking rule over the `name` field by using a
-[pseudonymizing
-function](https://postgresql-anonymizer.readthedocs.io/en/stable/masking_functions#pseudonymization).**
+[pseudonymizing function](masking_functions#pseudonymization).**
 
 ## Solutions
 
 ### S201
 
-``` sql
-SELECT s.id,
-       s.contact,
-       s.job_title,
-       c.name
+``` {.sql user="pierre"}
+SELECT s.id, s.contact, s.job_title, c.name
 FROM supplier s
 JOIN company c ON s.fk_company_id = c.id;
 ```
@@ -224,68 +245,81 @@ JOIN company c ON s.fk_company_id = c.id;
 ### S202
 
 ``` sql
-SECURITY LABEL
-FOR anon ON COLUMN company.name IS 'MASKED WITH FUNCTION anon.dummy_company_name()';
+SECURITY LABEL FOR anon ON COLUMN company.name
+  IS 'MASKED WITH FUNCTION anon.dummy_company_name()';
 
-SECURITY LABEL
-FOR anon ON COLUMN company.vat_id IS 'MASKED WITH FUNCTION anon.random_string(10)';
+SECURITY LABEL FOR anon ON COLUMN company.vat_id
+IS 'MASKED WITH FUNCTION anon.random_string(10)';
 ```
 
 Now connect as Pierre and read the table again:
 
-``` sql
-SELECT *
-FROM company;
+``` {.sql user="pierre"}
+SELECT * FROM company;
 ```
 
-| id  | name                   | vat_id     |
-|-----|------------------------|------------|
-| 952 | Thiel and Hudson LLC   | kG6CBmpRHZ |
-| 194 | Little and Bernier Inc | CRpk4yez0x |
-| 346 | Purdy LLC              | 92sMlGfRoV |
+| id  | name                | vat_id     |
+|-----|---------------------|------------|
+| 952 | Bashirian LLC       | Yg1GmRm0WW |
+| 194 | Towne and Sons      | IzzSE2QmEC |
+| 346 | Cartwright and Sons | LjTIY7QrBm |
 
 Pierre will see different "fake data" every time he reads the table:
 
-``` sql
-SELECT *
-FROM company;
+``` {.sql user="pierre"}
+SELECT * FROM company;
 ```
 
-| id  | name                             | vat_id     |
-|-----|----------------------------------|------------|
-| 952 | Yundt and Sons                   | k2HE9JaEpT |
-| 194 | Schuster and Konopelski and Sons | 8SPYpX1866 |
-| 346 | Ziemann and Wisoky Inc           | 1G2Ot6LjUE |
+| id  | name                 | vat_id     |
+|-----|----------------------|------------|
+| 952 | Wolf and Haley Group | T0UjIXqLu5 |
+| 194 | Rippin Inc           | EpB97liUYC |
+| 346 | Weber and Bayer LLC  | flyM5UaRPV |
+
+Jack still sees the real data
+
+``` {.sql user="jack"}
+SELECT * FROM company;
+```
+
+| id  | name                 | vat_id         |
+|-----|----------------------|----------------|
+| 952 | Shadrach             | FR62684255667  |
+| 194 | Johnny\'s Shoe Store | CHE670945644   |
+| 346 | Capitol Records      | GB663829617823 |
 
 ### S203
 
 ``` sql
-SECURITY LABEL
-FOR anon ON COLUMN company.name IS 'MASKED WITH FUNCTION anon.pseudo_company(id)';
+SECURITY LABEL FOR anon ON COLUMN company.vat_id
+IS $$ MASKED WITH FUNCTION anon.left(anon.digest(vat_id, 'xxx', 'md5'),10) $$;
+```
+
+``` sql
+SECURITY LABEL FOR  anon ON COLUMN company.name
+  IS 'MASKED WITH FUNCTION anon.pseudo_company(id)';
 ```
 
 Connect as Pierre and read the table multiple times:
 
-``` sql
-SELECT *
-FROM company;
+``` {.sql user="pierre"}
+SELECT * FROM company;
 ```
 
 | id  | name            | vat_id     |
 |-----|-----------------|------------|
-| 952 | Wilkinson LLC   | Ifsi290QIn |
-| 194 | Johnson PLC     | LzgMedlx2A |
-| 346 | Young-Carpenter | HbcZDZ2hTT |
+| 952 | Wilkinson LLC   | 2db762afa4 |
+| 194 | Johnson PLC     | 61fddf8d83 |
+| 346 | Young-Carpenter | 86fe3f164c |
 
-``` sql
-SELECT *
-FROM company;
+``` {.sql user="pierre"}
+SELECT * FROM company;
 ```
 
 | id  | name            | vat_id     |
 |-----|-----------------|------------|
-| 952 | Wilkinson LLC   | YQPTtQXfWM |
-| 194 | Johnson PLC     | EVwSatDJ51 |
-| 346 | Young-Carpenter | UzRp4fKpSO |
+| 952 | Wilkinson LLC   | 2db762afa4 |
+| 194 | Johnson PLC     | 61fddf8d83 |
+| 346 | Young-Carpenter | 86fe3f164c |
 
 Now the fake company name is always the same.

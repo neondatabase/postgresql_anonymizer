@@ -5,14 +5,13 @@ run-sql:
   - parse_query: False
 ...
 
-# 4 - Generalization
+# 4- Generalization
 
-
-> The main idea of generalization is to `blur` the original data. For
-> example, instead of saying `Mister X was born on July 25, 1989`, we
-> can say `Mister X was born is the 80's`. The information is still
-> true, but it is less precise and it can\'t be used to reidentify the
-> subject.
+💡 The main idea of generalization is to `blur` the original data. For
+example, instead of saying `Mister X was born on July 25, 1989`, we
+can say `Mister X was born is the 80's`. The information is still
+true, but it is less precise and it can't be used to reidentify the
+subject.
 
 ## The Story
 
@@ -52,11 +51,7 @@ CREATE TABLE employee (
 );
 ```
 
-
-
-!!! danger
-    This is awkward and illegal.
-
+🚨 This is awkward and illegal.
 
 
 Loading the data:
@@ -112,11 +107,19 @@ FROM v_asthma_eyes
 GROUP BY eyes;
 ```
 
-Pierre just proved that asthma is caused by green eyes.
+Pierre just proved that asthma is caused by blue eyes ;-)
 
 ## K-Anonymity
 
 The `asthma` and `eyes` columns are considered as indirect identifiers.
+
+Indirect personal identifiers (or
+"quasi-identifiers") are pieces of information that, when combined with
+other data can identify an individual. Examples of indirect identifiers
+include: Date of birth, Gender, Zip code, etc.
+
+With PostgreSQL Anonymizer, we can declare that a column is an indirect
+identifiers, like this:
 
 ``` run-postgres
 SECURITY LABEL FOR k_anonymity
@@ -132,14 +135,18 @@ SECURITY LABEL FOR k_anonymity
 SELECT anon.k_anonymity('v_asthma_eyes');
 ```
 
-The v_asthma_eyes has \'2-anonymity\'. This means that each
-quasi-identifier combination (the \'eyes-asthma\' tuples) occurs in at
+The v_asthma_eyes has '2-anonymity'. This means that each
+quasi-identifier combination (the 'eyes-asthma' tuples) occurs in at
 least 2 records for a dataset.
 
 In other words, it means that each individual in the view cannot be
 distinguished from at least 1 (k-1) other individual.
 
 ## Range and Generalization functions
+
+Now let's add another view over the `employee` table.
+
+We will generalize the dates of to keep only the month and year.
 
 ``` run-postgres
 DROP MATERIALIZED VIEW IF EXISTS v_staff_per_month;
@@ -172,7 +179,8 @@ FROM v_staff_per_month;
 ### Declaring the indirect identifiers
 
 Now let's check the k-anonymity of this view by declaring which columns
-are indirect identifiers.
+are indirect identifiers :
+
 
 ``` run-postgres
 SECURITY LABEL FOR k_anonymity
@@ -186,8 +194,9 @@ SECURITY LABEL FOR k_anonymity
 SELECT anon.k_anonymity('v_staff_per_month');
 ```
 
-In this case, the k factor is 1 which means that at least one unique
-individual can be identified directly by his/her first and last dates.
+In this case, the k factor is 1 which means that there is at least one
+unique individual who be identified directly by his/her first and last
+dates.
 
 ## Exercises
 
@@ -224,8 +233,7 @@ SELECT
 FROM employee;
 ```
 
-!!! tip
-    '[]' will include the upper bound
+💡 `'[]'` will include the upper bound
 
 ----
 
