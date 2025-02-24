@@ -12,6 +12,7 @@ WIP : 2.1.0 - Masking Images
 * [doc] sha1 hashing is not available in v2 (Anthony DUMONTOIS)
 * [doc] Install with Ansible
 * [doc] Fix Anonymous Dump schema
+* [install] Fix make install (@Krysztophe)
 
 20250106 : 2.0.0 - Better, Faster, Safer
 -------------------------------------------------------------------------------

@@ -25,7 +25,7 @@ PATH:=$(PG_BINDIR):${PATH}
 
 # This is where the package is placed
 TARGET_SHAREDIR?=$(TARGET_DIR)/$(PG_SHAREDIR)
-TARGET_LIBDIR?=$(TARGET_DIR)/$(PG_PKGLIBDIR)
+TARGET_PKGLIBDIR?=$(TARGET_DIR)/$(PG_PKGLIBDIR)
 
 PG_REGRESS?=$(PG_PKGLIBDIR)/pgxs/src/test/regress/pg_regress
 PG_SOCKET_DIR?=/var/lib/postgresql/.pgrx/
@@ -138,7 +138,7 @@ extension:
 
 install:
 	cp -r $(TARGET_SHAREDIR)/extension/* $(PG_SHAREDIR)/extension/
-	install $(TARGET_LIBDIR)/anon.so $(PG_LIBDIR)
+	install $(TARGET_PKGLIBDIR)/anon.so $(PG_PKGLIBDIR)
 
 ##
 ## INSTALLCHECK
@@ -242,7 +242,7 @@ endif
 ##
 
 # The packages are built from the $(TARGET_DIR) folder.
-# So the $(PG_LIBDIR) and $(PG_SHAREDIR) are relative to that folder
+# So the $(PG_PKGLIBDIR) and $(PG_SHAREDIR) are relative to that folder
 rpm deb: package
 	export PG_PKGLIBDIR=".$(PG_PKGLIBDIR)" && \
 	export PG_SHAREDIR=".$(PG_SHAREDIR)" && \
