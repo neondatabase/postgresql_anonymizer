@@ -390,7 +390,7 @@ pt_BR, zh_CN, zh_TW.
 
 Not that some `dummy_` functions are not implemented for certain locales.
 If you wish to contribute or ask for missing fake data, please contact directly
-the [fake-rs] project, which the library that this extension is using under the
+the [fake-rs] project, which is the library that this extension is using under the
 hood !
 
 [fake-rs]: https://github.com/cksac/fake-rs
