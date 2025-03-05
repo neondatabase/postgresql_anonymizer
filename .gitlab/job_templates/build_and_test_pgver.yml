@@ -74,7 +74,6 @@ spec:
     ALWAYS: $[[ inputs.always ]]
   script:
     - make install
-    - make start
     - make installcheck
   rules:
     - if: $ALWAYS

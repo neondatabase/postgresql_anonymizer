@@ -150,7 +150,7 @@ install:
 # With PGRX: the postgres instance is created previously by `cargo run`. This
 # means we have some extra tasks to prepare the instance
 
-installcheck:
+installcheck: start
 	dropdb $(PSQL_OPT) --if-exists $(PGDATABASE)
 	createdb $(PSQL_OPT) $(PGDATABASE)
 	dropuser oscar_the_owner || echo 'ignored'
