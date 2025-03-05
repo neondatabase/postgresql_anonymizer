@@ -203,7 +203,7 @@ All new connections to the database can now use the extension.
 
 
 
-Install With [PGXN](https://pgxn.org/) :
+Install With [PGXN](https://pgxn.org/)
 ------------------------------------------------------------------------------
 
 !!! warning
