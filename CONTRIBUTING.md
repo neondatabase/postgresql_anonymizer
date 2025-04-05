@@ -254,7 +254,7 @@ This will give you access to:
   macros
 
 * Additional SQL functions that provide priceless information when we need to
-  fix a bug or develop a new feature, suh as
+  fix a bug or develop a new feature, such as
   `SELECT anon.get_masking_policy(OID)`.
 
 In CI, the extension is built with the release mode, which means that the DEB
@@ -320,7 +320,7 @@ FAKE_DATA_LOCALES=fr_FR make fake_data
 Compatibility with ARM
 --------------------------------------------------------------------------------
 
-We do not offcially support this extension on ARM64 architectures.
+We do not officially support this extension on ARM64 architectures.
 
 However some people have successfully build the extension for ARM64 and here's
 some good practice to maintain compatibility.

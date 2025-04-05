@@ -15,7 +15,7 @@ blackbox:
     - mkdir results
     - cat tests/sql/blackbox.sql |
         docker run --rm -i blackbox /anon.sh  > results/blackbox.out
-    # we remove comments because pg_dump ouputs the PG version and we don't want
+    # we remove comments because pg_dump outputs the PG version and we don't want
     # this test to break every time a new minor version is released
     - sed -i 's/^--.*$//' results/blackbox.out
     - diff tests/expected/blackbox.out results/blackbox.out

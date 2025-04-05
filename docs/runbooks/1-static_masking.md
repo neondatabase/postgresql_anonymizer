@@ -128,7 +128,7 @@ FROM customer;
 > permanently replaced**. We'll see later how we can use dynamic
 > anonymization or anonymous exports.
 
-## Exercices
+## Exercises
 
 ### E101 - Mask the client's first names
 

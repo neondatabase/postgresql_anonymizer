@@ -2,7 +2,7 @@
 -- # Random Generic Data
 --
 -- These random functions generate numeric/date values without
--- accessing any dictionnary.
+-- accessing any dictionary.
 --
 
 -- sequenced id

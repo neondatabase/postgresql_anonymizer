@@ -163,7 +163,7 @@ export PGHOST=localhost
 pg_dump -U anon_dumper boutique --table=website_comment > /tmp/dump.sql
 ```
 
-## Exercices
+## Exercises
 
 ### E301 - Dump the anonymized data into a new database
 

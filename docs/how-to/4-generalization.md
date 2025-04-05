@@ -181,7 +181,7 @@ individual can be identified directly by his/her first and last dates.
 
 Note that the security label provider is `k_anonymity` and not `anon`.
 
-## Exercices
+## Exercises
 
 ### E401 - Simplify `v_staff_per_month` and decrease granularity
 

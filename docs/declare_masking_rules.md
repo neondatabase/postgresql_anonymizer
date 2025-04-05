@@ -50,7 +50,7 @@ Principles
 
 * A masking rule may break data integrity. For instance, you can mask a
   `NOT NULL` column with the value `NULL`. This is up to you to decide
-  wether or not the masked users need data integrity.
+  whether or not the masked users need data integrity.
 
 * You need to declare masking rules on views. By default, the masking rules
   declared on the underlying tables are **NOT APPLIED** on the view. For

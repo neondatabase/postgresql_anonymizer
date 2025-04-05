@@ -47,7 +47,7 @@ CREATE FOREIGN TABLE files.app_log
 ;
 ```
 
-We can now declare masking rules on the columns of the foregin table, just like
+We can now declare masking rules on the columns of the foreign table, just like
 we would do for a regular table.
 
 ``` sql

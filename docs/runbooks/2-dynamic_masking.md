@@ -148,7 +148,7 @@ Now connect as Jack and try to read the real data:
 SELECT * FROM supplier;
 ```
 
-## Exercices
+## Exercises
 
 ### E201 - Guess who is the CEO of "Johnny's Shoe Store"
 

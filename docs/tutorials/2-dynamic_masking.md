@@ -155,7 +155,7 @@ FROM supplier;
 | 299 | 194           | Johnny Ryall   | 597-500-569 | CEO           |
 | 157 | 346           | George Clinton | 131-002-530 | Sales manager |
 
-## Exercices
+## Exercises
 
 ### E201 - Guess who is the CEO of "Johnny's Shoe Store"
 

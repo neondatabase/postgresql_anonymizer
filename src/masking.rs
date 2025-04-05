@@ -567,7 +567,7 @@ pub fn value_for_att(
             // mask with the default value
             return (default_value, true);
         }
-        // no defaut value, mask with "NULL"
+        // no default value, mask with "NULL"
         return ("NULL".to_string(), true);
     }
 

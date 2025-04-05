@@ -189,7 +189,7 @@ SELECT anon.k_anonymity('v_staff_per_month');
 In this case, the k factor is 1 which means that at least one unique
 individual can be identified directly by his/her first and last dates.
 
-## Exercices
+## Exercises
 
 ### E401 - Simplify `v_staff_per_month` and decrease granularity
 

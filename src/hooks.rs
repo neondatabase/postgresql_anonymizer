@@ -119,7 +119,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
         for node in att_nodes.iter_ptr() {
             let attname = unsafe {
                 // SAFETY : a Postgres pg_sys::List, and by extension PgList,
-                // wont contain null pointer
+                // won't contain null pointer
                 pgrx::node_to_string(node).unwrap()
             };
             attributes.push(attname.to_string());
