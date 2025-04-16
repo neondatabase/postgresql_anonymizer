@@ -2,12 +2,6 @@
 -- Fake Data
 -------------------------------------------------------------------------------
 
-CREATE TYPE anon_fake_data_tables
-AS ENUM (
-  'address', 'city', 'company', 'country', 'email', 'first_name',
-  'iban', 'last_name', 'lorem_ipsum', 'postcode', 'siret'
-);
-
 -- Address
 DROP TABLE IF EXISTS anon.address;
 CREATE TABLE anon.address (
