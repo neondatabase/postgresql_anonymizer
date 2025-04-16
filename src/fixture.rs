@@ -135,7 +135,7 @@ pub fn create_table_location() -> pg_sys::Oid {
 
 #[allow(dead_code)]
 pub fn create_table_with_defaults() -> pg_sys::Oid {
-    Spi::connect(|mut client| {
+    Spi::connect_mut(|client| {
         client.update("
             CREATE TABLE test_defaults (
                 id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -146,10 +146,10 @@ pub fn create_table_with_defaults() -> pg_sys::Oid {
                 col_dropped TEXT DEFAULT NULL
             );
             ALTER TABLE test_defaults DROP COLUMN col_dropped;
-        ", None, None).unwrap();
+        ", None, &[]).unwrap();
 
         let relid = client
-            .select("SELECT 'test_defaults'::REGCLASS::OID", None, None)
+            .select("SELECT 'test_defaults'::REGCLASS::OID", None, &[])
             .unwrap()
             .first()
             .get_one::<pg_sys::Oid>()

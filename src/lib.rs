@@ -450,7 +450,7 @@ static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {
 /// C functions because of this guard.
 ///
 #[pg_guard]
-pub unsafe extern "C" fn _PG_init() {
+pub unsafe extern "C-unwind" fn _PG_init() {
     #[allow(static_mut_refs,deprecated)]
     pgrx::hooks::register_hook(&mut HOOKS);
     guc::register_gucs();

@@ -54,7 +54,7 @@ pub fn register_label_providers() {
 /// Checking the syntax of a k-anonymity rules
 ///
 #[pg_guard]
-unsafe extern "C" fn k_anonymity_object_relabel(
+unsafe extern "C-unwind" fn k_anonymity_object_relabel(
     object_ptr: *const pg_sys::ObjectAddress,
     seclabel_ptr: *const c_char,
 ) {
@@ -96,7 +96,7 @@ unsafe extern "C" fn k_anonymity_object_relabel(
 /// otherwise it throws an error via ereport() to ROLLBACK the transaction
 ///
 #[pg_guard]
-unsafe extern "C" fn masking_policy_object_relabel(
+unsafe extern "C-unwind" fn masking_policy_object_relabel(
     object_ptr: *const pg_sys::ObjectAddress,
     seclabel_ptr: *const c_char,
 ) {

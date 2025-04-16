@@ -63,7 +63,7 @@ impl TreeWalker {
 /// the context
 ///
 #[pg_guard]
-extern "C" fn is_untrusted_walker(
+extern "C-unwind" fn is_untrusted_walker(
     node: *mut pg_sys::Node,
     context_ptr: *mut ::core::ffi::c_void
 ) -> bool {
@@ -138,7 +138,7 @@ extern "C" fn is_untrusted_walker(
 /// its "Masking SubQuery" (msq)
 ///
 #[pg_guard]
-unsafe extern "C" fn rewrite_walker(
+unsafe extern "C-unwind" fn rewrite_walker(
     node: *mut pg_sys::Node,
     context_ptr: void_mut_ptr
 ) -> bool {
