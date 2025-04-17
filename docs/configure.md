@@ -95,7 +95,7 @@ why you should store the salt directly within the database with `ALTER DATABASE`
 
 
 
-anon.sourceshema
+anon.sourceschema
 --------------------------------------------------------------------------------
 
 |               |                                  |
