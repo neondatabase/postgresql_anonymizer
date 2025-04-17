@@ -545,23 +545,21 @@ SELECT anon.remove_masks_for_all_columns();
 SELECT anon.remove_masks_for_all_roles();
 ```
 
-**THIS IS NOT MANDATORY !**  It is possible to keep the masking rules inside
-the database schema even if the anon extension is removed !
+Although this step is not mandatory, it is highly recommended.
+
+In some situations ever, it may be useful to keep the masking rules inside
+the database schema even if the anon extension is removed ! Keep in mind
+that [pg_dump] and [pg_restore] both have an option `--no-security-labels`
+to exclude the masking rules when you want to import/export the database.
+
+[pg_dump]: https://www.postgresql.org/docs/current/app-pgdump.html
+[pg_restore]: https://www.postgresql.org/docs/current/app-pgrestore.html
 
 _Step 2:_ Drop the extension
 
 ```sql
 DROP EXTENSION anon;
 ```
-
-The `anon` extension also installs [pgcrypto] as a dependency, if you
-don't need it, you can remove it too:
-
-```sql
-DROP EXTENSION pgcrypto;
-```
-
-[pgcrypto]: https://www.postgresql.org/docs/current/pgcrypto.html
 
 _Step 3:_ Unload the extension
 
@@ -570,16 +568,20 @@ _Step 3:_ Unload the extension
 ALTER DATABASE foo RESET session_preload_libraries;
 ```
 
+Or modify `shared_preload_libraries` depending on how you loaded
+the extension...
+
+
 
 _Step 4:_ Uninstall the extension
 
-For Redhat / CentOS / Rocky:
+For Redhat / Rocky:
 
 ```console
-sudo yum remove postgresql_anonymizer_14
+sudo yum remove postgresql_anonymizer_17
 ```
 
-Replace 14 by the version of your postgresql instance.
+Replace 17 by the version of your postgresql instance.
 
 Compatibility Guide
 -------------------------------------------------------------------------------
