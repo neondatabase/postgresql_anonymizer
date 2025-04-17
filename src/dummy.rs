@@ -1,4 +1,3 @@
-
 ///
 /// Call a faking function based on its name and locale
 ///
@@ -13,7 +12,7 @@
 #[macro_export]
 macro_rules! dummy {
     ($struct: ident, $locale: ident ) => {
-        match &$locale as &str{
+        match &$locale as &str {
             "ar_SA" => $struct(AR_SA).fake(),
             "en_US" => $struct(EN).fake(),
             "fr_FR" => $struct(FR_FR).fake(),
@@ -21,12 +20,13 @@ macro_rules! dummy {
             "pt_BR" => $struct(PT_BR).fake(),
             "zh_CN" => $struct(ZH_CN).fake(),
             "zh_TW" => $struct(ZH_TW).fake(),
-            _       => panic!(  "Anon: {} is not a supported locale for {}",
-                                $locale,
-                                stringify!($struct),
-                        )
+            _ => panic!(
+                "Anon: {} is not a supported locale for {}",
+                $locale,
+                stringify!($struct),
+            ),
         }
-    }
+    };
 }
 
 /// Convert a i32 Range into a usize Range
@@ -35,9 +35,9 @@ macro_rules! range_usize {
     ( $range_i32: ident ) => {
         core::ops::Range::<usize> {
             start: *$range_i32.lower().unwrap().get().unwrap() as usize,
-            end: *$range_i32.upper().unwrap().get().unwrap() as usize
+            end: *$range_i32.upper().unwrap().get().unwrap() as usize,
         }
-    }
+    };
 }
 
 #[macro_export]
@@ -63,8 +63,10 @@ macro_rules! dummy_with_range {
 macro_rules! declare_french_fn_String {
     ($name: tt, $struct: ident ) => {
         #[pg_extern]
-        pub fn $name() -> String { $struct(FR_FR).fake() }
-    }
+        pub fn $name() -> String {
+            $struct(FR_FR).fake()
+        }
+    };
 }
 pub(crate) use declare_french_fn_String;
 
@@ -73,11 +75,12 @@ pub(crate) use declare_french_fn_String;
 macro_rules! declare_fn_String {
     ($name: tt, $struct: ident) => {
         #[pg_extern]
-        pub fn $name() -> String { $struct.fake() }
-    }
+        pub fn $name() -> String {
+            $struct.fake()
+        }
+    };
 }
 pub(crate) use declare_fn_String;
-
 
 ///
 /// Create 2 Rust functions for a given **localized** fake-rs Struct
@@ -103,11 +106,14 @@ macro_rules! declare_l10n_fn_String {
 
         #[pg_extern]
         pub fn $name() -> String {
-            let locale = $crate::guc::ANON_DUMMY_LOCALE.get()
-                            .unwrap().to_str().expect("Should be a string");
-            dummy!($struct,locale)
+            let locale = $crate::guc::ANON_DUMMY_LOCALE
+                .get()
+                .unwrap()
+                .to_str()
+                .expect("Should be a string");
+            dummy!($struct, locale)
         }
-    }
+    };
 }
 pub(crate) use declare_l10n_fn_String;
 
@@ -125,12 +131,14 @@ macro_rules! declare_l10n_fn_with_range_to_string {
         }
 
         #[pg_extern]
-        pub fn $name(r: pgrx::Range<i32>)
-            -> String {
-            let locale = $crate::guc::ANON_DUMMY_LOCALE.get()
-                            .unwrap().to_str().expect("Should be a string");
-            return $crate::dummy_with_range!($struct,locale,r);
+        pub fn $name(r: pgrx::Range<i32>) -> String {
+            let locale = $crate::guc::ANON_DUMMY_LOCALE
+                .get()
+                .unwrap()
+                .to_str()
+                .expect("Should be a string");
+            return $crate::dummy_with_range!($struct, locale, r);
         }
-    }
+    };
 }
 pub(crate) use declare_l10n_fn_with_range_to_string;

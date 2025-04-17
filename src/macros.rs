@@ -5,7 +5,6 @@
 ///
 /// We're reimplementing a few useful ones
 ///
-
 use pgrx::pg_sys;
 use std::ffi::CStr;
 

@@ -6,7 +6,6 @@ use crate::utils;
 use crate::walker;
 use pgrx::prelude::*;
 
-
 #[allow(deprecated)]
 use pgrx::HookResult;
 
@@ -14,9 +13,6 @@ use pgrx::HookResult;
 use pgrx::JumbleState;
 
 use pgrx::list::old_list::PgList;
-
-
-
 
 /// Apply masking rules to a COPY statement
 /// In a COPY statement, substitute the masked relation by its masking view
@@ -47,7 +43,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
 
     unsafe {
         if pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_ExplainStmt)
-        || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_TruncateStmt)
+            || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_TruncateStmt)
         {
             error::insufficient_privilege("role is masked".to_string()).ereport();
         }
@@ -62,17 +58,19 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
         //
         // see https://doxygen.postgresql.org/structCopyStmt.html
         //
-        let mut copystmt = unsafe {
-            PgBox::from_pg( pstmt.utilityStmt as *mut pg_sys::CopyStmt )
-        };
+        let mut copystmt = unsafe { PgBox::from_pg(pstmt.utilityStmt as *mut pg_sys::CopyStmt) };
 
         // ignore `COPY FROM` statements
-        if copystmt.is_from { return; }
+        if copystmt.is_from {
+            return;
+        }
 
         // This is a `COPY (SELECT ...) TO` statements
         // The SELECT subquery will be masked later by the `rewrite_walker()`
         // when triggered by the post_parse_analyze hook
-        if copystmt.relation.is_null() { return; }
+        if copystmt.relation.is_null() {
+            return;
+        }
 
         // We now know this is a `COPY xxx TO ...` statement
         // Fetch the relation id
@@ -126,15 +124,16 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
             };
             attributes.push(attname.to_string());
         }
-        if attributes.is_empty() { attributes = vec!["*".into()]; }
+        if attributes.is_empty() {
+            attributes = vec!["*".into()];
+        }
 
-        let Some(relname) = utils::get_relation_qualified_name(relid)
-                            else {
-                                error::internal("Cannot get relation name");
-                                return;
-                            };
+        let Some(relname) = utils::get_relation_qualified_name(relid) else {
+            error::internal("Cannot get relation name");
+            return;
+        };
         let msq_sql = format!("SELECT {} FROM {relname}", attributes.join(","));
-        let msq_raw_stmt  = masking::parse_subquery(msq_sql.clone());
+        let msq_raw_stmt = masking::parse_subquery(msq_sql.clone());
         log::debug3!("Anon: COPY subquery sql = {:#?}", msq_sql);
 
         // Replace the relation by the masking subquery
@@ -144,22 +143,17 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
 
         // Return the pointer to Postgres
         copystmt.into_pg();
-
     }
 }
-
-
 
 //----------------------------------------------------------------------------
 // Hooks
 //----------------------------------------------------------------------------
 
-pub struct AnonHooks {
-}
+pub struct AnonHooks {}
 
 #[allow(deprecated)]
 impl pgrx::hooks::PgHooks for AnonHooks {
-
     /// The process_utility_hook is called for each utility commands
     /// (i.e. anything other SELECT,INSERT, UPDATE,DELETE)
     ///
@@ -187,14 +181,14 @@ impl pgrx::hooks::PgHooks for AnonHooks {
             completion_tag: *mut pg_sys::QueryCompletion,
         ) -> HookResult<()>,
     ) -> HookResult<()> {
-
         if unsafe { pg_sys::IsTransactionState() } {
             let uid = unsafe { pg_sys::GetUserId() };
 
             // Rewrite the utility command when transparent dynamic masking
             // is enabled and the role is masked
             if guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get()
-            && masking::get_masking_policy(uid).is_some() {
+                && masking::get_masking_policy(uid).is_some()
+            {
                 pa_rewrite_utility(&pstmt);
             }
         }
@@ -240,15 +234,13 @@ impl pgrx::hooks::PgHooks for AnonHooks {
         // Call the previous hook (if any)
         prev_hook(parse_state, query, jumble_state)
     }
-
 }
-
 
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
-    use pgrx::prelude::*;
     use crate::fixture;
+    use pgrx::prelude::*;
 
     //
     // The unit tests for the hooks are a bit complex because we would have
@@ -260,53 +252,64 @@ mod tests {
 
     #[pg_test]
     #[ignore]
-    fn test_process_utility_hook(){
+    fn test_process_utility_hook() {
         fixture::create_table_person();
         fixture::create_masked_role();
-        Spi::run("
+        Spi::run(
+            "
             SET anon.transparent_dynamic_masking TO TRUE;
             GRANT USAGE ON SCHEMA public TO batman;
             GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman;
             SET ROLE batman;
             COPY person TO stdout;
-         ").unwrap();
+         ",
+        )
+        .unwrap();
     }
 
     #[pg_test]
-    fn test_security_label(){
+    fn test_security_label() {
         fixture::create_table_person();
         fixture::create_masked_role();
-        Spi::run("
+        Spi::run(
+            "
             CREATE TABLE wayne_manor AS
                 SELECT '224 Park Dr., Gotham City' as address;
             ALTER TABLE wayne_manor OWNER TO batman;
             SET ROLE batman;
             SECURITY LABEL FOR anon ON COLUMN wayne_manor.address
                 IS 'MASKED WITH VALUE $$CONFIDENTIAL$$ ';
-        ").unwrap();
+        ",
+        )
+        .unwrap();
     }
 
     #[pg_test]
-    fn test_explain(){
+    fn test_explain() {
         fixture::create_table_person();
         fixture::create_masked_role();
-        Spi::run("
+        Spi::run(
+            "
             SET ROLE batman;
             EXPLAIN SELECT 1;
-        ").unwrap();
+        ",
+        )
+        .unwrap();
     }
 
     #[pg_test]
-    fn test_post_parse_analyze(){
+    fn test_post_parse_analyze() {
         fixture::create_table_person();
         fixture::create_masked_role();
-        Spi::run("
+        Spi::run(
+            "
             SET anon.transparent_dynamic_masking TO TRUE;
             GRANT USAGE ON SCHEMA public TO batman;
             GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman;
             SET ROLE batman;
             SELECT lastname IS NULL FROM person LIMIT 1;
-        ").unwrap();
+        ",
+        )
+        .unwrap();
     }
-
 }

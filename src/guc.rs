@@ -5,7 +5,6 @@
 use pgrx::*;
 use std::ffi::CStr;
 
-
 pub static ANON_DUMMY_LOCALE: GucSetting<Option<&'static CStr>> =
     GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
         CStr::from_bytes_with_nul_unchecked(b"en_US\0")
@@ -21,17 +20,13 @@ pub static ANON_MASKING_POLICIES: GucSetting<Option<&'static CStr>> =
         CStr::from_bytes_with_nul_unchecked(b"\0")
     }));
 
-pub static ANON_PRIVACY_BY_DEFAULT: GucSetting<bool> =
-    GucSetting::<bool>::new(false);
+pub static ANON_PRIVACY_BY_DEFAULT: GucSetting<bool> = GucSetting::<bool>::new(false);
 
-pub static ANON_RESTRICT_TO_TRUSTED_SCHEMAS: GucSetting<bool> =
-    GucSetting::<bool>::new(true);
+pub static ANON_RESTRICT_TO_TRUSTED_SCHEMAS: GucSetting<bool> = GucSetting::<bool>::new(true);
 
-pub static ANON_STRICT_MODE: GucSetting<bool> =
-    GucSetting::<bool>::new(true);
+pub static ANON_STRICT_MODE: GucSetting<bool> = GucSetting::<bool>::new(true);
 
-pub static ANON_TRANSPARENT_DYNAMIC_MASKING: GucSetting<bool> =
-    GucSetting::<bool>::new(false);
+pub static ANON_TRANSPARENT_DYNAMIC_MASKING: GucSetting<bool> = GucSetting::<bool>::new(false);
 
 // The GUC vars below are not used in the Rust code
 // but they are used in the plpgsql code
@@ -59,7 +54,6 @@ static ANON_MASK_SCHEMA: GucSetting<Option<&'static CStr>> =
 // Register the GUC parameters for the extension
 //
 pub fn register_gucs() {
-
     GucRegistry::define_string_guc(
         "anon.dummy_locale",
         "The default locale for the dummy data functions",
@@ -103,7 +97,7 @@ pub fn register_gucs() {
         GucContext::Suset,
         GucFlags::default(),
     );
-   GucRegistry::define_bool_guc(
+    GucRegistry::define_bool_guc(
         "anon.transparent_dynamic_masking",
         "New masking engine (EXPERIMENTAL)",
         "",
@@ -168,6 +162,4 @@ pub fn register_gucs() {
         GucContext::Suset,
         GucFlags::default(),
     );
-
-
 }

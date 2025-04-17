@@ -5,7 +5,6 @@
 /// A masked user is allowed to change the value of `client_min_messages`
 /// and can easily access to internal information from the debug logs.
 ///
-
 use pgrx::prelude::*;
 
 #[macro_export]

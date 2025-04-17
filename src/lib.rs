@@ -1,4 +1,3 @@
-
 use pgrx::pgrx_macros::extension_sql_file;
 use pgrx::prelude::*;
 
@@ -22,16 +21,24 @@ mod walker;
 
 // Load the SQL functions AFTER the rust functions
 // GCOVR_EXCL_START
-extension_sql_file!("../sql/anon.sql", name="anon", finalize);
+extension_sql_file!("../sql/anon.sql", name = "anon", finalize);
 
-extension_sql_file!("../sql/fake_data_tables.sql", name="fake_data_tables", requires=["anon"]);
-extension_sql_file!("../sql/init.sql", name="init",requires=["fake_data_tables"]);
-extension_sql_file!("../sql/fake.sql", requires=["init"]);
-extension_sql_file!("../sql/pseudo.sql", requires=["init"]);
+extension_sql_file!(
+    "../sql/fake_data_tables.sql",
+    name = "fake_data_tables",
+    requires = ["anon"]
+);
+extension_sql_file!(
+    "../sql/init.sql",
+    name = "init",
+    requires = ["fake_data_tables"]
+);
+extension_sql_file!("../sql/fake.sql", requires = ["init"]);
+extension_sql_file!("../sql/pseudo.sql", requires = ["init"]);
 
-extension_sql_file!("../sql/random.sql", requires =["anon"]);
-extension_sql_file!("../sql/static_masking.sql", requires =["anon"]);
-extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires =["anon"]);
+extension_sql_file!("../sql/random.sql", requires = ["anon"]);
+extension_sql_file!("../sql/static_masking.sql", requires = ["anon"]);
+extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires = ["anon"]);
 // GCOVR_EXCL_STOP
 
 pgrx::pg_module_magic!();
@@ -50,137 +57,136 @@ mod anon {
     // Dummy Functions
     //------------------------------------------------------------------------
     use crate::dummy;
-    use fake::Fake;
     use fake::locales::*;
+    use fake::Fake;
 
     // Address
     use fake::faker::address::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_city_prefix,CityPrefix);
-    dummy::declare_l10n_fn_String!(dummy_city_suffix,CitySuffix);
-    dummy::declare_l10n_fn_String!(dummy_city_name,CityName);
-    dummy::declare_l10n_fn_String!(dummy_country_name,CountryName);
-    dummy::declare_l10n_fn_String!(dummy_country_code,CountryCode);
-    dummy::declare_l10n_fn_String!(dummy_street_suffix,StreetSuffix);
-    dummy::declare_l10n_fn_String!(dummy_street_name,StreetName);
-    dummy::declare_l10n_fn_String!(dummy_timezone,TimeZone);
-    dummy::declare_l10n_fn_String!(dummy_state_name,StateName);
-    dummy::declare_l10n_fn_String!(dummy_state_abbr,StateAbbr);
-    dummy::declare_l10n_fn_String!(dummy_secondary_address_type,SecondaryAddressType);
-    dummy::declare_l10n_fn_String!(dummy_secondary_address,SecondaryAddress);
-    dummy::declare_l10n_fn_String!(dummy_zip_code,ZipCode);
-    dummy::declare_l10n_fn_String!(dummy_post_code,PostCode);
-    dummy::declare_l10n_fn_String!(dummy_building_number,BuildingNumber);
-    dummy::declare_l10n_fn_String!(dummy_latitude,Latitude);
-    dummy::declare_l10n_fn_String!(dummy_longitude,Longitude);
+    dummy::declare_l10n_fn_String!(dummy_city_prefix, CityPrefix);
+    dummy::declare_l10n_fn_String!(dummy_city_suffix, CitySuffix);
+    dummy::declare_l10n_fn_String!(dummy_city_name, CityName);
+    dummy::declare_l10n_fn_String!(dummy_country_name, CountryName);
+    dummy::declare_l10n_fn_String!(dummy_country_code, CountryCode);
+    dummy::declare_l10n_fn_String!(dummy_street_suffix, StreetSuffix);
+    dummy::declare_l10n_fn_String!(dummy_street_name, StreetName);
+    dummy::declare_l10n_fn_String!(dummy_timezone, TimeZone);
+    dummy::declare_l10n_fn_String!(dummy_state_name, StateName);
+    dummy::declare_l10n_fn_String!(dummy_state_abbr, StateAbbr);
+    dummy::declare_l10n_fn_String!(dummy_secondary_address_type, SecondaryAddressType);
+    dummy::declare_l10n_fn_String!(dummy_secondary_address, SecondaryAddress);
+    dummy::declare_l10n_fn_String!(dummy_zip_code, ZipCode);
+    dummy::declare_l10n_fn_String!(dummy_post_code, PostCode);
+    dummy::declare_l10n_fn_String!(dummy_building_number, BuildingNumber);
+    dummy::declare_l10n_fn_String!(dummy_latitude, Latitude);
+    dummy::declare_l10n_fn_String!(dummy_longitude, Longitude);
     //dummy::declare_l10n_fn_String!(dummy_Geohash(precision: u8);
 
     // Administrative
     use fake::faker::administrative::raw::*;
-    dummy::declare_french_fn_String!(dummy_health_insurance_code,HealthInsuranceCode);
+    dummy::declare_french_fn_String!(dummy_health_insurance_code, HealthInsuranceCode);
 
     // Automotive
     use fake::faker::automotive::raw::*;
-    dummy::declare_french_fn_String!(dummy_licence_plate,LicencePlate);
+    dummy::declare_french_fn_String!(dummy_licence_plate, LicencePlate);
 
     // Barcode
     use fake::faker::barcode::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_isbn,Isbn);
-    dummy::declare_l10n_fn_String!(dummy_isbn13,Isbn13);
+    dummy::declare_l10n_fn_String!(dummy_isbn, Isbn);
+    dummy::declare_l10n_fn_String!(dummy_isbn13, Isbn13);
 
     // Color
     use fake::faker::color::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_hex_color,HexColor);
-    dummy::declare_l10n_fn_String!(dummy_rgb_color,RgbColor);
-    dummy::declare_l10n_fn_String!(dummy_rgba_color,RgbaColor);
-    dummy::declare_l10n_fn_String!(dummy_hsl_color,HslColor);
-    dummy::declare_l10n_fn_String!(dummy_hsla_color,HslaColor);
-    dummy::declare_l10n_fn_String!(dummy_color,Color);
+    dummy::declare_l10n_fn_String!(dummy_hex_color, HexColor);
+    dummy::declare_l10n_fn_String!(dummy_rgb_color, RgbColor);
+    dummy::declare_l10n_fn_String!(dummy_rgba_color, RgbaColor);
+    dummy::declare_l10n_fn_String!(dummy_hsl_color, HslColor);
+    dummy::declare_l10n_fn_String!(dummy_hsla_color, HslaColor);
+    dummy::declare_l10n_fn_String!(dummy_color, Color);
 
     // Company
     use fake::faker::company::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_company_suffix,CompanySuffix);
-    dummy::declare_l10n_fn_String!(dummy_company_name,CompanyName);
-    dummy::declare_l10n_fn_String!(dummy_buzzword,Buzzword);
-    dummy::declare_l10n_fn_String!(dummy_buzzword_middle,BuzzwordMiddle);
-    dummy::declare_l10n_fn_String!(dummy_buzzword_tail,BuzzwordTail);
-    dummy::declare_l10n_fn_String!(dummy_catchphrase,CatchPhrase);
-    dummy::declare_l10n_fn_String!(dummy_bs_verb,BsVerb);
-    dummy::declare_l10n_fn_String!(dummy_bs_adj,BsAdj);
-    dummy::declare_l10n_fn_String!(dummy_bs_noun,BsNoun);
-    dummy::declare_l10n_fn_String!(dummy_bs,Bs);
-    dummy::declare_l10n_fn_String!(dummy_profession,Profession);
-    dummy::declare_l10n_fn_String!(dummy_industry,Industry);
+    dummy::declare_l10n_fn_String!(dummy_company_suffix, CompanySuffix);
+    dummy::declare_l10n_fn_String!(dummy_company_name, CompanyName);
+    dummy::declare_l10n_fn_String!(dummy_buzzword, Buzzword);
+    dummy::declare_l10n_fn_String!(dummy_buzzword_middle, BuzzwordMiddle);
+    dummy::declare_l10n_fn_String!(dummy_buzzword_tail, BuzzwordTail);
+    dummy::declare_l10n_fn_String!(dummy_catchphrase, CatchPhrase);
+    dummy::declare_l10n_fn_String!(dummy_bs_verb, BsVerb);
+    dummy::declare_l10n_fn_String!(dummy_bs_adj, BsAdj);
+    dummy::declare_l10n_fn_String!(dummy_bs_noun, BsNoun);
+    dummy::declare_l10n_fn_String!(dummy_bs, Bs);
+    dummy::declare_l10n_fn_String!(dummy_profession, Profession);
+    dummy::declare_l10n_fn_String!(dummy_industry, Industry);
 
     // Creditcard
     use fake::faker::creditcard::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_credit_card_number,CreditCardNumber);
+    dummy::declare_l10n_fn_String!(dummy_credit_card_number, CreditCardNumber);
 
     // Currency
     use fake::faker::currency::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_currency_code,CurrencyCode);
-    dummy::declare_l10n_fn_String!(dummy_currency_name,CurrencyName);
-    dummy::declare_l10n_fn_String!(dummy_currency_symbol,CurrencySymbol);
+    dummy::declare_l10n_fn_String!(dummy_currency_code, CurrencyCode);
+    dummy::declare_l10n_fn_String!(dummy_currency_name, CurrencyName);
+    dummy::declare_l10n_fn_String!(dummy_currency_symbol, CurrencySymbol);
 
     // Filesystem
     use fake::faker::filesystem::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_file_path,FilePath);
-    dummy::declare_l10n_fn_String!(dummy_file_name,FileName);
-    dummy::declare_l10n_fn_String!(dummy_file_extension,FileExtension);
-    dummy::declare_l10n_fn_String!(dummy_dir_path,DirPath);
+    dummy::declare_l10n_fn_String!(dummy_file_path, FilePath);
+    dummy::declare_l10n_fn_String!(dummy_file_name, FileName);
+    dummy::declare_l10n_fn_String!(dummy_file_extension, FileExtension);
+    dummy::declare_l10n_fn_String!(dummy_dir_path, DirPath);
 
     // Finance
     use fake::faker::finance::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_bic,Bic);
-    dummy::declare_l10n_fn_String!(dummy_isin,Isin);
+    dummy::declare_l10n_fn_String!(dummy_bic, Bic);
+    dummy::declare_l10n_fn_String!(dummy_isin, Isin);
 
     // HTTP
     use fake::faker::http::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_rfc_status_code,RfcStatusCode);
-    dummy::declare_l10n_fn_String!(dummy_valid_statux_code,ValidStatusCode);
+    dummy::declare_l10n_fn_String!(dummy_rfc_status_code, RfcStatusCode);
+    dummy::declare_l10n_fn_String!(dummy_valid_statux_code, ValidStatusCode);
 
     // Internet
     use fake::faker::internet::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_free_email_provider,FreeEmailProvider);
-    dummy::declare_l10n_fn_String!(dummy_domain_suffix,DomainSuffix);
-    dummy::declare_l10n_fn_String!(dummy_free_email,FreeEmail);
-    dummy::declare_l10n_fn_String!(dummy_safe_email,SafeEmail);
-    dummy::declare_l10n_fn_String!(dummy_username,Username);
+    dummy::declare_l10n_fn_String!(dummy_free_email_provider, FreeEmailProvider);
+    dummy::declare_l10n_fn_String!(dummy_domain_suffix, DomainSuffix);
+    dummy::declare_l10n_fn_String!(dummy_free_email, FreeEmail);
+    dummy::declare_l10n_fn_String!(dummy_safe_email, SafeEmail);
+    dummy::declare_l10n_fn_String!(dummy_username, Username);
     //dummy::declare_l10n_fn_with_range_to_string!(dummy_password,Password);
     //dummy::declare_l10n_fn_String!(dummy_Password(len_range: Range<usize>);
-    dummy::declare_l10n_fn_String!(dummy_ipv4,IPv4);
-    dummy::declare_l10n_fn_String!(dummy_ipv6,IPv6);
-    dummy::declare_l10n_fn_String!(dummy_ip,IP);
-    dummy::declare_l10n_fn_String!(dummy_mac_address,MACAddress);
-    dummy::declare_l10n_fn_String!(dummy_user_agent,UserAgent);
+    dummy::declare_l10n_fn_String!(dummy_ipv4, IPv4);
+    dummy::declare_l10n_fn_String!(dummy_ipv6, IPv6);
+    dummy::declare_l10n_fn_String!(dummy_ip, IP);
+    dummy::declare_l10n_fn_String!(dummy_mac_address, MACAddress);
+    dummy::declare_l10n_fn_String!(dummy_user_agent, UserAgent);
 
     // Lorem
     use fake::faker::lorem::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_word,Word);
-    dummy::declare_l10n_fn_with_range_to_string!(dummy_words,Words);
+    dummy::declare_l10n_fn_String!(dummy_word, Word);
+    dummy::declare_l10n_fn_with_range_to_string!(dummy_words, Words);
     //dummy::declare_l10n_fn_with_range_to_string!(dummy_sentence,Sentence);
     //dummy::declare_l10n_fn_with_range_to_string!(dummy_sentences,Sentences);
 
     // Person
     use fake::faker::name::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_first_name,FirstName);
-    dummy::declare_l10n_fn_String!(dummy_last_name,LastName);
-    dummy::declare_l10n_fn_String!(dummy_title,Title);
-    dummy::declare_l10n_fn_String!(dummy_suffix,Suffix);
-    dummy::declare_l10n_fn_String!(dummy_name,Name);
-    dummy::declare_l10n_fn_String!(dummy_name_with_title,NameWithTitle);
+    dummy::declare_l10n_fn_String!(dummy_first_name, FirstName);
+    dummy::declare_l10n_fn_String!(dummy_last_name, LastName);
+    dummy::declare_l10n_fn_String!(dummy_title, Title);
+    dummy::declare_l10n_fn_String!(dummy_suffix, Suffix);
+    dummy::declare_l10n_fn_String!(dummy_name, Name);
+    dummy::declare_l10n_fn_String!(dummy_name_with_title, NameWithTitle);
 
     // Phone Number
     use fake::faker::phone_number::raw::*;
-    dummy::declare_l10n_fn_String!(dummy_phone_number,PhoneNumber);
-    dummy::declare_l10n_fn_String!(dummy_cell_number,CellNumber);
+    dummy::declare_l10n_fn_String!(dummy_phone_number, PhoneNumber);
+    dummy::declare_l10n_fn_String!(dummy_cell_number, CellNumber);
 
     // UUID
     use fake::uuid::*;
-    dummy::declare_fn_String!(dummy_uuidv1,UUIDv1);
-    dummy::declare_fn_String!(dummy_uuidv3,UUIDv3);
-    dummy::declare_fn_String!(dummy_uuidv4,UUIDv4);
-    dummy::declare_fn_String!(dummy_uuidv5,UUIDv5);
-
+    dummy::declare_fn_String!(dummy_uuidv1, UUIDv1);
+    dummy::declare_fn_String!(dummy_uuidv3, UUIDv3);
+    dummy::declare_fn_String!(dummy_uuidv4, UUIDv4);
+    dummy::declare_fn_String!(dummy_uuidv5, UUIDv5);
 
     //------------------------------------------------------------------------
     // Random Functions
@@ -194,45 +200,53 @@ mod anon {
     // https://www.postgresql.org/docs/current/parallel-safety.html#PARALLEL-LABELING
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_time() -> pgrx::datum::Time { random::time() }
+    pub fn random_time() -> pgrx::datum::Time {
+        random::time()
+    }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_date() -> pgrx::datum::TimestampWithTimeZone { random::date() }
+    pub fn random_date() -> pgrx::datum::TimestampWithTimeZone {
+        random::date()
+    }
 
     // Random Numbers
 
     // BIGINT
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_in_int8range(r: Range<i64> ) -> Option<i64>
-    { random::bigint(r) }
+    pub fn random_in_int8range(r: Range<i64>) -> Option<i64> {
+        random::bigint(r)
+    }
 
     // +1 because the stop parameter is inclusive
     // but the range upper bound is exclusive
     #[pg_extern(parallel_restricted)]
-    pub fn random_bigint_between( start: i64, stop: i64 ) -> Option<i64>
-    { random::bigint(Range::<i64>::new(start,stop+1)) }
+    pub fn random_bigint_between(start: i64, stop: i64) -> Option<i64> {
+        random::bigint(Range::<i64>::new(start, stop + 1))
+    }
 
     // INT
     #[pg_extern(parallel_restricted)]
-    pub fn random_in_int4range(r: Range<i32> ) -> Option<i32>
-    { random::int(r) }
+    pub fn random_in_int4range(r: Range<i32>) -> Option<i32> {
+        random::int(r)
+    }
 
     // +1 because the stop parameter is inclusive
     // but the range upper bound is exclusive
     #[pg_extern(parallel_restricted)]
-    pub fn random_int_between( start: i32, stop: i32 ) -> Option<i32>
-    { random::int(Range::<i32>::new(start,stop+1)) }
+    pub fn random_int_between(start: i32, stop: i32) -> Option<i32> {
+        random::int(Range::<i32>::new(start, stop + 1))
+    }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_number_with_format(format: String) -> String
-    { random::number_with_format(format) }
+    pub fn random_number_with_format(format: String) -> String {
+        random::number_with_format(format)
+    }
 
     // FLOATS
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_double_precision(start: f64, stop: f64) -> Option<f64>
-    {
+    pub fn random_double_precision(start: f64, stop: f64) -> Option<f64> {
         let range = Range::<AnyNumeric>::new(
             AnyNumeric::try_from(start).unwrap(),
             AnyNumeric::try_from(stop).unwrap(),
@@ -241,12 +255,12 @@ mod anon {
     }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_in_numrange(r: Range<AnyNumeric> ) -> Option<AnyNumeric>
-    { random::numeric(r) }
+    pub fn random_in_numrange(r: Range<AnyNumeric>) -> Option<AnyNumeric> {
+        random::numeric(r)
+    }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_real(start: f32, stop: f32) -> Option<f32>
-    {
+    pub fn random_real(start: f32, stop: f32) -> Option<f32> {
         let range = Range::<AnyNumeric>::new(
             AnyNumeric::try_from(start).unwrap(),
             AnyNumeric::try_from(stop).unwrap(),
@@ -256,22 +270,26 @@ mod anon {
 
     // PHONE
     #[pg_extern(parallel_restricted)]
-    pub fn random_phone() -> String
-    { random::number_with_format("0#########".to_string()) }
+    pub fn random_phone() -> String {
+        random::number_with_format("0#########".to_string())
+    }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_phone_with_format(format: String) -> String
-    { random::number_with_format(format) }
+    pub fn random_phone_with_format(format: String) -> String {
+        random::number_with_format(format)
+    }
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_zip() -> String
-    { random::number_with_format("#####".to_string()) }
+    pub fn random_zip() -> String {
+        random::number_with_format("#####".to_string())
+    }
 
     // Strings
 
     #[pg_extern(parallel_restricted)]
-    pub fn random_string( r: Range<i32>) -> Option<String>
-    { random::string(r) }
+    pub fn random_string(r: Range<i32>) -> Option<String> {
+        random::string(r)
+    }
 
     //------------------------------------------------------------------------
     // Masking engine
@@ -279,15 +297,13 @@ mod anon {
     use crate::masking;
 
     #[pg_extern]
-    pub fn masking_expressions_for_table(r: pg_sys::Oid, p: String )
-    -> String {
-        masking::masking_expressions_for_table(r,p)
+    pub fn masking_expressions_for_table(r: pg_sys::Oid, p: String) -> String {
+        masking::masking_expressions_for_table(r, p)
     }
 
     #[pg_extern]
-    pub fn masking_value_for_column(r: pg_sys::Oid, c: i32, p: String )
-    -> Option<String> {
-        let (val,_) = masking::masking_value_for_column(r,c,p)?;
+    pub fn masking_value_for_column(r: pg_sys::Oid, c: i32, p: String) -> Option<String> {
+        let (val, _) = masking::masking_value_for_column(r, c, p)?;
         Some(val)
     }
 
@@ -297,10 +313,13 @@ mod anon {
     // further versions
     // Anyway they should not be used as masking filters !
     //
-    extension_sql!(r#"
+    extension_sql!(
+        r#"
     SECURITY LABEL FOR anon ON FUNCTION anon.masking_expressions_for_table IS 'UNTRUSTED';
     SECURITY LABEL FOR anon ON FUNCTION anon.masking_value_for_column IS 'UNTRUSTED';
-    "#, name="unstrust_masking_engine_functions", requires =["anon"]
+    "#,
+        name = "unstrust_masking_engine_functions",
+        requires = ["anon"]
     );
 
     //------------------------------------------------------------------------
@@ -322,7 +341,7 @@ mod anon {
     // This is why we declare the SQL mapping functions
     //
 
-    #[pg_extern(sql= "
+    #[pg_extern(sql = "
         CREATE FUNCTION anon.anonymize_column(tablename OID, colname TEXT, policy TEXT)
         RETURNS BOOLEAN
         AS 'MODULE_PATHNAME', 'anonymize_column_wrapper'
@@ -339,11 +358,11 @@ mod anon {
         LANGUAGE SQL STRICT;
     ")]
 
-    pub fn anonymize_column(r: pg_sys::Oid, c: String, p: String )
-    -> Option<bool>
-    { static_masking::anonymize_column(r,c,p) }
+    pub fn anonymize_column(r: pg_sys::Oid, c: String, p: String) -> Option<bool> {
+        static_masking::anonymize_column(r, c, p)
+    }
 
-    #[pg_extern(sql= "
+    #[pg_extern(sql = "
         CREATE FUNCTION anon.anonymize_table(tablename OID, policy TEXT)
         RETURNS BOOLEAN
         AS 'MODULE_PATHNAME', 'anonymize_table_wrapper'
@@ -364,18 +383,21 @@ mod anon {
         AS $$ SELECT anon.anonymize_table(tablename::REGCLASS::OID, 'anon'); $$
         LANGUAGE SQL STRICT;
     ")]
-    pub fn anonymize_table(r: pg_sys::Oid, p: String )
-    -> Option<bool>
-    { static_masking::anonymize_table(r,p) }
+    pub fn anonymize_table(r: pg_sys::Oid, p: String) -> Option<bool> {
+        static_masking::anonymize_table(r, p)
+    }
 
     //
     // The static masking should not be used as masking filters, otherwise
     // it would create infinite loops !
     //
-    extension_sql!(r#"
+    extension_sql!(
+        r#"
     SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_column(TEXT,NAME) IS 'UNTRUSTED';
     SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_table(TEXT) IS 'UNTRUSTED';
-    "#, name="unstrust_static_masking_functions", requires =["anon"]
+    "#,
+        name = "unstrust_static_masking_functions",
+        requires = ["anon"]
     );
 
     //------------------------------------------------------------------------
@@ -401,33 +423,37 @@ mod anon {
     //------------------------------------------------------------------------
     #[cfg(debug_assertions)]
     #[pg_extern]
-    pub fn get_masking_policy(roleid: pg_sys::Oid) ->  Option<String>
-    { masking::get_masking_policy(roleid) }
+    pub fn get_masking_policy(roleid: pg_sys::Oid) -> Option<String> {
+        masking::get_masking_policy(roleid)
+    }
 
     #[cfg(debug_assertions)]
     #[pg_extern]
-    pub fn list_masking_policies() ->  Vec<&'static str>
-    { masking::list_masking_policies() }
+    pub fn list_masking_policies() -> Vec<&'static str> {
+        masking::list_masking_policies()
+    }
 
-    #[pg_extern(sql= "
+    #[pg_extern(sql = "
         CREATE FUNCTION anon.image_blur(data BYTEA)
         RETURNS BYTEA
         AS 'MODULE_PATHNAME', 'image_blur_without_sigma_wrapper'
         LANGUAGE C STRICT;
     ")]
-    pub fn image_blur_without_sigma(data: Vec<u8>) -> Vec<u8>  { image_blur(data, 10.0) }
-
+    pub fn image_blur_without_sigma(data: Vec<u8>) -> Vec<u8> {
+        image_blur(data, 10.0)
+    }
 
     use image::guess_format;
     #[pg_extern]
-    pub fn image_blur(data: Vec<u8>, sigma: f32) -> Vec<u8>  {
+    pub fn image_blur(data: Vec<u8>, sigma: f32) -> Vec<u8> {
         let format = guess_format(&data).expect("Failed to guess image format");
-        let img = image::load_from_memory_with_format(&data,format).expect("Failed to load image");
+        let img = image::load_from_memory_with_format(&data, format).expect("Failed to load image");
         let mut output = std::io::Cursor::new(Vec::new());
-        img.blur(sigma).write_to(&mut output, format).expect("Failed to write image");
+        img.blur(sigma)
+            .write_to(&mut output, format)
+            .expect("Failed to write image");
         output.into_inner()
     }
-
 }
 
 //----------------------------------------------------------------------------
@@ -436,8 +462,7 @@ mod anon {
 
 const ANON: &core::ffi::CStr = c"anon";
 
-static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {
-};
+static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {};
 
 /// _PG_init() is called when the module is loaded, not when the extension
 /// is created. There is presently no way to unload a loaded module.
@@ -451,13 +476,12 @@ static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {
 ///
 #[pg_guard]
 pub unsafe extern "C-unwind" fn _PG_init() {
-    #[allow(static_mut_refs,deprecated)]
+    #[allow(static_mut_refs, deprecated)]
     pgrx::hooks::register_hook(&mut HOOKS);
     guc::register_gucs();
     label_providers::register_label_providers();
     log::debug1!("Anon: extension initialized");
 }
-
 
 //----------------------------------------------------------------------------
 // Unit tests
@@ -466,13 +490,13 @@ pub unsafe extern "C-unwind" fn _PG_init() {
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
-    use pgrx::prelude::*;
     use crate::anon::*;
     use crate::fixture;
+    use pgrx::prelude::*;
 
     #[pg_test]
     #[ignore]
-    fn test_pg_init(){
+    fn test_pg_init() {
         // not sure how to handle the _PG_init() tests at this level
         // This function is tested via `make installcheck`
     }
@@ -517,8 +541,8 @@ mod tests {
 
     #[pg_test]
     fn test_random_double_precision() {
-        assert!(random_double_precision(111.1,999.9).unwrap() > 0.0);
-        assert!(random_double_precision(111.1,999.9).unwrap() < 1000.0);
+        assert!(random_double_precision(111.1, 999.9).unwrap() > 0.0);
+        assert!(random_double_precision(111.1, 999.9).unwrap() < 1000.0);
     }
 
     #[pg_test]
@@ -532,8 +556,8 @@ mod tests {
 
     #[pg_test]
     fn test_random_real() {
-        assert!(random_real(1.1,10.333).unwrap() > 0.0 );
-        assert!(random_real(1.1,10.333).unwrap() < 11.0);
+        assert!(random_real(1.1, 10.333).unwrap() > 0.0);
+        assert!(random_real(1.1, 10.333).unwrap() < 11.0);
     }
 
     #[pg_test]
@@ -559,82 +583,76 @@ mod tests {
     }
 
     #[pg_test]
-    fn test_anon_masking_expressions_for_table(){
-        let oid =  fixture::create_table_person();
+    fn test_anon_masking_expressions_for_table() {
+        let oid = fixture::create_table_person();
         assert_eq!(
-            masking_expressions_for_table(oid,"anon".into()),
+            masking_expressions_for_table(oid, "anon".into()),
             "firstname AS firstname, CAST(NULL AS text) AS lastname"
         );
         assert_eq!(
-            masking_expressions_for_table(oid,"does_not_exist".into()),
+            masking_expressions_for_table(oid, "does_not_exist".into()),
             "firstname AS firstname, lastname AS lastname"
         );
     }
 
     #[pg_test(error = "could not open relation with OID 0")]
-    fn test_anon_masking_expressions_for_table_invalid_oid(){
-        masking_expressions_for_table(pg_sys::InvalidOid,"anon".into());
+    fn test_anon_masking_expressions_for_table_invalid_oid() {
+        masking_expressions_for_table(pg_sys::InvalidOid, "anon".into());
     }
 
     #[pg_test]
-    fn test_anon_masking_value_for_column(){
-        let oid =  fixture::create_table_person();
+    fn test_anon_masking_value_for_column() {
+        let oid = fixture::create_table_person();
         // dropped column
-        assert_eq!(
-            masking_value_for_column(oid,1,"anon".into()),
-            None
-        );
+        assert_eq!(masking_value_for_column(oid, 1, "anon".into()), None);
         // column without a mask
         assert_eq!(
-            masking_value_for_column(oid,2,"anon".into()),
+            masking_value_for_column(oid, 2, "anon".into()),
             Some("firstname".into())
         );
         assert_eq!(
-            masking_value_for_column(oid,2,"does_not_exist".into()),
+            masking_value_for_column(oid, 2, "does_not_exist".into()),
             Some("firstname".into())
         );
         // masked_column
         assert_eq!(
-            masking_value_for_column(oid,3,"anon".into()),
+            masking_value_for_column(oid, 3, "anon".into()),
             Some("CAST(NULL AS text)".into())
         );
         assert_eq!(
-            masking_value_for_column(oid,3,"does_not_exist".into()),
+            masking_value_for_column(oid, 3, "does_not_exist".into()),
             Some("lastname".into())
         );
     }
 
     #[pg_test(error = "could not open relation with OID 0")]
-    fn test_anon_masking_value_for_column_invalid_oid(){
-        masking_value_for_column(pg_sys::InvalidOid,2,"anon".into());
+    fn test_anon_masking_value_for_column_invalid_oid() {
+        masking_value_for_column(pg_sys::InvalidOid, 2, "anon".into());
     }
 
     #[pg_test]
-    fn test_anon_anonymize_table(){
-        let oid =  fixture::create_table_person();
-        assert_eq!(anonymize_table(oid,"anon".into()), Some(true));
-        assert_eq!(anonymize_table(oid,"does_not_exist".into()), None);
+    fn test_anon_anonymize_table() {
+        let oid = fixture::create_table_person();
+        assert_eq!(anonymize_table(oid, "anon".into()), Some(true));
+        assert_eq!(anonymize_table(oid, "does_not_exist".into()), None);
     }
 
     #[pg_test]
-    fn test_anon_anonymize_table_invalid_oid(){
+    fn test_anon_anonymize_table_invalid_oid() {
+        assert_eq!(anonymize_table(pg_sys::InvalidOid, "anon".into()), None);
+    }
+
+    #[pg_test]
+    fn test_anon_anonymize_column() {
+        let oid = fixture::create_table_person();
+        assert!(anonymize_column(oid, "lastname".into(), "anon".into()).unwrap());
+        assert!(!anonymize_column(oid, "lastname".into(), "does_not_exist".into()).unwrap());
+    }
+
+    #[pg_test]
+    fn test_anon_anonymize_column_invalid_oid() {
         assert_eq!(
-            anonymize_table(pg_sys::InvalidOid,"anon".into()),
-            None
-        );
-    }
-
-    #[pg_test]
-    fn test_anon_anonymize_column(){
-        let oid =  fixture::create_table_person();
-        assert!(anonymize_column(oid,"lastname".into(),"anon".into()).unwrap());
-        assert!(!anonymize_column(oid,"lastname".into(),"does_not_exist".into()).unwrap());
-    }
-
-    #[pg_test]
-    fn test_anon_anonymize_column_invalid_oid(){
-        assert_eq!(
-            anonymize_column(pg_sys::InvalidOid,"lastname".into(),"anon".into()),
+            anonymize_column(pg_sys::InvalidOid, "lastname".into(), "anon".into()),
             None
         );
     }
@@ -646,10 +664,7 @@ mod tests {
             "pg_catalog".to_string()
         );
 
-        assert_eq!(
-            get_function_schema("now()".into()),
-            "".to_string()
-        );
+        assert_eq!(get_function_schema("now()".into()), "".to_string());
     }
 
     #[pg_test]
@@ -673,5 +688,5 @@ pub mod pg_test {
     pub fn postgresql_conf_options() -> Vec<&'static str> {
         // return any postgresql.conf settings that are required for your tests
         vec![]
-   }
+    }
 }

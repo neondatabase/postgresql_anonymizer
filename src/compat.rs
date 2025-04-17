@@ -6,7 +6,6 @@
 /// We're declaring here a set of replacements to avoid conditional macro
 /// codeblocks in the main extension codebase.
 ///
-
 use pgrx::prelude::*;
 use std::os::raw::c_char;
 
@@ -21,7 +20,7 @@ pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
 
 #[cfg(not(feature = "pg13"))]
 pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
-    pg_sys::raw_parser(query,pg_sys::RawParseMode::RAW_PARSE_DEFAULT)
+    pg_sys::raw_parser(query, pg_sys::RawParseMode::RAW_PARSE_DEFAULT)
 }
 
 ///
@@ -41,13 +40,15 @@ pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
 #[cfg(any(feature = "pg13", feature = "pg14", feature = "pg15"))]
 #[macro_export]
 macro_rules! rte_perminfo_index_disable {
-    ($rte: ident) => { };
+    ($rte: ident) => {};
 }
 
 #[cfg(not(any(feature = "pg13", feature = "pg14", feature = "pg15")))]
 #[macro_export]
 macro_rules! rte_perminfo_index_disable {
-    ($rte: ident) => { $rte.perminfoindex = 0 };
+    ($rte: ident) => {
+        $rte.perminfoindex = 0
+    };
 }
 
 pub(crate) use rte_perminfo_index_disable;
@@ -68,17 +69,21 @@ pub use pgrx::pg_sys::Value as SchemaValue;
 
 #[allow(non_snake_case)]
 #[cfg(not(any(feature = "pg13", feature = "pg14")))]
-pub unsafe fn strVal(v: SchemaValue) -> *const c_char { v.sval }
+pub unsafe fn strVal(v: SchemaValue) -> *const c_char {
+    v.sval
+}
 
 #[allow(non_snake_case)]
 #[cfg(any(feature = "pg13", feature = "pg14"))]
-pub unsafe fn strVal(v: SchemaValue) -> *const c_char { v.val.str_ }
-
+pub unsafe fn strVal(v: SchemaValue) -> *const c_char {
+    v.val.str_
+}
 
 ///
 /// IsCatalogRelationOid
 /// Remove this when catalog.c is available in PGRX
 ///
 #[allow(non_snake_case)]
-pub fn IsCatalogRelationOid(relid: pg_sys::Oid ) -> bool
-{ u32::from(relid) < pg_sys::FirstNormalObjectId }
+pub fn IsCatalogRelationOid(relid: pg_sys::Oid) -> bool {
+    u32::from(relid) < pg_sys::FirstNormalObjectId
+}
