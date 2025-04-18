@@ -16,8 +16,10 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Anthony Dumontois: Documentation
+* Matthias van de Meent: Documentation
 * Ben Dempsey: Beta Testing
-* Pierre-Marie Petit: multiples contributions
+* Pierre-Marie Petit: major contributions
 * Danilo Lourenço Costa Oliveira: Beta Testing
 * Leo Long: Testing
 * Konrad Kucharski: Beta Testing

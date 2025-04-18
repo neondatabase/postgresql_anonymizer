@@ -3,16 +3,27 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-WIP : 2.1.0 - Masking Images
+20250418 : 2.1.0 - Masking Images
 -------------------------------------------------------------------------------
 
-* feat(image): add blur image functions (pmpetit)
+* [image] add blur image functions (pmpetit)
 * [doc] Install With PGXN is not possible currently
 * [doc] Remove Privacy By Default disclaimer
 * [doc] sha1 hashing is not available in v2 (Anthony DUMONTOIS)
 * [doc] Install with Ansible
 * [doc] Fix Anonymous Dump schema
+* [doc] Fix forgotten k_anonymity provider in docs
+* [doc] Typos and formatting (pmpetit)
+* [doc] Available on Alibabacloud
+* [doc] Uninstall best practices
+* [doc] Fix typo in docs/configure.md (Matthias van de Meent)
 * [install] Fix make install (@Krysztophe)
+* [make] Start the instance before installcheck
+* [core] Bump toPGRX 0.14
+* [faker] Bump to fake 4.3
+* [faker] Remove useless type `anon_fake_data_tables`
+* [generalization] test with timezone to UTC to avoid LMT/PST failures
+* [core] Activate rustfmt
 
 20250106 : 2.0.0 - Better, Faster, Safer
 -------------------------------------------------------------------------------

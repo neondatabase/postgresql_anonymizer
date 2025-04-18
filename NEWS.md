@@ -1,3 +1,106 @@
+PostgreSQL Anonymizer 2.1: Blurring Images
+================================================================================
+
+Eymoutiers, France, April 18th, 2025
+
+`PostgreSQL Anonymizer 2.1` is out and it brings new possibilities in the field
+of database privacy protection!
+
+Enhanced Privacy Protection for Your Data
+--------------------------------------------------------------------------------
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension offers five different masking strategies:
+
+* [Dynamic Masking] - Real-time data protection
+* [Static Masking] - Permanent data transformation
+* [Anonymous Dumps] - Privacy-protected database exports
+* [Masking Views] - Controlled data visibility
+* [Masking Data Wrappers] - Extended protection across systems
+
+Each strategy is complemented by an enhanced suite of Masking Functions, including
+advanced techniques such as: Substitution, Randomization, Faking, Pseudonymization,
+Partial Scrambling, Shuffling, Noise Addition and Generalization.
+
+The extension can installed with Debian and RPM packages, an Ansible role, a docker
+image, etc. It is also available on major DBaaS providers including : Alibaba Cloud,
+Crunchy Bridge, Google Cloud SQL, Microsoft Azure Database, Neon, Tembo
+
+See the [INSTALL] section of the documentation for more details !
+
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+[Masking Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
+[Masking Data Wrappers]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_data_wrappers/
+[INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+
+Image Blurring, Privacy Protection Beyond Text Data
+--------------------------------------------------------------------------------
+
+Sensitive information doesn't just hide in obvious places.
+
+While columns like name and zipcode are typical targets for masking, BYTEA columns
+often contain overlooked personal data in profile photos, shipping vouchers,
+barcodes, QR codes, delivery notes, etc.
+
+Of course the most efficient way to clean this kind of personal data is to simply
+delete it with
+
+    SECURITY LABEL FOR anon ON COLUMN user.photo
+    IS 'MASKED WITH VALUE NULL';
+
+But our new Image Blurring capability preserves visual data for testing while
+protecting privacy:
+
+    SECURITY LABEL FOR anon ON COLUMN user.photo
+    IS 'MASKED WITH FUNCTION anon.image_blur(photo,5.0)';
+
+This feature works seamlessly across all our masking strategies : apply it
+on-the-fly with [Dynamic Masking] and [Anonymous Dumps], or permanently with
+[Static Masking].
+
+
+Acknowledgments
+--------------------------------------------------------------------------------
+
+The image blurring feature was developped by Pierre-Marie Petit. Kudos to him
+for this tremendous innovation!
+
+This release also includes code, bugfixes, documentation, code reviews and ideas
+from Anthony Dumontois, Matthias van de Meent, and other [contributors].
+
+And also special thanks to the [PGRX] team for their amazing work!
+
+[contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+[PGRX]: https://github.com/pgcentralfoundation/pgrx
+
+
+Join our community to improve data privacy !
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+
+
+--------------------------------------------------------------------------------
+
 PostgreSQL Anonymizer 2.0: Better, Faster, Safer
 ================================================================================
 
