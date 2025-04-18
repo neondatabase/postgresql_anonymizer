@@ -10,7 +10,7 @@ Where to start ?
 
 If you want to help, here's a few ideas :
 
-1- **Testing** : You can install the `master` branch of the project and realize
+1- **Testing** : You can install the `latest` branch of the project and realize
 extensive tests based on your use case. This is very useful to improve the
 stability of the code. Eventually if you can publish you test cases, please
 add them in the `/tests/sql` directory or in `demo`. I have recently
@@ -54,17 +54,17 @@ Add a new remote to your local repo:
 git remote add upstream https://gitlab.com/dalibo/postgresql_anonymizer.git
 ```
 
-### Keep your master branch up to date
+### Keep your `latest` branch up to date
 
 At any time, you can mirror your personal repo like this:
 
 ```bash
-# switch to the master branch
-git checkout master
-# download the latest commit from the main repo
+# switch to the latest branch
+git checkout latest
+# download the latest commits from the upstream repo
 git fetch upstream
-# apply the latest commits
-git rebase upstream/master
+# apply the commits
+git rebase upstream/latest
 # push the changes to your personal repo
 git push origin
 ```
@@ -82,7 +82,7 @@ git checkout foo
 # download the latest commit from the main repo
 git fetch upstream
 # apply the latest commits
-git rebase upstream/master
+git rebase upstream/latest
 # push the changes to your personal repo
 git push origin --force-with-lease
 ```
@@ -385,19 +385,4 @@ they are not `SECURITY DEFINER`.
 Publishing a new Release
 --------------------------------------------------------------------------------
 
-* [ ] Check that **all** CI jobs run without errors on the `master` branch
-* [ ] Close all remaining issues on the current milestone
-* [ ] Update the [Changelog]
-* [ ] Write the announcement in [NEWS.md]
-* [ ] Rebuild the docker image and upload it (`make docker_image docker_push`)
-* [ ] Upload the zipball to PGXN
-* [ ] Close the current milestone and open the next one
-* [ ] Tag the `latest` branch
-* [ ] Rebase the `stable` branch from `latest`
-* [ ] Publish the RPM/DEB packages
-* [ ] Bump to the new version number in [Cargo.toml]
-* [ ] Publish the announcement
-
-[Changelog]: CHANGELOG.md
-[NEWS.md]: NEWS.md
-[Cargo.toml]: Cargo.toml
+See .gitlab/issue_templates/Release.md
