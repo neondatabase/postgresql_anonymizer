@@ -436,7 +436,7 @@ PostgreSQL Anonymizer:
 [Crunchy Bridge]: https://access.crunchydata.com/documentation/postgresql-anonymizer/latest/
 [Google Cloud SQL]: https://cloud.google.com/sql/docs/postgres/extensions#postgresql_anonymizer
 [Microsoft Azure Database]: https://learn.microsoft.com/fr-fr/azure/postgresql/flexible-server/concepts-extensions
-[Neon]: https://neon.tech/blog/easily-anonymize-production-data-in-postgres
+[Neon]: https://neon.tech/docs/extensions/postgresql-anonymizer
 [Postgres.ai]: https://postgres.ai/docs/database-lab/masking
 [Tembo]: https://tembo.io/blog/anon-dump
 
