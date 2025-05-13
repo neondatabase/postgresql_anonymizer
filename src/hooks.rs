@@ -41,9 +41,19 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
     let command_type = pstmt.commandType;
     assert!(command_type == pg_sys::CmdType::CMD_UTILITY);
 
+    // here is a list of statements we can't really handle for now
+    //
+    // * EXPLAIN can leak metadata to the masked roles
+    // * TRUNCATE is not allowed because masked roles are read-only
+    // * FETCH is complex because the CURSOR can be declared by an unmasked role
+    // * PREPARED / EXECUTE  statements are also tricky to handle
+    //
     unsafe {
         if pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_ExplainStmt)
             || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_TruncateStmt)
+            || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_FetchStmt)
+            || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_PrepareStmt)
+            || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_ExecuteStmt)
         {
             error::insufficient_privilege("role is masked".to_string()).ereport();
         }

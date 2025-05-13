@@ -67,6 +67,11 @@ __NOTES:__
 
 * `--format=custom` is supported
 
+Limitations
+-----------------------------------------------------------------------------
+
+The `--inserts` option is not supported.
+
 
 Anonymizing an SQL file
 -----------------------------------------------------------------------------
@@ -153,4 +158,3 @@ In version 0.x, the anonymous dumps were done with a shell script named
 However `pg_dump_anon` is kept for backward compatibility. If you are still
 using `pg_dump_anon`, you should switch to the `pg_dump` method described above
 as soon as possible.
-

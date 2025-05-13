@@ -77,6 +77,7 @@ Step 4 : Connect with the masked user
 Principles
 ------------------------------------------------------------------------------
 
+* Masked roles should not be allowed to insert, update or delete data.
 * You can mask table in multiple schemas.
 * Generated columns are respected.
 * You can apply [Row Security Policies] aka `RLS` to a masked role.
@@ -85,6 +86,13 @@ Principles
   whether or not the mask users need data integrity.
 
 [Row Security Policies]: https://www.postgresql.org/docs/current/ddl-rowsecurity.html
+
+
+Limitations
+------------------------------------------------------------------------------
+
+* Masked roles are not allowed to use EXPLAIN
+* Masked roles cannot use cursors and prepared statements
 
 
 How to unmask a role
