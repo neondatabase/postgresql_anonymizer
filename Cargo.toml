@@ -24,12 +24,12 @@ fake = { version = "4.3.0", features = ["bigdecimal", "chrono", "http", "rust_de
 image = "0.25.5"
 md-5 = "0.10.6"
 paste = "1.0"
-pgrx = "0.14.1"
+pgrx = "0.14.3"
 rand = "0.8.5"
 regex = "1.10.2"
 
 [dev-dependencies]
-pgrx-tests = "0.14.1"
+pgrx-tests = "0.14.3"
 
 [profile.dev]
 panic = "unwind"
