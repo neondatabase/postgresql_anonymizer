@@ -85,7 +85,7 @@ _Step 2:_  Load the extension.
 ALTER DATABASE foo SET session_preload_libraries = 'anon';
 ```
 
-(If you're already loading extensions that way, just add `anon` the current list)
+(If you're already loading extensions that way, just add `anon` to the current list)
 
 > The setting will be applied for the next sessions,
 > i.e. **You need to reconnect to the database for the change to visible**
