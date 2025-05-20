@@ -61,10 +61,10 @@ Step 2: Declare the masking rules
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN customer.full_name
-IS 'MASKED WITH FUNCTION anon.fake_first_name() || '' '' || anon.fake_last_name()';
+IS 'MASKED WITH FUNCTION anon.dummy_name()';
 
 SECURITY LABEL FOR anon ON COLUMN customer.employer
-IS 'MASKED WITH FUNCTION anon.fake_company()';
+IS 'MASKED WITH FUNCTION anon.dummy_company_name()';
 
 SECURITY LABEL FOR anon ON COLUMN customer.zipcode
 IS 'MASKED WITH FUNCTION anon.random_zip()';
@@ -78,10 +78,10 @@ SELECT anon.anonymize_database();
 
 SELECT * FROM customer;
 
- id  |  full_name  |   birth    |      employer       | zipcode | fk_shop
------+-------------+------------+---------------------+---------+---------
- 911 | jesse Kosel | 1940-03-10 | Marigold Properties | 62172   |      12
- 312 | leolin Bose | 1952-07-17 | Inventure           | 20026   |     423
+ id  |  full_name  |   birth    |      employer           | zipcode | fk_shop
+-----+-------------+------------+-------------------------+---------+---------
+ 911 | jesse Kosel | 1940-03-10 | Marigold Properties LLC | 62172   |      12
+ 312 | leolin Bose | 1952-07-17 | Inventure Inc           | 20026   |     423
 
 ```
 
