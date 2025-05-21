@@ -154,6 +154,11 @@ SELECT count(*) < 100 FROM test.hundred;
 --
 -- WORKS ONLY WITH pg_dump > 14
 --\! pg_dump --extension pg_catalog.plpgsql contrib_regression | grep 'CREATE EXTENSION' | grep anon
+--
+-- H. the --inserts option is supported
+--
+\! PGPASSWORD=x pg_dump --inserts --user dump_anon --dbname=contrib_regression --no-security-labels | grep CONFIDENTIAL
+INSERT INTO test."COMPANY" VALUES (1991, 'cfcd208495d565ef66e7dff9f98764da', 'CONFIDENTIAL');
 --  CLEAN
 RESET ROLE;
 DROP SCHEMA test CASCADE;

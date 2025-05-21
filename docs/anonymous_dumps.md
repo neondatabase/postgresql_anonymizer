@@ -67,11 +67,6 @@ __NOTES:__
 
 * `--format=custom` is supported
 
-Limitations
------------------------------------------------------------------------------
-
-The `--inserts` option is not supported.
-
 
 Anonymizing an SQL file
 -----------------------------------------------------------------------------

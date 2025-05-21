@@ -153,6 +153,12 @@ SELECT count(*) < 100 FROM test.hundred;
 --\! pg_dump --extension pg_catalog.plpgsql contrib_regression | grep 'CREATE EXTENSION' | grep anon
 
 
+--
+-- H. the --inserts option is supported
+--
+
+\! PGPASSWORD=x pg_dump --inserts --user dump_anon --dbname=contrib_regression --no-security-labels | grep CONFIDENTIAL
+
 --  CLEAN
 RESET ROLE;
 DROP SCHEMA test CASCADE;

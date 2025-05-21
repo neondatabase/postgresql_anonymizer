@@ -17,43 +17,17 @@ security label for anon on role dumper
 
 GRANT SELECT ON TABLE t TO dumper;
 
-CREATE OR REPLACE FUNCTION reffunc(refcursor)
-  RETURNS refcursor
-AS '
-BEGIN
-    OPEN $1 FOR SELECT n FROM t;
-    RETURN $1;
-END;
-'
-LANGUAGE plpgsql;
+SET ROLE dumper;
 
 -- need to be in a transaction to use cursors.
 BEGIN;
-  SELECT reffunc('funccursor');
-  FETCH LAST IN funccursor;
-ROLLBACK;
 
-SET ROLE dumper;
-
-SELECT n = 0
-  FROM t
-  ORDER BY n DESC
-  LIMIT 1
-;
-
-BEGIN;
-  SAVEPOINT before_fetch;
-
-  SELECT reffunc('funccursor');
-  FETCH LAST IN funccursor;
-
-  ROLLBACK TO before_fetch;
+  DECLARE max_n SCROLL CURSOR FOR SELECT max(n) FROM t;
+  FETCH max_n;
 
 ROLLBACK;
 
 RESET ROLE;
-
-DROP FUNCTION reffunc(refcursor);
 
 DROP TABLE t;
 

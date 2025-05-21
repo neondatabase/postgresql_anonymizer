@@ -16,6 +16,13 @@ security label for anon on role dumper
 
 GRANT SELECT ON TABLE t TO dumper;
 
+SET ROLE dumper;
+
+SELECT n = 0
+FROM t
+ORDER BY n DESC
+LIMIT 1;
+
 PREPARE max_value AS
   SELECT n
   FROM t
@@ -24,17 +31,6 @@ PREPARE max_value AS
 ;
 
 EXECUTE max_value;
-
-SET ROLE dumper;
-
-SELECT n = 0
-FROM t
-ORDER BY n DESC
-LIMIT 1;
-
-SAVEPOINT before_execute;
-  EXECUTE max_value;
-ROLLBACK TO before_execute;
 
 DEALLOCATE PREPARE max_value;
 

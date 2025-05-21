@@ -92,7 +92,6 @@ Limitations
 ------------------------------------------------------------------------------
 
 * Masked roles are not allowed to use EXPLAIN
-* Masked roles cannot use cursors and prepared statements
 
 
 How to unmask a role

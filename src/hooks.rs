@@ -37,7 +37,7 @@ use pgrx::list::old_list::PgList;
 /// * `pstmt` is the utility statement
 /// * `policy` is the masking policy to apply
 ///
-fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
+fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
     let command_type = pstmt.commandType;
     assert!(command_type == pg_sys::CmdType::CMD_UTILITY);
 
@@ -45,18 +45,25 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
     //
     // * EXPLAIN can leak metadata to the masked roles
     // * TRUNCATE is not allowed because masked roles are read-only
-    // * FETCH is complex because the CURSOR can be declared by an unmasked role
-    // * PREPARED / EXECUTE  statements are also tricky to handle
     //
     unsafe {
         if pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_ExplainStmt)
             || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_TruncateStmt)
-            || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_FetchStmt)
-            || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_PrepareStmt)
-            || pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_ExecuteStmt)
         {
             error::insufficient_privilege("role is masked".to_string()).ereport();
         }
+    }
+
+    if unsafe { pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_DeclareCursorStmt) } {
+        log::debug1!("Anon: CURSOR found");
+        let cursorstmt =
+            unsafe { PgBox::from_pg(pstmt.utilityStmt as *mut pg_sys::DeclareCursorStmt) };
+        let cursorquery = unsafe { PgBox::from_pg(cursorstmt.query as *mut pg_sys::Query) };
+
+        unsafe {
+            walker::TreeWalker::new(policy).rewrite(&cursorquery);
+        }
+        cursorstmt.into_pg();
     }
 
     if unsafe { pgrx::is_a(pstmt.utilityStmt, pg_sys::NodeTag::T_CopyStmt) } {
@@ -196,10 +203,10 @@ impl pgrx::hooks::PgHooks for AnonHooks {
 
             // Rewrite the utility command when transparent dynamic masking
             // is enabled and the role is masked
-            if guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get()
-                && masking::get_masking_policy(uid).is_some()
-            {
-                pa_rewrite_utility(&pstmt);
+            if guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {
+                if let Some(masking_policy) = masking::get_masking_policy(uid) {
+                    pa_rewrite_utility(&pstmt, masking_policy);
+                }
             }
         }
 
