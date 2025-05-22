@@ -82,12 +82,12 @@ BEGIN
 END$$;
 
 -- Jimmy can't see GUC_SUPERUSER_ONLY settings
-SELECT COUNT(name)=5 FROM pg_settings WHERE name LIKE 'anon.%';
+SELECT COUNT(name)=6 FROM pg_settings WHERE name LIKE 'anon.%';
 
 RESET ROLE;
 
 -- Super user sees all settings
-SELECT COUNT(name)>5 FROM pg_settings WHERE name LIKE 'anon.%';
+SELECT COUNT(name)>6 FROM pg_settings WHERE name LIKE 'anon.%';
 
 -- Bug #259 - anon should not interact with other extensions
 CREATE EXTENSION pg_stat_statements;

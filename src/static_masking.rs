@@ -1,6 +1,8 @@
 ///
 /// # Static Masking
 ///
+use crate::error;
+use crate::guc;
 use crate::log;
 use crate::masking;
 use crate::sampling;
@@ -67,6 +69,14 @@ fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
 
 /// Apply a masking policy to a column
 pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> Option<bool> {
+    if !guc::ANON_STATIC_MASKING.get() {
+        error::feature_not_enabled(
+            "Static Masking",
+            Some("Check the anon.static_masking parameter".to_string()),
+        )
+        .ereport();
+    }
+
     let ratio = sampling::get_ratio(relid, &policy);
 
     // We can't apply a tablesample rules to just a column
@@ -103,6 +113,14 @@ pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> 
 
 /// Apply a masking policy to a relation
 pub fn anonymize_table(relid: pg_sys::Oid, policy: String) -> Option<bool> {
+    if !guc::ANON_STATIC_MASKING.get() {
+        error::feature_not_enabled(
+            "Static Masking",
+            Some("Check the anon.static_masking parameter".to_string()),
+        )
+        .ereport();
+    }
+
     let p = policy.clone();
     let ratio = sampling::get_ratio(relid, &p);
     let tablename = utils::get_relation_qualified_name(relid)?;
@@ -214,6 +232,14 @@ mod tests {
         );
     }
 
+    #[pg_test(error = "Anon: Static Masking is not enabled")]
+    fn test_anonymize_column_not_enabled() {
+        let anon = ANON_DEFAULT_MASKING_POLICY.to_string();
+        let relid = fixture::create_table_person();
+        fixture::disable_static_masking();
+        anonymize_column(relid, "lastname".to_string(), anon);
+    }
+
     #[pg_test]
     fn test_anonymize_column_no_policy() {
         let policy = "does_not_exist".to_string();
@@ -255,6 +281,14 @@ mod tests {
         let anon = ANON_DEFAULT_MASKING_POLICY.to_string();
         let relid = fixture::create_table_person();
         assert_eq!(Some(true), anonymize_table(relid, anon.clone()));
+    }
+
+    #[pg_test(error = "Anon: Static Masking is not enabled")]
+    fn test_anonymize_table_not_enabled() {
+        let anon = ANON_DEFAULT_MASKING_POLICY.to_string();
+        let relid = fixture::create_table_person();
+        fixture::disable_static_masking();
+        anonymize_table(relid, anon);
     }
 
     #[pg_test]

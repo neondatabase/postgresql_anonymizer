@@ -211,5 +211,21 @@ ROLLBACK TO after_init;
 SELECT anon.anonymize_database();
 SELECT "Email" != 'foo@bar.com' FROM "Users";
 
+-- disable static masking
+
+SET anon.static_masking TO off;
+SELECT anon.anonymize_database();
+ROLLBACK TO after_init;
+
+SET anon.static_masking TO off;
+SELECT anon.anonymize_table('employee');
+ROLLBACK TO after_init;
+
+SET anon.static_masking TO off;
+SELECT anon.anonymize_column('employee','phone');
+ROLLBACK TO after_init;
+
+
+
 
 ROLLBACK;

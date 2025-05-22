@@ -302,4 +302,21 @@ SELECT "Email" != 'foo@bar.com' FROM "Users";
  t
 (1 row)
 
+-- disable static masking
+SET anon.static_masking TO off;
+SELECT anon.anonymize_database();
+ERROR:  Anon: Static Masking is not enabled
+DETAIL:  Check the anon.static_masking parameter
+CONTEXT:  SQL function "anonymize_database" statement 1
+ROLLBACK TO after_init;
+SET anon.static_masking TO off;
+SELECT anon.anonymize_table('employee');
+ERROR:  Anon: Static Masking is not enabled
+DETAIL:  Check the anon.static_masking parameter
+ROLLBACK TO after_init;
+SET anon.static_masking TO off;
+SELECT anon.anonymize_column('employee','phone');
+ERROR:  Anon: Static Masking is not enabled
+DETAIL:  Check the anon.static_masking parameter
+ROLLBACK TO after_init;
 ROLLBACK;

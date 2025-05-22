@@ -253,6 +253,16 @@ pub fn declare_sampling_for_database(db: String) {
 }
 
 #[allow(dead_code)]
+pub fn disable_static_masking() {
+    Spi::run(
+        "
+        SET anon.static_masking TO off;
+    ",
+    )
+    .unwrap();
+}
+
+#[allow(dead_code)]
 pub fn trust_masking_functions_schema() {
     Spi::run(
         "

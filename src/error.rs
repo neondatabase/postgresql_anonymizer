@@ -37,6 +37,14 @@ impl AnonError {
 // Postgres error codes
 // https://www.postgresql.org/docs/current/errcodes-appendix.html
 
+pub fn feature_not_enabled(feature: &str, hint: Option<String>) -> AnonError {
+    AnonError::new(
+        ERRCODE_RAISE_EXCEPTION,
+        format!("{feature} is not enabled"),
+        hint,
+    )
+}
+
 pub fn feature_not_supported(feature: &str) -> AnonError {
     AnonError::new(
         ERRCODE_FEATURE_NOT_SUPPORTED,
@@ -95,6 +103,15 @@ mod tests {
     fn test_internal() {
         let i = internal("This is a test of the internal error");
         i.ereport();
+    }
+
+    #[pg_test(error = "Anon: Fusion Home Energy Reactor is not enabled")]
+    fn test_not_enabled() {
+        feature_not_enabled(
+            "Fusion Home Energy Reactor",
+            Some("Deal with it".to_string()),
+        )
+        .ereport()
     }
 
     #[pg_test(error = "Anon: not implemented yet")]

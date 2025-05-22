@@ -9,7 +9,7 @@ do that with different methods:
 * [Adding noise to a column](#adding-noise-to-a-column)
 
 
-These methods will destroy the original data. Use with care.
+**These methods will destroy the original data. Use with care.**
 
 ![PostgreSQL Static Masking](images/anon-Static.drawio.png)
 
@@ -101,6 +101,31 @@ least one masked column. This basically means that PostgreSQL will rewrite
 all the data on disk. Depending on the database size, the hardware and the
 instance config, it may be faster to export the anonymized data (See
 [Anonymous Dumps] ) and reload it into the database.
+
+Disabling Static Masking
+------------------------------------------------------------------------------
+
+You may be scared that someone could accidentally run `anon.anonymize_database()`
+and wipe out all the data.
+
+If so, you can disable this feature globally with:
+
+``` sql
+ALTER SYSTEM SET anon.static_masking TO off
+```
+
+Or disable it for a single user :
+
+```sql
+ALTER ROLE bob SET anon.static_masking TO off;
+```
+
+Or disable it everyone except one user
+
+```sql
+ALTER DATABASE mydb SET anon.static_masking = FALSE;
+ALTER ROLE daniel SET anon.static_masking = TRUE;
+```
 
 Static Masking and Multiple Masking Policies
 ------------------------------------------------------------------------------

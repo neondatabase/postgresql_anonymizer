@@ -28,6 +28,8 @@ pub static ANON_STRICT_MODE: GucSetting<bool> = GucSetting::<bool>::new(true);
 
 pub static ANON_TRANSPARENT_DYNAMIC_MASKING: GucSetting<bool> = GucSetting::<bool>::new(false);
 
+pub static ANON_STATIC_MASKING: GucSetting<bool> = GucSetting::<bool>::new(true);
+
 // The GUC vars below are not used in the Rust code
 // but they are used in the plpgsql code
 
@@ -102,6 +104,15 @@ pub fn register_gucs() {
         "New masking engine (EXPERIMENTAL)",
         "",
         &ANON_TRANSPARENT_DYNAMIC_MASKING,
+        GucContext::Suset,
+        GucFlags::default(),
+    );
+
+    GucRegistry::define_bool_guc(
+        "anon.static_masking",
+        "Static Masking engine",
+        "",
+        &ANON_STATIC_MASKING,
         GucContext::Suset,
         GucFlags::default(),
     );
