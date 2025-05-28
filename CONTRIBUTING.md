@@ -394,8 +394,6 @@ Publishing a new Release
 * [ ] Close the current milestone and open the next one
 * [ ] Tag the `latest` branch
 * [ ] Rebase the `stable` branch from `latest`
-* [ ] Create a branch `X.Y.Z` from `latest`
-* [ ] Run a CI pipeline on this branch
 * [ ] Publish the RPM/DEB packages
 * [ ] Bump to the new version number in [Cargo.toml]
 * [ ] Publish the announcement
@@ -403,4 +401,3 @@ Publishing a new Release
 [Changelog]: CHANGELOG.md
 [NEWS.md]: NEWS.md
 [Cargo.toml]: Cargo.toml
-
