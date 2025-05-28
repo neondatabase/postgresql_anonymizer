@@ -1,3 +1,91 @@
+PostgreSQL Anonymizer 2.2: Masking Cursors
+================================================================================
+
+Eymoutiers, France, May 28, 2025
+
+We're publishing `PostgreSQL Anonymizer 2.2` today, a maintenance release fixing
+a security bug in the dynamic masking and anonymous dumps features.
+
+Enhanced Privacy Protection for Your Data
+--------------------------------------------------------------------------------
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension offers five different masking strategies:
+
+* [Dynamic Masking] - Real-time data protection
+* [Static Masking] - Permanent data transformation
+* [Anonymous Dumps] - Privacy-protected database exports
+* [Masking Views] - Controlled data visibility
+* [Masking Data Wrappers] - Extended protection across systems
+
+Each strategy is complemented by an enhanced suite of Masking Functions, including
+advanced techniques such as: Substitution, Randomization, Faking, Pseudonymization,
+Partial Scrambling, Shuffling, Noise Addition and Generalization.
+
+The extension can installed with Debian and RPM packages, an Ansible role, a docker
+image, etc. It is also available on major DBaaS providers including : Alibaba Cloud,
+Crunchy Bridge, Google Cloud SQL, Microsoft Azure Database, Neon, Tembo
+
+See the [INSTALL] section of the documentation for more details !
+
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+[Masking Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
+[Masking Data Wrappers]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_data_wrappers/
+[INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+
+Masking Cursors
+--------------------------------------------------------------------------------
+
+A security vulnerability has been identified in versions 2.0 and 2.1 that enables
+masked users to bypass data protection and access unmasked data through cursors
+or using the `--insert` option of the `pg_dump` command.
+
+We strongly recommend upgrading to version 2.2 immediately. If an immediate
+upgrade is not feasible, you can mitigate this vulnerability by setting the GUC
+parameter `anon.transparent_dynamic_masking` to `OFF`.
+
+For upgrade instructions, please refer to the [UPGRADE] section in the
+documentation.
+
+
+Acknowledgments
+--------------------------------------------------------------------------------
+
+This release also includes code, bugfixes, documentation, code reviews and ideas
+from Daniel Solsona, Jukka Heiskanen, Julien Acroute, Philip Olson and other
+[contributors].
+
+And also special thanks to the [PGRX] team for their amazing work!
+
+[contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+[PGRX]: https://github.com/pgcentralfoundation/pgrx
+
+
+Join our community to improve data privacy !
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of `Junior Jobs` here:
+
+https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+--------------------------------------------------------------------------------
+
 PostgreSQL Anonymizer 2.1: Blurring Images
 ================================================================================
 

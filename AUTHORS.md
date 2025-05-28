@@ -16,6 +16,10 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Daniel Solsona: Feature idea
+* Jukka Heiskanen: Bug report and analysis
+* Julien Acroute: Documentation
+* Philip Olson: Documentation
 * Anthony Dumontois: Documentation
 * Matthias van de Meent: Documentation
 * Ben Dempsey: Beta Testing

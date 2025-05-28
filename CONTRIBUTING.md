@@ -392,13 +392,15 @@ Publishing a new Release
 * [ ] Rebuild the docker image and upload it (`make docker_image docker_push`)
 * [ ] Upload the zipball to PGXN
 * [ ] Close the current milestone and open the next one
-* [ ] Rebase the `stable` branch from `latest`
 * [ ] Tag the `latest` branch
-* [ ] Bump to the new version number in [Cargo.toml] and [META.json]
+* [ ] Rebase the `stable` branch from `latest`
+* [ ] Create a branch `X.Y.Z` from `latest`
+* [ ] Run a CI pipeline on this branch
+* [ ] Publish the RPM/DEB packages
+* [ ] Bump to the new version number in [Cargo.toml]
 * [ ] Publish the announcement
 
 [Changelog]: CHANGELOG.md
 [NEWS.md]: NEWS.md
 [Cargo.toml]: Cargo.toml
-[META.json]: META.json
 

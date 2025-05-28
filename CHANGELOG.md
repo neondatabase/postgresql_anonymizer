@@ -3,8 +3,20 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-WIP : 2.2.0 - Parallel Static Masking
+WIP : 2.3.0 - Parallel Static Masking
 -------------------------------------------------------------------------------
+
+
+20250528 : 2.2.0 - Masking Cursors
+-------------------------------------------------------------------------------
+
+* [core] Add anon.static_masking GUC param (Daniel Solsona)
+* [core] Masking cursors (Jukka Heiskanen)
+* [doc] typos and malformed syntaxes (Julien Acroute)
+* [core] bump to pgrx 0.14.3
+* [doc] Fix the edit on gitlab link
+* [doc] Link to the official Neon documentation (Philip Olson)
+* [pgxn] Drop publishing on PGXN for now
 
 
 20250418 : 2.1.1 - packaging fixup
