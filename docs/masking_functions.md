@@ -439,14 +439,14 @@ SECURITY LABEL FOR anon
   IS 'MASKED WITH FUNCTION anon.pseudo_email(users.login) ';
 ```
 
-**NOTE** : You may want to produce unique values using a pseudonymization
+**NOTE**: You may want to produce unique values using a pseudonymization
 function. For instance, if you want to mask an `email` column that is declared
 as `UNIQUE`. In this case, you will need to initialize the extension with a fake
 dataset that is **way bigger** than the numbers of rows of the table. Otherwise you
 may see some "collisions" happening, i.e. two different original values producing
 the same pseudo value.
 
-**WARNING** : Pseudonymization is often confused with anonymization but in fact
+**⚠️ WARNING**: Pseudonymization is often confused with anonymization but in fact
 they serve 2 different purposes : `pseudonymization` is a way to **protect** the
 personal information but the pseudonymized data is still "linked" to the real data.
 The GDPR makes it very clear that personal data which has undergone
@@ -454,11 +454,13 @@ pseudonymization is still related to a person. (see [GDPR Recital 26])
 
 [GDPR Recital 26]: https://www.privacy-regulation.eu/en/recital-26-GDPR.htm
 
+
 Generic hashing
 -------------------------------------------------------------------------------
 
-In theory, hashing is not a valid anonymization technique, however in practice
-it is sometimes necessary to generate a determinist hash of the original data.
+Hashing is another pseudonymization technique (see **WARNING** above). In
+practice it is sometimes useful to generate a determinist hash of the original
+data.
 
 For instance, when a pair of  primary key / foreign key is a "natural key",
 it may contain actual information ( like a customer number containing a birth
@@ -519,6 +521,14 @@ Of course, cutting the hash value to 12 characters will increase the risk
 of "collision" (2 different values having the same fake hash). In such
 case, it's up to you to evaluate this risk.
 
+**⚠️ WARNING**: The hashing functions will fail when the input contains
+an unescaped character (especially a single backslash). In most situation,
+this is the sign of a bug in the application, generally when data input is not
+sanitized properly. Users who really want to mask unescaped characters with
+this function should disable the `standard_conforming_strings` parameter.
+See [Issue 539] for more details.
+
+[Issue 539]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/539
 
 
 Partial Scrambling
