@@ -34,6 +34,7 @@ extension_sql_file!(
     requires = ["fake_data_tables"]
 );
 extension_sql_file!("../sql/fake.sql", requires = ["init"]);
+extension_sql_file!("../sql/hash.sql", requires = ["init"]);
 extension_sql_file!("../sql/pseudo.sql", requires = ["init"]);
 
 extension_sql_file!("../sql/random.sql", requires = ["anon"]);
