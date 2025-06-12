@@ -42,8 +42,8 @@ pub fn get_masking_policy(roleid: pg_sys::Oid) -> Option<String> {
     // also the roles that the user belongs to
     // This may be done by using `roles_is_member_of()` ?
     for policy in list_masking_policies() {
-        if has_mask_in_policy(roleid, policy) {
-            return Some(policy.to_string());
+        if has_mask_in_policy(roleid, &policy) {
+            return Some(policy);
         }
     }
 
@@ -59,13 +59,13 @@ pub fn get_masking_policy(roleid: pg_sys::Oid) -> Option<String> {
 /// approach (spaces are not handled) and we use `:` as separator to avoid
 /// confusion with traditional GUC_LIST_QUOTE parameters.
 ///
-pub fn list_masking_policies() -> Vec<&'static str> {
+pub fn list_masking_policies() -> Vec<String> {
     use crate::label_providers::ANON_DEFAULT_MASKING_POLICY;
 
-    let mut masking_policies = vec![ANON_DEFAULT_MASKING_POLICY];
+    let mut masking_policies = vec![ANON_DEFAULT_MASKING_POLICY.to_string()];
     masking_policies.append(&mut re::capture_guc_list(
-        guc::ANON_MASKING_POLICIES.get().unwrap(),
-    ));
+        guc::ANON_MASKING_POLICIES.get().unwrap().as_c_str(),
+    ).into_iter().map(String::from).collect());
     masking_policies
 }
 
@@ -390,7 +390,7 @@ fn generation_expressions(relid: pg_sys::Oid) -> String {
 
 /// Check that a role is masked in the given policy
 ///
-fn has_mask_in_policy(roleid: pg_sys::Oid, policy: &'static str) -> bool {
+fn has_mask_in_policy(roleid: pg_sys::Oid, policy: &str) -> bool {
     if let Ok(seclabel) = rule_on_role(roleid, policy) {
         return re::is_match_masked(seclabel);
     }
