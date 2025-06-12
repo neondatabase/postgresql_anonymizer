@@ -47,3 +47,9 @@ include:
   - local: .gitlab/job_templates/coverage.yml
     inputs:
       pgver: pg17
+  ## Dalibo Specific jobs
+  - local: dalibo/.gitlab-ci.yml
+    rules:
+      - exists:
+          - dalibo/.gitlab-ci.yml
+

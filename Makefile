@@ -314,3 +314,9 @@ docker_init: #: start a docker container
 
 lint:
 	cargo clippy --release
+
+
+##
+## DALIBO-specific Makefile
+##
+-include dalibo/Makefile
