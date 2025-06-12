@@ -12,7 +12,14 @@ ANON_MINOR_VERSION?=$(shell grep '^version *= *' Cargo.toml | sed 's/^version *=
 
 # use `TARGET=debug make run` for more detailed errors
 TARGET?=release
-TARGET_DIR?=target/$(TARGET)/anon-$(PGVER)/
+ifeq ($(shell uname -s),Darwin)
+    TARGET_DIR?=target/$(TARGET)/anon-pg$(PG_MAJOR_VERSION)
+    LIB_SUFFIX?=dylib
+else
+    TARGET_DIR?=target/$(TARGET)/anon-$(PG_MAJOR_VERSION)
+    LIB_SUFFIX?=so
+endif
+LIB=anon.$(LIB_SUFFIX)
 PG_CONFIG?=`$(PGRX) info pg-config $(PGVER) 2> /dev/null || echo pg_config`
 PG_SHAREDIR?=$(shell $(PG_CONFIG) --sharedir)
 PG_LIBDIR?=$(shell $(PG_CONFIG) --libdir)
@@ -140,7 +147,7 @@ extension:
 
 install:
 	cp -r $(TARGET_SHAREDIR)/extension/* $(PG_SHAREDIR)/extension/
-	install $(TARGET_PKGLIBDIR)/anon.so $(PG_PKGLIBDIR)
+	install $(TARGET_PKGLIBDIR)/$(LIB) $(PG_PKGLIBDIR)/$(LIB)
 
 ##
 ## INSTALLCHECK

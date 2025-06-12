@@ -36,7 +36,7 @@ pub fn register_label_providers() {
 
     // Register the default masking policy and the user-defined masking policies
     for policy_str in masking::list_masking_policies() {
-        let policy_cstring: CString = CString::new(policy_str).unwrap();
+        let policy_cstring: CString = CString::new(policy_str.clone()).unwrap();
         let policy_ptr: *const c_char = policy_cstring.as_ptr();
         unsafe {
             log::debug1!("Anon: registering masking policy '{}'", policy_str);

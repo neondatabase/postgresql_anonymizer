@@ -430,7 +430,7 @@ mod anon {
 
     #[cfg(debug_assertions)]
     #[pg_extern]
-    pub fn list_masking_policies() -> Vec<&'static str> {
+    pub fn list_masking_policies() -> Vec<String> {
         masking::list_masking_policies()
     }
 

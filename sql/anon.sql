@@ -1071,3 +1071,15 @@ $$
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
 -- TODO : https://en.wikipedia.org/wiki/T-closeness
+
+-- NEON Patches
+
+GRANT ALL ON SCHEMA anon to neon_superuser;
+GRANT ALL ON ALL TABLES IN SCHEMA anon TO neon_superuser;
+
+DO $$
+BEGIN
+    IF current_setting('server_version_num')::int >= 150000 THEN
+        GRANT SET ON PARAMETER anon.transparent_dynamic_masking TO neon_superuser;
+    END IF;
+END $$;
