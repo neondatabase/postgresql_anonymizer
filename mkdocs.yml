@@ -16,6 +16,7 @@ nav:
   - Masking Methods:
     - 'Static Masking': 'static_masking.md'
     - 'Dynamic Masking': 'dynamic_masking.md'
+    - 'Replica Masking': 'replica_masking.md'
     - 'Anonymous Dumps': 'anonymous_dumps.md'
     - 'Masking Views': 'masking_views.md'
     - 'Masking Data Wrappers': 'masking_data_wrappers.md'

@@ -22,6 +22,8 @@ pub static ANON_MASKING_POLICIES: GucSetting<Option<&'static CStr>> =
 
 pub static ANON_PRIVACY_BY_DEFAULT: GucSetting<bool> = GucSetting::<bool>::new(false);
 
+pub static ANON_REPLICA_MASKING: GucSetting<bool> = GucSetting::<bool>::new(false);
+
 pub static ANON_RESTRICT_TO_TRUSTED_SCHEMAS: GucSetting<bool> = GucSetting::<bool>::new(true);
 
 pub static ANON_STRICT_MODE: GucSetting<bool> = GucSetting::<bool>::new(true);
@@ -113,6 +115,15 @@ pub fn register_gucs() {
         "Static Masking engine",
         "",
         &ANON_STATIC_MASKING,
+        GucContext::Suset,
+        GucFlags::default(),
+    );
+
+    GucRegistry::define_bool_guc(
+        "anon.replica_masking",
+        "Masking a logical replica (EXPERIMENTAL)",
+        "",
+        &ANON_REPLICA_MASKING,
         GucContext::Suset,
         GucFlags::default(),
     );
