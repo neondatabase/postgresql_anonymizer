@@ -19,6 +19,9 @@ PG_LIBDIR?=$(shell $(PG_CONFIG) --libdir)
 PG_PKGLIBDIR?=$(shell $(PG_CONFIG) --pkglibdir)
 PG_BINDIR?=$(shell $(PG_CONFIG) --bindir)
 
+# The instance
+PGDATA_DIR=~/.pgrx/data-$(PG_MAJOR_VERSION)
+
 # Be sure to use the PGRX version (PGVER) of the postgres binaries
 # It's especially important for the pg_dump test in pg_regress
 PATH:=$(PG_BINDIR):${PATH}
@@ -88,6 +91,9 @@ REGRESS_TESTS+= sampling
 REGRESS_TESTS+= shuffle
 REGRESS_TESTS+= syntax_checks
 REGRESS_TESTS+= ternary
+# The `test_` is here to avoid collision with the files in the `sql` folder
+# DO NOT rename the `tests/sql/test_*` files !
+REGRESS_TESTS+= test_replica_masking
 REGRESS_TESTS+= test_static_masking
 REGRESS_TESTS+= transparent_dynamic_masking
 REGRESS_TESTS+= trusted_schemas
@@ -152,8 +158,9 @@ install:
 # With PGRX: the postgres instance is created previously by `cargo run`. This
 # means we have some extra tasks to prepare the instance
 
-installcheck: start
+installcheck: stop start
 	dropdb $(PSQL_OPT) --if-exists $(PGDATABASE)
+	dropdb $(PSQL_OPT) --if-exists $(PGDATABASE)_source
 	createdb $(PSQL_OPT) $(PGDATABASE)
 	dropuser oscar_the_owner || echo 'ignored'
 	createuser $(PSQL_OPT) postgres --superuser || echo 'ignored'
@@ -180,12 +187,15 @@ test:
 	$(PGRX) test $(PGVER) $(RELEASE_OPT) --verbose
 
 start:
+	sed --in-place 's/^#\?wal_level = .*/wal_level = logical/' $(PGDATA_DIR)/postgresql.conf
 	$(PGRX) start $(PGVER)
 
 stop:
 	$(PGRX) stop $(PGVER)
 
 run:
+	# ensure that the wal_level is properly set
+	sed --in-place 's/^#\?wal_level = .*/wal_level = logical/' $(PGDATA_DIR)/postgresql.conf
 	$(PGRX) run $(PGVER) $(RELEASE_OPT)
 
 psql:
