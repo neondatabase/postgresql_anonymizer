@@ -19,6 +19,13 @@ PG_LIBDIR?=$(shell $(PG_CONFIG) --libdir)
 PG_PKGLIBDIR?=$(shell $(PG_CONFIG) --pkglibdir)
 PG_BINDIR?=$(shell $(PG_CONFIG) --bindir)
 
+ifeq ($(shell uname -s),Darwin)
+    LIB_SUFFIX?=dylib
+else
+    LIB_SUFFIX?=so
+endif
+LIB=anon.$(LIB_SUFFIX)
+
 # The instance
 PGDATA_DIR=~/.pgrx/data-$(PG_MAJOR_VERSION)
 
@@ -146,7 +153,7 @@ extension:
 
 install:
 	cp -r $(TARGET_SHAREDIR)/extension/* $(PG_SHAREDIR)/extension/
-	install $(TARGET_PKGLIBDIR)/anon.so $(PG_PKGLIBDIR)
+	install $(TARGET_PKGLIBDIR)/$(LIB) $(PG_PKGLIBDIR)
 
 ##
 ## INSTALLCHECK
