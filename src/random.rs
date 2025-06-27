@@ -56,15 +56,27 @@ fn range_usize(r: Range<i32>) -> Option<core::ops::Range<usize>> {
     })
 }
 
-/// Convert a pgrx::Range<i64> into a Rust Range::<usize>
+/// Convert a pgrx::Range<i32> into a Rust Range::<usize>
 /// /!\ unbounded range are not allowed
-fn range_usize_from_i64(r: Range<i64>) -> Option<core::ops::Range<usize>> {
+fn range_isize(r: Range<i32>) -> Option<core::ops::Range<isize>> {
     if r.is_infinite() {
         return None;
     }
-    Some(core::ops::Range::<usize> {
-        start: *r.lower()?.get()? as usize,
-        end: *r.upper()?.get()? as usize,
+    Some(core::ops::Range::<isize> {
+        start: *r.lower()?.get()? as isize,
+        end: *r.upper()?.get()? as isize,
+    })
+}
+
+/// Convert a pgrx::Range<i64> into a Rust Range::<isize>
+/// /!\ unbounded range are not allowed
+fn range_isize_from_i64(r: Range<i64>) -> Option<core::ops::Range<isize>> {
+    if r.is_infinite() {
+        return None;
+    }
+    Some(core::ops::Range::<isize> {
+        start: *r.lower()?.get()? as isize,
+        end: *r.upper()?.get()? as isize,
     })
 }
 
@@ -122,7 +134,7 @@ pub fn time() -> pgrx::datum::Time {
 //----------------------------------------------------------------------------
 
 pub fn bigint(r: Range<i64>) -> Option<i64> {
-    Some(i64::try_from(range_usize_from_i64(r)?.fake::<usize>()).expect("Out of Bound"))
+    Some(i64::try_from(range_isize_from_i64(r)?.fake::<isize>()).expect("Out of Bound"))
 }
 
 pub fn double_precision(r: Range<pgrx::AnyNumeric>) -> Option<f64> {
@@ -130,7 +142,7 @@ pub fn double_precision(r: Range<pgrx::AnyNumeric>) -> Option<f64> {
 }
 
 pub fn int(r: Range<i32>) -> Option<i32> {
-    Some(i32::try_from(range_usize(r)?.fake::<usize>()).expect("Out of Bound"))
+    Some(i32::try_from(range_isize(r)?.fake::<isize>()).expect("Out of Bound"))
 }
 
 pub fn number_with_format(format: String) -> String {
@@ -168,6 +180,7 @@ mod tests {
     #[pg_test]
     fn test_int() {
         assert!(int(pgrx::Range::<i32>::new(1, 10)).is_some());
+        assert!(int(pgrx::Range::<i32>::new(-10, -1)).is_some());
         assert_eq!(int(pgrx::Range::<i32>::new(1, 2)), Some(1));
         assert!(int(pgrx::Range::<i32>::new(None, 10)).is_none());
         assert!(int(pgrx::Range::<i32>::new(1, None)).is_none());
@@ -185,6 +198,7 @@ mod tests {
     #[pg_test]
     fn test_bigint() {
         assert!(bigint(pgrx::Range::<i64>::new(1, 10)).is_some());
+        assert!(bigint(pgrx::Range::<i64>::new(-10, -1)).is_some());
         assert!(bigint(pgrx::Range::<i64>::new(None, 10)).is_none());
         assert!(bigint(pgrx::Range::<i64>::new(1, None)).is_none());
         assert!(bigint(pgrx::Range::<i64>::new(None, None)).is_none());
@@ -196,7 +210,10 @@ mod tests {
         let two = pgrx::AnyNumeric::from(2);
         let six = pgrx::AnyNumeric::from(6);
         let ten = pgrx::AnyNumeric::from(10);
+        let minus_one = pgrx::AnyNumeric::from(-1);
+        let minus_ten = pgrx::AnyNumeric::from(-10);
         assert!(range_f32(pgrx::Range::<pgrx::AnyNumeric>::new(one, ten)).is_some());
+        assert!(range_f32(pgrx::Range::<pgrx::AnyNumeric>::new(minus_one, minus_ten)).is_some());
         assert!(range_f32(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
         assert!(range_f32(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
         assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
@@ -208,7 +225,10 @@ mod tests {
         let two = pgrx::AnyNumeric::from(2);
         let six = pgrx::AnyNumeric::from(6);
         let ten = pgrx::AnyNumeric::from(10);
+        let minus_one = pgrx::AnyNumeric::from(-1);
+        let minus_ten = pgrx::AnyNumeric::from(-10);
         assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(one, ten)).is_some());
+        assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(minus_one, minus_ten)).is_some());
         assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
         assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
         assert!(range_f64(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
@@ -220,7 +240,12 @@ mod tests {
         let two = pgrx::AnyNumeric::from(2);
         let six = pgrx::AnyNumeric::from(6);
         let ten = pgrx::AnyNumeric::from(10);
+        let minus_one = pgrx::AnyNumeric::from(-1);
+        let minus_ten = pgrx::AnyNumeric::from(-10);
         assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(one, ten)).is_some());
+        assert!(
+            double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(minus_ten, minus_one)).is_some()
+        );
         assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
         assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
         assert!(double_precision(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
@@ -232,7 +257,10 @@ mod tests {
         let two = pgrx::AnyNumeric::from(2);
         let six = pgrx::AnyNumeric::from(6);
         let ten = pgrx::AnyNumeric::from(10);
+        let minus_one = pgrx::AnyNumeric::from(-1);
+        let minus_ten = pgrx::AnyNumeric::from(-10);
         assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(one, ten)).is_some());
+        assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(minus_ten, minus_one)).is_some());
         assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
         assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
         assert!(numeric(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
@@ -244,7 +272,10 @@ mod tests {
         let two = pgrx::AnyNumeric::from(2);
         let six = pgrx::AnyNumeric::from(6);
         let ten = pgrx::AnyNumeric::from(10);
+        let minus_one = pgrx::AnyNumeric::from(-1);
+        let minus_ten = pgrx::AnyNumeric::from(-10);
         assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(one, ten)).is_some());
+        assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(minus_ten, minus_one)).is_some());
         assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(None, six)).is_none());
         assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(two, None)).is_none());
         assert!(real(pgrx::Range::<pgrx::AnyNumeric>::new(None, None)).is_none());
