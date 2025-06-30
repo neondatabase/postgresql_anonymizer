@@ -40,8 +40,12 @@ CREATE DATABASE contrib_regression_source;
 
 -- Creating a subscription that connects to the same database cluster will only
 -- succeed if the replication slot is not created as part of the same command.
--- Otherwise, the CREATE SUBSCRIPTION call will hang.
+-- Otherwise, the CREATE SUBSCRIPTION call will hang forever.
 \! psql contrib_regression_source -c "SELECT slot_name FROM pg_create_logical_replication_slot('contrib_slot', 'pgoutput');"
+
+-- In CI, the command above may take a few seconds, leading to hanging jobs
+-- We pause for a while to be safe
+SELECT pg_sleep(10);
 
 \! psql contrib_regression_source -c 'CREATE PUBLICATION contrib_pub FOR TABLE "MyApp".person';
 
