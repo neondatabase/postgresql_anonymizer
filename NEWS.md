@@ -1,3 +1,104 @@
+PostgreSQL Anonymizer 2.3 : Replica Masking (ALPHA)
+================================================================================
+
+Eymoutiers, France, July 2nd, 2025
+
+We're publishing `PostgreSQL Anonymizer 2.3` today, introducing the long awaited
+replica masking mechanism. Database Administrators can now synchronize a "masked
+clone" with their production database using PostgreSQL logical replication.
+
+Enhanced Privacy Protection for Your Data
+--------------------------------------------------------------------------------
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension offers five different masking strategies:
+
+* [Dynamic Masking] - Real-time data protection
+* [Static Masking] - Permanent data transformation
+* [Replica Masking] - Anonymized logical replication
+* [Backup Masking] - Privacy-protected database exports
+* [Masking Views] - Controlled data visibility
+* [Masking Data Wrappers] - Extended protection across systems
+
+Each strategy is complemented by an enhanced suite of Masking Functions, including
+advanced techniques such as: Substitution, Randomization, Faking, Pseudonymization,
+Partial Scrambling, Shuffling, Noise Addition and Generalization.
+
+The extension can be installed with Debian and RPM packages, an Ansible role, a docker
+image, etc. It is also available on major DBaaS providers including : Alibaba Cloud,
+Crunchy Bridge, Google Cloud SQL, Microsoft Azure Database, Neon, etc.
+
+See the [INSTALL] section of the documentation for more details!
+
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Backup Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+[Replica Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/replica_masking/
+[Masking Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
+[Masking Data Wrappers]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_data_wrappers/
+[INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+
+Introducing Replica Masking
+--------------------------------------------------------------------------------
+
+In some situations, you may want to have an anonymized copy of your production
+database on another instance like with Backup Masking (aka "Anonymized Dumps")
+but you also would like this copy to be up-to-date with the original data like
+with Dynamic Masking…
+
+With the Replica Masking feature, you can use PostgreSQL logical replication to
+create an anonymized clone of your production database.
+
+See the [documentation](https://postgresql-anonymizer.readthedocs.io/en/latest/replica_masking/)
+for more details.
+
+/!\ WARNING! DO NOT USE IN PRODUCTION
+
+This feature is currently under heavy development. This implementation of
+Replica Masking is provided for testing purpose only. Major breaking changes
+may be introduced at any time and we may even remove this feature entirely if
+we feel it does not reach our standard of quality and stability.
+
+We welcome any feedback, testing reports, comments and contributions. But for
+the moment, we do not guarantee any form of support for this feature.
+
+Our current plan is to stabilize this feature in version 3.0, which is scheduled
+for early 2026.
+
+
+Acknowledgments
+--------------------------------------------------------------------------------
+
+This release also includes code, bugfixes, documentation, code reviews and ideas
+from Robin Portigliatti, Suhas Thalanki, Benoit Lobréau and other [contributors].
+
+And also special thanks to the [PGRX] team for their amazing work!
+
+[contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+[PGRX]: https://github.com/pgcentralfoundation/pgrx
+
+
+Join our community to improve data privacy!
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a [list of `Junior Jobs`](https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs).
+
+
+--------------------------------------------------------------------------------
+
 PostgreSQL Anonymizer 2.2: Masking Cursors
 ================================================================================
 
@@ -158,7 +259,7 @@ on-the-fly with [Dynamic Masking] and [Anonymous Dumps], or permanently with
 Acknowledgments
 --------------------------------------------------------------------------------
 
-The image blurring feature was developped by Pierre-Marie Petit. Kudos to him
+The image blurring feature was developed by Pierre-Marie Petit. Kudos to him
 for this tremendous innovation!
 
 This release also includes code, bugfixes, documentation, code reviews and ideas

@@ -16,8 +16,12 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Pierre Giraud: Proofreading
+* Benoit Lobréau: Prototyping, Code Review
+* Robin Portigliatti: Tutorials
+* Suhas Thalanki: Build on Mac OS X
 * Daniel Solsona: Feature idea
-* Jukka Heiskanen: Bug report and analysis
+* Jukka Heiskanen: Bug reports and analysis
 * Julien Acroute: Documentation
 * Philip Olson: Documentation
 * Anthony Dumontois: Documentation
@@ -72,7 +76,6 @@ Contributors
 * Matthieu Larcher (@somatt) : Bug reports
 * Nikolay Samokhvalov (@NikolayS) : Bug fix + Documentation
 * Gunnar "Nick" Bluth (@nickbluth) : Some additional functions
-* Yann ROBIN (@me.show) : version() function and DBAAS install
 * Ilya Gorbunov (@dAverk) : Bug fixes
 * Peter Neave (@peterneave) : Typos
 * Yann Robin (@me.show) : version() function and DBAAS install
