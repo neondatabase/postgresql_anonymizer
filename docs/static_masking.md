@@ -133,7 +133,7 @@ Static Masking and Multiple Masking Policies
 When using multiple masking policies, you can simply add the policy name at
 the end of the static masking functions.
 
-For instance, if you defined a masking policy named "gdpr", you can apply it with
+For instance, if you defined a masking policy named "rgpd", you can apply it with
 
 ```sql
 SELECT anon.anonymize_table('customer','rgpd');
