@@ -66,7 +66,7 @@ Step 1. Create a database and load the extension in it
 
 ``` sql
 CREATE DATABASE demo;
-ALTER DATABASE demo SET session_preload_libraries = 'anon'
+ALTER DATABASE demo SET session_preload_libraries = 'anon';
 
 \connect demo
 You are now connected to database "demo" as user "postgres".
