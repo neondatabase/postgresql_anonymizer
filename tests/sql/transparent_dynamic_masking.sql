@@ -36,6 +36,27 @@ INSERT INTO baltimore.locations VALUES
 ('21209','Mt Washington'),
 ('21210','Roland Park');
 
+CREATE TABLE person (
+  id SERIAL,
+  name TEXT
+);
+
+CREATE TABLE french (
+  eat_frogs BOOLEAN
+)
+INHERITS(person);
+
+INSERT INTO french VALUES
+(243535,'Robert Bidochon', True);
+
+CREATE TABLE parisian (
+  wear_a_beret BOOLEAN
+)
+INHERITS(french);
+
+INSERT INTO parisian VALUES
+(243536,'Amélie Poulain', False, False);
+
 CREATE ROLE jimmy LOGIN;
 
 GRANT USAGE ON SCHEMA public TO jimmy;
@@ -64,6 +85,9 @@ IS 'MASKED WITH FUNCTION anon.partial(zipcode,2,$$xxx$$,0)';
 
 SECURITY LABEL FOR anon ON COLUMN baltimore.locations.name
 IS 'MASKED WITH VALUE NULL';
+
+SECURITY LABEL FOR anon ON COLUMN public.person.name
+  IS 'MASKED WITH VALUE NULL';
 
 SET anon.transparent_dynamic_masking TO true;
 
@@ -130,5 +154,18 @@ SET ROLE jimmy;
 SELECT i IS NOT NULL FROM bug452.t;
 
 SELECT i != 0 FROM bug452.t;
+
+-- bug #553 : FROM ONLY clause should be respected
+
+-- By default, The SELECT command does follow inheritance
+SELECT count(*) = 2 FROM public.person;
+
+-- The masking rule placed upon the `person` table are applied
+-- to the data of the child tables
+SELECT bool_and(name IS NULL) FROM public.person;
+
+-- The ONLY clause is respected
+SELECT count(*) = 0 FROM ONLY public.person;
+
 
 ROLLBACK;

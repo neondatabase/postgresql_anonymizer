@@ -147,7 +147,7 @@ unsafe extern "C-unwind" fn rewrite_walker(
         }
 
         // Create the Masking Sub Query (msq) that will replace the relation
-        let msq_sql = masking::subquery(rte.relid, policy);
+        let msq_sql = masking::subquery(rte.relid, rte.inh, policy);
 
         // This table is not masked, skip to the next node
         if msq_sql.is_none() {

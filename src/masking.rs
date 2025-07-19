@@ -204,7 +204,7 @@ pub fn masking_value_for_column(
 ///   ) AS anon_tmp_5eb63bbbe01eeed093cb22bb8f5acdc3;
 ///   ```
 ///
-pub fn subquery(relid: pg_sys::Oid, policy: String) -> Option<String> {
+pub fn subquery(relid: pg_sys::Oid, inherit: bool, policy: String) -> Option<String> {
     let (masking_expressions, table_is_masked) = masking_expressions(relid, policy.clone());
     let ratio = sampling::get_ratio(relid, &policy);
 
@@ -217,6 +217,9 @@ pub fn subquery(relid: pg_sys::Oid, policy: String) -> Option<String> {
     let gen_expressions = generation_expressions(relid);
 
     let tablename = utils::get_relation_qualified_name(relid)?;
+
+    // respect the FROM ONLY clause
+    let only = if inherit { "" } else { "ONLY" };
 
     let tablesample: String = if ratio.is_ok() {
         format!("TABLESAMPLE {}", ratio.unwrap())
@@ -237,7 +240,7 @@ pub fn subquery(relid: pg_sys::Oid, policy: String) -> Option<String> {
         SELECT {gen_expressions}
         FROM (
             SELECT {masking_expressions}
-            FROM {tablename}
+            FROM {only} {tablename}
             {tablesample}
         ) AS anon_alias_{tablename_hash}"
     ))
@@ -881,26 +884,33 @@ mod tests {
     #[pg_test]
     fn test_subquery_some() {
         let relid = fixture::create_table_person();
-        let result = subquery(relid, ANON_DEFAULT_MASKING_POLICY.to_string());
+        let result = subquery(relid, true, ANON_DEFAULT_MASKING_POLICY.to_string());
         assert!(result.is_some());
         assert!(result.clone().unwrap().contains("firstname"));
         assert!(result.clone().unwrap().contains("lastname"));
         let another_policy = "does_not_exist".to_string();
-        let result_in_another_policy = subquery(relid, another_policy);
+        let result_in_another_policy = subquery(relid, true, another_policy);
         assert!(result_in_another_policy.is_none());
     }
 
     #[pg_test]
     fn test_subquery_none() {
         let relid = fixture::create_table_call();
-        let result = subquery(relid, ANON_DEFAULT_MASKING_POLICY.to_string());
+        let result = subquery(relid, true, ANON_DEFAULT_MASKING_POLICY.to_string());
         assert!(result.is_none());
+    }
+
+    #[pg_test]
+    fn test_subquery_only() {
+        let relid = fixture::create_table_person();
+        let result = subquery(relid, false, ANON_DEFAULT_MASKING_POLICY.to_string());
+        assert!(result.clone().unwrap().contains("FROM ONLY "))
     }
 
     #[pg_test]
     fn test_parse_subquery() {
         let relid = fixture::create_table_person();
-        let subquery = subquery(relid, ANON_DEFAULT_MASKING_POLICY.to_string());
+        let subquery = subquery(relid, true, ANON_DEFAULT_MASKING_POLICY.to_string());
         let raw_stmt = parse_subquery(subquery.clone().unwrap());
         let result = unsafe { pgrx::nodes::node_to_string(raw_stmt.stmt).unwrap() };
         assert!(result.contains("firstname"));

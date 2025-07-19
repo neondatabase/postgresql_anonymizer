@@ -8,6 +8,22 @@ INSERT INTO "Phone" VALUES
 ('Omar Little','410-719-9009'),
 ('Russell Bell','410-617-7308'),
 ('Avon Barksdale','410-385-2983');
+CREATE TABLE person (
+  id SERIAL,
+  name TEXT
+);
+CREATE TABLE french (
+  eat_frogs BOOLEAN
+)
+INHERITS(person);
+INSERT INTO french VALUES
+(243535,'Robert Bidochon', True);
+CREATE TABLE parisian (
+  wear_a_beret BOOLEAN
+)
+INHERITS(french);
+INSERT INTO parisian VALUES
+(243536,'Amélie Poulain', False, False);
 SET anon.transparent_dynamic_masking TO true;
 CREATE ROLE jimmy LOGIN;
 GRANT USAGE ON SCHEMA public TO jimmy;
@@ -44,4 +60,12 @@ COPY (SELECT * FROM "Phone") TO stdout;
 CONFIDENTIAL	a0769efeda7
 CONFIDENTIAL	50f25331bb9
 CONFIDENTIAL	f52c939aaf7
+-- Testing inheritance
+-- the COPY command does not follow the inheritance
+COPY public.person TO stdout;
+RESET ROLE;
+SECURITY LABEL FOR anon ON COLUMN public.person.name
+  IS 'MASKED WITH VALUE NULL';
+SET ROLE jimmy;
+COPY public.person TO stdout;
 ROLLBACK;

@@ -131,7 +131,7 @@ pub fn anonymize_table(relid: pg_sys::Oid, policy: String) -> Option<bool> {
         //
         // /!\ If the table has a foreign key, this will likely fail
         //
-        let Some(masking_subquery) = masking::subquery(relid, policy) else {
+        let Some(masking_subquery) = masking::subquery(relid, false, policy) else {
             return Some(false);
         };
         let relint: u32 = relid.into();

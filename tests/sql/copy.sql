@@ -12,6 +12,27 @@ INSERT INTO "Phone" VALUES
 ('Russell Bell','410-617-7308'),
 ('Avon Barksdale','410-385-2983');
 
+CREATE TABLE person (
+  id SERIAL,
+  name TEXT
+);
+
+CREATE TABLE french (
+  eat_frogs BOOLEAN
+)
+INHERITS(person);
+
+INSERT INTO french VALUES
+(243535,'Robert Bidochon', True);
+
+CREATE TABLE parisian (
+  wear_a_beret BOOLEAN
+)
+INHERITS(french);
+
+INSERT INTO parisian VALUES
+(243536,'Amélie Poulain', False, False);
+
 SET anon.transparent_dynamic_masking TO true;
 
 CREATE ROLE jimmy LOGIN;
@@ -44,5 +65,19 @@ COPY public."Phone" (phone_number) TO stdout;
 COPY public."Phone" (phone_number, "phone_Owner") TO stdout;
 
 COPY (SELECT * FROM "Phone") TO stdout;
+
+-- Testing inheritance
+-- the COPY command does not follow the inheritance
+
+COPY public.person TO stdout;
+
+RESET ROLE;
+
+SECURITY LABEL FOR anon ON COLUMN public.person.name
+  IS 'MASKED WITH VALUE NULL';
+
+SET ROLE jimmy;
+
+COPY public.person TO stdout;
 
 ROLLBACK;

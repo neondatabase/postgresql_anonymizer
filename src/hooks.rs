@@ -109,7 +109,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
         // with
         //  ```
         //  COPY (
-        //     SELECT a,b,c FROM "public"."foo"
+        //     SELECT a,b,c FROM ONLY "public"."foo"
         //  ) TO [...]
         //  ```
         //
@@ -121,7 +121,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
         //  COPY (
         //     SELECT a,b,c FROM (
         //         SELECT <masking_filters>
-        //         FROM "public"."foo"
+        //         FROM ONLY "public"."foo"
         //         TABLESAMPLE SYSTEM(33)
         //     ) AS foo
         //  ) TO [...]
@@ -149,7 +149,7 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
             error::internal("Cannot get relation name");
             return;
         };
-        let msq_sql = format!("SELECT {} FROM {relname}", attributes.join(","));
+        let msq_sql = format!("SELECT {} FROM ONLY {relname}", attributes.join(","));
         let msq_raw_stmt = masking::parse_subquery(msq_sql.clone());
         log::debug3!("Anon: COPY subquery sql = {:#?}", msq_sql);
 
