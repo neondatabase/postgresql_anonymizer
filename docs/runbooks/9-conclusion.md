@@ -1,9 +1,11 @@
 
-# Conclusion
+Conclusion
+===============================================================================
 
 ----
 
-## Clean up !
+Clean up !
+-------------------------------------------------------------------------------
 
 ``` { .run-postgres user=postgres dbname=postgres }
 DROP DATABASE IF EXISTS boutique;
@@ -28,14 +30,16 @@ DROP ROLE IF EXISTS pierre;
 DROP ROLE IF EXISTS dump_anon;
 ```
 
-## Also...
+Also...
+-------------------------------------------------------------------------------
 
 Other projects you may like
 
--   [pg_sample](https://github.com/mla/pg_sample) : extract a small
-    dataset from a larger PostgreSQL database
+- [pg_sample](https://github.com/mla/pg_sample) : extract a small
+  dataset from a larger PostgreSQL database
 
-## Help Wanted!
+Help Wanted!
+-------------------------------------------------------------------------------
 
 This is a free and open project!
 
@@ -43,4 +47,3 @@ This is a free and open project!
 
 Please send us feedback on how you use it, how it fits your needs (or
 not), etc.
-

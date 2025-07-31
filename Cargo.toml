@@ -1,6 +1,6 @@
 [package]
 name = "anon"
-version = "2.2.1"
+version = "2.3.0"
 edition = "2021"
 
 [lib]
@@ -21,6 +21,7 @@ pg_test = []
 c_str_macro = "1.0.3"
 chrono = "0.4.37"
 fake = { version = "4.3.0", features = ["bigdecimal", "chrono", "http", "rust_decimal", "uuid", "time","random_color"] }
+fastrand = "2.3.0"
 image = "0.25.5"
 libc = "0.2.172"
 md-5 = "0.10.6"

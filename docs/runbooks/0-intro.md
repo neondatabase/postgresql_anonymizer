@@ -66,6 +66,10 @@ In order to make this workshop, you will need:
 -   A role "pierre" and a role "jack", both allowed to connect to
     the database "boutique"
 
+Check out the [INSTALL] section to learn how to install 
+the [PostgreSQL Anonymizer] extension:
+
+[INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/stable/INSTALL/
 
 !!! tip
 

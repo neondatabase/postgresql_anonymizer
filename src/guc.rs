@@ -16,6 +16,8 @@ pub static ANON_MASKING_POLICIES: GucSetting<Option<CString>> =
 
 pub static ANON_PRIVACY_BY_DEFAULT: GucSetting<bool> = GucSetting::<bool>::new(false);
 
+pub static ANON_REPLICA_MASKING: GucSetting<bool> = GucSetting::<bool>::new(false);
+
 pub static ANON_RESTRICT_TO_TRUSTED_SCHEMAS: GucSetting<bool> = GucSetting::<bool>::new(true);
 
 pub static ANON_STRICT_MODE: GucSetting<bool> = GucSetting::<bool>::new(true);
@@ -159,40 +161,49 @@ pub fn register_gucs() {
             None,
         );
 
-        GucRegistry::define_bool_guc_with_hooks(
-            c"anon.privacy_by_default",
-            c"Mask all columns with NULL (or the default value for NOT NULL columns)",
-            c"",
-            &ANON_PRIVACY_BY_DEFAULT,
-            GucContext::Userset,
-            GucFlags::default(),
-            Some(check_bool_guc_hook),
-            None,
-            None,
-        );
-        GucRegistry::define_bool_guc_with_hooks(
-            c"anon.transparent_dynamic_masking",
-            c"New masking engine (EXPERIMENTAL)",
-            c"",
-            &ANON_TRANSPARENT_DYNAMIC_MASKING,
-            GucContext::Userset,
-            GucFlags::default(),
-            Some(check_bool_guc_hook),
-            None,
-            None,
-        );
+    GucRegistry::define_bool_guc(
+        "anon.privacy_by_default",
+        "Mask all columns with NULL (or the default value for NOT NULL columns)",
+        "",
+        &ANON_PRIVACY_BY_DEFAULT,
+        GucContext::Suset,
+        GucFlags::default(),
+    );
+    GucRegistry::define_bool_guc(
+        "anon.transparent_dynamic_masking",
+        "New masking engine (EXPERIMENTAL)",
+        "",
+        &ANON_TRANSPARENT_DYNAMIC_MASKING,
+        GucContext::Suset,
+        GucFlags::default(),
+    );
 
-        GucRegistry::define_bool_guc_with_hooks(
-            c"anon.restrict_to_trusted_schemas",
-            c"Masking filters must be in a trusted schema",
-            c"Activate this option to prevent non-superuser from using their own masking filters",
-            &ANON_RESTRICT_TO_TRUSTED_SCHEMAS,
-            GucContext::Suset,
-            GucFlags::SUPERUSER_ONLY,
-            Some(check_bool_guc_hook),
-            None,
-            None,
-        );
+    GucRegistry::define_bool_guc(
+        "anon.static_masking",
+        "Static Masking engine",
+        "",
+        &ANON_STATIC_MASKING,
+        GucContext::Suset,
+        GucFlags::default(),
+    );
+
+    GucRegistry::define_bool_guc(
+        "anon.replica_masking",
+        "Masking a logical replica (EXPERIMENTAL)",
+        "",
+        &ANON_REPLICA_MASKING,
+        GucContext::Suset,
+        GucFlags::default(),
+    );
+
+    GucRegistry::define_bool_guc(
+        "anon.restrict_to_trusted_schemas",
+        "Masking filters must be in a trusted schema",
+        "Activate this option to prevent non-superuser from using their own masking filters",
+        &ANON_RESTRICT_TO_TRUSTED_SCHEMAS,
+        GucContext::Suset,
+        GucFlags::SUPERUSER_ONLY,
+    );
 
         GucRegistry::define_bool_guc_with_hooks(
             c"anon.strict_mode",

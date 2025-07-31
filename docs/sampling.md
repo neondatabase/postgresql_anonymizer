@@ -25,6 +25,10 @@ With PostgreSQL Anonymizer, you can use 2 different sampling methods :
 * [Sampling with TABLESAMPLE](#sampling_with_tablesample)
 * [Sampling with RLS Policies](#sampling_with_rls_policies)
 
+You can also [Truncate Tables for the masked users] !
+
+[Truncate Tables for the masked users]: #truncate-tables-for-the-masked-users
+
 
 Sampling with TABLESAMPLE
 -------------------------------------------------------------------------------
@@ -137,3 +141,47 @@ There may be other sampling tools for PostgreSQL but [pg_sample] is probably
 the best one.
 
 [pg_sample]: https://github.com/mla/pg_sample
+
+
+Truncate Tables for the masked users
+-------------------------------------------------------------------------------
+
+In certain situations, you can also erase complety a table instead of just
+masking some of the columns.
+
+For instance, let's say that masked users should not see anything in the
+`http_logs` table below
+
+```sql
+CREATE TABLE http_logs (
+  id integer NOT NULL,
+  date_opened DATE,
+  ip_address INET,
+  url TEXT
+);
+```
+
+Using the [TABLESAMPLE clause], you can simply set the sampling ratio to 0
+
+
+```sql
+SECURITY LABEL FOR anon ON TABLE http_logs IS ' TABLESAMPLE SYSTEM (0)';
+```
+
+Now the table will be erased for the masked users !
+
+```sql
+SET ROLE the_database_owner;
+
+SELECT count(*) FROM http_logs;
+  count
+---------
+ 156706
+
+SET ROLE a_masked_user;
+
+SELECT count(*) FROM http_logs;
+  count
+---------
+     0
+```

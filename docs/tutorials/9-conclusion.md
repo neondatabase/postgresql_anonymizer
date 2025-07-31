@@ -4,11 +4,12 @@
 
 ## Clean up !
 
-``` sql
+``` {.sql user="postgres" dbname="postgres"}
 DROP DATABASE IF EXISTS boutique;
 ```
 
-``` sql
+``` {.sql user="postgres" dbname="postgres"}
+
 REASSIGN OWNED BY jack TO postgres;
 
 REASSIGN OWNED BY paul TO postgres;
@@ -16,13 +17,10 @@ REASSIGN OWNED BY paul TO postgres;
 REASSIGN OWNED BY pierre TO postgres;
 ```
 
-``` sql
+``` {.sql user="postgres" dbname="postgres"}
 DROP ROLE IF EXISTS jack;
-
 DROP ROLE IF EXISTS paul;
-
 DROP ROLE IF EXISTS pierre;
-
 DROP ROLE IF EXISTS dump_anon;
 ```
 
@@ -30,8 +28,8 @@ DROP ROLE IF EXISTS dump_anon;
 
 Other projects you may like
 
--   [pg_sample](https://github.com/mla/pg_sample) : extract a small
-    dataset from a larger PostgreSQL database
+- [pg_sample](https://github.com/mla/pg_sample) : extract a small
+  dataset from a larger PostgreSQL database
 
 ## Help Wanted!
 
