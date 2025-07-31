@@ -37,7 +37,7 @@ BEGIN
 
   IF sequence IS NOT NULL
   THEN
-    EXECUTE format( 'SELECT pg_catalog.setval(%L, max(oid)) FROM %s',
+    EXECUTE pg_catalog.format( 'SELECT pg_catalog.setval(%L, max(oid)) FROM %s',
                     sequence,
                     dest_table
     );
@@ -89,8 +89,8 @@ BEGIN
   FROM pg_catalog.pg_config
   WHERE name = 'SHAREDIR';
 
-  SELECT bool_or(results) INTO success
-  FROM unnest(array[
+  SELECT pg_catalog.bool_or(results) INTO success
+  FROM pgcatalog.unnest(array[
     anon.load_csv('anon.identifiers_category',sharedir || datapath || '/identifiers_category.csv'),
     anon.load_csv('anon.identifier',sharedir || datapath || '/identifier.csv'),
     anon.load_csv('anon.address',sharedir || datapath || '/address.csv'),
