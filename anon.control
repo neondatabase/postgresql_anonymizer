@@ -4,4 +4,5 @@ default_version = '@CARGO_VERSION@'
 #directory='extension/anon'
 relocatable = false
 superuser = true
+trusted = true
 module_pathname = '$libdir/anon'

@@ -383,7 +383,7 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  EXECUTE format('
+  EXECUTE pg_catalog.format('
      UPDATE %I
      SET %I = %I *  (1+ (2 * random() - 1 ) * %L) ;
      ', noise_table, noise_column, noise_column, ratio
@@ -413,7 +413,7 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  EXECUTE format('UPDATE %I SET %I = %I + (2 * random() - 1 ) * ''%s''::INTERVAL',
+  EXECUTE pg_catalog.format('UPDATE %I SET %I = %I + (2 * random() - 1 ) * ''%s''::INTERVAL',
                   noise_table,
                   noise_column,
                   noise_column,
@@ -518,7 +518,7 @@ BEGIN
   END IF;
 
   -- shuffle
-  EXECUTE format('
+  EXECUTE pg_catalog.format('
   WITH s1 AS (
     -- shuffle the primary key
     SELECT row_number() over (order by random()) n,
@@ -836,7 +836,7 @@ BEGIN
   FOR r IN SELECT relnamespace, relname, attname
            FROM anon.pg_masking_rules
   LOOP
-    EXECUTE format('SECURITY LABEL FOR anon ON COLUMN %I.%I.%I IS NULL',
+    EXECUTE pg_catalog.format('SECURITY LABEL FOR anon ON COLUMN %I.%I.%I IS NULL',
                     r.relnamespace,
                     r.relname,
                     r.attname
@@ -1047,7 +1047,7 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  EXECUTE format(E'
+  EXECUTE pg_catalog.format(E'
     SELECT min(c) AS k_anonymity
     FROM (
       SELECT COUNT(*) as c
@@ -1071,3 +1071,22 @@ $$
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
 -- TODO : https://en.wikipedia.org/wiki/T-closeness
+
+-- NEON Patches
+
+GRANT ALL ON SCHEMA anon to neon_superuser;
+GRANT ALL ON ALL TABLES IN SCHEMA anon TO neon_superuser;
+
+DO $$
+DECLARE
+  privileged_role_name text;
+BEGIN
+  privileged_role_name := pg_catalog.current_setting('neon.privileged_role_name');
+
+  EXECUTE pg_catalog.format('GRANT ALL ON SCHEMA anon to %I', privileged_role_name);
+  EXECUTE pg_catalog.format('GRANT ALL ON ALL TABLES IN SCHEMA anon TO %I', privileged_role_name);
+
+  IF pg_catalog.current_setting('server_version_num')::int >= 150000 THEN
+    EXECUTE pg_catalog.format('GRANT SET ON PARAMETER anon.transparent_dynamic_masking TO %I', privileged_role_name);
+  END IF;
+END $$;

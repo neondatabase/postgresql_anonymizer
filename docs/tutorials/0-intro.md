@@ -26,9 +26,9 @@ data.
 
 Using the simple example above, we will learn:
 
--   How to write masking rules
--   The difference between static and dynamic masking
--   Implementing advanced masking techniques
+- How to write masking rules
+- The difference between static and dynamic masking
+- Implementing advanced masking techniques
 
 ## About GDPR
 
@@ -37,23 +37,28 @@ general concepts of anonymization.
 
 For more information about it, please refer to the talk below:
 
--   [Anonymisation, Au-delà du
-    RGPD](https://www.youtube.com/watch?v=KGSlp4UygdU) (Video / French)
--   [Anonymization, Beyond
-    GDPR](https://public.dalibo.com/exports/conferences/_archives/_2019/20191016_anonymisation_beyond_GDPR/anonymisation_beyond_gdpr.pdf)
-    (PDF / english)
+- [Anonymisation, Au-delà du
+  RGPD](https://www.youtube.com/watch?v=KGSlp4UygdU) (Video / French)
+- [Anonymization, Beyond
+  GDPR](https://public.dalibo.com/exports/conferences/_archives/_2019/20191016_anonymisation_beyond_GDPR/anonymisation_beyond_gdpr.pdf)
+  (PDF / english)
 
 ## Requirements
 
 In order to make this workshop, you will need:
 
--   A Linux VM ( preferably `Debian 12 bookworm` or `Ubuntu 24.04`)
--   A PostgreSQL instance ( preferably `PostgreSQL 17` )
--   The PostgreSQL Anonymizer (anon) extension, installed and
-    initialized by a superuser
--   A database named "boutique" owned by a **superuser** called "paul"
--   A role "pierre" and a role "jack", both allowed to connect to the
-    database "boutique"
+- A Linux VM ( preferably `Debian 12 bookworm` or `Ubuntu 24.04`)
+- A PostgreSQL instance ( preferably `PostgreSQL 17` )
+- The PostgreSQL Anonymizer (anon) extension, installed and initialized
+  by a superuser
+- A database named "boutique" owned by a **superuser** called "paul"
+- A role "pierre" and a role "jack", both allowed to connect to the
+  database "boutique"
+
+Check out the
+[INSTALL](https://postgresql-anonymizer.readthedocs.io/en/stable/INSTALL/)
+section to learn how to install the [PostgreSQL
+Anonymizer](https://labs.dalibo.com/postgresql_anonymizer) extension:
 
 !!! tip
 
@@ -82,17 +87,13 @@ to learn how to install the extension in your PostgreSQL instance.
 
 We will with 3 different users:
 
-``` sql
+``` {.sql user="postgres" dbname="postgres" show_result="false"}
 CREATE ROLE paul LOGIN SUPERUSER PASSWORD 'CHANGEME';
-
 
 CREATE ROLE pierre LOGIN PASSWORD 'CHANGEME';
 
-
 CREATE ROLE jack LOGIN PASSWORD 'CHANGEME';
-
 GRANT pg_read_all_data TO jack;
-
 GRANT pg_write_all_data TO jack;
 ```
 
@@ -114,13 +115,13 @@ chmod 0600 ~/.pgpass
 
 We will work on a database called "boutique":
 
-``` sql
+``` {.sql user="postgres" dbname="postgres"}
 CREATE DATABASE boutique OWNER paul;
 ```
 
 We need to activate the `anon` library inside that database:
 
-``` sql
+``` {.sql user="postgres" dbname="postgres"}
 ALTER DATABASE boutique
-SET session_preload_libraries = 'anon';
+  SET session_preload_libraries = 'anon';
 ```

@@ -14,6 +14,7 @@ mod macros;
 mod masking;
 mod random;
 mod re;
+mod replica_masking;
 mod sampling;
 mod static_masking;
 mod utils;
@@ -40,6 +41,8 @@ extension_sql_file!("../sql/pseudo.sql", requires = ["init"]);
 extension_sql_file!("../sql/random.sql", requires = ["anon"]);
 extension_sql_file!("../sql/static_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires = ["anon"]);
+extension_sql_file!("../sql/replica_masking.sql", requires = ["anon"]);
+
 // GCOVR_EXCL_STOP
 
 pgrx::pg_module_magic!();
@@ -324,6 +327,33 @@ mod anon {
     );
 
     //------------------------------------------------------------------------
+    // Replica Masking
+    //------------------------------------------------------------------------
+    use crate::replica_masking;
+
+    #[pg_extern]
+    pub fn drop_replica_trigger_for_table(r: pg_sys::Oid) -> Option<bool> {
+        replica_masking::drop_replica_trigger_for_table(r)
+    }
+
+    #[pg_extern]
+    pub fn refresh_replica_trigger_for_table(r: pg_sys::Oid, p: String) -> Option<bool> {
+        replica_masking::refresh_replica_trigger_for_table(r, p)
+    }
+
+    //
+    // The replica masking functions should not be used as masking filters
+    //
+    extension_sql!(
+        r#"
+    SECURITY LABEL FOR anon ON FUNCTION anon.drop_replica_trigger_for_table(OID) IS 'UNTRUSTED';
+    SECURITY LABEL FOR anon ON FUNCTION anon.refresh_replica_trigger_for_table(OID,TEXT) IS 'UNTRUSTED';
+    "#,
+        name = "unstrust_replica_masking_functions",
+        requires = ["anon"]
+    );
+
+    //------------------------------------------------------------------------
     // Masking engine
     //------------------------------------------------------------------------
     use crate::static_masking;
@@ -430,7 +460,7 @@ mod anon {
 
     #[cfg(debug_assertions)]
     #[pg_extern]
-    pub fn list_masking_policies() -> Vec<&'static str> {
+    pub fn list_masking_policies() -> Vec<String> {
         masking::list_masking_policies()
     }
 

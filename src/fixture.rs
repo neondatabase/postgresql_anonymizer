@@ -263,6 +263,16 @@ pub fn disable_static_masking() {
 }
 
 #[allow(dead_code)]
+pub fn enable_replica_masking() {
+    Spi::run(
+        "
+        SET anon.replica_masking TO on;
+    ",
+    )
+    .unwrap();
+}
+
+#[allow(dead_code)]
 pub fn trust_masking_functions_schema() {
     Spi::run(
         "

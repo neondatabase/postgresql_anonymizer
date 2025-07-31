@@ -3,9 +3,16 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-WIP : 2.3.0 - Parallel Static Masking
+20250702 : 2.3.0 - Parallel Static Masking
 -------------------------------------------------------------------------------
 
+* [docs] Various corrections on the tutorial (Robin Portigliatti)
+* [random] FIX #527 issue with negative numbers
+* [make] build on Mac OS X (Suhas Thalanki)
+* [doc] How to truncate a table for masked users
+* [replica] Introducing Replica Masking (ALPHA)
+* [tests] make ldm test more robust
+* [doc] hash and unescaped chars
 
 20250530 : 2.2.1 - packaging fixup
 -------------------------------------------------------------------------------

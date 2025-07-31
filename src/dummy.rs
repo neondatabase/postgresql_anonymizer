@@ -106,11 +106,8 @@ macro_rules! declare_l10n_fn_String {
 
         #[pg_extern]
         pub fn $name() -> String {
-            let locale = $crate::guc::ANON_DUMMY_LOCALE
-                .get()
-                .unwrap()
-                .to_str()
-                .expect("Should be a string");
+            let guc_value = $crate::guc::ANON_DUMMY_LOCALE.get().unwrap();
+            let locale = guc_value.to_str().expect("Should be a string");
             dummy!($struct, locale)
         }
     };
@@ -132,11 +129,8 @@ macro_rules! declare_l10n_fn_with_range_to_string {
 
         #[pg_extern]
         pub fn $name(r: pgrx::Range<i32>) -> String {
-            let locale = $crate::guc::ANON_DUMMY_LOCALE
-                .get()
-                .unwrap()
-                .to_str()
-                .expect("Should be a string");
+            let guc_value = $crate::guc::ANON_DUMMY_LOCALE.get().unwrap();
+            let locale = guc_value.to_str().expect("Should be a string");
             return $crate::dummy_with_range!($struct, locale, r);
         }
     };

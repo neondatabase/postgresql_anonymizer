@@ -1,8 +1,8 @@
 # 3- Anonymous Dumps
 
-> In many situation, what we want is basically to export the anonymized
-> data into another database (for testing or to produce statistics). We
-> will simply use pg_dump for that !
+💡 In many situation, what we want is basically to export the anonymized
+data into another database (for testing or to produce statistics). We
+will simply use pg_dump for that !
 
 ## The Story
 
@@ -20,33 +20,47 @@ information contained in the comment section.
 
 ## Learning Objective
 
--   Extract the anonymized data from the database
--   Write a custom masking function to handle a JSON field.
+- Extract the anonymized data from the database
+- Write a custom masking function to handle a JSON field.
 
 ## Load the data
 
 ``` sql
 DROP TABLE IF EXISTS website_comment CASCADE;
 
-
-CREATE TABLE website_comment (id SERIAL PRIMARY KEY,
-                                        message JSONB);
+CREATE TABLE website_comment (
+  id SERIAL PRIMARY KEY,
+  message JSONB
+);
 ```
 
 ``` sql
 INSERT INTO website_comment
-VALUES (1, json_build_object('meta', json_build_object('name', 'Lee Perry', 'ip_addr','40.87.29.113'), 'content', 'Hello Nasty!')),
-       (2, json_build_object('meta', json_build_object('name', '', 'email', 'biz@bizmarkie.com'), 'content', 'Great Shop')),
-       (3,json_build_object('meta', json_build_object('name','Jimmy'), 'content','Hi ! This is me, Jimmy James'));
+VALUES
+  (1, json_build_object(
+        'meta', json_build_object(
+          'name', 'Lee Perry',
+          'ip_addr','40.87.29.113'),
+        'content', 'Hello Nasty!')),
+  (2, json_build_object(
+        'meta', json_build_object(
+          'name', '',
+          'email', 'biz@bizmarkie.com'),
+        'content', 'Great Shop')),
+  (3,json_build_object(
+        'meta', json_build_object(
+          'name','Jimmy'),
+        'content','Hi ! This is me, Jimmy James'));
 ```
 
 Check the content of the website comments:
 
 ``` sql
-SELECT message->'meta'->'name' AS name,
-       message->'content' AS content
+SELECT
+  message->'meta'->'name' AS name,
+  message->'content' AS content
 FROM website_comment
-ORDER BY id ASC
+ORDER BY id ASC;
 ```
 
 | name      | content                      |
@@ -74,15 +88,16 @@ there's no way to extract personal data properly.
 
 ------------------------------------------------------------------------
 
-We can *clean* the comment column simply by removing the `content` key!
+We can *clean* the comment column simply by removing the `content` key
+in the `message` column !
 
 ``` sql
-SELECT message - ARRAY['content']
+SELECT message - ARRAY['content'] AS message_without_content
 FROM website_comment
 WHERE id=1;
 ```
 
-| ?column?                                                             |
+| message_without_content                                              |
 |----------------------------------------------------------------------|
 | {\'meta\': {\'name\': \'Lee Perry\', \'ip_addr\': \'40.87.29.113\'}} |
 
@@ -96,8 +111,7 @@ add functions in this schema.
 ``` sql
 CREATE SCHEMA IF NOT EXISTS my_masks;
 
-SECURITY LABEL
-FOR anon ON SCHEMA my_masks IS 'TRUSTED';
+SECURITY LABEL FOR anon ON SCHEMA my_masks IS 'TRUSTED';
 ```
 
 ------------------------------------------------------------------------
@@ -105,7 +119,13 @@ FOR anon ON SCHEMA my_masks IS 'TRUSTED';
 Now we can write a function that remove the message content:
 
 ``` sql
-CREATE OR REPLACE FUNCTION my_masks.remove_content(j JSONB) RETURNS JSONB AS $func$ SELECT j - ARRAY['content'] $func$ LANGUAGE SQL ;
+CREATE OR REPLACE FUNCTION my_masks.remove_content(j JSONB)
+RETURNS JSONB
+AS $func$
+  SELECT j - ARRAY['content']
+$func$
+LANGUAGE SQL
+;
 ```
 
 ------------------------------------------------------------------------
@@ -114,7 +134,7 @@ Let's try it!
 
 ``` sql
 SELECT my_masks.remove_content(message)
-FROM website_comment
+FROM website_comment;
 ```
 
 | remove_content                                                       |
@@ -126,8 +146,8 @@ FROM website_comment
 And now we can use it in a masking rule:
 
 ``` sql
-SECURITY LABEL
-FOR anon ON COLUMN website_comment.message IS 'MASKED WITH FUNCTION my_masks.remove_content(message)';
+SECURITY LABEL FOR anon ON COLUMN website_comment.message
+IS 'MASKED WITH FUNCTION my_masks.remove_content(message)';
 ```
 
 Then we need to create a dedicated role to export the masked data. We
@@ -137,12 +157,9 @@ that this role is masked.
 ``` sql
 CREATE ROLE anon_dumper LOGIN PASSWORD 'CHANGEME';
 
+ALTER ROLE anon_dumper SET anon.transparent_dynamic_masking TO TRUE;
 
-ALTER ROLE anon_dumper
-SET anon.transparent_dynamic_masking TO TRUE;
-
-SECURITY LABEL
-FOR anon ON ROLE anon_dumper IS 'MASKED';
+SECURITY LABEL FOR anon ON ROLE anon_dumper IS 'MASKED';
 
 GRANT pg_read_all_data TO anon_dumper;
 ```
@@ -170,23 +187,27 @@ pg_dump -U anon_dumper boutique --table=website_comment > /tmp/dump.sql
 Create a database named `boutique_anon` and transfer the entire database
 into it.
 
-### E302 - Pseudonymize the meta fields of the comments
+### E302 - Remove the email address
+
+Replace the `remove_content` function with a better one called
+`remove_content_and_ip` that will nullify the `email` key.
+
+💡 HINT: you can use `jsonb_set(message, '{meta, email}', '{}')` to
+remove the email value.
+
+### E303 - Pseudonymize the IP address
 
 Pierre plans to extract general information from the metadata. For
 instance, he wants to calculate the number of unique visitors based on
-the different IP addresses. But an IP address is an **indirect
-identifier**, so Paul needs to anonymize this field while maintaining
-the fact that some values appear multiple times.
+the different IP addresses.
 
-Replace the `remove_content` function with a better one called
-`clean_comment` that will:
+But an IP address is an **indirect identifier**, so Paul needs to
+anonymize this field while maintaining the fact that some values appear
+multiple times.
 
--   Remove the content key
--   Replace the `name` value with a fake last name
--   Replace the `ip_address` value with its MD5 signature
--   Nullify the `email` key
-
-> HINT: Look at the `jsonb_set()` and `jsonb_build_object()` functions
+💡 HINT: First you can create a new `meta` object using
+`jsonb_build_object()` and then use function `jsonb_set` replace the
+`meta` key
 
 ## Solutions
 
@@ -208,7 +229,52 @@ psql -U paul boutique_anon -c 'SELECT COUNT(*) FROM company'
 ### S302
 
 ``` sql
-CREATE OR REPLACE FUNCTION my_masks.clean_comment(message JSONB) RETURNS JSONB VOLATILE LANGUAGE SQL AS $func$ SELECT jsonb_set( message, ARRAY['meta'], jsonb_build_object( 'name',anon.fake_last_name(), 'ip_address', md5((message->'meta'->'ip_addr')::TEXT), 'email', NULL ) ) - ARRAY['content']; $func$;
+CREATE OR REPLACE FUNCTION my_masks.remove_content_and_ip(message JSONB)
+RETURNS JSONB
+VOLATILE
+LANGUAGE SQL
+AS $func$
+SELECT
+  jsonb_set(message, '{meta, email}', '{}')
+  - ARRAY['content'];
+$func$;
+```
+
+``` sql
+SELECT my_masks.remove_content_and_ip(message)
+FROM website_comment;
+```
+
+| remove_content_and_ip |
+|----|
+| {\'meta\': {\'name\': \'Lee Perry\', \'email\': {}, \'ip_addr\': \'40.87.29.113\'}} |
+| {\'meta\': {\'name\': \'\', \'email\': {}}} |
+| {\'meta\': {\'name\': \'Jimmy\', \'email\': {}}} |
+
+``` sql
+SECURITY LABEL FOR anon ON COLUMN website_comment.message
+IS 'MASKED WITH FUNCTION my_masks.remove_content_and_ip(message)';
+```
+
+### S303
+
+``` sql
+CREATE OR REPLACE FUNCTION my_masks.clean_comment(message JSONB)
+RETURNS JSONB
+VOLATILE
+LANGUAGE SQL
+AS $func$
+SELECT
+  jsonb_set(
+    message,
+    ARRAY['meta'],
+    jsonb_build_object(
+        'name',anon.fake_last_name(),
+        'ip_address', md5((message->'meta'->'ip_addr')::TEXT),
+        'email', NULL
+    )
+  ) - ARRAY['content'];
+$func$;
 ```
 
 ``` sql
@@ -218,11 +284,11 @@ FROM website_comment;
 
 | clean_comment |
 |----|
-| {\'meta\': {\'name\': \'Hicks\', \'email\': None, \'ip_address\': \'1d8cbcdef988d55982af1536922ddcd1\'}} |
-| {\'meta\': {\'name\': \'Galloway\', \'email\': None, \'ip_address\': None}} |
-| {\'meta\': {\'name\': \'Grant\', \'email\': None, \'ip_address\': None}} |
+| {\'meta\': {\'name\': \'Gill\', \'email\': None, \'ip_address\': \'1d8cbcdef988d55982af1536922ddcd1\'}} |
+| {\'meta\': {\'name\': \'Henson\', \'email\': None, \'ip_address\': None}} |
+| {\'meta\': {\'name\': \'Mcmahon\', \'email\': None, \'ip_address\': None}} |
 
 ``` sql
-SECURITY LABEL
-FOR anon ON COLUMN website_comment.message IS 'MASKED WITH FUNCTION my_masks.clean_comment(message)';
+SECURITY LABEL FOR anon ON COLUMN website_comment.message
+IS 'MASKED WITH FUNCTION my_masks.clean_comment(message)';
 ```
