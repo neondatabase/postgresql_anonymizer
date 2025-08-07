@@ -265,7 +265,17 @@ Install From Source
 **Important**: Building the extension requires a full Rust development
 environment. It is not recommended to build it on a production server.
 
-Before anything else, you need to install the [PGRX System Requirements].
+Before anything else, you need to install the [PGRX System Requirements] and
+install and initialise PGRX itself using
+
+```console
+cargo install cargo-pgrx --version 0.14.3 --locked
+cargo pgrx init
+```
+
+**NOTE**: You may need to specify your pg_config location in the second command
+by using the `--pg{version}` flag (e.g. `--pg16
+/usr/lib/postgresql/16/bin/pg_config`).
 
 _Step 0:_ Download the source from the
 [official repository on Gitlab](https://gitlab.com/dalibo/postgresql_anonymizer/),
@@ -283,13 +293,14 @@ make extension
 sudo make install
 ```
 
-**NOTE**: If you have multiple versions of PostgreSQL on the server, you may
+**NOTE**: If you have multiple versions of PostgreSQL on the server or if the
+package does not build/install correctly, you may
 need to specify which version is your target by defining the `PG_CONFIG` and
 `PGVER` env variable like this:
 
 ```console
-make extension PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER="14"
-sudo make install PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER="14"
+make extension PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER=pg14
+sudo make install PG_CONFIG=/usr/lib/postgresql/14/bin/pg_config PGVER=pg14
 ```
 
 _Step 2:_  Load the extension:
