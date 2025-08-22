@@ -166,7 +166,7 @@ pub fn is_trusted_function(
             }
 
             // Read the security label and check its content
-            if re::is_match_trusted(seclabel) {
+            if re::is_match_trusted(seclabel) || re::is_match_restricted(seclabel) {
                 trusted = Some(true);
             }
             if re::is_match_untrusted(seclabel) {
@@ -325,6 +325,14 @@ mod tests {
         assert!(is_trusted_function(outfit, mask, "anon").is_ok());
         assert!(is_trusted_function(outfit, belt, "anon").is_err());
         assert!(is_trusted_function(outfit, cape, "anon").is_ok());
+
+        // Check that a restricted function is also trusted
+        let anon_schema = Spi::get_one::<pg_sys::Oid>("SELECT 'anon'::REGNAMESPACE::OID;")
+            .unwrap()
+            .expect("should be an OID");
+        let pseudo_city_cstr = CString::new("pseudo_city").unwrap();
+        let pseudo_city = pseudo_city_cstr.as_ptr() as *const c_char;
+        assert!(is_trusted_function(anon_schema, pseudo_city, "anon").is_ok());
     }
 
     #[pg_test]

@@ -15,6 +15,7 @@ mod masking;
 mod random;
 mod re;
 mod replica_masking;
+mod rules;
 mod sampling;
 mod static_masking;
 mod utils;

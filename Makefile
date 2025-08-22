@@ -91,6 +91,7 @@ REGRESS_TESTS+= pg_dump
 REGRESS_TESTS+= privacy_by_default
 REGRESS_TESTS+= pseudonymization
 REGRESS_TESTS+= random_functions
+REGRESS_TESTS+= restricted
 REGRESS_TESTS+= rename_objects
 #REGRESS_TESTS+= restore
 REGRESS_TESTS+= rls

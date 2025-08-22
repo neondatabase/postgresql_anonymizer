@@ -14,6 +14,52 @@ use pgrx::JumbleState;
 
 use pgrx::list::old_list::PgList;
 
+/// Apply masking rules to a SELECT statement
+///
+/// For instance, if a masking rule is defined on the column 'lastname' of table
+/// named 'person', then the statement below:
+///
+/// ```sql no_run
+/// SELECT * FROM public.person;
+/// ```
+///
+/// Will be replaced (basically) by
+///
+/// ```sql
+///     SELECT firstname AS firstname,
+///            CAST(NULL AS text) AS lastname
+///     FROM person;
+/// ```
+///
+/// The function returns None if the query is unchanged
+///
+fn pa_rewrite_select(query: &PgBox<pg_sys::Query>) -> Option<bool> {
+    if !unsafe { pg_sys::IsTransactionState() } {
+        return None;
+    };
+
+    let uid = unsafe { pg_sys::GetUserId() };
+    if !guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {
+        return None;
+    };
+
+    let masking_policy = masking::get_masking_policy(uid)?;
+
+    // the user is masked
+
+    // masked users are not allowed to use restricted functions directly
+    // restricted functions (such as pseudonymizing functions) are TRUSTED but
+    // cannot be called by a masked user.
+    if unsafe { walker::TreeWalker::empty().has_restricted_function(&query) } {
+        error::insufficient_privilege("role is masked".to_string()).ereport();
+    }
+
+    // rewrite the query
+    unsafe { walker::TreeWalker::new(masking_policy).rewrite(&query) };
+
+    Some(true)
+}
+
 /// Apply masking rules to a COPY statement
 /// In a COPY statement, substitute the masked relation by its masking view
 ///
@@ -238,16 +284,8 @@ impl pgrx::hooks::PgHooks for AnonHooks {
             jumble_state: Option<PgBox<JumbleState>>,
         ) -> HookResult<()>,
     ) -> HookResult<()> {
-        if unsafe { pg_sys::IsTransactionState() } {
-            let uid = unsafe { pg_sys::GetUserId() };
-            if guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {
-                if let Some(masking_policy) = masking::get_masking_policy(uid) {
-                    unsafe {
-                        walker::TreeWalker::new(masking_policy).rewrite(&query);
-                    }
-                }
-            }
-        }
+        pa_rewrite_select(&query);
+
         // Call the previous hook (if any)
         prev_hook(parse_state, query, jumble_state)
     }
@@ -324,6 +362,31 @@ mod tests {
             GRANT USAGE ON SCHEMA public TO batman;
             GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman;
             SET ROLE batman;
+            SELECT lastname IS NULL FROM person LIMIT 1;
+        ",
+        )
+        .unwrap();
+    }
+
+    #[pg_test(error = "Anon: role is masked")]
+    fn test_post_parse_analyze_pseudo_func() {
+        fixture::create_masked_role();
+        Spi::run(
+            "
+            SET anon.transparent_dynamic_masking TO TRUE;
+            SET ROLE batman;
+            SELECT anon.pseudo_city('bob'::TEXT);
+        ",
+        )
+        .unwrap();
+    }
+
+    #[pg_test]
+    fn test_post_parse_analyze_unmasked() {
+        fixture::create_table_person();
+        Spi::run(
+            "
+            SET anon.transparent_dynamic_masking TO TRUE;
             SELECT lastname IS NULL FROM person LIMIT 1;
         ",
         )

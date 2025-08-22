@@ -30,8 +30,23 @@ pub fn create_masking_functions() -> pg_sys::Oid {
         SECURITY LABEL FOR anon ON FUNCTION public.belt() IS 'TRUSTED';
 
         CREATE FUNCTION outfit.cape() RETURNS INT LANGUAGE SQL AS $$ SELECT 0 $$;
+
     ").unwrap();
     Spi::get_one::<pg_sys::Oid>("SELECT 'outfit'::REGNAMESPACE::OID;")
+        .unwrap()
+        .expect("should be an OID")
+}
+
+#[allow(dead_code)]
+pub fn create_restricted_function() -> pg_sys::Oid {
+    Spi::run(
+        "
+        CREATE FUNCTION pseudo_id() RETURNS INT LANGUAGE SQL AS $$ SELECT 1 $$;
+        SECURITY LABEL FOR anon ON FUNCTION pseudo_id() IS 'RESTRICTED';
+    ",
+    )
+    .unwrap();
+    Spi::get_one::<pg_sys::Oid>("SELECT 'pseudo_id()'::REGPROCEDURE::OID;")
         .unwrap()
         .expect("should be an OID")
 }
@@ -273,6 +288,19 @@ pub fn enable_replica_masking() {
 }
 
 #[allow(dead_code)]
+pub fn set_search_path(search_path: String) {
+    Spi::run(
+        format!(
+            "
+        SET search_path TO {search_path};
+    "
+        )
+        .as_str(),
+    )
+    .unwrap();
+}
+
+#[allow(dead_code)]
 pub fn trust_masking_functions_schema() {
     Spi::run(
         "
@@ -280,4 +308,30 @@ pub fn trust_masking_functions_schema() {
     ",
     )
     .unwrap();
+}
+
+#[allow(dead_code)]
+pub fn parse_select_query(query_string: &str) -> PgBox<pg_sys::Query> {
+    use crate::masking;
+    use std::ffi::CString;
+
+    // Create a CString from the query
+    let query_cstr =
+        CString::new(query_string).expect("Failed to create CString from SELECT query");
+
+    // Get the first statement (should be a single SELECT statement)
+    let raw_stmt = masking::parse_subquery(query_string.to_string());
+
+    // Transform the SelectStmt into a Query using PostgreSQL's query planner
+    let query = unsafe {
+        pg_sys::parse_analyze(
+            raw_stmt.as_ptr(),
+            query_cstr.as_ptr(),
+            std::ptr::null_mut(), // no parameter types
+            0,                    // number of parameters
+            std::ptr::null_mut(), // no environment
+        )
+    };
+
+    unsafe { PgBox::from_pg(query) }
 }

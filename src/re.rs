@@ -39,6 +39,12 @@ pub fn is_match_not_masked(haystack: &str) -> bool {
         .is_match(haystack)
 }
 
+pub fn is_match_restricted(haystack: &str) -> bool {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(r"(?is)^ *RESTRICTED *$").unwrap())
+        .is_match(haystack)
+}
+
 pub fn is_match_trusted(haystack: &str) -> bool {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| Regex::new(r"(?is)^ *TRUSTED *$").unwrap())
@@ -190,6 +196,14 @@ mod tests {
         assert!(is_match_not_masked(" NoT MaSkED "));
         assert!(is_match_not_masked(" NoT MaSkED "));
         assert!(!is_match_not_masked("NOTMASKED"));
+    }
+
+    #[test]
+    fn test_re_restricted() {
+        assert!(is_match_restricted("RESTRICTED"));
+        assert!(is_match_restricted("     restricted "));
+        assert!(!is_match_restricted("NOT RESTRICTED"));
+        assert!(!is_match_restricted("cjzncdelncdl,c"));
     }
 
     #[test]

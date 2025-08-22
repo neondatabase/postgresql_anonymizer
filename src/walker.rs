@@ -10,8 +10,10 @@
 use crate::compat;
 use crate::error;
 use crate::input;
+use crate::label_providers;
 use crate::log;
 use crate::masking;
+use crate::rules;
 use crate::utils;
 use pgrx::*;
 use std::ffi::c_char;
@@ -35,6 +37,27 @@ impl TreeWalker {
         }
     }
 
+    pub fn empty() -> Self {
+        TreeWalker {
+            policy: "".to_string(),
+            reason: None,
+        }
+    }
+
+    pub unsafe fn has_restricted_function(&mut self, query: &PgBox<pg_sys::Query>) -> bool {
+        if query.is_null() {
+            return false;
+        }
+
+        log::debug1!("query= {:#?}", query);
+
+        pg_sys::query_tree_walker(
+            query.as_ptr(),
+            Some(has_restricted_function_walker),
+            self as *mut TreeWalker as void_mut_ptr,
+            pg_sys::QTW_EXAMINE_RTES as i32,
+        )
+    }
     pub unsafe fn is_untrusted(&mut self, node: &PgBox<pg_sys::Node>) -> bool {
         // Calling raw_expression_tree_walker() directly here would skip the
         // first node of the tree... Instead we call the walker function
@@ -53,6 +76,61 @@ impl TreeWalker {
             pg_sys::QTW_EXAMINE_RTES as i32,
         )
     }
+}
+
+/// Recurvive walk through a Query and check there's a func_call to
+/// a restricted function.
+///
+#[pg_guard]
+unsafe extern "C-unwind" fn has_restricted_function_walker(
+    node: *mut pg_sys::Node,
+    context_ptr: *mut ::core::ffi::c_void,
+) -> bool {
+    if node.is_null() {
+        return false;
+    }
+
+    if is_a(node, pg_sys::NodeTag::T_FuncExpr) {
+        let funcexpr = PgBox::from_pg(node as *mut pg_sys::FuncExpr);
+        if rules::is_restricted_function(
+            funcexpr.funcid,
+            label_providers::ANON_DEFAULT_MASKING_POLICY,
+        ) {
+            return true;
+        }
+    } else if is_a(node, pg_sys::NodeTag::T_CommonTableExpr) {
+        let cte = PgBox::from_pg(node as *mut pg_sys::CommonTableExpr);
+
+        if cte.ctequery.is_null() {
+            return false;
+        }
+
+        return pg_sys::query_tree_walker(
+            cte.ctequery as *mut pg_sys::Query,
+            Some(has_restricted_function_walker),
+            context_ptr,
+            pg_sys::QTW_EXAMINE_RTES as i32,
+        );
+    } else if is_a(node, pg_sys::NodeTag::T_RangeTblEntry) {
+        let rte = PgBox::from_pg(node as *mut pg_sys::RangeTblEntry);
+
+        if rte.relid != 0.into() {
+            return false;
+        }
+
+        if rte.subquery.is_null() {
+            return false;
+        }
+
+        return pg_sys::query_tree_walker(
+            rte.subquery,
+            Some(has_restricted_function_walker),
+            context_ptr,
+            pg_sys::QTW_EXAMINE_RTES as i32,
+        );
+    }
+
+    pg_sys::expression_tree_walker(node, Some(has_restricted_function_walker), context_ptr)
 }
 
 /// Recurvive walk through a Raw Expression ( a FuncCall ) and check that all
@@ -270,6 +348,30 @@ mod tests {
     use crate::walker::*;
     use pgrx::pg_sys::Node;
     use pgrx::pg_sys::Query;
+
+    #[pg_test]
+    fn test_has_restricted_function_null() {
+        let mut walker = TreeWalker::new("".to_string());
+        let null_node = pgrx::PgBox::<Query>::null();
+        assert!(!unsafe { walker.has_restricted_function(&null_node) });
+    }
+
+    #[pg_test]
+    fn test_has_restricted_function() {
+        let mut walker = TreeWalker::empty();
+        let pseudo_func = fixture::parse_select_query("SELECT anon.pseudo_city('bob'::TEXT)");
+        assert!(unsafe { walker.has_restricted_function(&pseudo_func) });
+        let not_a_pseudo_func = fixture::parse_select_query("SELECT anon.dummy_name()");
+        assert!(!unsafe { walker.has_restricted_function(&not_a_pseudo_func) });
+    }
+
+    #[pg_test]
+    fn test_has_restricted_function_unqualified() {
+        fixture::set_search_path("public, anon".to_string());
+        let pseudo_func = fixture::parse_select_query("SELECT pseudo_city('bob'::TEXT)");
+        let mut walker = TreeWalker::empty();
+        assert!(unsafe { walker.has_restricted_function(&pseudo_func) });
+    }
 
     #[pg_test]
     fn test_is_untrusted_null() {

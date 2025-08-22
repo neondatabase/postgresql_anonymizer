@@ -3,6 +3,13 @@
 -------------------------------------------------------------------------------
 
 --
+-- All pseudonymizing functions are declared as `RESTRICTED` which means they
+-- are `TRUSTED` but masked users can't call them directly.
+-- This is important to prevent a rogue masked user from brute forcing the
+-- function and reveal the secret salt
+--
+
+--
 -- Convert an hexadecimal value to an integer
 --
 CREATE OR REPLACE FUNCTION anon.hex_to_int(
@@ -84,6 +91,9 @@ $$
   SET search_path = pg_catalog,pg_temp
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_first_name(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';
+
 CREATE OR REPLACE FUNCTION anon.pseudo_last_name(
   seed ANYELEMENT,
   salt TEXT DEFAULT NULL
@@ -105,6 +115,9 @@ $$
 ;
 
 
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_last_name(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';
+
 CREATE OR REPLACE FUNCTION anon.pseudo_email(
   seed ANYELEMENT,
   salt TEXT DEFAULT NULL
@@ -125,6 +138,8 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_email(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_city(
   seed ANYELEMENT,
@@ -146,6 +161,10 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_city(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';
+
+
 CREATE OR REPLACE FUNCTION anon.pseudo_country(
   seed ANYELEMENT,
   salt TEXT DEFAULT NULL
@@ -165,6 +184,9 @@ $$
   SECURITY DEFINER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_country(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_company(
   seed ANYELEMENT,
@@ -186,6 +208,9 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_company(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';
+
 CREATE OR REPLACE FUNCTION anon.pseudo_iban(
   seed ANYELEMENT,
   salt TEXT DEFAULT NULL
@@ -205,6 +230,9 @@ $$
   SECURITY DEFINER
   SET search_path=''
 ;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_iban(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';
 
 CREATE OR REPLACE FUNCTION anon.pseudo_siret(
   seed ANYELEMENT,
@@ -226,3 +254,5 @@ $$
   SET search_path=''
 ;
 
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_siret(ANYELEMENT,TEXT)
+  IS 'RESTRICTED';

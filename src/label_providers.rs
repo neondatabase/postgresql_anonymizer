@@ -203,7 +203,10 @@ fn relabel_function(label: &str) {
         .ereport();
     }
 
-    if re::is_match_trusted(label) || re::is_match_untrusted(label) {
+    if re::is_match_trusted(label)
+        || re::is_match_restricted(label)
+        || re::is_match_untrusted(label)
+    {
         return;
     }
 
