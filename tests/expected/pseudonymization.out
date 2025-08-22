@@ -194,4 +194,23 @@ SELECT anon.pseudo_last_name('bob'::TEXT);
  Pollard
 (1 row)
 
+-- Shift / XOR
+SELECT anon.set_shift(99999);
+ set_shift 
+-----------
+ t
+(1 row)
+
+SELECT anon.pseudo_shift(1) = 100000;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT anon.pseudo_xor(1) = 99998;
+ ?column? 
+----------
+ t
+(1 row)
+
 ROLLBACK;

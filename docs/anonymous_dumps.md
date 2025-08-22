@@ -1,4 +1,4 @@
-Anonymous Dumps
+Backup Masking ( aka Anonymous Dumps )
 ===============================================================================
 
 
@@ -107,7 +107,7 @@ _Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`
 ```sql
 
 SECURITY LABEL FOR anon ON COLUMN people.lastname
-IS 'MASKED WITH FUNCTION anon.dummy_last_name()';
+  IS 'MASKED WITH FUNCTION anon.dummy_last_name()';
 
 -- etc.
 ```
@@ -138,9 +138,56 @@ for instance:
 cat dump.sql rules.sql | $ANON --data-only --inserts > anon_dump.sql
 ```
 
-
-
 [pg_dump output options]: https://www.postgresql.org/docs/current/app-pgdump.html#PG-DUMP-OPTIONS
+
+Masking primary keys with Backup Masking
+------------------------------------------------------------------------------
+
+Primary keys (such as `SERIAL`) are often masked with the `anon.random_id()`
+function which will generate a unique random identifier every it is called.
+
+However this function will not work with Backup Masking because `pg_dump` will *
+connect in read-only mode to the database (`default_transaction_read_only=on;`)
+and the `anon.random_id()` function needs to update a sequence to avoid
+generating the same value twice.
+
+See issue #529 for more details:
+
+<https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/529>
+
+Therefore if you use `anon.random_id() in some rules, the backup masking process
+will throw the following error :
+
+```console
+pg_dump: detail: Error message from server:
+ERROR:  permission denied for sequence random_id_seq
+```
+
+The solution is to rewrite the masking rules based on `anon.random_id()` and
+use `anon.pseudo_shift(BIGINT)` or `anon.pseudo_xor(BIGINT)` instead.
+
+For instance the masking rule below:
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN people.id
+  IS 'MASKED WITH FUNCTION anon.random_id()';
+```
+
+would become
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN people.id
+  IS 'MASKED WITH FUNCTION anon.pseudo_xor(id)';
+```
+
+The `anon.pseudo_shift(BIGINT)` and `anon.pseudo_xor(BIGINT)` functions use
+a secret value (`anon.shift`) to pseudonymize the primary key. The secret value
+can be initialized randomly with `anon.set_shift()` or defined with
+`anon.set_shift(INT)`.
+
+**WARNING**: Remember that [Pseudonymization is not Anonymization] !
+
+[Pseudonymization is not Anonymization]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_functions/#pseudonymization
 
 
 DEPRECATED : pg_dump_anon.sh and pg_dump_anon

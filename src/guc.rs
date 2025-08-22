@@ -45,6 +45,8 @@ static ANON_SALT: GucSetting<Option<&'static CStr>> =
         CStr::from_bytes_with_nul_unchecked(b"\0")
     }));
 
+static ANON_SHIFT: GucSetting<i32> = GucSetting::<i32>::new(0);
+
 static ANON_SOURCE_SCHEMA: GucSetting<Option<&'static CStr>> =
     GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
         CStr::from_bytes_with_nul_unchecked(b"public\0")
@@ -172,6 +174,17 @@ pub fn register_gucs() {
         "The salt value used for the pseudonymizing functions",
         "",
         &ANON_SALT,
+        GucContext::Suset,
+        GucFlags::SUPERUSER_ONLY,
+    );
+
+    GucRegistry::define_int_guc(
+        "anon.shift",
+        "The random distance value used in some pseudonymizing functions",
+        "",
+        &ANON_SHIFT,
+        0,
+        2147483647,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
     );

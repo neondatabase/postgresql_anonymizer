@@ -70,4 +70,13 @@ SET anon.salt TO 'a_VeRy_SeCReT_SaLT';
 SELECT anon.pseudo_last_name('bob'::TEXT);
 
 
+-- Shift / XOR
+
+SELECT anon.set_shift(99999);
+
+SELECT anon.pseudo_shift(1) = 100000;
+
+SELECT anon.pseudo_xor(1) = 99998;
+
+
 ROLLBACK;

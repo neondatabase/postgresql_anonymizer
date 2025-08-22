@@ -446,6 +446,21 @@ dataset that is **way bigger** than the numbers of rows of the table. Otherwise 
 may see some "collisions" happening, i.e. two different original values producing
 the same pseudo value.
 
+
+It is also possible to pseudonymize a primary key using:
+
+* `anon.pseudo_shift(id)` returns a shifted version of the id
+* `anon.pseudo_xor(id)` returns an exclusive OR value of the id
+
+Both `anon.pseudo_shift(BIGINT)` and `anon.pseudo_xor(BIGINT)` functions use
+a secret value (`anon.shift`) to pseudonymize the primary key. That secret value
+can be initialized randomly with `anon.set_shift()` or defined with
+`anon.set_shift(INT)`.
+
+This is very useful to replace `anon.random_id()` when using [Backup Masking].
+
+[Backup Masking]: https://postgresql-anonymizer.readthedocs.io/en/stable/anonymous_dumps/
+
 **⚠️ WARNING**: Pseudonymization is often confused with anonymization but in fact
 they serve 2 different purposes : `pseudonymization` is a way to **protect** the
 personal information but the pseudonymized data is still "linked" to the real data.

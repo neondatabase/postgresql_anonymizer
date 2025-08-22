@@ -256,3 +256,60 @@ $$
 
 SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_siret(ANYELEMENT,TEXT)
   IS 'RESTRICTED';
+
+-------------------------------------------------------------------------------
+--- Shifting
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION anon.pseudo_shift(i BIGINT)
+RETURNS BIGINT AS $$
+  -- Convert input to numeric to avoid "out of range" errors
+  SELECT (i::NUMERIC+pg_catalog.current_setting('anon.shift')::INT) % 9223372036854775807;
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL SAFE
+  SECURITY DEFINER -- in order to get the secret shift value
+  SET search_path=''
+;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_shift(BIGINT)
+  IS 'RESTRICTED';
+
+
+CREATE OR REPLACE FUNCTION anon.pseudo_xor(i BIGINT)
+RETURNS BIGINT AS $$
+  SELECT i # pg_catalog.current_setting('anon.shift')::INT ;
+$$
+  LANGUAGE SQL
+  VOLATILE
+  RETURNS NULL ON NULL INPUT
+  PARALLEL SAFE
+  SECURITY DEFINER -- in order to get the secret shift value
+  SET search_path=''
+;
+
+SECURITY LABEL FOR anon ON FUNCTION anon.pseudo_xor(BIGINT)
+  IS 'RESTRICTED';
+
+CREATE OR REPLACE FUNCTION anon.set_shift(val INT DEFAULT NULL)
+RETURNS BOOL AS $$
+DECLARE
+    shift INT;
+BEGIN
+    SELECT COALESCE(val, pg_catalog.random()*2147483647) INTO shift;
+    EXECUTE 'ALTER DATABASE ' || current_database() || ' SET anon.shift TO ' || shift;
+    EXECUTE 'SET anon.shift TO ' || shift;
+    RETURN TRUE;
+END;
+$$
+  LANGUAGE plpgsql
+  VOLATILE
+  PARALLEL SAFE
+  SECURITY DEFINER -- in order to get the secret shift value
+  SET search_path=''
+;
+
+-- Set a random value to the shift when the extension is loaded
+SELECT anon.set_shift();

@@ -10,6 +10,8 @@ SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
 CREATE ROLE oscar_the_owner LOGIN PASSWORD 'xlfneifzmqdef';
 ALTER DATABASE :DBNAME OWNER TO oscar_the_owner;
 
+SELECT anon.set_shift(2093049226);
+
 SET ROLE oscar_the_owner;
 
 CREATE SCHEMA test;
@@ -63,6 +65,9 @@ CREATE TABLE test."COMPANY" (
 
 INSERT INTO test."COMPANY"
 VALUES (1991,'12345677890','Cyberdyne Systems');
+
+SECURITY LABEL FOR anon ON COLUMN test."COMPANY".rn
+IS 'MASKED WITH FUNCTION anon.pseudo_xor(rn)';
 
 SECURITY LABEL FOR anon ON COLUMN test."COMPANY"."IBAN"
 IS E'MASKED WITH FUNCTION pg_catalog.md5(''0'') ';
@@ -134,6 +139,7 @@ SELECT i=1 FROM test.no_masks;
 --
 SELECT "IBAN" = md5('0') FROM test."COMPANY";
 SELECT brand = 'CONFIDENTIAL' FROM test."COMPANY";
+SELECT rn = 1991 # 2093049226 FROM test."COMPANY";
 
 --
 -- E. Sequences
