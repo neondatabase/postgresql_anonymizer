@@ -3,22 +3,13 @@
 //----------------------------------------------------------------------------
 
 use pgrx::*;
-use std::ffi::CStr;
+use std::ffi::CString;
 
-pub static ANON_DUMMY_LOCALE: GucSetting<Option<&'static CStr>> =
-    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"en_US\0")
-    }));
+pub static ANON_DUMMY_LOCALE: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"en_US"));
 
-pub static ANON_K_ANONYMITY_PROVIDER: GucSetting<Option<&'static CStr>> =
-    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"k_anonymity\0")
-    }));
+pub static ANON_K_ANONYMITY_PROVIDER: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"k_anonymity"));
 
-pub static ANON_MASKING_POLICIES: GucSetting<Option<&'static CStr>> =
-    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"\0")
-    }));
+pub static ANON_MASKING_POLICIES: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(None);
 
 pub static ANON_PRIVACY_BY_DEFAULT: GucSetting<bool> = GucSetting::<bool>::new(false);
 
@@ -35,44 +26,32 @@ pub static ANON_STATIC_MASKING: GucSetting<bool> = GucSetting::<bool>::new(true)
 // The GUC vars below are not used in the Rust code
 // but they are used in the plpgsql code
 
-static ANON_ALGORITHM: GucSetting<Option<&'static CStr>> =
-    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"sha256\0")
-    }));
+static ANON_ALGORITHM: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"sha256"));
 
-static ANON_SALT: GucSetting<Option<&'static CStr>> =
-    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"\0")
-    }));
+static ANON_SALT: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(None);
 
 static ANON_SHIFT: GucSetting<i32> = GucSetting::<i32>::new(0);
 
-static ANON_SOURCE_SCHEMA: GucSetting<Option<&'static CStr>> =
-    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"public\0")
-    }));
+static ANON_SOURCE_SCHEMA: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"public"));
 
-static ANON_MASK_SCHEMA: GucSetting<Option<&'static CStr>> =
-    GucSetting::<Option<&'static CStr>>::new(Some(unsafe {
-        CStr::from_bytes_with_nul_unchecked(b"mask\0")
-    }));
+static ANON_MASK_SCHEMA: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"mask"));
 
 // Register the GUC parameters for the extension
 //
 pub fn register_gucs() {
     GucRegistry::define_string_guc(
-        "anon.dummy_locale",
-        "The default locale for the dummy data functions",
-        "",
+        c"anon.dummy_locale",
+        c"The default locale for the dummy data functions",
+        c"",
         &ANON_DUMMY_LOCALE,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
     );
 
     GucRegistry::define_string_guc(
-        "anon.k_anonymity_provider",
-        "The security label provider used for k-anonymity",
-        "",
+        c"anon.k_anonymity_provider",
+        c"The security label provider used for k-anonymity",
+        c"",
         &ANON_K_ANONYMITY_PROVIDER,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
@@ -87,62 +66,62 @@ pub fn register_gucs() {
     // https://github.com/pgcentralfoundation/pgrx/commit/d096efe6fb2d86e87d117b520b9ccd2f90b2e0d1
     //
     GucRegistry::define_string_guc(
-        "anon.masking_policies",
-        "Define additional masking policies (the 'anon' policy is already defined)",
-        "",
+        c"anon.masking_policies",
+        c"Define additional masking policies (the 'anon' policy is already defined)",
+        c"",
         &ANON_MASKING_POLICIES,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY, /* | GucFlags::LIST_INPUT */
     );
 
     GucRegistry::define_bool_guc(
-        "anon.privacy_by_default",
-        "Mask all columns with NULL (or the default value for NOT NULL columns)",
-        "",
+        c"anon.privacy_by_default",
+        c"Mask all columns with NULL (or the default value for NOT NULL columns)",
+        c"",
         &ANON_PRIVACY_BY_DEFAULT,
         GucContext::Suset,
         GucFlags::default(),
     );
     GucRegistry::define_bool_guc(
-        "anon.transparent_dynamic_masking",
-        "New masking engine (EXPERIMENTAL)",
-        "",
+        c"anon.transparent_dynamic_masking",
+        c"New masking engine (EXPERIMENTAL)",
+        c"",
         &ANON_TRANSPARENT_DYNAMIC_MASKING,
         GucContext::Suset,
         GucFlags::default(),
     );
 
     GucRegistry::define_bool_guc(
-        "anon.static_masking",
-        "Static Masking engine",
-        "",
+        c"anon.static_masking",
+        c"Static Masking engine",
+        c"",
         &ANON_STATIC_MASKING,
         GucContext::Suset,
         GucFlags::default(),
     );
 
     GucRegistry::define_bool_guc(
-        "anon.replica_masking",
-        "Masking a logical replica (EXPERIMENTAL)",
-        "",
+        c"anon.replica_masking",
+        c"Masking a logical replica (EXPERIMENTAL)",
+        c"",
         &ANON_REPLICA_MASKING,
         GucContext::Suset,
         GucFlags::default(),
     );
 
     GucRegistry::define_bool_guc(
-        "anon.restrict_to_trusted_schemas",
-        "Masking filters must be in a trusted schema",
-        "Activate this option to prevent non-superuser from using their own masking filters",
+        c"anon.restrict_to_trusted_schemas",
+        c"Masking filters must be in a trusted schema",
+        c"Activate this option to prevent non-superuser from using their own masking filters",
         &ANON_RESTRICT_TO_TRUSTED_SCHEMAS,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
     );
 
     GucRegistry::define_bool_guc(
-        "anon.strict_mode",
-        "A masking rule cannot change a column data type, unless you disable this",
-        "Disabling the mode is not recommended",
+        c"anon.strict_mode",
+        c"A masking rule cannot change a column data type, unless you disable this",
+        c"Disabling the mode is not recommended",
         &ANON_STRICT_MODE,
         GucContext::Suset,
         GucFlags::default(),
@@ -152,36 +131,36 @@ pub fn register_gucs() {
     // but they are used in the plpgsql code
 
     GucRegistry::define_string_guc(
-        "anon.algorithm",
-        "The hash method used for pseudonymizing functions",
-        "",
+        c"anon.algorithm",
+        c"The hash method used for pseudonymizing functions",
+        c"",
         &ANON_ALGORITHM,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
     );
 
     GucRegistry::define_string_guc(
-        "anon.maskschema",
-        "The schema where the dynamic masking views are stored",
-        "",
+        c"anon.maskschema",
+        c"The schema where the dynamic masking views are stored",
+        c"",
         &ANON_MASK_SCHEMA,
         GucContext::Suset,
         GucFlags::default(),
     );
 
     GucRegistry::define_string_guc(
-        "anon.salt",
-        "The salt value used for the pseudonymizing functions",
-        "",
+        c"anon.salt",
+        c"The salt value used for the pseudonymizing functions",
+        c"",
         &ANON_SALT,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
     );
 
     GucRegistry::define_int_guc(
-        "anon.shift",
-        "The random distance value used in some pseudonymizing functions",
-        "",
+        c"anon.shift",
+        c"The random distance value used in some pseudonymizing functions",
+        c"",
         &ANON_SHIFT,
         0,
         2147483647,
@@ -190,9 +169,9 @@ pub fn register_gucs() {
     );
 
     GucRegistry::define_string_guc(
-        "anon.sourceschema",
-        "The schema where the table are masked by the dynamic masking engine",
-        "",
+        c"anon.sourceschema",
+        c"The schema where the table are masked by the dynamic masking engine",
+        c"",
         &ANON_SOURCE_SCHEMA,
         GucContext::Suset,
         GucFlags::default(),

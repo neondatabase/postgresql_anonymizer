@@ -27,7 +27,7 @@ pub fn register_label_providers() {
         pg_sys::register_label_provider(
             guc::ANON_K_ANONYMITY_PROVIDER
                 .get()
-                .unwrap()
+                .unwrap_or(c"k_anonymity".into())
                 .to_bytes_with_nul()
                 .as_ptr() as *const c_char,
             Some(k_anonymity_object_relabel),
@@ -35,11 +35,11 @@ pub fn register_label_providers() {
     };
 
     // Register the default masking policy and the user-defined masking policies
-    for policy_str in masking::list_masking_policies() {
-        let policy_cstring: CString = CString::new(policy_str).unwrap();
+    for policy in masking::list_masking_policies() {
+        let policy_cstring: CString = CString::new(policy.clone()).unwrap();
         let policy_ptr: *const c_char = policy_cstring.as_ptr();
         unsafe {
-            log::debug1!("Anon: registering masking policy '{}'", policy_str);
+            log::debug1!("Anon: registering masking policy '{}'", policy.clone());
             pg_sys::register_label_provider(policy_ptr, Some(masking_policy_object_relabel));
         }
     }

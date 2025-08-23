@@ -2,9 +2,9 @@
 /// # Regular Expressions
 ///
 ///
-use core::ffi::CStr;
 use regex::Regex;
 use std::sync::OnceLock;
+use std::ffi::CString;
 
 //
 // These Regex are static and should be compiled once and for all.
@@ -93,16 +93,16 @@ pub fn capture_value(haystack: &str) -> Option<&str> {
 ///
 /// https://regex101.com/r/pJI5QU/1
 ///
-pub fn capture_guc_list(haystack: &CStr) -> Vec<&str> {
+pub fn capture_guc_list(haystack: CString) -> Vec<String> {
     let hay = haystack.to_str().expect("haystack should be valid");
     static RE: OnceLock<Regex> = OnceLock::new();
     let caps_iter = RE
         .get_or_init(|| Regex::new(r"[^,(?! )]+").unwrap())
         .captures_iter(hay);
 
-    let mut v: Vec<&str> = vec![];
+    let mut v: Vec<String> = vec![];
     for c in caps_iter {
-        v.push(c.get(0).unwrap().as_str());
+        v.push(c.get(0).unwrap().as_str().into());
     }
     v
 }
@@ -110,7 +110,6 @@ pub fn capture_guc_list(haystack: &CStr) -> Vec<&str> {
 #[cfg(test)]
 mod tests {
     use crate::re::*;
-    use c_str_macro::c_str;
 
     #[test]
     fn test_capture_function() {
@@ -122,14 +121,14 @@ mod tests {
     }
     #[test]
     fn test_capture_guc_list() {
-        assert_eq!(vec!["a", "b", "c"], capture_guc_list(c_str!("a,b , c")));
+        assert_eq!(vec!["a", "b", "c"], capture_guc_list(c"a,b , c".into()));
         assert_eq!(
             vec!["a", "b", "c"],
-            capture_guc_list(c_str!("a,,,,,,,,b,c"))
+            capture_guc_list(c"a,,,,,,,,b,c".into())
         );
         assert_eq!(
             vec!["abc", "dkeiij", "zofk355f"],
-            capture_guc_list(c_str!("abc dkeiij zofk355f"))
+            capture_guc_list(c"abc dkeiij zofk355f".into())
         );
     }
 

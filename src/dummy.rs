@@ -9,10 +9,12 @@
 ///
 /// We use the ISO codes for the locale instead of the fake-rs codes
 ///
+
+
 #[macro_export]
 macro_rules! dummy {
     ($struct: ident, $locale: ident ) => {
-        match &$locale as &str {
+        match $locale.as_ref() {
             "ar_SA" => $struct(AR_SA).fake(),
             "en_US" => $struct(EN).fake(),
             "fr_FR" => $struct(FR_FR).fake(),
@@ -106,11 +108,11 @@ macro_rules! declare_l10n_fn_String {
 
         #[pg_extern]
         pub fn $name() -> String {
-            let locale = $crate::guc::ANON_DUMMY_LOCALE
+            let locale = &$crate::guc::ANON_DUMMY_LOCALE
                 .get()
-                .unwrap()
-                .to_str()
-                .expect("Should be a string");
+                .unwrap_or(c"en_us".into())
+                .into_string()
+                .expect("should be a string");
             dummy!($struct, locale)
         }
     };
@@ -134,9 +136,9 @@ macro_rules! declare_l10n_fn_with_range_to_string {
         pub fn $name(r: pgrx::Range<i32>) -> String {
             let locale = $crate::guc::ANON_DUMMY_LOCALE
                 .get()
-                .unwrap()
-                .to_str()
-                .expect("Should be a string");
+                .unwrap_or(c"en_us".into())
+                .into_string()
+                .expect("should be a string");
             return $crate::dummy_with_range!($struct, locale, r);
         }
     };
