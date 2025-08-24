@@ -4,15 +4,151 @@ use crate::log;
 use crate::masking;
 use crate::utils;
 use crate::walker;
+
 use pgrx::prelude::*;
-
-#[allow(deprecated)]
-use pgrx::HookResult;
-
-#[allow(deprecated)]
-use pgrx::JumbleState;
-
 use pgrx::list::old_list::PgList;
+use pgrx::pg_sys::ffi::pg_guard_ffi_boundary;
+
+/// Register the PostgreSQL hooks
+///
+/// Since PGRX 0.16, the pgHooks trait is no longer available and we
+/// need to assign the function pointers manually
+///
+pub unsafe fn register_hooks() {
+    //
+    // Post Parse Analyze hook
+    //
+    // The post_parse_analyze hook is called after parse analyze goes,
+    // immediately after performing transformTopLevelStmt()
+    // When a masked role sends a query, the query will be "masked" using
+    // the masking rules available
+    //
+    static mut PREV_POST_PARSE_ANALYZE_HOOK: pg_sys::post_parse_analyze_hook_type = None;
+    PREV_POST_PARSE_ANALYZE_HOOK = pg_sys::post_parse_analyze_hook;
+    pg_sys::post_parse_analyze_hook = Some(post_parse_analyze_hook);
+
+    // The hook functions signatures may change between major version
+    // For instance: in the post_parse_analyze hook, the JumbleState struct
+    // appeared in Postgres 14
+    // In that case, we need some conditional compilation to declare the
+    // proper signature for each version
+    #[cfg(feature = "pg13")]
+    #[pg_guard]
+    unsafe extern "C-unwind" fn post_parse_analyze_hook(
+        parse_state: *mut pg_sys::ParseState,
+        query: *mut pg_sys::Query,
+    ) {
+        pa_rewrite_select(&PgBox::from_pg(query));
+        if let Some(prev_hook) = PREV_POST_PARSE_ANALYZE_HOOK {
+            pg_guard_ffi_boundary(|| prev_hook(parse_state, query));
+        }
+    }
+    #[cfg(any(
+        feature = "pg14",
+        feature = "pg15",
+        feature = "pg16",
+        feature = "pg17",
+    ))]
+    #[pg_guard]
+    unsafe extern "C-unwind" fn post_parse_analyze_hook(
+        parse_state: *mut pg_sys::ParseState,
+        query: *mut pg_sys::Query,
+        jumble_state: *mut pg_sys::JumbleState,
+    ) {
+        pa_rewrite_select(&PgBox::from_pg(query));
+        if let Some(prev_hook) = PREV_POST_PARSE_ANALYZE_HOOK {
+            pg_guard_ffi_boundary(|| prev_hook(parse_state, query, jumble_state));
+        }
+    }
+
+    //
+    // Process Utility Hook
+    //
+    // The process_utility_hook is called for each utility commands
+    // (i.e. anything other SELECT,INSERT, UPDATE,DELETE)
+    //
+    // It is used to rewrite the `COPY .. TO stdout` statements launched by
+    // pg_dump
+    //
+    static mut PREV_PROCESS_UTILITY_HOOK: pg_sys::ProcessUtility_hook_type = None;
+    PREV_PROCESS_UTILITY_HOOK = pg_sys::ProcessUtility_hook;
+    pg_sys::ProcessUtility_hook = Some(process_utility_hook);
+
+    // Until Postgres 13, the process utility hook didn't have a read_only_tree param
+    #[cfg(feature = "pg13")]
+    #[pg_guard]
+    unsafe extern "C-unwind" fn process_utility_hook(
+        pstmt: *mut pg_sys::PlannedStmt,
+        query_string: *const i8,
+        context: u32,
+        params: *mut pg_sys::ParamListInfoData,
+        query_env: *mut pg_sys::QueryEnvironment,
+        dest: *mut pg_sys::DestReceiver,
+        completion_tag: *mut pg_sys::QueryCompletion,
+    ) {
+        pa_rewrite_utility(&PgBox::from_pg(pstmt));
+        if let Some(prev_hook) = PREV_PROCESS_UTILITY_HOOK {
+            pg_guard_ffi_boundary(|| {
+                prev_hook(pstmt, query_string, context, params, query_env, dest, completion_tag)
+            });
+        } else {
+            pg_sys::standard_ProcessUtility(
+                pstmt,
+                query_string,
+                context,
+                params,
+                query_env,
+                dest,
+                completion_tag,
+            )
+        }
+    }
+
+    #[cfg(any(
+        feature = "pg14",
+        feature = "pg15",
+        feature = "pg16",
+        feature = "pg17",
+    ))]
+    #[pg_guard]
+    unsafe extern "C-unwind" fn process_utility_hook(
+        pstmt: *mut pg_sys::PlannedStmt,
+        query_string: *const i8,
+        read_only_tree: bool,
+        context: u32,
+        params: *mut pg_sys::ParamListInfoData,
+        query_env: *mut pg_sys::QueryEnvironment,
+        dest: *mut pg_sys::DestReceiver,
+        completion_tag: *mut pg_sys::QueryCompletion,
+    ) {
+        pa_rewrite_utility(PgBox::from_pg(pstmt));
+        if let Some(prev_hook) = PREV_PROCESS_UTILITY_HOOK {
+            pg_guard_ffi_boundary(|| {
+                prev_hook(
+                    pstmt,
+                    query_string,
+                    read_only_tree,
+                    context,
+                    params,
+                    query_env,
+                    dest,
+                    completion_tag,
+                )
+            });
+        } else {
+            pg_sys::standard_ProcessUtility(
+                pstmt,
+                query_string,
+                read_only_tree,
+                context,
+                params,
+                query_env,
+                dest,
+                completion_tag,
+            )
+        }
+    }
+}
 
 /// Apply masking rules to a SELECT statement
 ///
@@ -83,7 +219,21 @@ fn pa_rewrite_select(query: &PgBox<pg_sys::Query>) -> Option<bool> {
 /// * `pstmt` is the utility statement
 /// * `policy` is the masking policy to apply
 ///
-fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
+fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
+
+
+    if !unsafe { pg_sys::IsTransactionState() } { return; }
+    
+    // Rewrite the utility command only if transparent dynamic masking is enabled
+    if !guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() { return ; }
+
+    // Rewrite the utility command only for masked users 
+    let uid = unsafe { pg_sys::GetUserId() };
+    let Some(policy) = masking::get_masking_policy(uid) else {
+        return; 
+    };
+
+    // Check that rhe statement is a utility command
     let command_type = pstmt.commandType;
     assert!(command_type == pg_sys::CmdType::CMD_UTILITY);
 
@@ -209,87 +359,6 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>, policy: String) {
     }
 }
 
-//----------------------------------------------------------------------------
-// Hooks
-//----------------------------------------------------------------------------
-
-pub struct AnonHooks {}
-
-#[allow(deprecated)]
-impl pgrx::hooks::PgHooks for AnonHooks {
-    /// The process_utility_hook is called for each utility commands
-    /// (i.e. anything other SELECT,INSERT, UPDATE,DELETE)
-    ///
-    /// It is used to rewrite the `COPY .. TO stdout` statements launched by
-    /// pg_dump
-    ///
-    fn process_utility_hook(
-        &mut self,
-        pstmt: PgBox<pg_sys::PlannedStmt>,
-        query_string: &core::ffi::CStr,
-        read_only_tree: Option<bool>,
-        context: pg_sys::ProcessUtilityContext::Type,
-        params: PgBox<pg_sys::ParamListInfoData>,
-        query_env: PgBox<pg_sys::QueryEnvironment>,
-        dest: PgBox<pg_sys::DestReceiver>,
-        completion_tag: *mut pg_sys::QueryCompletion,
-        prev_hook: fn(
-            pstmt: PgBox<pg_sys::PlannedStmt>,
-            query_string: &core::ffi::CStr,
-            read_only_tree: Option<bool>,
-            context: pg_sys::ProcessUtilityContext::Type,
-            params: PgBox<pg_sys::ParamListInfoData>,
-            query_env: PgBox<pg_sys::QueryEnvironment>,
-            dest: PgBox<pg_sys::DestReceiver>,
-            completion_tag: *mut pg_sys::QueryCompletion,
-        ) -> HookResult<()>,
-    ) -> HookResult<()> {
-        if unsafe { pg_sys::IsTransactionState() } {
-            let uid = unsafe { pg_sys::GetUserId() };
-
-            // Rewrite the utility command when transparent dynamic masking
-            // is enabled and the role is masked
-            if guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {
-                if let Some(masking_policy) = masking::get_masking_policy(uid) {
-                    pa_rewrite_utility(&pstmt, masking_policy);
-                }
-            }
-        }
-
-        // Call the previous hook (if any)
-        prev_hook(
-            pstmt,
-            query_string,
-            read_only_tree,
-            context,
-            params,
-            query_env,
-            dest,
-            completion_tag,
-        )
-    }
-
-    /// The post_parse_analyze hook is called after parse analyze goes,
-    /// immediately after performing transformTopLevelStmt()
-    /// When a masked role sends a query, the query will be "masked" using
-    /// the masking rules available
-    fn post_parse_analyze(
-        &mut self,
-        parse_state: PgBox<pg_sys::ParseState>,
-        query: PgBox<pg_sys::Query>,
-        jumble_state: Option<PgBox<JumbleState>>,
-        prev_hook: fn(
-            parse_state: PgBox<pg_sys::ParseState>,
-            query: PgBox<pg_sys::Query>,
-            jumble_state: Option<PgBox<JumbleState>>,
-        ) -> HookResult<()>,
-    ) -> HookResult<()> {
-        pa_rewrite_select(&query);
-
-        // Call the previous hook (if any)
-        prev_hook(parse_state, query, jumble_state)
-    }
-}
 
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]

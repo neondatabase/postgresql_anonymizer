@@ -1,5 +1,7 @@
 use pgrx::pgrx_macros::extension_sql_file;
 use pgrx::prelude::*;
+#[allow(unused_imports)]
+use std::ffi::CString;
 
 mod compat;
 mod dummy;
@@ -494,8 +496,6 @@ mod anon {
 
 const ANON: &core::ffi::CStr = c"anon";
 
-static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {};
-
 /// _PG_init() is called when the module is loaded, not when the extension
 /// is created. There is presently no way to unload a loaded module.
 ///
@@ -509,7 +509,7 @@ static mut HOOKS: hooks::AnonHooks = hooks::AnonHooks {};
 #[pg_guard]
 pub unsafe extern "C-unwind" fn _PG_init() {
     #[allow(static_mut_refs, deprecated)]
-    pgrx::hooks::register_hook(&mut HOOKS);
+    hooks::register_hooks();
     guc::register_gucs();
     label_providers::register_label_providers();
     log::debug1!("Anon: extension initialized");
