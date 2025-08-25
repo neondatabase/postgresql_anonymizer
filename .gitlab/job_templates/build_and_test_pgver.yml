@@ -13,6 +13,11 @@ spec:
       description: |
         The PostgreSQL major version with the "pg" prefix
         (e.g. `pg13`, pg16`, etc.).
+    pgrx_image_tag:
+      type: string
+      default: pgrx-0.16.0
+      description: |
+        Version of docker image used to build and test the extension 
 
 ---
 
@@ -29,7 +34,7 @@ spec:
 #
 "build-$[[ inputs.pgver ]]":
   stage: build
-  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:$[[ inputs.pgrx_image_tag ]]
   variables:
     PGVER: $[[ inputs.pgver ]]
     ALWAYS: $[[ inputs.always ]]
@@ -69,7 +74,7 @@ spec:
   stage: test
   dependencies:
     - build-$[[ inputs.pgver ]]
-  image: registry.gitlab.com/dalibo/postgresql_anonymizer:pgrx
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:$[[ inputs.pgrx_image_tag ]]
   variables:
     PGVER: $[[ inputs.pgver ]]
     ALWAYS: $[[ inputs.always ]]
