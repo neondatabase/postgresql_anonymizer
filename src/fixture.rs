@@ -312,6 +312,7 @@ pub fn trust_masking_functions_schema() {
 
 #[allow(dead_code)]
 pub fn parse_select_query(query_string: &str) -> PgBox<pg_sys::Query> {
+    use crate::compat;
     use crate::masking;
     use std::ffi::CString;
 
@@ -323,13 +324,14 @@ pub fn parse_select_query(query_string: &str) -> PgBox<pg_sys::Query> {
     let raw_stmt = masking::parse_subquery(query_string.to_string());
 
     // Transform the SelectStmt into a Query using PostgreSQL's query planner
+    let mut numparams: i32 = 0;
     let query = unsafe {
-        pg_sys::parse_analyze(
+        compat::parse_analyze_varparams(
             raw_stmt.as_ptr(),
             query_cstr.as_ptr(),
-            std::ptr::null_mut(), // no parameter types
-            0,                    // number of parameters
-            std::ptr::null_mut(), // no environment
+            std::ptr::null_mut(),              // no parameter types
+            std::ptr::addr_of_mut!(numparams), // no parameter
+            std::ptr::null_mut(),              // no environment
         )
     };
 

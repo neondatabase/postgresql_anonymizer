@@ -87,3 +87,43 @@ pub unsafe fn strVal(v: SchemaValue) -> *const c_char {
 pub fn IsCatalogRelationOid(relid: pg_sys::Oid) -> bool {
     u32::from(relid) < pg_sys::FirstNormalObjectId
 }
+
+///
+/// parse_analyze_varparams
+///
+
+#[allow(non_snake_case)]
+#[cfg(not(any(feature = "pg13", feature = "pg14")))]
+pub unsafe fn parse_analyze_varparams(
+    arg_parseTree: *mut pg_sys::RawStmt,
+    arg_sourceText: *const i8,
+    arg_paramTypes: *mut *mut pg_sys::Oid,
+    arg_numParams: *mut i32,
+    arg_queryEnv: *mut pg_sys::QueryEnvironment,
+) -> *mut pg_sys::Query {
+    pg_sys::parse_analyze_varparams(
+        arg_parseTree,
+        arg_sourceText,
+        arg_paramTypes,
+        arg_numParams,
+        arg_queryEnv,
+    )
+}
+
+#[allow(non_snake_case)]
+#[cfg(any(feature = "pg13", feature = "pg14"))]
+pub unsafe fn parse_analyze_varparams(
+    arg_parseTree: *mut pg_sys::RawStmt,
+    arg_sourceText: *const i8,
+    arg_paramTypes: *mut *mut pg_sys::Oid,
+    arg_numParams: *mut i32,
+    arg_queryEnv: *mut pg_sys::QueryEnvironment,
+) -> *mut pg_sys::Query {
+    pg_sys::parse_analyze(
+        arg_parseTree,
+        arg_sourceText,
+        *arg_paramTypes,
+        *arg_numParams,
+        arg_queryEnv,
+    )
+}
