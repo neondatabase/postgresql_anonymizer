@@ -43,7 +43,14 @@ pub unsafe fn register_hooks() {
             pg_guard_ffi_boundary(|| prev_hook(parse_state, query));
         }
     }
-    #[cfg(any(feature = "pg14", feature = "pg15", feature = "pg16", feature = "pg17",))]
+
+    #[cfg(any(
+        feature = "pg14",
+        feature = "pg15",
+        feature = "pg16",
+        feature = "pg17",
+        feature = "pg18",
+    ))]
     #[pg_guard]
     unsafe extern "C-unwind" fn post_parse_analyze_hook(
         parse_state: *mut pg_sys::ParseState,
@@ -107,7 +114,13 @@ pub unsafe fn register_hooks() {
         }
     }
 
-    #[cfg(any(feature = "pg14", feature = "pg15", feature = "pg16", feature = "pg17",))]
+    #[cfg(any(
+        feature = "pg14",
+        feature = "pg15",
+        feature = "pg16",
+        feature = "pg17",
+        feature = "pg18",
+    ))]
     #[pg_guard]
     unsafe extern "C-unwind" fn process_utility_hook(
         pstmt: *mut pg_sys::PlannedStmt,
@@ -218,9 +231,7 @@ fn pa_rewrite_select(query: &PgBox<pg_sys::Query>) -> Option<bool> {
 /// * `policy` is the masking policy to apply
 ///
 fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
-    if !unsafe { pg_sys::IsTransactionState() } {
-        return;
-    }
+    if !unsafe { pg_sys::IsTransactionState() } { return; }
 
     // Rewrite the utility command only if transparent dynamic masking is enabled
     if !guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {

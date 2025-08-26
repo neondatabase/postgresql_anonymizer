@@ -1,10 +1,10 @@
 ##
 ## Smoke tests
-## 
+##
 ## The goal of these tests is to validate the installation process on the main platforms.
 ##
 ## This is going to create **a lot** of jobs (basically a 6x6 matrix) so we can't afford
-## to run them automatically for every pipeline. Typically we'll run a single job manually 
+## to run them automatically for every pipeline. Typically we'll run a single job manually
 ## when a user complains that « install fails with Postgres X on distribution Y.»
 ##
 
@@ -43,12 +43,12 @@ smoketest_rhel:
           - 8
           - 9
         PG_MAJOR_VERSION:
-          - '12'
           - '13'
           - '14'
           - '15'
           - '16'
           - '17'
+          - '18'
 
 smoketest_debian:
   image: debian:$DEB_MAJOR_VERSION
@@ -79,12 +79,12 @@ smoketest_debian:
           - bullseye
           - bookworm
         PG_MAJOR_VERSION:
-          - '12'
           - '13'
           - '14'
           - '15'
           - '16'
           - '17'
+          - '18'
 
 smoketest_ubuntu:
   image: ubuntu:$UBU_MAJOR_VERSION
@@ -115,9 +115,9 @@ smoketest_ubuntu:
           - jammy
           - noble
         PG_MAJOR_VERSION:
-          - '12'
           - '13'
           - '14'
           - '15'
           - '16'
           - '17'
+          - '18'
