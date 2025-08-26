@@ -21,7 +21,7 @@ fn column_assignment(relid: pg_sys::Oid, colname: String, policy: String) -> Opt
         return None;
     }
 
-    Some(format!("{:?} = {}", colname, masking_filter))
+    Some(format!("{colname:?} = {masking_filter}"))
 }
 
 /// Return the SQL assignments which will mask the data in a table

@@ -41,14 +41,20 @@ pub fn get_masking_policy(roleid: pg_sys::Oid) -> Option<String> {
     // Possible Improvement : allow masking rule inheritance by checking
     // also the roles that the user belongs to
     // This may be done by using `roles_is_member_of()` ?
-    for policy in list_masking_policies() {
-        if has_mask_in_policy(roleid, policy.clone()) {
-            return Some(policy);
-        }
-    }
 
-    // Found nothing, return NULL
-    None
+    /*
+        for policy in list_masking_policies() {
+            if has_mask_in_policy(roleid, policy.clone()) {
+                return Some(policy);
+            }
+        }
+
+        // Found nothing, return NULL
+        None
+    */
+    list_masking_policies()
+        .into_iter()
+        .find(|policy| has_mask_in_policy(roleid, policy.clone()))
 }
 
 /// Return all the registered masking policies
@@ -706,8 +712,14 @@ mod tests {
     fn test_has_mask_in_policy_anon() {
         let batman = fixture::create_masked_role();
         let bruce = fixture::create_unmasked_role();
-        assert!(has_mask_in_policy(batman, ANON_DEFAULT_MASKING_POLICY.into()));
-        assert!(!has_mask_in_policy(bruce, ANON_DEFAULT_MASKING_POLICY.into()));
+        assert!(has_mask_in_policy(
+            batman,
+            ANON_DEFAULT_MASKING_POLICY.into()
+        ));
+        assert!(!has_mask_in_policy(
+            bruce,
+            ANON_DEFAULT_MASKING_POLICY.into()
+        ));
         assert!(!has_mask_in_policy(batman, "does_not_exist".into()));
         let not_a_real_roleid = pg_sys::Oid::from(99999999);
         assert!(!has_mask_in_policy(
@@ -723,7 +735,10 @@ mod tests {
         let devin = fixture::create_masked_role_in_policy("devin", "devtests");
         let anna = fixture::create_masked_role_in_policy("anna", "analytics");
         assert!(has_mask_in_policy(devin, "devtests".into()));
-        assert!(!has_mask_in_policy(devin, ANON_DEFAULT_MASKING_POLICY.into()));
+        assert!(!has_mask_in_policy(
+            devin,
+            ANON_DEFAULT_MASKING_POLICY.into()
+        ));
         assert!(has_mask_in_policy(anna, "analytics".into()));
         assert!(!has_mask_in_policy(anna, "devtests".into()));
     }

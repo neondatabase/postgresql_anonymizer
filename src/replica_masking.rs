@@ -5,7 +5,6 @@ use crate::guc;
 use crate::log;
 use crate::masking;
 use crate::utils;
-use fastrand;
 use pgrx::prelude::*;
 
 /// Return the SQL assignments which will mask the data in a trigger
@@ -17,7 +16,6 @@ use pgrx::prelude::*;
 ///
 /// NEW.fk_user = (SELECT CAST(pg_catalog.md5(fk_user) AS text) FROM (SELECT NEW.* ) AS n);
 ///
-
 fn trigger_new_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
     let lockmode = pg_sys::AccessShareLock as i32;
 

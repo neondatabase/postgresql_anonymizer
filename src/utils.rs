@@ -172,9 +172,9 @@ pub fn is_anon_relation_oid(relid: pg_sys::Oid) -> bool {
 /// if a schema is named `WEIRD_schema`, its quoted name is `"WEIRD_schema"`
 ///
 pub fn quote_identifier(ident: *const c_char) -> &'static str {
-    return unsafe { CStr::from_ptr(pg_sys::quote_identifier(ident)) }
+    unsafe { CStr::from_ptr(pg_sys::quote_identifier(ident)) }
         .to_str()
-        .unwrap();
+        .unwrap()
 }
 
 /// Return the quoted name of a NameData identifier

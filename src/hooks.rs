@@ -5,9 +5,9 @@ use crate::masking;
 use crate::utils;
 use crate::walker;
 
-use pgrx::prelude::*;
 use pgrx::list::old_list::PgList;
 use pgrx::pg_sys::ffi::pg_guard_ffi_boundary;
+use pgrx::prelude::*;
 
 /// Register the PostgreSQL hooks
 ///
@@ -43,12 +43,7 @@ pub unsafe fn register_hooks() {
             pg_guard_ffi_boundary(|| prev_hook(parse_state, query));
         }
     }
-    #[cfg(any(
-        feature = "pg14",
-        feature = "pg15",
-        feature = "pg16",
-        feature = "pg17",
-    ))]
+    #[cfg(any(feature = "pg14", feature = "pg15", feature = "pg16", feature = "pg17",))]
     #[pg_guard]
     unsafe extern "C-unwind" fn post_parse_analyze_hook(
         parse_state: *mut pg_sys::ParseState,
@@ -89,7 +84,15 @@ pub unsafe fn register_hooks() {
         pa_rewrite_utility(&PgBox::from_pg(pstmt));
         if let Some(prev_hook) = PREV_PROCESS_UTILITY_HOOK {
             pg_guard_ffi_boundary(|| {
-                prev_hook(pstmt, query_string, context, params, query_env, dest, completion_tag)
+                prev_hook(
+                    pstmt,
+                    query_string,
+                    context,
+                    params,
+                    query_env,
+                    dest,
+                    completion_tag,
+                )
             });
         } else {
             pg_sys::standard_ProcessUtility(
@@ -104,12 +107,7 @@ pub unsafe fn register_hooks() {
         }
     }
 
-    #[cfg(any(
-        feature = "pg14",
-        feature = "pg15",
-        feature = "pg16",
-        feature = "pg17",
-    ))]
+    #[cfg(any(feature = "pg14", feature = "pg15", feature = "pg16", feature = "pg17",))]
     #[pg_guard]
     unsafe extern "C-unwind" fn process_utility_hook(
         pstmt: *mut pg_sys::PlannedStmt,
@@ -121,7 +119,7 @@ pub unsafe fn register_hooks() {
         dest: *mut pg_sys::DestReceiver,
         completion_tag: *mut pg_sys::QueryCompletion,
     ) {
-        pa_rewrite_utility(PgBox::from_pg(pstmt));
+        pa_rewrite_utility(&PgBox::from_pg(pstmt));
         if let Some(prev_hook) = PREV_PROCESS_UTILITY_HOOK {
             pg_guard_ffi_boundary(|| {
                 prev_hook(
@@ -186,12 +184,12 @@ fn pa_rewrite_select(query: &PgBox<pg_sys::Query>) -> Option<bool> {
     // masked users are not allowed to use restricted functions directly
     // restricted functions (such as pseudonymizing functions) are TRUSTED but
     // cannot be called by a masked user.
-    if unsafe { walker::TreeWalker::empty().has_restricted_function(&query) } {
+    if unsafe { walker::TreeWalker::empty().has_restricted_function(query) } {
         error::insufficient_privilege("role is masked".to_string()).ereport();
     }
 
     // rewrite the query
-    unsafe { walker::TreeWalker::new(masking_policy).rewrite(&query) };
+    unsafe { walker::TreeWalker::new(masking_policy).rewrite(query) };
 
     Some(true)
 }
@@ -220,17 +218,19 @@ fn pa_rewrite_select(query: &PgBox<pg_sys::Query>) -> Option<bool> {
 /// * `policy` is the masking policy to apply
 ///
 fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
+    if !unsafe { pg_sys::IsTransactionState() } {
+        return;
+    }
 
-
-    if !unsafe { pg_sys::IsTransactionState() } { return; }
-    
     // Rewrite the utility command only if transparent dynamic masking is enabled
-    if !guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() { return ; }
+    if !guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {
+        return;
+    }
 
-    // Rewrite the utility command only for masked users 
+    // Rewrite the utility command only for masked users
     let uid = unsafe { pg_sys::GetUserId() };
     let Some(policy) = masking::get_masking_policy(uid) else {
-        return; 
+        return;
     };
 
     // Check that rhe statement is a utility command
@@ -358,7 +358,6 @@ fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
         copystmt.into_pg();
     }
 }
-
 
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]

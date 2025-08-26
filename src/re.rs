@@ -3,8 +3,8 @@
 ///
 ///
 use regex::Regex;
-use std::sync::OnceLock;
 use std::ffi::CString;
+use std::sync::OnceLock;
 
 //
 // These Regex are static and should be compiled once and for all.

@@ -5,11 +5,14 @@
 use pgrx::*;
 use std::ffi::CString;
 
-pub static ANON_DUMMY_LOCALE: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"en_US"));
+pub static ANON_DUMMY_LOCALE: GucSetting<Option<CString>> =
+    GucSetting::<Option<CString>>::new(Some(c"en_US"));
 
-pub static ANON_K_ANONYMITY_PROVIDER: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"k_anonymity"));
+pub static ANON_K_ANONYMITY_PROVIDER: GucSetting<Option<CString>> =
+    GucSetting::<Option<CString>>::new(Some(c"k_anonymity"));
 
-pub static ANON_MASKING_POLICIES: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(None);
+pub static ANON_MASKING_POLICIES: GucSetting<Option<CString>> =
+    GucSetting::<Option<CString>>::new(None);
 
 pub static ANON_PRIVACY_BY_DEFAULT: GucSetting<bool> = GucSetting::<bool>::new(false);
 
@@ -26,15 +29,18 @@ pub static ANON_STATIC_MASKING: GucSetting<bool> = GucSetting::<bool>::new(true)
 // The GUC vars below are not used in the Rust code
 // but they are used in the plpgsql code
 
-static ANON_ALGORITHM: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"sha256"));
+static ANON_ALGORITHM: GucSetting<Option<CString>> =
+    GucSetting::<Option<CString>>::new(Some(c"sha256"));
 
 static ANON_SALT: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(None);
 
 static ANON_SHIFT: GucSetting<i32> = GucSetting::<i32>::new(0);
 
-static ANON_SOURCE_SCHEMA: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"public"));
+static ANON_SOURCE_SCHEMA: GucSetting<Option<CString>> =
+    GucSetting::<Option<CString>>::new(Some(c"public"));
 
-static ANON_MASK_SCHEMA: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::new(Some(c"mask"));
+static ANON_MASK_SCHEMA: GucSetting<Option<CString>> =
+    GucSetting::<Option<CString>>::new(Some(c"mask"));
 
 // Register the GUC parameters for the extension
 //

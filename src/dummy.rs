@@ -9,8 +9,6 @@
 ///
 /// We use the ISO codes for the locale instead of the fake-rs codes
 ///
-
-
 #[macro_export]
 macro_rules! dummy {
     ($struct: ident, $locale: ident ) => {
