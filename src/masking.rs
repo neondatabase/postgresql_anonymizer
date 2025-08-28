@@ -1,14 +1,15 @@
+///
+/// # Masking Engine
+///
 use crate::guc;
 use crate::log;
 use crate::re;
 use crate::sampling;
 use crate::utils;
-///
-/// # Masking Engine
-///
 use c_str_macro::c_str;
 use md5::{Digest, Md5};
 use pgrx::prelude::*;
+use pgrx::PgRelation;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
@@ -84,35 +85,23 @@ pub fn list_masking_policies() -> Vec<String> {
 ///
 pub fn masking_expressions(relid: pg_sys::Oid, policy: String) -> (String, bool) {
     let mut table_has_one_masked_column = false;
-    let lockmode = pg_sys::AccessShareLock as i32;
 
-    // `pg_sys::relation_open()` will raise XX000
+    // SAFETY: `pg_sys::relation_open()` will raise XX000
     // if the specified oid isn't a valid relation
-    let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-
-    // reldesc is a TupleDescData object
-    // https://doxygen.postgresql.org/structTupleDescData.html
-    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
-    let natts = reldesc.natts;
-    let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
+    let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
 
     let mut expressions = Vec::new();
-    for a in attrs {
-        if a.attisdropped {
+    for attribute in relation.tuple_desc().iter() {
+        if attribute.attisdropped {
             continue;
         }
-        let (filter_value, att_is_masked) = value_for_att(&relation, a, policy.clone());
+        let (filter_value, att_is_masked) = value_for_att(&relation, attribute, policy.clone());
         if att_is_masked {
             table_has_one_masked_column = true;
         }
-        let attname_quoted = utils::quote_name_data(&a.attname);
+        let attname_quoted = utils::quote_name_data(&attribute.attname);
         let filter = format!("{filter_value} AS {attname_quoted}");
         expressions.push(filter);
-    }
-
-    // pass the relation back to Postgres
-    unsafe {
-        pg_sys::relation_close(relation.as_ptr(), lockmode);
     }
 
     (
@@ -144,30 +133,18 @@ pub fn masking_value_for_column(
     colnum: i32,
     policy: String,
 ) -> Option<(String, bool)> {
-    let lockmode = pg_sys::AccessShareLock as i32;
+    let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
 
-    // `pg_sys::relation_open()` will raise XX000
-    // if the specified oid isn't a valid relation
-    let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-
-    // reldesc is a TupleDescData object
-    // https://doxygen.postgresql.org/structTupleDescData.html
-    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
-    let natts = reldesc.natts;
-    let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
+    let desc = relation.tuple_desc();
 
     // Here attributes are numbered from 0 up
-    let a = attrs[colnum as usize - 1];
-    if a.attisdropped {
+    let attribute = desc.get(colnum as usize - 1)?;
+
+    if attribute.attisdropped {
         return None;
     }
 
-    let (masking_value, att_is_masked) = value_for_att(&relation, &a, policy);
-
-    // pass the relation back to Postgres
-    unsafe {
-        pg_sys::relation_close(relation.as_ptr(), lockmode);
-    }
+    let (masking_value, att_is_masked) = value_for_att(&relation, attribute, policy);
 
     Some((masking_value, att_is_masked))
 }
@@ -356,25 +333,18 @@ fn cast_as_regtype(value: String, atttypid: pg_sys::Oid, atttypmod: i32) -> Stri
 ///
 fn generation_expressions(relid: pg_sys::Oid) -> String {
     let mut table_has_one_generated_column = false;
-    let lockmode = pg_sys::AccessShareLock as i32;
 
-    // `pg_sys::relation_open()` will raise XX000
+    // SAFETY: `pg_sys::relation_open()` will raise XX000
     // if the specified oid isn't a valid relation
-    let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-
-    // reldesc is a TupleDescData object
-    // https://doxygen.postgresql.org/structTupleDescData.html
-    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
-    let natts = reldesc.natts;
-    let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
+    let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
 
     let mut expressions = Vec::new();
-    for a in attrs {
-        if a.attisdropped {
+    for attribute in relation.tuple_desc().iter() {
+        if attribute.attisdropped {
             continue;
         }
-        let attname_quoted = utils::quote_name_data(&a.attname);
-        let generation_expression = default_for_att(&relation, a, true);
+        let attname_quoted = utils::quote_name_data(&attribute.attname);
+        let generation_expression = default_for_att(&relation, attribute, true);
 
         if generation_expression.is_some() {
             let filter_value = generation_expression.unwrap();
@@ -383,11 +353,6 @@ fn generation_expressions(relid: pg_sys::Oid) -> String {
         } else {
             expressions.push(attname_quoted.into());
         }
-    }
-
-    // pass the relation back to Postgres
-    unsafe {
-        pg_sys::relation_close(relation.as_ptr(), lockmode);
     }
 
     if table_has_one_generated_column {
@@ -416,7 +381,7 @@ fn is_generated(att: &pg_sys::FormData_pg_attribute) -> bool {
 /// this is similar to `SELECT pg_get_expr(adbin, adrelid) FROM pg_attrdef`
 ///
 fn default_for_att(
-    rel: &PgBox<pg_sys::RelationData>,
+    rel: &PgRelation,
     att: &pg_sys::FormData_pg_attribute,
     generated: bool,
 ) -> Option<String> {
@@ -430,18 +395,11 @@ fn default_for_att(
         return None;
     }
 
-    // reldesc is a TupleDescData object
-    // https://doxygen.postgresql.org/structTupleDescData.html
-    let reldesc = unsafe {
-        // SAFETY: rd_att is always defined
-        PgBox::from_pg(rel.rd_att)
-    };
-
     // constr is a TupleConstr object
     // https://doxygen.postgresql.org/structTupleConstr.html
     let constr = unsafe {
-        // SAFETY:  constr is always defined
-        PgBox::from_pg(reldesc.constr)
+        // SAFETY: constr is always defined
+        PgBox::from_pg(rel.tuple_desc().constr)
     };
 
     // loop over the constraints of the relation in search of
@@ -497,7 +455,7 @@ fn default_for_att(
 ///     - "NULL"
 ///
 pub fn value_for_att(
-    rel: &PgBox<pg_sys::RelationData>,
+    rel: &PgRelation,
     att: &pg_sys::FormData_pg_attribute,
     policy: String,
 ) -> (String, bool) {
@@ -614,16 +572,13 @@ mod tests {
     fn test_default_for_att() {
         // Create a table with default values
         let relid = fixture::create_table_with_defaults();
-        let lockmode = pg_sys::AccessShareLock as i32;
-        let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-        let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
+        let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
 
-        let natts = reldesc.natts;
-        let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
+        let desc = relation.tuple_desc();
 
         // Test column with default value
         // Assuming the second column has a default value
-        let att_with_default = attrs[1];
+        let att_with_default = desc.get(1).unwrap();
         let default_value = default_for_att(&relation, &att_with_default, false);
         assert_eq!(default_value, Some("'default_value'::text".to_string()));
         let generation_expr = default_for_att(&relation, &att_with_default, true);
@@ -631,19 +586,19 @@ mod tests {
 
         // Test column with complex default expression
         // Assuming the third column has a complex default
-        let att_with_complex_default = attrs[2];
+        let att_with_complex_default = desc.get(2).unwrap();
         let complex_default_value = default_for_att(&relation, &att_with_complex_default, false);
         assert_eq!(complex_default_value, Some("now()".to_string()));
 
         // Test column without default value
         // Assuming the fourth column has no default
-        let att_without_default = attrs[3];
+        let att_without_default = desc.get(3).unwrap();
         let no_default_value = default_for_att(&relation, &att_without_default, false);
         assert_eq!(no_default_value, None);
 
         // Test column without generated value
         // Assuming the fifth column a generation expression
-        let att_generated = attrs[4];
+        let att_generated = desc.get(4).unwrap();
         let generation_expr = default_for_att(&relation, &att_generated, true);
         assert_eq!(
             generation_expr,
@@ -654,21 +609,15 @@ mod tests {
         assert_eq!(not_generation_expr, None);
 
         // Test dropped column
-        let att_dropped = attrs[5];
+        let att_dropped = desc.get(5).unwrap();
         let nothing = default_for_att(&relation, &att_dropped, true);
         assert_eq!(nothing, None);
-
-        // Clean up
-        unsafe {
-            pg_sys::relation_close(relation.as_ptr(), lockmode);
-        }
     }
 
     #[pg_test]
     fn test_default_for_att_non_existent_column() {
         let relid = fixture::create_table_with_defaults();
-        let lockmode = pg_sys::AccessShareLock as i32;
-        let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
+        let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
 
         // Create a fake attribute that doesn't exist in the table
         let fake_att = pg_sys::FormData_pg_attribute {
@@ -680,11 +629,6 @@ mod tests {
         assert_eq!(default_value, None);
         let generated_value = default_for_att(&relation, &fake_att, true);
         assert_eq!(generated_value, None);
-
-        // Clean up
-        unsafe {
-            pg_sys::relation_close(relation.as_ptr(), lockmode);
-        }
     }
 
     #[pg_test]
@@ -936,18 +880,12 @@ mod tests {
     fn test_value_for_att() {
         // Create a table
         let relid = fixture::create_table_person();
-        let lockmode = pg_sys::AccessShareLock as i32;
-        let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-        let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
+        let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+        let desc = relation.tuple_desc();
 
-        let natts = reldesc.natts;
-        let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
-
-        // Test column with default value
-        // Assuming the second column has a default value
-        let att_dropped = attrs[0];
-        let att_firstname = attrs[1];
-        let att_lastname = attrs[2];
+        let att_dropped = desc.get(0).unwrap();
+        let att_firstname = desc.get(1).unwrap();
+        let att_lastname = desc.get(2).unwrap();
 
         let (val1, masked1) = value_for_att(&relation, &att_firstname, "anon".into());
         assert_eq!(val1, "firstname");
@@ -974,17 +912,11 @@ mod tests {
     fn test_value_for_att_with_quotes() {
         // Create a table
         let relid = fixture::create_table_user();
-        let lockmode = pg_sys::AccessShareLock as i32;
-        let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-        let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
+        let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+        let desc = relation.tuple_desc();
 
-        let natts = reldesc.natts;
-        let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
-
-        // Test column with default value
-        // Assuming the second column has a default value
-        let att_email = attrs[0];
-        let att_login = attrs[1];
+        let att_email = desc.get(0).unwrap();
+        let att_login = desc.get(1).unwrap();
 
         let (val1, masked1) = value_for_att(&relation, &att_email, "anon".into());
         assert_eq!(val1, "CAST(anon.fake_email() AS text)");

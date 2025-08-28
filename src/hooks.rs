@@ -231,7 +231,9 @@ fn pa_rewrite_select(query: &PgBox<pg_sys::Query>) -> Option<bool> {
 /// * `policy` is the masking policy to apply
 ///
 fn pa_rewrite_utility(pstmt: &PgBox<pg_sys::PlannedStmt>) {
-    if !unsafe { pg_sys::IsTransactionState() } { return; }
+    if !unsafe { pg_sys::IsTransactionState() } {
+        return;
+    }
 
     // Rewrite the utility command only if transparent dynamic masking is enabled
     if !guc::ANON_TRANSPARENT_DYNAMIC_MASKING.get() {

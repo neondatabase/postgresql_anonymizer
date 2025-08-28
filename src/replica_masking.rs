@@ -6,6 +6,7 @@ use crate::log;
 use crate::masking;
 use crate::utils;
 use pgrx::prelude::*;
+use pgrx::PgRelation;
 
 /// Return the SQL assignments which will mask the data in a trigger
 ///
@@ -17,40 +18,28 @@ use pgrx::prelude::*;
 /// NEW.fk_user = (SELECT CAST(pg_catalog.md5(fk_user) AS text) FROM (SELECT NEW.* ) AS n);
 ///
 fn trigger_new_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
-    let lockmode = pg_sys::AccessShareLock as i32;
-
     // SAFETY: `pg_sys::relation_open()` will raise XX000 if the specified oid
     // isn't a valid relation
-    let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-
-    // reldesc is a TupleDescData object
-    // https://doxygen.postgresql.org/structTupleDescData.html
-    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
-    let natts = reldesc.natts;
-    let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
+    let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
 
     let mut assignments = Vec::new();
-    for a in attrs {
-        if a.attisdropped {
+    for attribute in relation.tuple_desc().iter() {
+        if attribute.attisdropped {
             continue;
         }
 
-        let (filter_value, att_is_masked) = masking::value_for_att(&relation, a, policy.clone());
+        let (filter_value, att_is_masked) =
+            masking::value_for_att(&relation, attribute, policy.clone());
 
         // Typically in a for a NEW assignment (INSERT or UPDATE),
         // we only want to overwrite the value of the masked columns
         if att_is_masked {
             assignments.push(format!(
                 "NEW.{:?} = (SELECT {} FROM (SELECT NEW.* ) AS n);",
-                name_data_to_str(&a.attname),
+                name_data_to_str(&attribute.attname),
                 filter_value
             ));
         }
-    }
-
-    // pass the relation back to Postgres
-    unsafe {
-        pg_sys::relation_close(relation.as_ptr(), lockmode);
     }
 
     if assignments.is_empty() {

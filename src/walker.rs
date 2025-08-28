@@ -283,7 +283,16 @@ unsafe extern "C-unwind" fn rewrite_walker(
         // We avoid this issue by assigning the attribute numbers of the
         // original table upon the columns of the masking subquery
         //
-        let original_attnums = utils::get_column_numbers(rte.relid).unwrap();
+        let relation = unsafe { PgRelation::with_lock(rte.relid, pg_sys::AccessShareLock as i32) };
+
+        // With example (a,b,d) then original_attnums would be {1,2,4}
+        let mut original_attnums = vec![];
+        for attribute in relation.tuple_desc().iter() {
+            if !attribute.attisdropped {
+                original_attnums.push(attribute.attnum)
+            }
+        }
+
         let target_list = PgList::<pg_sys::TargetEntry>::from_pg(msq_query.targetList);
 
         for (i, target_ptr) in target_list.iter_ptr().enumerate() {

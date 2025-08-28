@@ -8,14 +8,24 @@ use crate::masking;
 use crate::sampling;
 use crate::utils;
 use pgrx::prelude::*;
+use pgrx::PgRelation;
+use std::ffi::c_char;
+use std::ffi::CString;
 
 /// Return the SQL assignment which will mask the data in a column
 /// or null when no masking rule was found
 ///
 fn column_assignment(relid: pg_sys::Oid, colname: String, policy: String) -> Option<String> {
-    let colnum = utils::get_column_number(relid, &colname)?;
+    let attname_cstr = CString::new(colname.clone()).unwrap();
+    let attnum = unsafe { pg_sys::get_attnum(relid, attname_cstr.as_ptr() as *const c_char) };
+
+    // ignore system columns
+    if attnum < 1 {
+        return None;
+    }
+
     let (masking_filter, att_is_masked) =
-        masking::masking_value_for_column(relid, colnum.into(), policy)?;
+        masking::masking_value_for_column(relid, attnum.into(), policy)?;
 
     if !att_is_masked {
         return None;
@@ -27,38 +37,26 @@ fn column_assignment(relid: pg_sys::Oid, colname: String, policy: String) -> Opt
 /// Return the SQL assignments which will mask the data in a table
 ///
 fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
-    let lockmode = pg_sys::AccessShareLock as i32;
-
-    // `pg_sys::relation_open()` will raise XX000
-    // if the specified oid isn't a valid relation
-    let relation = unsafe { PgBox::from_pg(pg_sys::relation_open(relid, lockmode)) };
-
-    // reldesc is a TupleDescData object
-    // https://doxygen.postgresql.org/structTupleDescData.html
-    let reldesc = unsafe { PgBox::from_pg(relation.rd_att) };
-    let natts = reldesc.natts;
-    let attrs = unsafe { reldesc.attrs.as_slice(natts.try_into().unwrap()) };
+    // SAFETY: `pg_sys::relation_open()` will raise XX000 if the specified oid
+    // isn't a valid relation
+    let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
 
     let mut assignments = Vec::new();
-    for a in attrs {
-        if a.attisdropped {
+    for attribute in relation.tuple_desc().iter() {
+        if attribute.attisdropped {
             continue;
         }
 
-        let (filter_value, att_is_masked) = masking::value_for_att(&relation, a, policy.clone());
+        let (filter_value, att_is_masked) =
+            masking::value_for_att(&relation, attribute, policy.clone());
 
         if att_is_masked {
             assignments.push(format!(
                 "{:?} = {}",
-                name_data_to_str(&a.attname),
+                name_data_to_str(&attribute.attname),
                 filter_value
             ));
         }
-    }
-
-    // pass the relation back to Postgres
-    unsafe {
-        pg_sys::relation_close(relation.as_ptr(), lockmode);
     }
 
     if assignments.is_empty() {
