@@ -37,10 +37,12 @@ extension_sql_file!(
     name = "init",
     requires = ["fake_data_tables"]
 );
+
 extension_sql_file!("../sql/fake.sql", requires = ["init"]);
 extension_sql_file!("../sql/hash.sql", requires = ["init"]);
 extension_sql_file!("../sql/pseudo.sql", requires = ["init"]);
 
+extension_sql_file!("../sql/bindings.sql", requires = ["anon"]);
 extension_sql_file!("../sql/random.sql", requires = ["anon"]);
 extension_sql_file!("../sql/static_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires = ["anon"]);
