@@ -16,6 +16,12 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+
+* Alex Akeno: Bug fix
+* pkhartsk: Documentation and cleaning
+* MonsieurTain: Bug reports and analysis
+* Marcus Olsson: Documentation
+* mardub: Documentation
 * Pierre Giraud: Proofreading
 * Benoit Lobréau: Prototyping, Code Review
 * Robin Portigliatti: Tutorials

@@ -3,6 +3,26 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
+20250911 : 2.4.0 - PostgreSQL 18 (beta)
+-------------------------------------------------------------------------------
+
+* [core] Introduce Selective Masking (Beta)
+* [core] FIX #563 anon.replace binding incorrect (Alex Akeno)
+* [meta] remove binary .DS_Store files and add them to gitignore (pkhartsk)
+* [core] refactor tupleDescData loops
+* [core] Support PostgreSQL 18 (beta)
+* [lint] run cargo clippy
+* [core] upgrade to PGRX 0.16.0
+* [core] Hooks refactoring
+* [core] GUC refactoring
+* [tests] Fix parse_select_query on PG15+
+* [pseudo] Introduce new shift/xor functions
+* [pseudo] Prevent masked users from brute forcing the pseudonymizing functions
+* [doc] Install from source: fixed typo in PGVER variable (pkhartsk)
+* [tdm] FIX #553 - Respect the FROM ONLY clause for masked users (thanks to MonsieurTain)
+* [doc] Add missing semicolon in quickstart (Marcus Olsson)
+* [doc] Corrects typo (mardub)
+
 20250702 : 2.3.0 - Parallel Static Masking
 -------------------------------------------------------------------------------
 
