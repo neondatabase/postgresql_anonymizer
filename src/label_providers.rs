@@ -234,8 +234,9 @@ fn relabel_schema(label: &str) {
     error::invalid_label_for("a schema", label, None).ereport();
 }
 
-// relabel_table is **almost** equivalent to relabel_database
-fn relabel_table(label: &str) {
+/// relabel_table is **almost** equivalent to relabel_database
+///
+pub fn relabel_table(label: &str) {
     let mut detail: Option<String> = None;
     if re::capture_tablesample(label).is_some() {
         let check_tbs = input::check_tablesample(label);
@@ -243,6 +244,14 @@ fn relabel_table(label: &str) {
             return;
         }
         detail = Some(check_tbs.unwrap_err());
+    }
+
+    if let Some(when) = re::capture_when(label) {
+        let check_when = input::check_when(when, ANON_DEFAULT_MASKING_POLICY);
+        if check_when.is_ok() {
+            return;
+        }
+        detail = Some(check_when.unwrap_err());
     }
     error::invalid_label_for("a table", label, detail).ereport();
 }
@@ -268,13 +277,21 @@ mod tests {
     }
 
     #[pg_test]
-    fn test_relabel_table_valid_label() {
-        relabel_table("TABLESAMPLE SYSTEM(10)")
+    fn test_relabel_table_valid_labels() {
+        relabel_table("TABLESAMPLE SYSTEM(10)");
+        relabel_table("MASKED WHEN admin IS FALSE");
+        relabel_table("MASKED WHEN NOT is_admin");
+        relabel_table("MASKED WHEN i > 1000");
     }
 
     #[pg_test(error = "Anon: `INVALID LABEL` is not a valid label for a table")]
     fn test_relabel_table_invalid_label() {
         relabel_table("INVALID LABEL")
+    }
+
+    #[pg_test(error = "Anon: `MASK WHEN i > 1000` is not a valid label for a table")]
+    fn test_relabel_table_invalid_label_when() {
+        relabel_table("MASK WHEN i > 1000");
     }
 
     #[pg_test]

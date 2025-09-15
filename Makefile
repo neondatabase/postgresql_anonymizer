@@ -54,6 +54,7 @@ PGDATABASE?=contrib_regression
 # /!\ The test files should not have the same name that source files located
 # in the `src` folder
 
+REGRESS_TESTS = 000-setup
 REGRESS_TESTS = initialize
 REGRESS_TESTS+= anon_catalog
 REGRESS_TESTS+= copy
@@ -106,6 +107,7 @@ REGRESS_TESTS+= test_static_masking
 REGRESS_TESTS+= transparent_dynamic_masking
 REGRESS_TESTS+= trusted_schemas
 REGRESS_TESTS+= views
+REGRESS_TESTS+= when
 
 # We try our best to write tests that produce the same output on all the 5
 # current Postgres major versions. But sometimes it's really hard to do and

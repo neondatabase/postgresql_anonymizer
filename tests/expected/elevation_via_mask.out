@@ -50,7 +50,7 @@ SAVEPOINT elevate_2;
 SECURITY LABEL FOR anon ON COLUMN employee.ssn
 IS 'MASKED WITH VALUE public.elevate()::text';
 ERROR:  Anon: `MASKED WITH VALUE public.elevate()::text` is not a valid label for a column
-DETAIL:  public.elevate()::text is not a valid expression for a masking value
+DETAIL:  public.elevate()::text is not a valid expression
 ROLLBACK TO elevate_2;
 SELECT pg_has_role('postgres','MEMBER') IS FALSE;
  ?column? 

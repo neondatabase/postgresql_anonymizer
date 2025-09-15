@@ -89,6 +89,30 @@ pub fn create_masked_role() -> pg_sys::Oid {
         .expect("should be an OID")
 }
 
+// A table with a WHEN clause
+#[allow(dead_code)]
+pub fn create_table_account() -> pg_sys::Oid {
+    Spi::run(
+        "
+        CREATE TABLE account
+            AS SELECT
+                'foo@bar.com' AS email,
+                'foobar'      AS login,
+                FALSE         AS is_admin
+        ;
+        SECURITY LABEL FOR anon ON COLUMN account.email
+            IS 'MASKED WITH FUNCTION anon.fake_email()';
+
+        SECURITY LABEL FOR anon ON TABLE account
+            IS 'MASKED WHEN NOT is_admin';
+    ",
+    )
+    .unwrap();
+    Spi::get_one::<pg_sys::Oid>("SELECT 'account'::REGCLASS::OID")
+        .unwrap()
+        .expect("should be an OID")
+}
+
 // An unmasked table
 #[allow(dead_code)]
 pub fn create_table_call() -> pg_sys::Oid {

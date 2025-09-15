@@ -7,6 +7,7 @@ use crate::log;
 use crate::masking;
 use crate::sampling;
 use crate::utils;
+use crate::when;
 use pgrx::prelude::*;
 use pgrx::PgRelation;
 use std::ffi::c_char;
@@ -40,6 +41,7 @@ fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
     // SAFETY: `pg_sys::relation_open()` will raise XX000 if the specified oid
     // isn't a valid relation
     let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+    let when = when::get_table_when(relid, &policy);
 
     let mut assignments = Vec::new();
     for attribute in relation.tuple_desc().iter() {
@@ -48,7 +50,7 @@ fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
         }
 
         let (filter_value, att_is_masked) =
-            masking::value_for_att(&relation, attribute, policy.clone());
+            masking::value_for_att(&relation, attribute, when, policy.clone());
 
         if att_is_masked {
             assignments.push(format!(
@@ -78,7 +80,7 @@ pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> 
     let ratio = sampling::get_ratio(relid, &policy);
 
     // We can't apply a tablesample rules to just a column
-    if ratio.is_ok() {
+    if ratio.is_some() {
         notice!(
             "The TABLESAMPLE rule will be ignored.
             Only anonymize_table() and anonymize_database() can apply sampling rules"
@@ -123,7 +125,7 @@ pub fn anonymize_table(relid: pg_sys::Oid, policy: String) -> Option<bool> {
     let ratio = sampling::get_ratio(relid, &p);
     let tablename = utils::get_relation_qualified_name(relid)?;
 
-    let sql: String = if ratio.is_ok() {
+    let sql: String = if ratio.is_some() {
         // If there's a tablesample ratio then we can't simply update the table.
         // we have to rewrite it completely.
         //

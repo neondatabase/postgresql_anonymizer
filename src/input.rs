@@ -1,6 +1,7 @@
 use crate::compat;
 use crate::error;
 use crate::guc;
+use crate::log;
 use crate::macros;
 use crate::masking;
 use crate::re;
@@ -8,6 +9,38 @@ use crate::walker;
 use pgrx::prelude::*;
 use std::ffi::CString;
 use std::os::raw::c_char;
+
+#[derive(Debug)]
+enum InputError<'a> {
+    Empty(),
+    Invalid(&'a str),
+    NotAFunction(&'a str),
+    NotATrustedSchema(&'a str),
+    Unqualified(&'a str),
+    Untrusted(&'a str),
+}
+
+use InputError::*;
+
+impl std::fmt::Display for InputError<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Empty() => write!(f, "Expression is empty"),
+
+            Invalid(expr) => write!(f, "{expr} is not a valid expression"),
+
+            NotAFunction(expr) => write!(f, "{expr} is not a valid function call"),
+
+            NotATrustedSchema(expr) => write!(f, "{expr} does not belong in a TRUSTED schema"),
+
+            Unqualified(expr) => write!(f, "{expr} is not qualified"),
+
+            Untrusted(expr) => write!(f, "{expr} is UNTRUSTED"),
+        }
+    }
+}
+
+impl std::error::Error for InputError<'_> {}
 
 ///
 /// The Reason enum describes a series of rules that will be enforces by
@@ -25,11 +58,13 @@ pub enum Reason {
 ///
 pub fn check_function(expr: &str, policy: &'static str) -> Result<(), String> {
     let Ok(func) = parse_expression(expr) else {
-        return Err(format!("{expr} is not a valid function call"));
+        return Err(NotAFunction(expr).to_string());
     };
 
-    if !unsafe { pgrx::is_a(func.as_ptr(), pg_sys::NodeTag::T_FuncCall) } {
-        return Err(format!("{expr} is not a function"));
+    let valid_nodes = vec![pg_sys::NodeTag::T_FuncCall];
+
+    if !check_node(&func, valid_nodes) {
+        return Err(NotAFunction(expr).to_string());
     }
 
     if !guc::ANON_RESTRICT_TO_TRUSTED_SCHEMAS.get() {
@@ -44,13 +79,11 @@ pub fn check_function(expr: &str, policy: &'static str) -> Result<(), String> {
     //
     let mut walker = walker::TreeWalker::new(policy.to_string());
     if unsafe { walker.is_untrusted(&func) } {
-        match walker.reason.expect("The reason should be defined") {
-            Reason::SchemaNotTrusted => {
-                return Err(format!("{expr} does not belong in a TRUSTED schema"))
-            }
-            Reason::FunctionUntrusted => return Err(format!("{expr} is UNTRUSTED")),
-            Reason::FunctionUnqualified => return Err(format!("{expr} is not qualified")),
-        }
+        return match walker.reason.expect("The reason should be defined") {
+            Reason::SchemaNotTrusted => Err(NotATrustedSchema(expr).to_string()),
+            Reason::FunctionUntrusted => Err(Untrusted(expr).to_string()),
+            Reason::FunctionUnqualified => Err(Unqualified(expr).to_string()),
+        };
     }
     Ok(())
 }
@@ -59,7 +92,7 @@ pub fn check_function(expr: &str, policy: &'static str) -> Result<(), String> {
 ///
 pub fn check_tablesample(expr: &str) -> Result<(), String> {
     if expr.is_empty() {
-        return Err("Expression is empty".to_string());
+        return Err(Empty().to_string());
     }
 
     let query_string = format!("SELECT 1 FROM foo {expr}");
@@ -76,7 +109,64 @@ pub fn check_tablesample(expr: &str) -> Result<(), String> {
         || raw_parsetree_list.unwrap().is_null()
         || unsafe { raw_parsetree_list.unwrap().as_ref().unwrap().length > 1 }
     {
-        return Err(format!("{expr} is not a valid expression"));
+        return Err(Invalid(expr).to_string());
+    }
+
+    Ok(())
+}
+
+/// Check that a given node is one of a list of types of nodes
+///
+fn check_node(node: &PgBox<pg_sys::Node>, valid_nodes: Vec<pg_sys::NodeTag>) -> bool {
+    for node_tag in valid_nodes {
+        if unsafe { pgrx::is_a(node.as_ptr(), node_tag) } {
+            return true;
+        }
+    }
+    false
+}
+
+/// Validate a CASE WHEN expression
+///
+pub fn check_when(expr: &str, policy: &'static str) -> Result<(), String> {
+    if expr.is_empty() {
+        return Err(Empty().to_string());
+    }
+
+    let when_node = parse_expression(expr)?;
+    log::debug3!("{:#}", when_node);
+
+    let valid_nodes = vec![
+        pg_sys::NodeTag::T_ColumnRef,
+        pg_sys::NodeTag::T_A_Const,
+        pg_sys::NodeTag::T_A_Expr,
+        pg_sys::NodeTag::T_NullTest,
+        pg_sys::NodeTag::T_BoolExpr,
+        pg_sys::NodeTag::T_BooleanTest,
+        pg_sys::NodeTag::T_FuncCall,
+    ];
+
+    if !check_node(&when_node, valid_nodes) {
+        return Err(Invalid(expr).to_string());
+    }
+
+    if !guc::ANON_RESTRICT_TO_TRUSTED_SCHEMAS.get() {
+        return Ok(());
+    }
+
+    // Walk through the parse tree and check that the function itself and
+    // all other functions used as parameters belong to a trusted schema.
+    // The goal is to block privilege escalation attacks using something like:
+    //
+    // `MASKED WITH FUNCTION pg_catalog.upper(public.elevate())`
+    //
+    let mut walker = walker::TreeWalker::new(policy.to_string());
+    if unsafe { walker.is_untrusted(&when_node) } {
+        return match walker.reason.expect("The reason should be defined") {
+            Reason::SchemaNotTrusted => Err(NotATrustedSchema(expr).to_string()),
+            Reason::FunctionUntrusted => Err(Untrusted(expr).to_string()),
+            Reason::FunctionUnqualified => Err(Unqualified(expr).to_string()),
+        };
     }
 
     Ok(())
@@ -85,17 +175,15 @@ pub fn check_tablesample(expr: &str) -> Result<(), String> {
 /// check that an expression is a valid masking value
 ///
 pub fn check_value(expr: &str) -> Result<(), String> {
-    let val = parse_expression(expr)?;
-    if unsafe {
-        !val.is_null()
-            && (pgrx::is_a(val.as_ptr(), pg_sys::NodeTag::T_ColumnRef)
-                || pgrx::is_a(val.as_ptr(), pg_sys::NodeTag::T_A_Const))
-    } {
-        return Ok(());
+    let value_node = parse_expression(expr)?;
+
+    let valid_nodes = vec![pg_sys::NodeTag::T_ColumnRef, pg_sys::NodeTag::T_A_Const];
+
+    if !check_node(&value_node, valid_nodes) {
+        return Err(Invalid(expr).to_string());
     }
-    Err(format!(
-        "{expr} is not a valid expression for a masking value"
-    ))
+
+    Ok(())
 }
 
 /// Check that a function is trusted
@@ -212,7 +300,7 @@ fn is_trusted_namespace(namespace_id: pg_sys::Oid, policy: &str) -> Result<(), R
 ///
 pub fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>, String> {
     if expr.is_empty() {
-        return Err("Expression is empty".to_string());
+        return Err(Empty().to_string());
     }
 
     let query_string = format!("SELECT {expr}");
@@ -228,7 +316,7 @@ pub fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>, String> {
         || raw_parsetree_list.unwrap().is_null()
         || unsafe { raw_parsetree_list.unwrap().as_ref().unwrap().length > 1 }
     {
-        return Err(format!("{expr} is not a valid expression"));
+        return Err(Invalid(expr).to_string());
     }
 
     let raw_stmt = unsafe {
@@ -244,7 +332,7 @@ pub fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>, String> {
 
     // Only one expression in the target is allowed
     if unsafe { stmt.targetList.as_ref().unwrap().length > 1 } {
-        return Err(format!("{expr} is not a valid expression"));
+        return Err(Invalid(expr).to_string());
     }
 
     let restarget = unsafe {

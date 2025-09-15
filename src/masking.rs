@@ -2,11 +2,10 @@
 /// # Masking Engine
 ///
 use crate::guc;
-use crate::log;
 use crate::re;
 use crate::sampling;
 use crate::utils;
-use c_str_macro::c_str;
+use crate::when;
 use md5::{Digest, Md5};
 use pgrx::prelude::*;
 use pgrx::PgRelation;
@@ -26,7 +25,16 @@ use std::os::raw::c_char;
 pub enum Reason {
     NoRule,
     InvalidObject,
-    InvalidInput,
+    //    InvalidInput,
+}
+
+impl std::fmt::Display for Reason {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Reason::NoRule => write!(f, "Anon: No rule found"),
+            Reason::InvalidObject => write!(f, "Anon: Invalid Object"),
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -89,13 +97,17 @@ pub fn masking_expressions(relid: pg_sys::Oid, policy: String) -> (String, bool)
     // SAFETY: `pg_sys::relation_open()` will raise XX000
     // if the specified oid isn't a valid relation
     let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+    let when = when::get_table_when(relid, &policy);
 
     let mut expressions = Vec::new();
     for attribute in relation.tuple_desc().iter() {
         if attribute.attisdropped {
             continue;
         }
-        let (filter_value, att_is_masked) = value_for_att(&relation, attribute, policy.clone());
+
+        let (filter_value, att_is_masked) =
+            value_for_att(&relation, attribute, when, policy.clone());
+
         if att_is_masked {
             table_has_one_masked_column = true;
         }
@@ -134,6 +146,8 @@ pub fn masking_value_for_column(
     policy: String,
 ) -> Option<(String, bool)> {
     let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+    let p = policy.clone();
+    let when = when::get_table_when(relid, &p);
 
     let desc = relation.tuple_desc();
 
@@ -144,7 +158,7 @@ pub fn masking_value_for_column(
         return None;
     }
 
-    let (masking_value, att_is_masked) = value_for_att(&relation, attribute, policy);
+    let (masking_value, att_is_masked) = value_for_att(&relation, attribute, when, policy);
 
     Some((masking_value, att_is_masked))
 }
@@ -193,7 +207,7 @@ pub fn subquery(relid: pg_sys::Oid, inherit: bool, policy: String) -> Option<Str
 
     // if there's no mask and no tablesample ratio,
     // do not provide a subquery for this table
-    if !table_is_masked && ratio.is_err() {
+    if !table_is_masked && ratio.is_none() {
         return None;
     }
 
@@ -204,7 +218,7 @@ pub fn subquery(relid: pg_sys::Oid, inherit: bool, policy: String) -> Option<Str
     // respect the FROM ONLY clause
     let only = if inherit { "" } else { "ONLY" };
 
-    let tablesample: String = if ratio.is_ok() {
+    let tablesample: String = if ratio.is_some() {
         format!("TABLESAMPLE {}", ratio.unwrap())
     } else {
         "".into()
@@ -279,6 +293,14 @@ fn rule(
     let seclabel_cstr = unsafe { CStr::from_ptr(seclabel_box.unwrap().as_ptr() as *const c_char) };
     let seclabel_str = seclabel_cstr.to_str().expect("Failed to convert seclabel");
     Ok(seclabel_str)
+}
+
+pub fn rule_on_column(
+    object_id: pg_sys::Oid,
+    object_sub_id: i32,
+    policy: &str,
+) -> Result<&str, Reason> {
+    rule(pg_sys::RelationRelationId, object_id, object_sub_id, policy)
 }
 
 pub fn rule_on_database(object_id: pg_sys::Oid, policy: &str) -> Result<&str, Reason> {
@@ -443,6 +465,19 @@ fn default_for_att(
     None
 }
 
+/// Write a classic CASE conditional expression around the masked value
+///
+fn case(when: Option<&str>, masked_value: &str, real_value: &str) -> Option<String> {
+    let some_when = when?;
+    Some(format!(
+        "\
+        CASE WHEN CAST({some_when} AS BOOL) \
+              THEN {masked_value} \
+              ELSE {real_value} \
+        END"
+    ))
+}
+
 /// Returns the masking value for a column, with a string and a bool
 ///
 /// the bool means whether the column is masked or not
@@ -457,66 +492,54 @@ fn default_for_att(
 pub fn value_for_att(
     rel: &PgRelation,
     att: &pg_sys::FormData_pg_attribute,
+    when: Option<&str>,
     policy: String,
 ) -> (String, bool) {
     let attname = utils::quote_name_data(&att.attname);
 
     // Get the masking rule, if any
-
-    // This is similar to the ObjectAddressSubSet C macro
-    // https://doxygen.postgresql.org/objectaddress_8h.html
-    let columnobject = pg_sys::ObjectAddress {
-        classId: pg_sys::RelationRelationId,
-        objectId: rel.rd_id,
-        objectSubId: att.attnum as i32,
-    };
-    let policy_c_str = CString::new(policy).unwrap();
-    let policy_c_ptr = policy_c_str.as_ptr();
-    let seclabel_c_ptr = unsafe {
-        PgBox::from_pg(pg_sys::GetSecurityLabel(
-            &columnobject,
-            policy_c_ptr as *const c_char,
-        ))
-    };
-
-    let seclabel_cstr = {
-        if seclabel_c_ptr.as_ptr().is_null() {
-            c_str!("")
-        } else {
-            unsafe { CStr::from_ptr(seclabel_c_ptr.as_ptr()) }
-        }
+    let seclabel = match rule_on_column(rel.rd_id, att.attnum as i32, &policy) {
+        Ok(seclabel) => seclabel,
+        Err(Reason::NoRule) => "",
+        Err(error) => panic!("{}", error),
     };
 
     // No masking rule found and Privacy By Default is off,
     // the authentic value is revealed
-    if seclabel_cstr.is_empty() && !guc::ANON_PRIVACY_BY_DEFAULT.get() {
+    if seclabel.is_empty() && !guc::ANON_PRIVACY_BY_DEFAULT.get() {
         return (attname.to_string(), false);
     }
 
-    let seclabel = seclabel_cstr.to_str().expect("Failed to convert seclabel");
-
-    // A masking rule was found
-
     // Search for a masking function
     if let Some(function) = re::capture_function(seclabel) {
-        if guc::ANON_STRICT_MODE.get() {
-            return (
-                cast_as_regtype(function.to_string(), att.atttypid, att.atttypmod),
-                true,
-            );
+        let casted_function = if guc::ANON_STRICT_MODE.get() {
+            cast_as_regtype(function.to_string(), att.atttypid, att.atttypmod)
+        } else {
+            function.to_string()
+        };
+
+        // Conditional masking if a `when` is defined on the table
+        if let Some(case) = case(when, &casted_function, attname) {
+            return (case, true);
         }
-        return (function.to_string(), true);
+
+        return (casted_function, true);
     }
 
     // Search for a masking value
     if let Some(value) = re::capture_value(seclabel) {
-        if guc::ANON_STRICT_MODE.get() {
-            return (
-                cast_as_regtype(value.to_string(), att.atttypid, att.atttypmod),
-                true,
-            );
+        let casted_value = if guc::ANON_STRICT_MODE.get() {
+            cast_as_regtype(value.to_string(), att.atttypid, att.atttypmod)
+        } else {
+            value.to_string()
+        };
+
+        // Conditional masking if a `when` is defined on the table
+        if let Some(case) = case(when, &casted_value, attname) {
+            return (case, true);
         }
-        return (value.to_string(), true);
+
+        return (casted_value, true);
     }
 
     // The column is declared as not masked, the authentic value is shown
@@ -524,9 +547,8 @@ pub fn value_for_att(
         return (attname.to_string(), false);
     }
 
-    // There's no masking
+    // There's no masking rule
 
-    log::debug3!("Anon: Privacy by default is on");
     // At this stage, we know privacy_by_default is on
     // Let's try to find the default value of the column
     if att.atthasdef && att.attnum > 0 && !att.attisdropped {
@@ -553,6 +575,18 @@ mod tests {
     use crate::label_providers;
     use crate::label_providers::ANON_DEFAULT_MASKING_POLICY;
     use crate::masking::*;
+
+    #[pg_test]
+    fn test_case() {
+        assert!(case(None, "'CONFIDENTIAL'", "login").is_none());
+        assert_eq!(
+            case(Some("is_admin IS FALSE"), "'CONFIDENTIAL'", "login"),
+            Some(
+                "CASE WHEN CAST(is_admin IS FALSE AS BOOL) THEN 'CONFIDENTIAL' ELSE login END"
+                    .into()
+            )
+        );
+    }
 
     #[pg_test]
     fn test_cast_as_regtype() {
@@ -881,31 +915,61 @@ mod tests {
         // Create a table
         let relid = fixture::create_table_person();
         let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+        let when = when::get_table_when(relid, "anon".into());
         let desc = relation.tuple_desc();
 
         let att_dropped = desc.get(0).unwrap();
         let att_firstname = desc.get(1).unwrap();
         let att_lastname = desc.get(2).unwrap();
 
-        let (val1, masked1) = value_for_att(&relation, &att_firstname, "anon".into());
+        let (val1, masked1) = value_for_att(&relation, &att_firstname, when, "anon".into());
         assert_eq!(val1, "firstname");
         assert!(!masked1);
 
-        let (val2, masked2) = value_for_att(&relation, &att_firstname, "does_not_exists".into());
+        let (val2, masked2) =
+            value_for_att(&relation, &att_firstname, when, "does_not_exists".into());
         assert_eq!(val2, "firstname");
         assert!(!masked2);
 
-        let (val3, masked3) = value_for_att(&relation, &att_lastname, "anon".into());
+        let (val3, masked3) = value_for_att(&relation, &att_lastname, when, "anon".into());
         assert_eq!(val3, "CAST(NULL AS text)");
         assert!(masked3);
 
-        let (val4, masked4) = value_for_att(&relation, &att_lastname, "does_not_exists".into());
+        let (val4, masked4) =
+            value_for_att(&relation, &att_lastname, when, "does_not_exists".into());
         assert_eq!(val4, "lastname");
         assert!(!masked4);
 
-        let (val5, masked5) = value_for_att(&relation, &att_dropped, "anon".into());
+        let (val5, masked5) = value_for_att(&relation, &att_dropped, when, "anon".into());
         assert_eq!(val5, "\"........pg.dropped.1........\"");
         assert!(!masked5);
+
+        let (val6, masked6) = value_for_att(&relation, &att_lastname, Some("1=1"), "anon".into());
+        assert_eq!(
+            val6,
+            "CASE WHEN CAST(1=1 AS BOOL) THEN CAST(NULL AS text) ELSE lastname END"
+        );
+        assert!(masked6);
+    }
+
+    #[pg_test]
+    fn test_value_for_att_when() {
+        // Create a table
+        let relid = fixture::create_table_account();
+        let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+        let when = when::get_table_when(relid, "anon".into());
+        let desc = relation.tuple_desc();
+
+        let att_email = desc.get(0).unwrap();
+        let att_login = desc.get(1).unwrap();
+
+        let (val1, masked1) = value_for_att(&relation, &att_email, when, "anon".into());
+        assert_eq!(val1, "CASE WHEN CAST(NOT is_admin AS BOOL) THEN CAST(anon.fake_email() AS text) ELSE email END");
+        assert!(masked1);
+
+        let (val2, masked2) = value_for_att(&relation, &att_login, when, "anon".into());
+        assert_eq!(val2, "login");
+        assert!(!masked2);
     }
 
     #[pg_test]
@@ -913,16 +977,17 @@ mod tests {
         // Create a table
         let relid = fixture::create_table_user();
         let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
+        let when = when::get_table_when(relid, "anon".into());
         let desc = relation.tuple_desc();
 
         let att_email = desc.get(0).unwrap();
         let att_login = desc.get(1).unwrap();
 
-        let (val1, masked1) = value_for_att(&relation, &att_email, "anon".into());
+        let (val1, masked1) = value_for_att(&relation, &att_email, when, "anon".into());
         assert_eq!(val1, "CAST(anon.fake_email() AS text)");
         assert!(masked1);
 
-        let (val2, masked2) = value_for_att(&relation, &att_login, "anon".into());
+        let (val2, masked2) = value_for_att(&relation, &att_login, when, "anon".into());
         assert_eq!(val2, "\"LoGiN\"");
         assert!(!masked2);
     }

@@ -23,6 +23,7 @@ nav:
   - Advanced:
     - 'Privacy By Default': 'privacy_by_default.md'
     - 'Sampling': 'sampling.md'
+    - 'Selective Masking': 'selective_masking.md'
     - 'Detecting Identifiers': 'detection.md'
     - 'Custom Fake Data': 'custom_fake_data.md'
     - 'Performances': 'performances.md'

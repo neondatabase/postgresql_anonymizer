@@ -88,6 +88,33 @@ pub fn capture_value(haystack: &str) -> Option<&str> {
     Some(caps.get(1).unwrap().as_str())
 }
 
+/// Extract the `MASKED WHEN` condition
+///
+/// ```
+/// # use anon::re::capture_when;
+///
+/// let a = capture_when("MASKED WHEN id >= 500");
+/// assert_eq!(a,Some("id >= 500"));
+///
+/// let b = capture_when(" MASKED   WHEN      id >= 500     ");
+/// assert_eq!(b,Some("id >= 500     "));
+///
+/// let c = capture_when("MASKE WHEN id >= 500");
+/// assert_eq!(c,None);
+///
+/// let d = capture_when("masked when not is_admin");
+/// assert_eq!(d,Some("not is_admin"))
+/// ```
+///
+pub fn capture_when(haystack: &str) -> Option<&str> {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    let caps = RE
+        .get_or_init(|| Regex::new(r"(?is)^ *MASKED +WHEN +(.*) *$").unwrap())
+        .captures(haystack)?;
+    // return the first match
+    Some(caps.get(1).unwrap().as_str())
+}
+
 ///
 /// This is a naïve replacement for SplitGUCList
 ///

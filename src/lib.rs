@@ -15,13 +15,14 @@ mod log;
 mod macros;
 mod masking;
 mod random;
-mod re;
+pub mod re;
 mod replica_masking;
 mod rules;
 mod sampling;
 mod static_masking;
 mod utils;
 mod walker;
+mod when;
 
 // Load the SQL functions AFTER the rust functions
 // GCOVR_EXCL_START
