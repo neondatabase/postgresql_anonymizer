@@ -5,7 +5,6 @@ use crate::guc;
 use crate::log;
 use crate::masking;
 use crate::utils;
-use crate::when;
 use pgrx::prelude::*;
 use pgrx::PgRelation;
 
@@ -19,10 +18,12 @@ use pgrx::PgRelation;
 /// NEW.fk_user = (SELECT CAST(pg_catalog.md5(fk_user) AS text) FROM (SELECT NEW.* ) AS n);
 ///
 fn trigger_new_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
+    use crate::rule::table::Table;
+
     // SAFETY: `pg_sys::relation_open()` will raise XX000 if the specified oid
     // isn't a valid relation
     let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
-    let when = when::get_table_when(relid, &policy);
+    let when = Table::get_when(relid, &policy);
 
     let mut assignments = Vec::new();
     for attribute in relation.tuple_desc().iter() {
@@ -31,7 +32,7 @@ fn trigger_new_assignments(relid: pg_sys::Oid, policy: String) -> Option<String>
         }
 
         let (filter_value, att_is_masked) =
-            masking::value_for_att(&relation, attribute, when, policy.clone());
+            masking::value_for_att(&relation, attribute, when.clone(), policy.clone());
 
         // Typically in a for a NEW assignment (INSERT or UPDATE),
         // we only want to overwrite the value of the masked columns

@@ -13,7 +13,6 @@ use crate::input;
 use crate::label_providers;
 use crate::log;
 use crate::masking;
-use crate::rules;
 use crate::utils;
 use pgrx::*;
 use std::ffi::c_char;
@@ -86,13 +85,15 @@ unsafe extern "C-unwind" fn has_restricted_function_walker(
     node: *mut pg_sys::Node,
     context_ptr: *mut ::core::ffi::c_void,
 ) -> bool {
+    use crate::rule::function::Function;
+
     if node.is_null() {
         return false;
     }
 
     if is_a(node, pg_sys::NodeTag::T_FuncExpr) {
         let funcexpr = PgBox::from_pg(node as *mut pg_sys::FuncExpr);
-        if rules::is_restricted_function(
+        if Function::is_restricted_function(
             funcexpr.funcid,
             label_providers::ANON_DEFAULT_MASKING_POLICY,
         ) {

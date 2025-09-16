@@ -3,8 +3,6 @@ use crate::error;
 use crate::guc;
 use crate::log;
 use crate::macros;
-use crate::masking;
-use crate::re;
 use crate::walker;
 use pgrx::prelude::*;
 use std::ffi::CString;
@@ -200,6 +198,8 @@ pub fn is_trusted_function(
     func_name: *const c_char,
     policy: &str,
 ) -> Result<(), Reason> {
+    use crate::rule::function::Function;
+
     let mut trusted: Option<bool> = None;
 
     // Read the Postgres cache to get all the definitions of the function
@@ -247,17 +247,17 @@ pub fn is_trusted_function(
         };
 
         // Get the security label for this definition
-        if let Ok(seclabel) = masking::rule_on_function(procform.oid, policy) {
+        if let Ok(rule_on_function) = Function::from_seclabel(procform.oid, policy) {
             // Found no label, skip to the next definition
-            if seclabel.is_empty() {
+            if rule_on_function.is_empty() {
                 continue;
             }
 
             // Read the security label and check its content
-            if re::is_match_trusted(seclabel) || re::is_match_restricted(seclabel) {
+            if rule_on_function.is_trusted() || rule_on_function.is_restricted() {
                 trusted = Some(true);
             }
-            if re::is_match_untrusted(seclabel) {
+            if rule_on_function.is_untrusted() {
                 trusted = Some(false);
             }
         }
@@ -277,23 +277,11 @@ pub fn is_trusted_function(
 
     // At this point, if we still don't know whether the function is trusted or
     // not, the last chance is to check if the schema itself is TRUSTED
-    is_trusted_namespace(namespace_id, policy)
-}
-
-/// Check that a schema is trusted
-///
-fn is_trusted_namespace(namespace_id: pg_sys::Oid, policy: &str) -> Result<(), Reason> {
-    if !macros::OidIsValid(namespace_id) {
-        error::internal("Schema OID is invalid").ereport();
-    };
-
-    if let Ok(seclabel) = masking::rule_on_schema(namespace_id, policy) {
-        if re::is_match_trusted(seclabel) {
-            return Ok(());
-        }
+    use crate::rule::schema::Schema;
+    match Schema::is_trusted(namespace_id, policy) {
+        true => Ok(()),
+        false => Err(Reason::SchemaNotTrusted),
     }
-
-    Err(Reason::SchemaNotTrusted)
 }
 
 /// Parse a given expression and return its raw statement
@@ -421,19 +409,6 @@ mod tests {
         let pseudo_city_cstr = CString::new("pseudo_city").unwrap();
         let pseudo_city = pseudo_city_cstr.as_ptr() as *const c_char;
         assert!(is_trusted_function(anon_schema, pseudo_city, "anon").is_ok());
-    }
-
-    #[pg_test]
-    fn test_is_trusted_namespace() {
-        let gotham = fixture::create_trusted_schema();
-        let arkham = fixture::create_untrusted_schema();
-        assert!(is_trusted_namespace(gotham, "anon").is_ok());
-        assert!(is_trusted_namespace(arkham, "anon").is_err());
-    }
-
-    #[pg_test(error = "Anon: Schema OID is invalid")]
-    fn test_is_trusted_namespace_invalid_schema() {
-        assert!(is_trusted_namespace(0.into(), "anon").is_err());
     }
 
     #[pg_test]

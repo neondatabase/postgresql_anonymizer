@@ -5,9 +5,7 @@ use crate::error;
 use crate::guc;
 use crate::log;
 use crate::masking;
-use crate::sampling;
 use crate::utils;
-use crate::when;
 use pgrx::prelude::*;
 use pgrx::PgRelation;
 use std::ffi::c_char;
@@ -38,10 +36,12 @@ fn column_assignment(relid: pg_sys::Oid, colname: String, policy: String) -> Opt
 /// Return the SQL assignments which will mask the data in a table
 ///
 fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
+    use crate::rule::table::Table;
+
     // SAFETY: `pg_sys::relation_open()` will raise XX000 if the specified oid
     // isn't a valid relation
     let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
-    let when = when::get_table_when(relid, &policy);
+    let when = Table::get_when(relid, &policy);
 
     let mut assignments = Vec::new();
     for attribute in relation.tuple_desc().iter() {
@@ -50,7 +50,7 @@ fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
         }
 
         let (filter_value, att_is_masked) =
-            masking::value_for_att(&relation, attribute, when, policy.clone());
+            masking::value_for_att(&relation, attribute, when.clone(), policy.clone());
 
         if att_is_masked {
             assignments.push(format!(
@@ -69,6 +69,8 @@ fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
 
 /// Apply a masking policy to a column
 pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> Option<bool> {
+    use crate::rule::table::Table;
+
     if !guc::ANON_STATIC_MASKING.get() {
         error::feature_not_enabled(
             "Static Masking",
@@ -77,7 +79,7 @@ pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> 
         .ereport();
     }
 
-    let ratio = sampling::get_ratio(relid, &policy);
+    let ratio = Table::get_ratio(relid, &policy);
 
     // We can't apply a tablesample rules to just a column
     if ratio.is_some() {
@@ -113,6 +115,8 @@ pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> 
 
 /// Apply a masking policy to a relation
 pub fn anonymize_table(relid: pg_sys::Oid, policy: String) -> Option<bool> {
+    use crate::rule::table::Table;
+
     if !guc::ANON_STATIC_MASKING.get() {
         error::feature_not_enabled(
             "Static Masking",
@@ -122,7 +126,7 @@ pub fn anonymize_table(relid: pg_sys::Oid, policy: String) -> Option<bool> {
     }
 
     let p = policy.clone();
-    let ratio = sampling::get_ratio(relid, &p);
+    let ratio = Table::get_ratio(relid, &p);
     let tablename = utils::get_relation_qualified_name(relid)?;
 
     let sql: String = if ratio.is_some() {
