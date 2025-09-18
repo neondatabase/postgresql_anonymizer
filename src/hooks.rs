@@ -8,6 +8,7 @@ use crate::walker;
 use pgrx::list::old_list::PgList;
 use pgrx::pg_sys::ffi::pg_guard_ffi_boundary;
 use pgrx::prelude::*;
+use std::os::raw::c_char;
 
 /// Register the PostgreSQL hooks
 ///
@@ -81,7 +82,7 @@ pub unsafe fn register_hooks() {
     #[pg_guard]
     unsafe extern "C-unwind" fn process_utility_hook(
         pstmt: *mut pg_sys::PlannedStmt,
-        query_string: *const i8,
+        query_string: *const c_char,
         context: u32,
         params: *mut pg_sys::ParamListInfoData,
         query_env: *mut pg_sys::QueryEnvironment,
@@ -124,7 +125,7 @@ pub unsafe fn register_hooks() {
     #[pg_guard]
     unsafe extern "C-unwind" fn process_utility_hook(
         pstmt: *mut pg_sys::PlannedStmt,
-        query_string: *const i8,
+        query_string: *const c_char,
         read_only_tree: bool,
         context: u32,
         params: *mut pg_sys::ParamListInfoData,

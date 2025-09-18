@@ -91,7 +91,7 @@ pub fn IsCatalogRelationOid(relid: pg_sys::Oid) -> bool {
 #[cfg(not(any(feature = "pg13", feature = "pg14")))]
 pub unsafe fn parse_analyze_varparams(
     arg_parseTree: *mut pg_sys::RawStmt,
-    arg_sourceText: *const i8,
+    arg_sourceText: *const c_char,
     arg_paramTypes: *mut *mut pg_sys::Oid,
     arg_numParams: *mut i32,
     arg_queryEnv: *mut pg_sys::QueryEnvironment,
@@ -109,7 +109,7 @@ pub unsafe fn parse_analyze_varparams(
 #[cfg(any(feature = "pg13", feature = "pg14"))]
 pub unsafe fn parse_analyze_varparams(
     arg_parseTree: *mut pg_sys::RawStmt,
-    arg_sourceText: *const i8,
+    arg_sourceText: *const c_char,
     arg_paramTypes: *mut *mut pg_sys::Oid,
     arg_numParams: *mut i32,
     arg_queryEnv: *mut pg_sys::QueryEnvironment,
