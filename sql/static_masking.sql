@@ -7,7 +7,7 @@
 CREATE OR REPLACE FUNCTION anon.anonymize_database()
 RETURNS BOOLEAN AS
 $$
-  SELECT bool_or(anon.anonymize_table(t.regclass))
+  SELECT pg_catalog.bool_or(anon.anonymize_table(t.regclass))
   FROM (
       SELECT distinct attrelid::REGCLASS as regclass
       FROM anon.pg_masking_rules
@@ -17,7 +17,6 @@ $$
   VOLATILE
   PARALLEL UNSAFE -- because of UPDATE
   SECURITY INVOKER
-  SET search_path=''
 ;
 
 SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_database IS 'UNTRUSTED';

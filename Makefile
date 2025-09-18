@@ -97,6 +97,7 @@ REGRESS_TESTS+= rename_objects
 #REGRESS_TESTS+= restore
 REGRESS_TESTS+= rls
 REGRESS_TESTS+= sampling
+REGRESS_TESTS+= search_path
 REGRESS_TESTS+= shuffle
 REGRESS_TESTS+= syntax_checks
 REGRESS_TESTS+= ternary
