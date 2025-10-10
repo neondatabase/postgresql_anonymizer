@@ -105,6 +105,7 @@ If you want to maintain the owners and grants, you need export them with
 _Step 2:_  Write your masking rules in a separate file (for instance `rules.sql`)
 
 ```sql
+RESET search_path;
 
 SECURITY LABEL FOR anon ON COLUMN people.lastname
   IS 'MASKED WITH FUNCTION anon.dummy_last_name()';
@@ -116,8 +117,8 @@ _Step 3:_  Pass the dump and the rules through the docker image and receive an
 anonymized dump !
 
 ```console
-IMG=registry.gitlab.com/dalibo/postgresql_anonymizer
-ANON="docker run --rm -i $IMG /dump.sh"
+IMG=registry.gitlab.com/dalibo/postgresql_anonymizer:stable
+ANON="docker run --rm --interactive $IMG /dump.sh"
 cat dump.sql rules.sql | $ANON > anon_dump.sql
 ```
 
@@ -139,6 +140,13 @@ cat dump.sql rules.sql | $ANON --data-only --inserts > anon_dump.sql
 ```
 
 [pg_dump output options]: https://www.postgresql.org/docs/current/app-pgdump.html#PG-DUMP-OPTIONS
+
+
+The `RESET search_path` command in `rules.sql` is required because pg_dump
+will disable the search_path in `dump.sql` for security reasons.
+Alternatively you can use fully-qualified column names in `rules.sql`,
+for instance `public.people.lastname` instead of `people.lastname`.
+
 
 Masking primary keys with Backup Masking
 ------------------------------------------------------------------------------
