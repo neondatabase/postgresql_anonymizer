@@ -565,11 +565,22 @@ or for a limited number of lines in the table.
 
 For instance, if you want to "preserve NULL values", i.e. masking only the lines
 that contains a value, you can use the `anon.ternary` function, which works
-like a `CASE WHEN x THEN y ELSE z` statement :
+like a `CASE WHEN x THEN y ELSE z` statement:
 
 ```sql
 SECURITY LABEL FOR anon ON COLUMN player.score
   IS 'MASKED WITH FUNCTION anon.ternary(score IS NULL,
+                                        NULL,
+                                        anon.random_int_between(0,100));
+```
+
+You can also use the `anon.ternary` function to keep a ratio of NULL values in
+the otherwise anonymized data like in the following example where each line as
+as 10% chance to be a NULL value:
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN player.score
+  IS 'MASKED WITH FUNCTION anon.ternary(pg_catalog.random() <= .1,
                                         NULL,
                                         anon.random_int_between(0,100));
 ```
