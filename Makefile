@@ -177,6 +177,7 @@ installcheck: stop start
 	createuser $(PSQL_OPT) postgres --superuser || echo 'ignored'
 	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET session_preload_libraries = 'anon';"
 	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET anon.masking_policies = 'devtests, analytics';"
+	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET client_min_messages = notice;"
 	$(PG_REGRESS) \
 		$(PSQL_OPT) \
 		--use-existing \
@@ -210,7 +211,7 @@ run:
 	$(PGRX) run $(PGVER) $(RELEASE_OPT)
 
 psql:
-	psql --host localhost --port 288$(PG_MAJOR_VERSION)
+	psql --host localhost --port 288$(PG_MAJOR_VERSION) anon
 
 ##
 ## Coverage

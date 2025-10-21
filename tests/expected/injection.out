@@ -102,6 +102,23 @@ WHERE tablename='inject_via_load';
 (1 row)
 
 --
+-- Static Masking
+--
+SELECT anon.anonymize_database('anon''; CREATE TABLE inject_via_static_masking(i int);--');
+ anonymize_database 
+--------------------
+ 
+(1 row)
+
+SELECT COUNT(*) = 0
+FROM pg_tables
+WHERE tablename='inject_via_static_masking';
+ ?column? 
+----------
+ t
+(1 row)
+
+--
 -- Dynamic Masking
 --
 SET anon.maskschema TO 'foo; CREATE TABLE inject_via_guc(i int);--';

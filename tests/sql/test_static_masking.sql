@@ -65,6 +65,22 @@ FROM GENERATE_SERIES(1, 50000) i;
 
 CREATE TABLE "Users" AS SELECT 'foo@bar.com' AS "Email";
 
+CREATE TABLE http_logs (
+  id SERIAL PRIMARY KEY,
+  date_opened DATE,
+  ip_address INET,
+  url TEXT
+);
+
+INSERT INTO http_logs (date_opened, ip_address, url) VALUES
+('2025-10-01', '192.168.1.1', 'https://example.com/page1'),
+('2025-10-02', '10.0.0.1', 'https://example.com/page2'),
+('2025-10-03', '172.16.0.1', 'https://example.com/page3'),
+('2025-10-04', '192.168.1.2', 'https://example.com/page4'),
+('2025-10-05', '10.0.0.2', 'https://example.com/page5');
+
+
+
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 
 SECURITY LABEL FOR anon ON SCHEMA pg_catalog IS 'TRUSTED';
@@ -125,6 +141,9 @@ IS 'MASKED WITH VALUE ''xxxH'' ';
 -- quotes
 SECURITY LABEL FOR anon ON COLUMN "Users"."Email"
   IS 'MASKED WITH FUNCTION anon.fake_email()';
+
+-- empty a table
+SECURITY LABEL FOR anon ON TABLE http_logs IS 'TABLESAMPLE SYSTEM(0)';
 
 
 --
@@ -225,7 +244,14 @@ SET anon.static_masking TO off;
 SELECT anon.anonymize_column('employee','phone');
 ROLLBACK TO after_init;
 
+-- Empty a table
 
+SELECT anon.anonymize_database('does_not_exists');
 
+SELECT count(*) FROM http_logs;
+
+SELECT anon.anonymize_database('anon');
+
+SELECT count(*) FROM http_logs;
 
 ROLLBACK;
