@@ -2,8 +2,13 @@
 // GUC Variables
 //----------------------------------------------------------------------------
 
+use pgrx::pg_sys::shared_preload_libraries_string;
+use pgrx::pg_sys::GucSource::{
+    PGC_S_DATABASE, PGC_S_DATABASE_USER, PGC_S_SESSION, PGC_S_TEST, PGC_S_USER,
+};
 use pgrx::*;
-use std::ffi::CString;
+use std::ffi::{c_void, CStr, CString};
+use std::os::raw::c_char;
 
 pub static ANON_DUMMY_LOCALE: GucSetting<Option<CString>> =
     GucSetting::<Option<CString>>::new(Some(c"en_US"));
@@ -41,6 +46,36 @@ static ANON_SOURCE_SCHEMA: GucSetting<Option<CString>> =
 
 static ANON_MASK_SCHEMA: GucSetting<Option<CString>> =
     GucSetting::<Option<CString>>::new(Some(c"mask"));
+
+unsafe extern "C-unwind" fn check_anon_shared_preload_libraries_hook(
+    _newval: *mut bool,
+    _extra: *mut *mut c_void,
+    source: u32,
+) -> bool {
+    // Only check when user is actively trying to change the setting
+    // Skip validation during startup, extension creation, and config file loads
+    if source != PGC_S_SESSION
+        && source != PGC_S_DATABASE
+        && source != PGC_S_USER
+        && source != PGC_S_DATABASE_USER
+        && source != PGC_S_TEST
+    {
+        return true;
+    }
+
+    // Check shared preload libraries for anon
+    let preload_libs =
+        CStr::from_ptr(shared_preload_libraries_string as *const c_char).to_string_lossy();
+
+    if !preload_libs.contains("anon") {
+        // Can only set GUC if anon is in shared_preload_libraries
+        pg_sys::warning!(
+            "Anon is not in shared_preload_libraries. Please add it to enable dynamic masking."
+        );
+        return false;
+    }
+    true
+}
 
 // Register the GUC parameters for the extension
 //
@@ -88,14 +123,19 @@ pub fn register_gucs() {
         GucContext::Suset,
         GucFlags::default(),
     );
-    GucRegistry::define_bool_guc(
-        c"anon.transparent_dynamic_masking",
-        c"New masking engine (EXPERIMENTAL)",
-        c"",
-        &ANON_TRANSPARENT_DYNAMIC_MASKING,
-        GucContext::Suset,
-        GucFlags::default(),
-    );
+    unsafe {
+        GucRegistry::define_bool_guc_with_hooks(
+            c"anon.transparent_dynamic_masking",
+            c"New masking engine (EXPERIMENTAL)",
+            c"",
+            &ANON_TRANSPARENT_DYNAMIC_MASKING,
+            GucContext::Suset,
+            GucFlags::default(),
+            Some(check_anon_shared_preload_libraries_hook),
+            None,
+            None,
+        );
+    }
 
     GucRegistry::define_bool_guc(
         c"anon.static_masking",
