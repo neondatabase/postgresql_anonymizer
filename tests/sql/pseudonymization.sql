@@ -80,3 +80,12 @@ SELECT anon.pseudo_xor(1) = 99998;
 
 
 ROLLBACK;
+
+-- Issue #582
+CREATE DATABASE "contrib_regression-demo-foo";
+
+ALTER DATABASE "contrib_regression-demo-foo" SET session_preload_libraries = 'anon';
+
+\! psql "contrib_regression-demo-foo" -c "CREATE EXTENSION anon;"
+
+DROP DATABASE "contrib_regression-demo-foo";

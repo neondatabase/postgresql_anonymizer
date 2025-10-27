@@ -299,7 +299,8 @@ DECLARE
     shift INT;
 BEGIN
     SELECT COALESCE(val, pg_catalog.random()*2147483647) INTO shift;
-    EXECUTE 'ALTER DATABASE ' || current_database() || ' SET anon.shift TO ' || shift;
+    EXECUTE 'ALTER DATABASE ' || pg_catalog.quote_ident(current_database()) || ' SET anon.shift TO ' || shift;
+
     EXECUTE 'SET anon.shift TO ' || shift;
     RETURN TRUE;
 END;
