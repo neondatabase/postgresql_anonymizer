@@ -204,7 +204,3 @@ DEPRECATED : pg_dump_anon.sh and pg_dump_anon
 In version 0.x, the anonymous dumps were done with a shell script named
 `pg_dump_anon.sh`. In version 1.x it was done with a golang script named
 `pg_dump_anon`. **Both commands are now deprecated.**
-
-However `pg_dump_anon` is kept for backward compatibility. If you are still
-using `pg_dump_anon`, you should switch to the `pg_dump` method described above
-as soon as possible.
