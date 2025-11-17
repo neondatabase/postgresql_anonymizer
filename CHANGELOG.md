@@ -3,9 +3,15 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-WIP : 2.5.0 -
+20251117 : 2.5.0 - Maintenance release
 -------------------------------------------------------------------------------
 
+* [core] Refactor rule parsing functions
+* [backup masking] Remove pg_dump_anon ( was deprecated since version 2.0)
+* [pseudo] FIX #582 - allow special characters in database name
+* [static] FIX #581 - mask tables with only tablesample rules
+* Document how to anonymize with a ratio of NULL values (Benoit Lobréau)
+* Reset the search_path when anonymizing an SQL file (Hans Hübner)
 
 20250919 : 2.4.1 - Minor bug fixes
 -------------------------------------------------------------------------------
