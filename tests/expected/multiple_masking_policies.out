@@ -94,4 +94,69 @@ SELECT highest_score = 69 FROM nba.player WHERE id = 5;
 (1 row)
 
 RESET ROLE;
+-- Static Masking
+SAVEPOINT init;
+SELECT anon.anonymize_column('nba.player','name','analytics');
+ anonymize_column 
+------------------
+ t
+(1 row)
+
+-- analytics policy is applied
+SELECT nba.player.name IS NULL FROM nba.player WHERE id = 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- devtest policy is not applied
+SELECT nba.player.total_points = 38387 FROM nba.player WHERE id = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+ROLLBACK TO init;
+SELECT anon.anonymize_table('nba.player','analytics');
+ anonymize_table 
+-----------------
+ t
+(1 row)
+
+-- analytics policy is applied
+SELECT nba.player.name IS NULL FROM nba.player WHERE id = 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- devtest policy is not applied
+SELECT nba.player.total_points = 38387 FROM nba.player WHERE id = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+ROLLBACK TO init;
+SELECT anon.anonymize_database('analytics');
+ anonymize_database 
+--------------------
+ t
+(1 row)
+
+-- analytics policy is applied
+SELECT nba.player.name IS NULL FROM nba.player WHERE id = 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+-- devtest policy is not applied
+SELECT nba.player.total_points = 38387 FROM nba.player WHERE id = 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+ROLLBACK TO init;
 ROLLBACK;

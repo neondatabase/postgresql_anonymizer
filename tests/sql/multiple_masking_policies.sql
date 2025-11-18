@@ -93,5 +93,39 @@ SELECT highest_score = 69 FROM nba.player WHERE id = 5;
 
 RESET ROLE;
 
+-- Static Masking
+
+SAVEPOINT init;
+
+SELECT anon.anonymize_column('nba.player','name','analytics');
+
+-- analytics policy is applied
+SELECT nba.player.name IS NULL FROM nba.player WHERE id = 5;
+
+-- devtest policy is not applied
+SELECT nba.player.total_points = 38387 FROM nba.player WHERE id = 1;
+
+ROLLBACK TO init;
+
+SELECT anon.anonymize_table('nba.player','analytics');
+
+-- analytics policy is applied
+SELECT nba.player.name IS NULL FROM nba.player WHERE id = 5;
+
+-- devtest policy is not applied
+SELECT nba.player.total_points = 38387 FROM nba.player WHERE id = 1;
+
+ROLLBACK TO init;
+
+SELECT anon.anonymize_database('analytics');
+
+-- analytics policy is applied
+SELECT nba.player.name IS NULL FROM nba.player WHERE id = 5;
+
+-- devtest policy is not applied
+SELECT nba.player.total_points = 38387 FROM nba.player WHERE id = 1;
+
+ROLLBACK TO init;
+
 
 ROLLBACK;

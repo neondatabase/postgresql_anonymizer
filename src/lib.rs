@@ -382,6 +382,11 @@ mod anon {
         AS 'MODULE_PATHNAME', 'anonymize_column_wrapper'
         LANGUAGE C STRICT;
 
+        CREATE FUNCTION anon.anonymize_column(tablename TEXT, colname TEXT, policy TEXT)
+        RETURNS BOOLEAN
+        AS $$ SELECT anon.anonymize_column(tablename::REGCLASS::OID, colname, policy); $$
+        LANGUAGE SQL STRICT;
+
         CREATE FUNCTION anon.anonymize_column(tablename TEXT, colname NAME, policy TEXT)
         RETURNS BOOLEAN
         AS $$ SELECT anon.anonymize_column(tablename::REGCLASS::OID, colname::TEXT, policy); $$

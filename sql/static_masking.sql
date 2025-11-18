@@ -7,7 +7,7 @@
 CREATE OR REPLACE FUNCTION anon.anonymize_database(policy TEXT DEFAULT 'anon')
 RETURNS BOOLEAN AS
 $$
-  SELECT pg_catalog.bool_or(anon.anonymize_table(t.regclass))
+  SELECT pg_catalog.bool_or(anon.anonymize_table(t.regclass,policy))
   FROM (
       SELECT DISTINCT objoid as regclass
       FROM pg_catalog.pg_seclabel
