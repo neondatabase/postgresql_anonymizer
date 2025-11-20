@@ -3,12 +3,14 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
+2026???? : 3.0.0 - WIP
+-------------------------------------------------------------------------------
+
 20251118 : 2.5.1 - Minor bug fixes
 -------------------------------------------------------------------------------
 
 * [static] FIX #589 : correctly handle policy in anonymize_database
 * [doc] update the release process
-
 
 20251117 : 2.5.0 - Maintenance release
 -------------------------------------------------------------------------------
