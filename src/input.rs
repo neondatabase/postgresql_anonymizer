@@ -1,4 +1,3 @@
-use crate::compat;
 use crate::error;
 use crate::guc;
 use crate::log;
@@ -97,7 +96,12 @@ pub fn check_tablesample(expr: &str) -> Result<(), String> {
     let query_c_string = CString::new(query_string.as_str()).unwrap();
 
     let raw_parsetree_list = PgTryBuilder::new(|| {
-        Some(unsafe { compat::raw_parser(query_c_string.as_c_str().as_ptr() as *const c_char) })
+        Some(unsafe {
+            pg_sys::raw_parser(
+                query_c_string.as_c_str().as_ptr() as *const c_char,
+                pg_sys::RawParseMode::RAW_PARSE_DEFAULT,
+            )
+        })
     })
     .catch_others(|_| None)
     .execute();
@@ -294,7 +298,12 @@ pub fn parse_expression(expr: &str) -> Result<PgBox<pg_sys::Node>, String> {
     let query_string = format!("SELECT {expr}");
     let query_c_string = CString::new(query_string.as_str()).unwrap();
     let raw_parsetree_list = PgTryBuilder::new(|| {
-        Some(unsafe { compat::raw_parser(query_c_string.as_c_str().as_ptr() as *const c_char) })
+        Some(unsafe {
+            pg_sys::raw_parser(
+                query_c_string.as_c_str().as_ptr() as *const c_char,
+                pg_sys::RawParseMode::RAW_PARSE_DEFAULT,
+            )
+        })
     })
     .catch_others(|_| None)
     .execute();

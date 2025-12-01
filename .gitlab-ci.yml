@@ -7,7 +7,7 @@ stages:
   - deploy
   - release
 
-image: postgres:13
+image: postgres:14
 
 
 # Prevent Gitlab-CI from launching 2 pipelines for each MR#
@@ -27,11 +27,8 @@ include:
   - local: .gitlab/job_templates/build_and_test_pgver.yml
     inputs:
       always: 'yes'   # this is a string not a boolean
-      pgver: pg13
-  ## Other PG versions are built and tested only on the `main` branch
-  - local: .gitlab/job_templates/build_and_test_pgver.yml
-    inputs:
       pgver: pg14
+  ## Other PG versions are built and tested only on the `main` branch
   - local: .gitlab/job_templates/build_and_test_pgver.yml
     inputs:
       pgver: pg15
@@ -55,4 +52,3 @@ include:
     rules:
       - exists:
           - dalibo/.gitlab-ci.yml
-

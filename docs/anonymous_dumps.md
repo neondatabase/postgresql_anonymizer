@@ -26,8 +26,8 @@ __NOTE:__ You can replace the name `anon_dumper` by another name.
 GRANT pg_read_all_data to anon_dumper;
 ```
 
-__NOTE:__ If you are running PostgreSQL 13 or if you want a more fine-grained
-access policy you can grant access more precisely, for instance:
+__NOTE:__ If you want a more fine-grained access policy you can grant access
+more precisely, for instance:
 
 
 ```sql

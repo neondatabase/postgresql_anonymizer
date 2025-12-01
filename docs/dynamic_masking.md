@@ -51,8 +51,8 @@ Step 3 : Declare a masked user with read access
 GRANT pg_read_all_data to skynet;
 ```
 
-**NOTE:** If you are running PostgreSQL 13 or if you want a more
-fine-grained access policy you can grant access more precisely, for instance:
+**NOTE:** If you want a more fine-grained access policy you can grant access
+more precisely, for instance:
 
 ```sql
 GRANT USAGE ON SCHEMA public TO skynet;

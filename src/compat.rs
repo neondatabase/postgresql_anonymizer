@@ -10,19 +10,6 @@ use pgrx::prelude::*;
 use std::os::raw::c_char;
 
 ///
-/// rawparser function
-///
-#[cfg(feature = "pg13")]
-pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
-    pg_sys::raw_parser(query)
-}
-
-#[cfg(not(feature = "pg13"))]
-pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
-    pg_sys::raw_parser(query, pg_sys::RawParseMode::RAW_PARSE_DEFAULT)
-}
-
-///
 /// ## rte_perminfo_index_disable
 ///
 /// Since PG16, every top-level RTE_RELATION entry has a new plan node
@@ -35,13 +22,13 @@ pub unsafe fn raw_parser(query: *const c_char) -> *mut pg_sys::List {
 ///
 /// https://github.com/postgres/postgres/commit/a61b1f74823c9c4f79c95226a461f1e7a367764b
 ///
-#[cfg(any(feature = "pg13", feature = "pg14", feature = "pg15"))]
+#[cfg(any(feature = "pg14", feature = "pg15"))]
 #[macro_export]
 macro_rules! rte_perminfo_index_disable {
     ($rte: ident) => {};
 }
 
-#[cfg(not(any(feature = "pg13", feature = "pg14", feature = "pg15")))]
+#[cfg(not(any(feature = "pg14", feature = "pg15")))]
 #[macro_export]
 macro_rules! rte_perminfo_index_disable {
     ($rte: ident) => {
@@ -54,23 +41,23 @@ pub(crate) use rte_perminfo_index_disable;
 ///
 /// SchemaValue type
 ///
-#[cfg(not(any(feature = "pg13", feature = "pg14")))]
+#[cfg(not(any(feature = "pg14")))]
 pub use pgrx::pg_sys::String as SchemaValue;
 
-#[cfg(any(feature = "pg13", feature = "pg14"))]
+#[cfg(any(feature = "pg14"))]
 pub use pgrx::pg_sys::Value as SchemaValue;
 
 ///
 /// strVal macro
 ///
 #[allow(non_snake_case)]
-#[cfg(not(any(feature = "pg13", feature = "pg14")))]
+#[cfg(not(any(feature = "pg14")))]
 pub unsafe fn strVal(v: SchemaValue) -> *const c_char {
     v.sval
 }
 
 #[allow(non_snake_case)]
-#[cfg(any(feature = "pg13", feature = "pg14"))]
+#[cfg(any(feature = "pg14"))]
 pub unsafe fn strVal(v: SchemaValue) -> *const c_char {
     v.val.str_
 }
@@ -88,7 +75,7 @@ pub fn IsCatalogRelationOid(relid: pg_sys::Oid) -> bool {
 /// parse_analyze_varparams
 ///
 #[allow(non_snake_case)]
-#[cfg(not(any(feature = "pg13", feature = "pg14")))]
+#[cfg(not(any(feature = "pg14")))]
 pub unsafe fn parse_analyze_varparams(
     arg_parseTree: *mut pg_sys::RawStmt,
     arg_sourceText: *const c_char,
@@ -106,7 +93,7 @@ pub unsafe fn parse_analyze_varparams(
 }
 
 #[allow(non_snake_case)]
-#[cfg(any(feature = "pg13", feature = "pg14"))]
+#[cfg(any(feature = "pg14"))]
 pub unsafe fn parse_analyze_varparams(
     arg_parseTree: *mut pg_sys::RawStmt,
     arg_sourceText: *const c_char,

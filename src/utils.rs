@@ -32,7 +32,10 @@ pub fn get_function_schema(function_call: String) -> String {
     let query_string = format!("SELECT {function_call}");
     let query_c_string = CString::new(query_string.as_str()).unwrap();
     let raw_parsetree_list = unsafe {
-        compat::raw_parser(query_c_string.as_c_str().as_ptr() as *const pgrx::ffi::c_char)
+        pg_sys::raw_parser(
+            query_c_string.as_c_str().as_ptr() as *const pgrx::ffi::c_char,
+            pg_sys::RawParseMode::RAW_PARSE_DEFAULT,
+        )
     };
 
     // walk through the parse tree, down to the FuncCall node (if present)

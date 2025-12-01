@@ -605,6 +605,7 @@ we officially support for each version.
 
 | Version  | Released   | EOL       | Postgres |    OS                  |
 |----------|------------|-----------|----------|------------------------|
+| 3.0      | jan. 2026  | dec. 2026 | 14 to 18 | RHEL 8, 9 & 10, Debian 12 & 13, Ubuntu 24.04 |
 | 2.0      | dec. 2024  | dec. 2025 | 13 to 17 | RHEL 8 & 9, Debian 11 & 12, Ubuntu 24.04 |
 | 1.3      | mar. 2024  | dec. 2024 | 12 to 16 | RHEL 8 & 9 |
 | 1.2      | jan. 2024  | mar. 2024 | 12 to 16 | RHEL 8 & 9 |
