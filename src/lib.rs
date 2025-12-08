@@ -46,6 +46,7 @@ extension_sql_file!("../sql/random.sql", requires = ["anon"]);
 extension_sql_file!("../sql/static_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/replica_masking.sql", requires = ["anon"]);
+extension_sql_file!("../sql/custom_values.sql", requires = ["anon"]);
 
 // GCOVR_EXCL_STOP
 

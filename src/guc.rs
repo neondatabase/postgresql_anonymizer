@@ -5,6 +5,9 @@
 use pgrx::*;
 use std::ffi::CString;
 
+pub static ANON_CUSTOM_VALUES: GucSetting<Option<CString>> =
+    GucSetting::<Option<CString>>::new(None);
+
 pub static ANON_DUMMY_LOCALE: GucSetting<Option<CString>> =
     GucSetting::<Option<CString>>::new(Some(c"en_US"));
 
@@ -45,6 +48,15 @@ static ANON_MASK_SCHEMA: GucSetting<Option<CString>> =
 // Register the GUC parameters for the extension
 //
 pub fn register_gucs() {
+    GucRegistry::define_string_guc(
+        c"anon.custom_values",
+        c"a JSON object containing custom values for the anonymization policy",
+        c"",
+        &ANON_CUSTOM_VALUES,
+        GucContext::Suset,
+        GucFlags::SUPERUSER_ONLY,
+    );
+
     GucRegistry::define_string_guc(
         c"anon.dummy_locale",
         c"The default locale for the dummy data functions",

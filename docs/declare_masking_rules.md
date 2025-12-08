@@ -128,6 +128,51 @@ To remove all rules at once, you can use:
 SELECT anon.remove_masks_for_all_columns();
 ```
 
+Custom Values for a Masking Policy
+------------------------------------------------------------------------------
+
+In some case, you may have to apply variations to masking policy based on a
+set of parameters. In other words, custom values in PostgreSQL Anonymizer
+allow you to parameterize masking rules so that the same masking policy can
+behave differently based on context - such as the country, environment, or
+customer profile.
+
+Define the custom values as a JSON dictionary:
+
+```sql
+SET anon.custom_values
+TO '{ "country": "France", "locale": "fr_FR" }';
+```
+
+You can then use the `anon.custom_value()` function in your masking rule
+Alternavely there's also a `anon.custom_value(key,default)` variant.
+
+```sql
+SECURITY LABEL FOR anon ON COLUMN player.name
+IS 'MASKED WITH FUNCTION anon.fake_last_name_locale(anon.custom_value('locale'))';
+```
+
+Custom values defined this way are returned as `text`, depending on
+the context, you might have to use the appropriate cast to remain
+compatible with some functions and assignments or keep your predicate
+indexable.
+
+Finally you can define the custom_values on a per-database or on a per-user
+basis.
+
+```sql
+
+ALTER DATABASE french_stores
+SET anon.custom_values
+TO '{ "country": "France", "locale": "fr_FR" }';
+
+ALTER DATABASE italian_stores
+SET anon.custom_values
+TO '{ "country": "Italia", "locale": "it_IT" }';
+
+```
+
+
 
 Multiple Masking Policies
 ------------------------------------------------------------------------------
@@ -195,4 +240,3 @@ Limitations
   as "factless keys" ) and in general those keys should not required to be
   masked. However if you really need to mask and identity column you can
   redefine it as `GENERATED DEFAULT`.
-

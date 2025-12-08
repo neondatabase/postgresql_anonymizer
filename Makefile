@@ -58,6 +58,7 @@ REGRESS_TESTS = 000-setup
 REGRESS_TESTS = initialize
 REGRESS_TESTS+= anon_catalog
 REGRESS_TESTS+= copy
+REGRESS_TESTS+= test_custom_values
 REGRESS_TESTS+= destruction
 REGRESS_TESTS+= detection
 REGRESS_TESTS+= drop_objects
