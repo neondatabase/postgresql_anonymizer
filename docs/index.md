@@ -166,6 +166,14 @@ Support
 We need your feedback and ideas ! Let us know what you think of this tool, how
 it fits your needs and what features are missing.
 
-You can either [open an issue] or send a message at <contact@dalibo.com>.
+Want to talk directly with us ? Join us on Matrix or Discord
 
-[open an issue]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
+* Matrix: https://matrix.to/#/#anon:dalibo.com
+* Discord: https://discord.com/channels/710918545906597938/1427672533104070807
+
+You can also [open a public issue] on gitlab
+
+If you need enterprise support or if you want to sponsor the project, send us
+a message at <contact@dalibo.com>.
+
+[open an public issue]: https://gitlab.com/dalibo/postgresql_anonymizer/issues
