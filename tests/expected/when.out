@@ -19,6 +19,7 @@ SECURITY LABEL FOR anon ON COLUMN users.login    IS 'MASKED WITH VALUE NULL';
 SECURITY LABEL FOR anon ON COLUMN users.password IS 'MASKED WITH VALUE NULL';
 SECURITY LABEL FOR anon ON ROLE claire IS 'MASKED';
 SAVEPOINT init;
+-- Table level static masking + Selective Masking
 SELECT anon.anonymize_table('users');
  anonymize_table 
 -----------------
@@ -38,6 +39,27 @@ SELECT login='alice' FROM users WHERE id=1;
 (1 row)
 
 ROLLBACK TO init;
+-- Column level static masking + Selective Masking
+SELECT anon.anonymize_column('users','login');
+ anonymize_column 
+------------------
+ t
+(1 row)
+
+SELECT bool_and(login IS NULL) FROM users WHERE NOT admin;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT login='alice' FROM users WHERE id=1;
+ ?column? 
+----------
+ t
+(1 row)
+
+ROLLBACK TO init;
+-- Disable Selective Masking
 SECURITY LABEL FOR anon ON TABLE users IS NULL;
 SELECT anon.anonymize_table('users');
  anonymize_table 

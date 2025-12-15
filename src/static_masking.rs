@@ -36,12 +36,9 @@ fn column_assignment(relid: pg_sys::Oid, colname: String, policy: String) -> Opt
 /// Return the SQL assignments which will mask the data in a table
 ///
 fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
-    use crate::rule::table::Table;
-
     // SAFETY: `pg_sys::relation_open()` will raise XX000 if the specified oid
     // isn't a valid relation
     let relation = unsafe { PgRelation::with_lock(relid, pg_sys::AccessShareLock as i32) };
-    let when = Table::get_when(relid, &policy);
 
     let mut assignments = Vec::new();
     for attribute in relation.tuple_desc().iter() {
@@ -49,8 +46,9 @@ fn table_assignments(relid: pg_sys::Oid, policy: String) -> Option<String> {
             continue;
         }
 
+        // We do not want the WHEN clause here, it will be treated as an UPDATE .. WHERE instead
         let (filter_value, att_is_masked) =
-            masking::value_for_att(&relation, attribute, when.clone(), policy.clone());
+            masking::value_for_att(&relation, attribute, None, policy.clone());
 
         if att_is_masked {
             assignments.push(format!(
@@ -79,10 +77,8 @@ pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> 
         .ereport();
     }
 
-    let ratio = Table::get_ratio(relid, &policy);
-
     // We can't apply a tablesample rules to just a column
-    if ratio.is_some() {
+    if Table::get_ratio(relid, &policy).is_some() {
         notice!(
             "The TABLESAMPLE rule will be ignored.
             Only anonymize_table() and anonymize_database() can apply sampling rules"
@@ -91,7 +87,7 @@ pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> 
 
     let tablename = utils::get_relation_qualified_name(relid)?;
 
-    let Some(assign) = column_assignment(relid, colname.clone(), policy) else {
+    let Some(assign) = column_assignment(relid, colname.clone(), policy.clone()) else {
         warning!(
             "There is no masking rule for column {:?} in table {}",
             colname.clone(),
@@ -100,10 +96,17 @@ pub fn anonymize_column(relid: pg_sys::Oid, colname: String, policy: String) -> 
         return Some(false);
     };
 
+    let where_clause = match Table::get_when(relid, &policy) {
+        Some(when) => format!("WHERE {when}"),
+        None => "".to_string(),
+    };
+
     let sql = format!(
         "
         SET CONSTRAINTS ALL DEFERRED;
-        UPDATE {tablename} SET {assign};
+        UPDATE {tablename}
+        SET {assign}
+        {where_clause};
     "
     );
     log::debug1!("Anon: {sql}");
@@ -153,11 +156,23 @@ pub fn anonymize_table(relid: pg_sys::Oid, policy: String) -> Option<bool> {
         "
         )
     } else {
+        let where_clause = match Table::get_when(relid, &policy) {
+            Some(when) => format!("WHERE {when}"),
+            None => "".to_string(),
+        };
+
         // For compatibility with version 1, instead of returning `Some(false)`
         // we return None/NULL when no rule is found for the table
         //
         let masking_assignments = table_assignments(relid, policy)?;
-        format!("UPDATE {tablename} SET {masking_assignments}")
+        format!(
+            "
+            SET CONSTRAINTS ALL DEFERRED;
+            UPDATE {tablename}
+            SET {masking_assignments}
+            {where_clause}
+        "
+        )
     };
 
     log::debug1!("Anon: {sql}");
