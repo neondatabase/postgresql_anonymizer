@@ -22,6 +22,7 @@ nav:
     - 'Masking Data Wrappers': 'masking_data_wrappers.md'
   - Advanced:
     - 'Privacy By Default': 'privacy_by_default.md'
+    - 'Foreign Keys': 'foreign_keys.md'
     - 'Sampling': 'sampling.md'
     - 'Selective Masking': 'selective_masking.md'
     - 'Detecting Identifiers': 'detection.md'

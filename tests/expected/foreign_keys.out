@@ -63,7 +63,6 @@ SELECT anon.init();
  t
 (1 row)
 
---SET CONSTRAINTS ALL DEFERRED;
 SELECT anon.anonymize_database();
  anonymize_database 
 --------------------

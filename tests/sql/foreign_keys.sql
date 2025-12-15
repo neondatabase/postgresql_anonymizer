@@ -76,8 +76,6 @@ SECURITY LABEL FOR anon ON COLUMN book.fk_author_name
 
 SELECT anon.init();
 
---SET CONSTRAINTS ALL DEFERRED;
-
 SELECT anon.anonymize_database();
 
 ROLLBACK TO init;

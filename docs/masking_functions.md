@@ -21,7 +21,7 @@ The extension provides functions to implement 8 main anonymization strategies:
 [Adding Noise]: #adding-noise
 [Randomization]: #randomization
 [Faking]: #faking
-[Advanced Faking]: #advanced_faking
+[Advanced Faking]: #advanced-faking
 [Pseudonymization]: #pseudonymization
 [Generic Hashing]: #generic-hashing
 [Partial scrambling]: #partial-scrambling
