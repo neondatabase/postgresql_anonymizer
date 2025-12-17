@@ -66,6 +66,7 @@ REGRESS_TESTS+= dropped_columns
 REGRESS_TESTS+= dummy
 REGRESS_TESTS+= elevation_via_mask
 REGRESS_TESTS+= faking
+REGRESS_TESTS+= foreign_keys
 REGRESS_TESTS+= fdw
 REGRESS_TESTS+= generalization
 REGRESS_TESTS+= generated_columns
