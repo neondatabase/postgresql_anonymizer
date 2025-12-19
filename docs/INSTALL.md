@@ -18,6 +18,7 @@ There are multiple ways to install the extension :
 * [Install as a black box]
 * [Install on MacOS]
 * [Install on Windows]
+* [Install on EDB Postgres]
 * [Install in the cloud]
 * [Uninstall]
 
@@ -36,6 +37,7 @@ If you're having any problem, check the [Troubleshooting] section.
 [Install as a black box]: #install-as-a-black-box
 [Install on MacOS]: #install-on-macos
 [Install on Windows]: #install-on-windows
+[Install on EDB Postgres]: #install-on-edb-postgres
 [Install in the cloud]: #install-in-the-cloud
 [Uninstall]: #uninstall
 [Load the extension]: #addendum-alternative-ways-to-load-the-extension
@@ -422,6 +424,11 @@ Please read the Windows documentation for more details:
 [Install WSL2]: https://learn.microsoft.com/windows/wsl/install
 
 If you need native builds for Windows, please consider sponsoring the project !
+
+Install on EDB Postgres
+------------------------------------------------------------------------------
+
+See https://www.enterprisedb.com/docs/pg_extensions/pg_anonymizer/
 
 
 Install in the cloud
