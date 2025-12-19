@@ -405,10 +405,7 @@ However it should be possible to build the extension if you install the
 Install on Windows
 ------------------------------------------------------------------------------
 
-PostgreSQL Anonymizer is built upon the [PGRX] framework and currently [PGRX]
-does not support compiling PostgreSQL extensions for Windows.
-
-This is means that there's no native build of PostgreSQL Anonymizer for Windows.
+At the moment there's no native build of PostgreSQL Anonymizer for Windows.
 
 However is it possible to run PostgreSQL inside a WSL2 container, which is
 basically an Ubuntu subsystem running on Windows.
@@ -423,6 +420,9 @@ Please read the Windows documentation for more details:
 
 [Install PostgreSQL in WSL2]: https://learn.microsoft.com/windows/wsl/tutorials/wsl-database#install-postgresql
 [Install WSL2]: https://learn.microsoft.com/windows/wsl/install
+
+If you need native builds for Windows, please consider sponsoring the project !
+
 
 Install in the cloud
 ------------------------------------------------------------------------------
@@ -441,7 +441,6 @@ PostgreSQL Anonymizer:
 * [Microsoft Azure Database]
 * [Neon]
 * [Postgres.ai]
-* [Tembo]
 
 [Alibaba Cloud]: https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/extensions-supported-by-apsaradb-rds-for-postgresql
 [Crunchy Bridge]: https://access.crunchydata.com/documentation/postgresql-anonymizer/latest/
@@ -449,7 +448,7 @@ PostgreSQL Anonymizer:
 [Microsoft Azure Database]: https://learn.microsoft.com/fr-fr/azure/postgresql/flexible-server/concepts-extensions
 [Neon]: https://neon.tech/docs/extensions/postgresql-anonymizer
 [Postgres.ai]: https://postgres.ai/docs/database-lab/masking
-[Tembo]: https://tembo.io/blog/anon-dump
+
 
 Please refer to their own documentation on how to activate the extension as they
 might have a platform-specific install procedure.
