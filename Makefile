@@ -284,6 +284,25 @@ package:
 	$(PGRX) package --pg-config $(PG_CONFIG)
 
 ##
+## O C I
+##
+
+OCI_DISTRO?=bookworm
+OCI_TAG?=$(PG_MAJOR_VERSION)-$(ANON_MINOR_VERSION)-$(OCI_DISTRO)
+OCI_IMAGE?=registry.gitlab.com/dalibo/postgresql_anonymizer:$(OCI_TAG)
+OCI_ARCH?=amd64
+
+DOCKER_BUILD_ARG := \
+  --build-arg PG_MAJOR_VERSION=$(PG_MAJOR_VERSION) \
+  --build-arg OCI_DISTRO=$(OCI_DISTRO)
+
+oci_image: docker/oci/Dockerfile #: build the OCI image
+	docker build $(DOCKER_BUILD_ARG) --tag $(OCI_IMAGE) --file $^ .
+
+oci_push: #: push the docker image to the registry
+	docker push $(OCI_IMAGE)
+
+##
 ## D O C K E R
 ##
 
