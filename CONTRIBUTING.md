@@ -386,3 +386,34 @@ Publishing a new Release
 --------------------------------------------------------------------------------
 
 See .gitlab/issue_templates/Release.md
+
+
+Guidelines for Tool Generated Content
+--------------------------------------------------------------------------------
+
+Code generation tools such as LLMs are becoming more and more powerful and they
+can improve the developers productivity. In the meantime, they can create a
+lot of useless content and make us waste a lot of our time in reviewing and
+maintenaning those contributions.
+
+In order to establish a balance between productivity and code quality, here's
+a few expectations defined to maintain trust between submitters and reviewers.
+
+When submitting a contribution, please be transparent about the origin of
+content by adding information like :
+
+* What tools were used?
+* The input to the tools you used
+* If code was largely generated from a single or short set of
+  prompts, include those prompts in the commit description.
+* For bigger contributions, include a summary of the prompts
+* Which portions of the content were affected by that tool?
+
+While your contribution is reviewed, the reviewers may ask you to :
+
+* Try some alternative prompts
+* Provide more details on how the tools or models were trained
+* Explain how the code works without using an external tool, to check
+  that you have a good understanding of what your contribution does
+
+As always in Open Source development, Transparency is the foundation of Trust.
