@@ -46,8 +46,4 @@ SELECT anon.reset();
 
 SELECT anon.is_initialized() IS FALSE;
 
-SELECT anon.start_dynamic_masking( autoload := FALSE );
-
-SELECT anon.is_initialized() IS FALSE;
-
 ROLLBACK;

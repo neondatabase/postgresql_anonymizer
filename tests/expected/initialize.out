@@ -11,8 +11,7 @@ SELECT evtname IN ('anon_trg_mask_update')
 FROM pg_event_trigger;
  ?column? 
 ----------
- t
-(1 row)
+(0 rows)
 
 -- basic usage
 SELECT anon.init();
@@ -121,18 +120,6 @@ SELECT anon.reset();
 NOTICE:  truncate cascades to table "identifier"
  reset 
 -------
- t
-(1 row)
-
-SELECT anon.is_initialized() IS FALSE;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.start_dynamic_masking( autoload := FALSE );
- start_dynamic_masking 
------------------------
  t
 (1 row)
 

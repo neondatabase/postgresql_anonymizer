@@ -2,8 +2,6 @@ BEGIN;
 
 CREATE EXTENSION anon;
 
-SELECT anon.start_dynamic_masking();
-
 CREATE USER test;
 
 --

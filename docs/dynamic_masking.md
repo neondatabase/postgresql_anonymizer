@@ -104,21 +104,5 @@ SECURITY LABEL FOR anon ON ROLE bob IS NULL;
 ```
 
 
-Legacy Dynamic Masking
-------------------------------------------------------------------------------
-
-In version 1.x, the dynamic masking method was done using a method named
-[Legacy Dynamic Masking]. Although this former method is still functional, it
-will be deprecated in version 3.
-
-[Transparent Dynamic Masking] and [Legacy Dynamic Masking] cannot work at the
-same time. If you upgraded from version 1, be sure to disable
-[Legacy Dynamic Masking] with:
-
-```sql
-SELECT anon.stop_legacy_dynamic_masking();
-```
-
 [Transparent Dynamic Masking]: dynamic_masking.md
 
-[Legacy Dynamic Masking]: legacy_dynamic_masking.md

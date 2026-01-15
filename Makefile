@@ -64,7 +64,6 @@ REGRESS_TESTS+= detection
 REGRESS_TESTS+= drop_objects
 REGRESS_TESTS+= dropped_columns
 REGRESS_TESTS+= dummy
-REGRESS_TESTS+= elevation_via_mask
 REGRESS_TESTS+= faking
 REGRESS_TESTS+= foreign_keys
 REGRESS_TESTS+= fdw
@@ -72,19 +71,13 @@ REGRESS_TESTS+= generalization
 REGRESS_TESTS+= generated_columns
 REGRESS_TESTS+= get_function_schema
 REGRESS_TESTS+= hashing
-REGRESS_TESTS+= hasmask
 REGRESS_TESTS+= identity
 REGRESS_TESTS+= image_blur
 REGRESS_TESTS+= injection
 REGRESS_TESTS+= k_anonymity
-REGRESS_TESTS+= ldm
-REGRESS_TESTS+= masked_roles
-REGRESS_TESTS+= masking
 REGRESS_TESTS+= masking_cursors
-REGRESS_TESTS+= masking_expressions
 REGRESS_TESTS+= masking_foreign_tables
 REGRESS_TESTS+= masking_prepared_statements
-REGRESS_TESTS+= masking_search_path
 REGRESS_TESTS+= multiple_masking_policies
 REGRESS_TESTS+= noise
 REGRESS_TESTS+= partial
@@ -121,8 +114,8 @@ REGRESS_TESTS+= when
 # * the _PG15+ suffix means PostgreSQL 15 and all the major versions after
 # * the _PG13- suffix means PostgreSQL 13 and all the major versions below
 
-REGRESS_TESTS_PG14 = elevation_via_rule_PG15- elevation_via_security_definer_function_PG14-
-REGRESS_TESTS_PG15 = elevation_via_rule_PG15-
+REGRESS_TESTS_PG14 = elevation_via_security_definer_function_PG14-
+REGRESS_TESTS_PG15 = 
 REGRESS_TESTS_PG16 =
 REGRESS_TESTS_PG17 =
 

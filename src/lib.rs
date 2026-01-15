@@ -44,7 +44,6 @@ extension_sql_file!("../sql/pseudo.sql", requires = ["init"]);
 extension_sql_file!("../sql/bindings.sql", requires = ["anon"]);
 extension_sql_file!("../sql/random.sql", requires = ["anon"]);
 extension_sql_file!("../sql/static_masking.sql", requires = ["anon"]);
-extension_sql_file!("../sql/legacy_dynamic_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/replica_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/custom_values.sql", requires = ["anon"]);
 
@@ -306,11 +305,6 @@ mod anon {
     use crate::masking;
 
     #[pg_extern]
-    pub fn masking_expressions_for_table(r: pg_sys::Oid, p: String) -> String {
-        masking::masking_expressions_for_table(r, p)
-    }
-
-    #[pg_extern]
     pub fn masking_value_for_column(r: pg_sys::Oid, c: i32, p: String) -> Option<String> {
         let (val, _) = masking::masking_value_for_column(r, c, p)?;
         Some(val)
@@ -324,7 +318,6 @@ mod anon {
     //
     extension_sql!(
         r#"
-    SECURITY LABEL FOR anon ON FUNCTION anon.masking_expressions_for_table IS 'UNTRUSTED';
     SECURITY LABEL FOR anon ON FUNCTION anon.masking_value_for_column IS 'UNTRUSTED';
     "#,
         name = "unstrust_masking_engine_functions",
@@ -619,24 +612,6 @@ mod tests {
     fn test_random_string() {
         let range = Range::<i32>::new(5, 10);
         assert!(random_string(range).is_some());
-    }
-
-    #[pg_test]
-    fn test_anon_masking_expressions_for_table() {
-        let oid = fixture::create_table_person();
-        assert_eq!(
-            masking_expressions_for_table(oid, "anon".into()),
-            "firstname AS firstname, CAST(NULL AS text) AS lastname"
-        );
-        assert_eq!(
-            masking_expressions_for_table(oid, "does_not_exist".into()),
-            "firstname AS firstname, lastname AS lastname"
-        );
-    }
-
-    #[pg_test(error = "could not open relation with OID 0")]
-    fn test_anon_masking_expressions_for_table_invalid_oid() {
-        masking_expressions_for_table(pg_sys::InvalidOid, "anon".into());
     }
 
     #[pg_test]

@@ -39,12 +39,6 @@ static ANON_SALT: GucSetting<Option<CString>> = GucSetting::<Option<CString>>::n
 
 static ANON_SHIFT: GucSetting<i32> = GucSetting::<i32>::new(0);
 
-static ANON_SOURCE_SCHEMA: GucSetting<Option<CString>> =
-    GucSetting::<Option<CString>>::new(Some(c"public"));
-
-static ANON_MASK_SCHEMA: GucSetting<Option<CString>> =
-    GucSetting::<Option<CString>>::new(Some(c"mask"));
-
 // Register the GUC parameters for the extension
 //
 pub fn register_gucs() {
@@ -158,15 +152,6 @@ pub fn register_gucs() {
     );
 
     GucRegistry::define_string_guc(
-        c"anon.maskschema",
-        c"The schema where the dynamic masking views are stored",
-        c"",
-        &ANON_MASK_SCHEMA,
-        GucContext::Suset,
-        GucFlags::default(),
-    );
-
-    GucRegistry::define_string_guc(
         c"anon.salt",
         c"The salt value used for the pseudonymizing functions",
         c"",
@@ -186,12 +171,4 @@ pub fn register_gucs() {
         GucFlags::SUPERUSER_ONLY,
     );
 
-    GucRegistry::define_string_guc(
-        c"anon.sourceschema",
-        c"The schema where the table are masked by the dynamic masking engine",
-        c"",
-        &ANON_SOURCE_SCHEMA,
-        GucContext::Suset,
-        GucFlags::default(),
-    );
 }

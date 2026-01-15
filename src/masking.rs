@@ -102,16 +102,6 @@ pub fn masking_expressions(relid: pg_sys::Oid, policy: String) -> (String, bool)
     )
 }
 
-/// Returns the masking filters for a given table
-///
-/// This a wrapper around the `masking_expressions()` function used by
-/// the legacy dynamic masking system. It will be dropped in version 3
-///
-pub fn masking_expressions_for_table(relid: pg_sys::Oid, policy: String) -> String {
-    let (masking_expressions, _) = masking_expressions(relid, policy);
-    masking_expressions
-}
-
 /// Returns the masking filter that will mask the authentic data
 /// of a column for a given masking policy.
 /// the 2nd return value is a bool that indicate if the column is masked or not
@@ -655,14 +645,6 @@ mod tests {
         assert!(!masked2);
         let expected2 = "firstname AS firstname, lastname AS lastname".to_string();
         assert_eq!(expected2, result2);
-    }
-
-    #[pg_test]
-    fn test_masking_expressions_for_table() {
-        let relid = fixture::create_table_person();
-        let result = masking_expressions_for_table(relid, ANON_DEFAULT_MASKING_POLICY.to_string());
-        let expected = "firstname AS firstname, CAST(NULL AS text) AS lastname".to_string();
-        assert_eq!(expected, result);
     }
 
     #[pg_test]

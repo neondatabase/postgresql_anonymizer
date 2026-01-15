@@ -84,17 +84,6 @@ FROM pg_tables
 WHERE tablename='inject_via_static_masking';
 
 --
--- Dynamic Masking
---
-
-SET anon.maskschema TO 'foo; CREATE TABLE inject_via_guc(i int);--';
-SELECT anon.start_dynamic_masking();
-
-SELECT COUNT(*) = 0
-FROM pg_tables
-WHERE tablename='inject_via_guc';
-
---
 -- Masking Rule Syntax
 --
 

@@ -41,15 +41,6 @@ IS 'MASKED WITH VALUE 0';
 SELECT count(*) = 100 FROM hundred;
 
 --
--- Legacy Dynamic Masking
---
-SELECT anon.start_dynamic_masking();
-
-SELECT count(*) < 100 FROM mask.hundred;
-
-SELECT anon.stop_dynamic_masking();
-
---
 -- Transparent Dynamic Masking
 --
 CREATE ROLE jimmy LOGIN;

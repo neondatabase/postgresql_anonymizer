@@ -441,8 +441,7 @@ WHERE fn.lang = dict_lang
         WHERE nspname NOT LIKE 'pg_%'
         AND nspname NOT IN  (
           'information_schema',
-          'anon',
-          pg_catalog.current_setting('anon.maskschema')::NAME
+          'anon'
         )
       )
 ;

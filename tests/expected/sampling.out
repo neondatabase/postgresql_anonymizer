@@ -54,27 +54,6 @@ SELECT count(*) = 100 FROM hundred;
 (1 row)
 
 --
--- Legacy Dynamic Masking
---
-SELECT anon.start_dynamic_masking();
- start_dynamic_masking 
------------------------
- t
-(1 row)
-
-SELECT count(*) < 100 FROM mask.hundred;
- ?column? 
-----------
- t
-(1 row)
-
-SELECT anon.stop_dynamic_masking();
- stop_dynamic_masking 
-----------------------
- t
-(1 row)
-
---
 -- Transparent Dynamic Masking
 --
 CREATE ROLE jimmy LOGIN;
