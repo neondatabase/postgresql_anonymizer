@@ -11,29 +11,38 @@ Videos / Presentations
 Similar technologies
 --------------------------------------------------------------------------------
 
+Here's a list of open-source projects with similar goals
+
 * [database anonymizer](https://gitnet.fr/deblan/database-anonymizer)
-  An anonymizing ETL for MySQL and PostgreSQL
+  An anonymizing ETL for MySQL and PostgreSQL (Anonymous Export)
 
 * [greenmask](https://github.com/GreenmaskIO/greenmask)
-  Anonymous dump utility written in Golang
+  Anonymous dump utility written in Golang (Anonymous Export)
 
 * [pganonymize](https://github.com/rheinwerk-verlag/pganonymize)
-  A commandline tool for anonymizing PostgreSQL databases
+  A commandline tool for anonymizing PostgreSQL databases (Anonymous Export)
 
 * [pgantomizer](https://github.com/asgeirrr/pgantomizer)
-  Anonymous dumps based on masking rules written in a YAML file
+  Anonymous dumps based on masking rules written in a YAML file (Anonymous Export)
 
 * [pgsodium and postgresql-anonymizer](https://github.com/michelp/pgsodium/blob/michelp/anonymizer-example/example/PgSodiumAnonymizer.ipynb)
-  Pseudonymous Access To Encrypted Table
+  Pseudonymous Access To Encrypted Table (Dynamic Masking)
 
 * [pg_diffix](https://github.com/diffix/pg_diffix)
-  PostgreSQL extension implementing differential privacy (inactive)
+  PostgreSQL extension implementing differential privacy (Dynamic Masking)
 
 * [pg_anonymize](https://github.com/rjuju/pg_anonymize)
-  PostgreSQL extension implementing dynamic data anonymization
+  PostgreSQL extension implementing dynamic data anonymization (Dynamic Masking)
 
 * [pg-anonymizer](https://github.com/rap2hpoutre/pg-anonymizer)
-  Dump anonymized PostgreSQL database with a NodeJS CLI
+  Dump anonymized PostgreSQL database with a NodeJS CLI (Anonymous Export)
+
+* [pg-mask](https://github.com/rpobulic/pg-mask)
+  Simple data masking for PostgreSQL (Static Masking)
+
+* [pgEdge Anonymizer](https://github.com/pgEdge/pgedge-anonymizer)
+  An anonymizer tool for replacing PII and similar data in dev/test databases
+  (Static Masking)
 
 Similar Implementations
 --------------------------------------------------------------------------------

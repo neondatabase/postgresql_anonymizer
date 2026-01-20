@@ -16,9 +16,10 @@ There are multiple ways to install the extension :
 * [Install from source]
 * [Install with docker]
 * [Install as a black box]
+* [Install with Django]
 * [Install on MacOS]
 * [Install on Windows]
-* [Install on EDB Postgres]
+* [Install on PostgreSQL Forks]
 * [Install in the cloud]
 * [Uninstall]
 
@@ -35,9 +36,10 @@ If you're having any problem, check the [Troubleshooting] section.
 [Install from source]: #install-from-source
 [Install with docker]: #install-with-docker
 [Install as a black box]: #install-as-a-black-box
+[Install with Django]: #install-with-django
 [Install on MacOS]: #install-on-macos
 [Install on Windows]: #install-on-windows
-[Install on EDB Postgres]: #install-on-edb-postgres
+[Install on PostgreSQL Forks]: #install-on-postgresql-forks
 [Install in the cloud]: #install-in-the-cloud
 [Uninstall]: #uninstall
 [Load the extension]: #addendum-alternative-ways-to-load-the-extension
@@ -392,6 +394,16 @@ see [Anonymous Dumps]
 
 [Anonymous Dumps]: anonymous_dumps.md
 
+Install With Django
+------------------------------------------------------------------------------
+
+Django PostgreSQL Anonymizer provides seamless integration with the PostgreSQL
+Anonymizer extension, enabling you to anonymize data at the database level
+with zero performance overhead. Ideal for development workflows, safe data
+sharing, and reducing privacy risks.
+
+See https://django-postgres-anonymizer.readthedocs.io/
+
 
 Install on MacOS
 ------------------------------------------------------------------------------
@@ -425,10 +437,26 @@ Please read the Windows documentation for more details:
 
 If you need native builds for Windows, please consider sponsoring the project !
 
-Install on EDB Postgres
+
+Install on PostgreSQL Forks
 ------------------------------------------------------------------------------
 
-See https://www.enterprisedb.com/docs/pg_extensions/pg_anonymizer/
+The extension is also available for PostgreSQL Forks and PostgreSQL-compatible
+software, such as:
+
+* [EDB Postgres]
+* [Postgres Pro Enterprise]
+* [Tanzu Greenplum]
+* [Yugabytes]
+
+Please refer to their own documentation on how to activate the extension as they
+might have a platform-specific install procedure.
+
+[Postgres Pro Enterprise]: https://postgrespro.com/docs/enterprise/current/pgpro-anonymizer
+[Tanzu Greenplum]: https://techdocs.broadcom.com/us/en/vmware-tanzu/data-solutions/tanzu-greenplum/7/greenplum-database/ref_guide-modules-postgresql_anonymizer.html
+[EDB Postgres]: https://www.enterprisedb.com/docs/pg_extensions/pg_anonymizer/
+[Yugabytes]: https://docs.yugabyte.com/stable/additional-features/pg-extensions/extension-pganon/
+
 
 
 Install in the cloud
@@ -439,29 +467,34 @@ that most Database As A Service platforms (DBaaS), such as Amazon RDS or
 Microsoft Azure SQL, do not allow. They must add the extension to their catalog
 in order for you to use it.
 
-At the time we are writing this (Feb. 2025), the following platforms provide
+At the time we are writing this (Jan. 2026), the following platforms provide
 PostgreSQL Anonymizer:
 
+* [Aiven]
 * [Alibaba Cloud]
 * [Crunchy Bridge]
 * [Google Cloud SQL]
+* [IBM Cloud]
 * [Microsoft Azure Database]
 * [Neon]
 * [Postgres.ai]
+* [Yandex]
 
+[Aiven]: https://aiven.io/blog/using-postgresql-anonymizer-to-safely-share-data-with-llms
 [Alibaba Cloud]: https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/extensions-supported-by-apsaradb-rds-for-postgresql
 [Crunchy Bridge]: https://access.crunchydata.com/documentation/postgresql-anonymizer/latest/
 [Google Cloud SQL]: https://cloud.google.com/sql/docs/postgres/extensions#postgresql_anonymizer
+[IBM Cloud]: https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-data-masking
 [Microsoft Azure Database]: https://learn.microsoft.com/fr-fr/azure/postgresql/flexible-server/concepts-extensions
 [Neon]: https://neon.tech/docs/extensions/postgresql-anonymizer
 [Postgres.ai]: https://postgres.ai/docs/database-lab/masking
-
+[Yandex]: https://yandex.cloud/en/docs/managed-postgresql/operations/extensions/pg_anon
 
 Please refer to their own documentation on how to activate the extension as they
 might have a platform-specific install procedure.
 
 If your favorite DBaaS provider is not present in the list above, there is not
-much we can do about it... Although we have open discussions with some major
+much we can do about it... Although we have open discussions with most major
 actors in this domain, we DO NOT have internal knowledge on whether or not they
 will support it in the near future. If privacy and anonymity are a concern to
 you, we encourage you to contact the customer service of these platforms and
