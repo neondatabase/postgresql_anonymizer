@@ -894,3 +894,175 @@ $$
 -- TODO : https://en.wikipedia.org/wiki/L-diversity
 
 -- TODO : https://en.wikipedia.org/wiki/T-closeness
+
+-- List all rules for the configured providers in a detailed manner
+--
+-- We use pg_seclabel instead of pg_seclabels because the second adds the schema
+-- name in the fullname only for relation and columns that are not visible. We
+-- want it all the time, so that if we generate a SECLABEL from this view it
+-- just works, event if the search_path is different.
+--
+-- We have to use pg_get_function_identity_arguments() instead of
+-- pg_get_function_arguments() to get the fullname of functions because the
+-- seconds adds the DEFAULT values which cannot be used in a SECURITY LABEL
+-- declaration.
+CREATE OR REPLACE VIEW anon.seclabels AS
+  -- Tables
+  SELECT l.objoid,
+         rel.relname AS objname,
+         CASE
+            WHEN rel.relkind = ANY (ARRAY['r'::"char", 'p'::"char"]) THEN 'table'::text
+            WHEN rel.relkind = 'v'::"char" THEN 'view'::text
+            WHEN rel.relkind = 'm'::"char" THEN 'materialized view'::text
+            WHEN rel.relkind = 'f'::"char" THEN 'foreign table'::text
+            ELSE 'not supported'::text
+         END AS objtype,
+         NULL::int AS objsubid,
+         NULL::text AS objsubname,
+         NULL::text AS objsubtype,
+         nsp.oid AS objnamespaceoid,
+         nsp.nspname AS objnamespace,
+         (quote_ident(nsp.nspname::text) || '.'::text) || quote_ident(rel.relname::text) AS full_objname,
+         l.provider,
+         l.label
+    FROM pg_seclabel l
+         JOIN pg_class rel ON l.classoid = rel.tableoid AND l.objoid = rel.oid
+         JOIN pg_namespace nsp ON rel.relnamespace = nsp.oid
+   WHERE l.objsubid = 0
+     AND provider = ANY (anon.list_masking_policies())
+     AND rel.relkind != 'S' -- sequences dont make much sense
+
+  UNION ALL
+
+  -- Columns
+  SELECT l.objoid,
+         rel.relname AS objname,
+         CASE
+            WHEN rel.relkind = ANY (ARRAY['r'::"char", 'p'::"char"]) THEN 'table'::text
+            WHEN rel.relkind = 'v'::"char" THEN 'view'::text
+            WHEN rel.relkind = 'm'::"char" THEN 'materialized view'::text
+            WHEN rel.relkind = 'f'::"char" THEN 'foreign table'::text
+            ELSE 'not supported'::text
+         END AS objtype,
+         l.objsubid,
+         att.attname::text AS objsubname,
+         'column'::text AS objsubtype,
+         nsp.oid AS objnamespaceoid,
+         nsp.nspname AS objnamespace,
+         (quote_ident(nsp.nspname::text) || '.'::text) || quote_ident(rel.relname::text) || '.' || quote_ident(att.attname::text) AS full_objname,
+         l.provider,
+         l.label
+    FROM pg_seclabel l
+         JOIN pg_class rel ON l.classoid = rel.tableoid AND l.objoid = rel.oid
+         JOIN pg_attribute att ON rel.oid = att.attrelid AND l.objsubid = att.attnum
+         JOIN pg_namespace nsp ON rel.relnamespace = nsp.oid
+   WHERE l.objsubid <> 0
+     AND provider = ANY (anon.list_masking_policies())
+
+  UNION ALL
+
+  -- Functions
+  SELECT l.objoid,
+         pro.proname AS objname,
+         CASE pro.prokind
+             WHEN 'f'::"char" THEN 'function'::text
+             ELSE 'not supported'::text
+         END AS objtype,
+         NULL::int AS objsubid,
+         NULL::text AS objsubname,
+         NULL::text AS objsubtype,
+         nsp.oid AS objnamespaceoid,
+         nsp.nspname AS objnamespace,
+         quote_ident(nsp.nspname::text) || '.'::text || quote_ident(pro.proname::text) || '('::text || pg_get_function_identity_arguments(pro.oid) || ')'::text AS full_objname,
+         l.provider,
+         l.label
+    FROM pg_seclabel l
+         JOIN pg_proc pro ON l.classoid = pro.tableoid AND l.objoid = pro.oid
+         JOIN pg_namespace nsp ON pro.pronamespace = nsp.oid
+   WHERE l.objsubid = 0
+     AND provider = ANY (anon.list_masking_policies())
+
+  UNION ALL
+
+  -- Schema
+  SELECT l.objoid,
+         nsp.nspname as objname,
+         'schema'::text AS objtype,
+         NULL::int AS objsubid,
+         NULL::text AS objsubname,
+         NULL::text AS objsubtype,
+         nsp.oid AS objnamespaceoid,
+         nsp.nspname AS objnamespace,
+         quote_ident(nsp.nspname::text) AS full_objname,
+         l.provider,
+         l.label
+    FROM pg_seclabel l
+         JOIN pg_namespace nsp ON l.classoid = nsp.tableoid AND l.objoid = nsp.oid
+   WHERE l.objsubid = 0
+     AND provider = ANY (anon.list_masking_policies())
+
+  UNION ALL
+
+  -- Database
+ SELECT l.objoid,
+        dat.datname AS objname,
+        'database'::text AS objtype,
+        NULL::int AS objsubid,
+        NULL::text AS objsubname,
+        NULL::text AS objsubtype,
+        NULL::oid AS objnamespaceoid,
+        NULL::name AS objnamespace,
+        quote_ident(dat.datname::text) AS objname,
+        l.provider,
+        l.label
+   FROM pg_shseclabel l
+       JOIN pg_database dat ON l.classoid = dat.tableoid AND l.objoid = dat.oid
+
+  UNION ALL
+
+  -- Roles
+  SELECT l.objoid,
+         rol.rolname AS objname,
+         'role'::text AS objtype,
+         NULL::int AS objsubid,
+         NULL::text AS objsubname,
+         NULL::text AS objsubtype,
+         NULL::oid AS objnamespaceoid,
+         NULL::name AS objnamespace,
+         quote_ident(rol.rolname::text) AS full_objname,
+         l.provider,
+         l.label
+    FROM pg_shseclabel l
+        JOIN pg_authid rol ON l.classoid = rol.tableoid AND l.objoid = rol.oid
+   WHERE provider = ANY (anon.list_masking_policies())
+;
+
+-- List all rules for the configured providers in concise way
+--
+-- Note: objsubtype can be either column or NULL so it's safe to coalesce
+CREATE OR REPLACE VIEW anon.all_rules AS
+  SELECT provider,
+         coalesce(objsubtype, objtype) AS objtype,
+         full_objname,
+         label
+    FROM anon.seclabels;
+
+-- List all system rules set by PostgreSQL Anonymizer or in the pg_catalog
+-- namespace
+CREATE OR REPLACE VIEW anon.sys_rules AS
+  SELECT provider,
+         coalesce(objsubtype, objtype) AS objtype,
+         full_objname,
+         label
+    FROM anon.seclabels
+   WHERE objnamespaceoid::oid = ANY (ARRAY['anon'::regnamespace, 'pg_catalog'::regnamespace]::oid[]);
+
+-- List all user defined rules
+CREATE OR REPLACE VIEW anon.user_rules AS
+  SELECT provider,
+         coalesce(objsubtype, objtype) AS objtype,
+         full_objname,
+         label
+    FROM anon.seclabels
+   WHERE objnamespaceoid != ALL (ARRAY['anon'::regnamespace, 'pg_catalog'::regnamespace]::oid[])
+      OR objnamespaceoid IS NULL; -- roles have no schema

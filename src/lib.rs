@@ -445,6 +445,11 @@ mod anon {
         utils::get_function_schema(f)
     }
 
+    #[pg_extern]
+    pub fn list_masking_policies() -> Vec<String> {
+        masking::list_masking_policies()
+    }
+
     //------------------------------------------------------------------------
     // DEBUG
     //
@@ -459,12 +464,6 @@ mod anon {
     #[pg_extern]
     pub fn get_masking_policy(roleid: pg_sys::Oid) -> Option<String> {
         masking::get_masking_policy(roleid)
-    }
-
-    #[cfg(debug_assertions)]
-    #[pg_extern]
-    pub fn list_masking_policies() -> Vec<String> {
-        masking::list_masking_policies()
     }
 
     #[pg_extern(sql = "

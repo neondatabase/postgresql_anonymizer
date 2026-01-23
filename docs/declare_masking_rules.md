@@ -88,10 +88,12 @@ Listing masking rules
 ------------------------------------------------------------------------------
 
 To display all the masking rules declared in the current database, check out
-the `anon.pg_masking_rules`:
+the `anon.{all|sys|user}_rules` views:
 
 ```sql
-SELECT * FROM anon.pg_masking_rules;
+SELECT * FROM anon.all_rules;
+SELECT * FROM anon.sys_rules;
+SELECT * FROM anon.user_rules;
 ```
 
 Debugging masking rules

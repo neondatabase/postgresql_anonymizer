@@ -57,6 +57,7 @@ PGDATABASE?=contrib_regression
 REGRESS_TESTS = 000-setup
 REGRESS_TESTS = initialize
 REGRESS_TESTS+= anon_catalog
+REGRESS_TESTS+= catalog_views
 REGRESS_TESTS+= copy
 REGRESS_TESTS+= test_custom_values
 REGRESS_TESTS+= destruction
