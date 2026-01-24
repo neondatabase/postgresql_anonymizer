@@ -170,5 +170,4 @@ pub fn register_gucs() {
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
     );
-
 }
