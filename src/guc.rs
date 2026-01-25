@@ -29,6 +29,8 @@ pub static ANON_TRANSPARENT_DYNAMIC_MASKING: GucSetting<bool> = GucSetting::<boo
 
 pub static ANON_STATIC_MASKING: GucSetting<bool> = GucSetting::<bool>::new(true);
 
+pub static ANON_MAX_BG_WORKERS: GucSetting<i32> = GucSetting::<i32>::new(4);
+
 // The GUC vars below are not used in the Rust code
 // but they are used in the plpgsql code
 
@@ -169,5 +171,16 @@ pub fn register_gucs() {
         2147483647,
         GucContext::Suset,
         GucFlags::SUPERUSER_ONLY,
+    );
+
+    GucRegistry::define_int_guc(
+        c"anon.max_bg_workers",
+        c"Maximum number of background workers for parallel static masking",
+        c"",
+        &ANON_MAX_BG_WORKERS,
+        1,
+        64, // reasonable max
+        GucContext::Suset,
+        GucFlags::empty(),
     );
 }

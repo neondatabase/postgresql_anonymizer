@@ -44,6 +44,7 @@ extension_sql_file!("../sql/pseudo.sql", requires = ["init"]);
 extension_sql_file!("../sql/bindings.sql", requires = ["anon"]);
 extension_sql_file!("../sql/random.sql", requires = ["anon"]);
 extension_sql_file!("../sql/static_masking.sql", requires = ["anon"]);
+extension_sql_file!("../sql/parallel_static_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/replica_masking.sql", requires = ["anon"]);
 extension_sql_file!("../sql/custom_values.sql", requires = ["anon"]);
 
@@ -486,6 +487,86 @@ mod anon {
             .write_to(&mut output, format)
             .expect("Failed to write image");
         output.into_inner()
+    }
+
+    use pgrx::bgworkers::*;
+    const MAX_BG_WORKERS: i32 = 4;
+    use pgrx::pg_sys::MyProcPid;
+    #[pg_extern(sql = "
+        CREATE FUNCTION anon.anonymize_database_parallel(jobs INTEGER)
+        RETURNS BOOLEAN
+        AS 'MODULE_PATHNAME', 'anonymize_database_parallel_wrapper'
+        LANGUAGE C STRICT;
+    ")]
+    pub fn anonymize_database_parallel(jobs: i32) -> Option<bool> {
+        let nworkers = jobs.clamp(1, MAX_BG_WORKERS);
+        let notify_pid = unsafe { MyProcPid };
+        let current_db = Spi::get_one::<String>("SELECT current_database()::TEXT")
+            .expect("Failed to get current database name");
+
+        let mut workers = Vec::new(); // Store background workers
+        let oids = static_masking::get_masked_table_oids().unwrap();
+        for _group_idx in 0..nworkers {
+            //let serialized_tables = serde_json::to_string(group).expect("Failed to serialize tables");
+
+            let table_list = static_masking::dispatch_tables_oid(nworkers, _group_idx + 1, &oids)
+                .expect("Failed to get split table groups");
+            //info!("Table list for group {}/{}: {}", _group_idx + 1, nworkers,table_list.as_deref().unwrap_or("None"));
+            if let Some(table_list) = table_list {
+                let worker_name = format!("worker_{}", _group_idx);
+                let worker_data = format!("{}|{}", current_db.as_deref().unwrap(), table_list);
+                let _worker = BackgroundWorkerBuilder::new(&worker_name)
+                    .set_function("bgw_anon")
+                    .set_library("anon")
+                    .set_notify_pid(notify_pid)
+                    .set_argument(Some(notify_pid.into()))
+                    .set_extra(&worker_data)
+                    .enable_shmem_access(None)
+                    .enable_spi_access()
+                    .load_dynamic();
+                let worker: DynamicBackgroundWorker = _worker.expect("Failed to load bg worker");
+                worker
+                    .wait_for_startup()
+                    .expect("Failed to wait for startup");
+                workers.push(worker);
+            }
+        }
+
+        // Wait for all workers to complete and handle their results
+        for (idx, worker) in workers.into_iter().enumerate() {
+            let worker_name = format!("worker_{}", idx);
+
+            // Get the PID before waiting (while worker is still running)
+            let worker_pid = match worker.pid() {
+                Ok(pid) => {
+                    debug1!("Background worker {} has PID: {}", worker_name, pid);
+                    Some(pid)
+                }
+                Err(_e) => {
+                    debug1!("Could not get PID for worker {}", worker_name);
+                    None
+                }
+            };
+
+            // Wait for the worker to finish and handle the result
+            match worker.wait_for_shutdown() {
+                Ok(()) => {
+                    debug1!(
+                        "Background worker {} (PID: {:?}) completed successfully",
+                        worker_name,
+                        worker_pid
+                    );
+                }
+                Err(_e) => {
+                    debug1!(
+                        "Background worker {} (PID: {:?}) failed",
+                        worker_name,
+                        worker_pid
+                    );
+                }
+            }
+        }
+        Some(true)
     }
 }
 

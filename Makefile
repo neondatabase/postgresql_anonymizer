@@ -34,8 +34,8 @@ PGDATA_DIR=~/.pgrx/data-$(PG_MAJOR_VERSION)
 PATH:=$(PG_BINDIR):${PATH}
 
 # This is where the package is placed
-TARGET_SHAREDIR?=$(TARGET_DIR)/$(PG_SHAREDIR)
-TARGET_PKGLIBDIR?=$(TARGET_DIR)/$(PG_PKGLIBDIR)
+TARGET_SHAREDIR?=$(TARGET_DIR)$(PG_SHAREDIR)
+TARGET_PKGLIBDIR?=$(TARGET_DIR)$(PG_PKGLIBDIR)
 
 PG_REGRESS?=$(PG_PKGLIBDIR)/pgxs/src/test/regress/pg_regress
 PG_SOCKET_DIR?=/var/lib/postgresql/.pgrx/
@@ -101,6 +101,7 @@ REGRESS_TESTS+= ternary
 # DO NOT rename the `tests/sql/test_*` files !
 REGRESS_TESTS+= test_replica_masking
 REGRESS_TESTS+= test_static_masking
+REGRESS_TESTS+= test_parallel_static_masking
 REGRESS_TESTS+= transparent_dynamic_masking
 REGRESS_TESTS+= trusted_schemas
 REGRESS_TESTS+= views

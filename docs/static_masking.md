@@ -143,6 +143,63 @@ SELECT anon.anonymize_column('customer','zipcode','rgpd');
 By default, there's a single masking policy named "anon".
 
 
+Parallel Static Masking
+------------------------------------------------------------------------------
+
+For large databases, static masking can be a time-consuming operation. To improve
+performance, the extension supports parallel static masking using PostgreSQL
+background workers.
+
+Instead of using `anon.anonymize_database()`, you can use the parallel version:
+
+```sql
+SELECT anon.anonymize_database_parallel(4);
+```
+
+The parameter specifies the number of parallel workers to use. The function will:
+
+1. Analyze the foreign key relationships between tables
+2. Group tables to avoid constraint violations
+3. Distribute the work across multiple background workers
+4. Process tables in parallel where possible
+
+The maximum number of background workers can be configured using the GUC parameter
+`anon.max_bg_workers`:
+
+```sql
+-- Set the maximum number of background workers (default: 4)
+SET anon.max_bg_workers = 8;
+
+-- Or configure it system-wide
+ALTER SYSTEM SET anon.max_bg_workers = 8;
+SELECT pg_reload_conf();
+```
+
+The `anon.max_bg_workers` parameter accepts values between 1 and 64.
+On servers with many CPUs, you may want to increase this value to improve
+performance. The value is capped by PostgreSQL's guc: `max_worker_processes`
+(default: 8).
+
+Important considerations:
+
+* **Foreign Keys**: Tables with foreign key relationships are grouped together
+  and processed sequentially to maintain referential integrity.
+* **Independent Tables**: Tables without foreign key relationships can be
+  processed in parallel.
+* **Resource Usage**: More workers mean more CPU and I/O usage.
+  Monitor your system resources when increasing this value.
+* **Worker Availability**: The actual number of workers used may be limited by
+  PostgreSQL's `max_worker_processes` configuration.
+* **Logs**: In this first version of parallel static masking, dynmic background
+  workers are used. So there is no communication between main and background
+  process. That's why errors are logged into the PostgreSQL log file, but not
+  in stdout. If anonymize_database_parallel response is False, then check pg logs.
+* **atomic function**: The anon.anonymize_database_parallel() is NOT an atomic
+  function. If a worker fails, the others will not rollback, leaving the database
+  in an intermediate state: some tables will be anonymized, while others will
+  remain unchanged. In such situation, check the logs to find which tables were
+  not anonymized, and retry to apply the masking rules with anon.anonymize_table().
+
 Shuffling
 ------------------------------------------------------------------------------
 
