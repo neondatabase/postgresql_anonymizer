@@ -6,6 +6,8 @@ repo_url: https://gitlab.com/dalibo/postgresql_anonymizer
 edit_uri: edit/latest/docs/
 theme:
   name: readthedocs
+extra_css:
+  - overrides/main.css
 nav:
   - 'Quick Start': index.md
   - 'Install': 'INSTALL.md'

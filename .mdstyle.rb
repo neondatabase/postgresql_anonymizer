@@ -7,6 +7,7 @@ rule "MD024", :allow_different_nesting => true
 rule 'MD025', :level => 2
 exclude_rule 'MD026'
 exclude_rule 'MD029'
+exclude_rule 'MD033'  # To be removed when we switch to rumdl
 exclude_rule 'MD034'
 exclude_rule 'MD041'
 # Disable codeblock_style because we use a mix of fenced and indented in the doc

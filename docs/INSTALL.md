@@ -266,8 +266,10 @@ Install From Source
 
 > This is the recommended way to install the `latest` extension
 
-**Important**: Building the extension requires a full Rust development
-environment. It is not recommended to build it on a production server.
+!!! Important
+
+    Building the extension requires a full Rust development
+    environment. It is not recommended to build it on a production server.
 
 Before anything else, you need to install the [PGRX System Requirements] and
 install and initialise PGRX itself using
@@ -277,9 +279,12 @@ cargo install cargo-pgrx --version 0.14.3 --locked
 cargo pgrx init
 ```
 
-**NOTE**: You may need to specify your pg_config location in the second command
-by using the `--pg{version}` flag (e.g. `--pg16
-/usr/lib/postgresql/16/bin/pg_config`).
+!!! note
+
+    You may need to specify your pg_config location in the second command
+    by using the `--pg{version}` flag
+    (e.g. `--pg16 /usr/lib/postgresql/16/bin/pg_config`).
+
 
 _Step 0:_ Download the source from the
 [official repository on Gitlab](https://gitlab.com/dalibo/postgresql_anonymizer/),
@@ -402,7 +407,7 @@ Anonymizer extension, enabling you to anonymize data at the database level
 with zero performance overhead. Ideal for development workflows, safe data
 sharing, and reducing privacy risks.
 
-See https://django-postgres-anonymizer.readthedocs.io/
+See <https://django-postgres-anonymizer.readthedocs.io/>
 
 
 Install on MacOS
@@ -457,6 +462,13 @@ might have a platform-specific install procedure.
 [EDB Postgres]: https://www.enterprisedb.com/docs/pg_extensions/pg_anonymizer/
 [Yugabytes]: https://docs.yugabyte.com/stable/additional-features/pg-extensions/extension-pganon/
 
+!!! Note
+
+    Some editors don't follow our release cycle
+    and may offer an outdated version. For our part, we only provide community
+    support for the `stable` and `latest` versions (see above).
+    Extended Long Term Support is available via commercial support, contact our
+    [sales team](mailto:contact@dalibo.com) for more details.
 
 
 Install in the cloud
@@ -478,6 +490,7 @@ PostgreSQL Anonymizer:
 * [Microsoft Azure Database]
 * [Neon]
 * [Postgres.ai]
+* [Scalingo]
 * [Yandex]
 
 [Aiven]: https://aiven.io/blog/using-postgresql-anonymizer-to-safely-share-data-with-llms
@@ -488,10 +501,19 @@ PostgreSQL Anonymizer:
 [Microsoft Azure Database]: https://learn.microsoft.com/fr-fr/azure/postgresql/flexible-server/concepts-extensions
 [Neon]: https://neon.tech/docs/extensions/postgresql-anonymizer
 [Postgres.ai]: https://postgres.ai/docs/database-lab/masking
+[Scalingo]: https://doc.scalingo.com/databases/postgresql/guides/postgresql-anonymizer
 [Yandex]: https://yandex.cloud/en/docs/managed-postgresql/operations/extensions/pg_anon
 
 Please refer to their own documentation on how to activate the extension as they
 might have a platform-specific install procedure.
+
+!!! Note
+
+    Some cloud service providers don't follow our release cycle
+    and may offer an outdated version. For our part, we only provide community
+    support for the `stable` and `latest` versions (see above).
+    Extended Long Term Support is available via commercial support, contact our
+    [sales team](mailto:contact@dalibo.com) for more details.
 
 If your favorite DBaaS provider is not present in the list above, there is not
 much we can do about it... Although we have open discussions with most major
@@ -644,8 +666,8 @@ we officially support for each version.
 
 | Version  | Released   | EOL       | Postgres |    OS                  |
 |----------|------------|-----------|----------|------------------------|
-| 3.0      | jan. 2026  | dec. 2026 | 14 to 18 | RHEL 8, 9 & 10, Debian 12 & 13, Ubuntu 24.04 |
-| 2.0      | dec. 2024  | dec. 2025 | 13 to 17 | RHEL 8 & 9, Debian 11 & 12, Ubuntu 24.04 |
+| 3.x      | jan. 2026  | dec. 2026 | 14 to 18 | RHEL 8, 9 & 10, Debian 12 & 13, Ubuntu 24.04 |
+| 2.x      | dec. 2024  | dec. 2025 | 13 to 17 | RHEL 8 & 9, Debian 11 & 12, Ubuntu 24.04 |
 | 1.3      | mar. 2024  | dec. 2024 | 12 to 16 | RHEL 8 & 9 |
 | 1.2      | jan. 2024  | mar. 2024 | 12 to 16 | RHEL 8 & 9 |
 | 1.1      | sept. 2022 | jan. 2024 | 11 to 15 | RHEL 7 & 8 |

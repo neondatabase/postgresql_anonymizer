@@ -22,6 +22,8 @@ contrib_regression_test_restore.pgsql
 *.so
 # python
 _venv/
+# mkdocs
+site
 # artefacts
 _build/
 docs/how-to/_build/

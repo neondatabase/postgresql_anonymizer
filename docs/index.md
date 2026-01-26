@@ -49,7 +49,39 @@ guess which columns need to be anonymized.
 [generalization]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/#generalization
 [detection]: https://postgresql-anonymizer.readthedocs.io/en/stable/detection/
 
+Available on ...
+------------------------------------------------------------------------------
 
+PostgreSQL Anonymizer is available on multiple linux distributions,
+cloud service providers, development frameworks and PostgreSQL forks:
+
+<!-- markdownlint-disable MD033 -->
+<div class="grid">
+
+<a href="#" class="card"><img src="images/logos/aiven.png"></a>
+<a href="#" class="card"><img src="images/logos/alibaba.png"></a>
+<a href="#" class="card"><img src="images/logos/ansible.png"></a>
+<a href="#" class="card"><img src="images/logos/azure.png"></a>
+<a href="#" class="card"><img src="images/logos/crunchy.png"></a>
+<a href="#" class="card"><img src="images/logos/debian.png"></a>
+<a href="#" class="card"><img src="images/logos/django.png"></a>
+<a href="#" class="card"><img src="images/logos/docker.png"></a>
+<a href="#" class="card"><img src="images/logos/edb.png"></a>
+<a href="#" class="card"><img src="images/logos/google.png"></a>
+<a href="#" class="card"><img src="images/logos/greenplum.png"></a>
+<a href="#" class="card"><img src="images/logos/ibm.png"></a>
+<a href="#" class="card"><img src="images/logos/neon.png"></a>
+<a href="#" class="card"><img src="images/logos/postgrespro.png"></a>
+<a href="#" class="card"><img src="images/logos/redhat.png"></a>
+<a href="#" class="card"><img src="images/logos/rocky.png"></a>
+<a href="#" class="card"><img src="images/logos/ubuntu.png"></a>
+<a href="#" class="card"><img src="images/logos/yandex.png"></a>
+<a href="#" class="card"><img src="images/logos/yugabyte.png"></a>
+
+</div>
+
+
+See the [INSTALL](install) section for more details.
 
 Quick Start
 ------------------------------------------------------------------------------

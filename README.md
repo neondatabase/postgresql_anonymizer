@@ -8,6 +8,41 @@ Anonymization & Data Masking for Postgres
 [personally identifiable information] (PII) or commercially sensitive data from
 a Postgres database.
 
+
+Available on ...
+------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is available on multiple linux distributions,
+cloud service providers, development frameworks and PostgreSQL forks:
+
+<!-- markdownlint-disable MD033 -->
+<div class="grid">
+<a href="#" class="card"><img src="docs/images/logos/aiven.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/alibaba.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/ansible.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/azure.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/crunchy.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/debian.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/django.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/docker.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/edb.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/google.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/greenplum.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/ibm.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/neon.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/postgrespro.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/redhat.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/rocky.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/ubuntu.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/yandex.png"></a>
+<a href="#" class="card"><img src="docs/images/logos/yugabyte.png"></a>
+</div>
+
+See the [INSTALL](install) section for more details.
+
+Principles
+------------------------------------------------------------------------------
+
 The project has a **declarative approach** of anonymization. This means you can
 [declare the masking rules] using the PostgreSQL Data Definition Language (DDL)
 and specify your anonymization policy inside the table definition itself.

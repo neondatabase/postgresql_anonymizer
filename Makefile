@@ -343,6 +343,15 @@ docker_init: #: start a docker container
 lint:
 	cargo clippy --release
 
+##
+## D O C S
+##
+
+MKDOCS?=uvx mkdocs
+
+.PHONY: docs
+docs: 
+	$(MKDOCS) build
 
 ##
 ## DALIBO-specific Makefile
