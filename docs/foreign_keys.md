@@ -58,11 +58,10 @@ CREATE TABLE book (
 );
 ```
 
-
-ON CASCADE UPDATE
+ON UPDATE CASCADE
 -------------------------------------------------------------------------------
 
-For [static masking], the best solution is add the `ON CASCADE UPDATE` action
+For [static masking], the best solution is add the `ON UPDATE CASCADE` action
 to the foreign key :
 
 ```sql
