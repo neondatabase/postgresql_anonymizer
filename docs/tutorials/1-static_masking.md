@@ -128,11 +128,11 @@ SELECT id, firstname, lastname, phone
 FROM customer;
 ```
 
-| id  | firstname | lastname | phone        |
-|-----|-----------|----------|--------------|
-| 107 | Sarah     | Abshire  | 06X-XXX-XX11 |
-| 258 | Luke      | Goldner  | None         |
-| 341 | Don       | Sauer    | 34X-XXX-XX23 |
+| id  | firstname | lastname  | phone        |
+|-----|-----------|-----------|--------------|
+| 107 | Sarah     | Howell    | 06X-XXX-XX11 |
+| 258 | Luke      | Dickens   | None         |
+| 341 | Don       | Considine | 34X-XXX-XX23 |
 
 ------------------------------------------------------------------------
 
@@ -196,25 +196,25 @@ FROM customer c
 JOIN best_client b ON (c.id = b.fk_customer_id)
 ```
 
-| id  | firstname | lastname | phone        | birth      | postcode |
-|-----|-----------|----------|--------------|------------|----------|
-| 341 | Don       | Sauer    | 34X-XXX-XX23 | 1926-06-01 | 04520    |
+| id  | firstname | lastname  | phone        | birth      | postcode |
+|-----|-----------|-----------|--------------|------------|----------|
+| 341 | Don       | Considine | 34X-XXX-XX23 | 1926-06-01 | 04520    |
 
 💡 This is called **[Singling
 Out](https://www.pnas.org/content/117/15/8344) a person.**
 
 We need to anonymize even further by removing the link between a person
 and its company. In the `payout` table, this link is materialized by a
-foreign key on the field `fk_company_id`. However we can't remove values
-from this column or insert fake identifiers because if would break the
-foreign key constraint.
+foreign key on the field `fk_customer_id`. However we can't remove
+values from this column or insert fake identifiers because if would
+break the foreign key constraint.
 
 ------------------------------------------------------------------------
 
 How can we separate the customers from their payouts while respecting
 the integrity of the data?
 
-Find a function that will shuffle the column `fk_company_id` of the
+Find a function that will shuffle the column `fk_customer_id` of the
 `payout` table
 
 💡 Check out the [shuffling](static_masking#shuffling) section of the
@@ -301,9 +301,9 @@ FROM customer c
 JOIN best_client b ON (c.id = b.fk_customer_id);
 ```
 
-| id  | firstname | lastname | phone | birth      | postcode |
-|-----|-----------|----------|-------|------------|----------|
-| 258 | Lydia     | Toy      | None  | 1951-01-01 | 90xxx    |
+| id  | firstname | lastname | phone        | birth      | postcode |
+|-----|-----------|----------|--------------|------------|----------|
+| 107 | Stanton   | Raynor   | 06X-XXX-XX11 | 1965-01-01 | 90xxx    |
 
 ------------------------------------------------------------------------
 

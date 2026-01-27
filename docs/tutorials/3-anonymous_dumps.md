@@ -155,6 +155,9 @@ will call this role `anon_dumper` (the name does not matter) and declare
 that this role is masked.
 
 ``` sql
+
+DROP ROLE IF EXISTS anon_dumper;
+
 CREATE ROLE anon_dumper LOGIN PASSWORD 'CHANGEME';
 
 ALTER ROLE anon_dumper SET anon.transparent_dynamic_masking TO TRUE;
@@ -284,9 +287,9 @@ FROM website_comment;
 
 | clean_comment |
 |----|
-| {\'meta\': {\'name\': \'Gill\', \'email\': None, \'ip_address\': \'1d8cbcdef988d55982af1536922ddcd1\'}} |
-| {\'meta\': {\'name\': \'Henson\', \'email\': None, \'ip_address\': None}} |
-| {\'meta\': {\'name\': \'Mcmahon\', \'email\': None, \'ip_address\': None}} |
+| {\'meta\': {\'name\': \'Cantu\', \'email\': None, \'ip_address\': \'1d8cbcdef988d55982af1536922ddcd1\'}} |
+| {\'meta\': {\'name\': \'Holder\', \'email\': None, \'ip_address\': None}} |
+| {\'meta\': {\'name\': \'Hendrix\', \'email\': None, \'ip_address\': None}} |
 
 ``` sql
 SECURITY LABEL FOR anon ON COLUMN website_comment.message

@@ -7,8 +7,8 @@ run-sql:
 
 # 1- Static Masking
 
-💡 Static Masking is the simplest way to hide personal information! 
-This idea is simply to destroy the original data or replace it with 
+💡 Static Masking is the simplest way to hide personal information!
+This idea is simply to destroy the original data or replace it with
 an artificial one.
 
 ## Requirements
@@ -195,7 +195,7 @@ JOIN best_client b ON (c.id = b.fk_customer_id)
 
 We need to anonymize even further by removing the link between a person
 and its company. In the `payout` table, this link is materialized by a
-foreign key on the field `fk_company_id`. However we can't remove
+foreign key on the field `fk_customer_id`. However we can't remove
 values from this column or insert fake identifiers because if would
 break the foreign key constraint.
 
@@ -204,7 +204,7 @@ break the foreign key constraint.
 How can we separate the customers from their payouts while respecting
 the integrity of the data?
 
-Find a function that will shuffle the column `fk_company_id` of the
+Find a function that will shuffle the column `fk_customer_id` of the
 `payout` table
 
 💡 Check out the [shuffling] section of the [documentation].

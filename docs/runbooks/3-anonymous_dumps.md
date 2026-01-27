@@ -156,6 +156,9 @@ this role `anon_dumper` (the name does not matter) and declare that this role
 is masked.
 
 ``` run-postgres
+
+DROP ROLE IF EXISTS anon_dumper;
+
 CREATE ROLE anon_dumper LOGIN PASSWORD 'CHANGEME';
 
 ALTER ROLE anon_dumper SET anon.transparent_dynamic_masking TO TRUE;
