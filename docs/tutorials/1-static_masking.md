@@ -130,9 +130,9 @@ FROM customer;
 
 | id  | firstname | lastname  | phone        |
 |-----|-----------|-----------|--------------|
-| 107 | Sarah     | Howell    | 06X-XXX-XX11 |
-| 258 | Luke      | Dickens   | None         |
-| 341 | Don       | Considine | 34X-XXX-XX23 |
+| 107 | Sarah     | Greenholt | 06X-XXX-XX11 |
+| 258 | Luke      | Jacobi    | None         |
+| 341 | Don       | Howell    | 34X-XXX-XX23 |
 
 ------------------------------------------------------------------------
 
@@ -196,9 +196,9 @@ FROM customer c
 JOIN best_client b ON (c.id = b.fk_customer_id)
 ```
 
-| id  | firstname | lastname  | phone        | birth      | postcode |
-|-----|-----------|-----------|--------------|------------|----------|
-| 341 | Don       | Considine | 34X-XXX-XX23 | 1926-06-01 | 04520    |
+| id  | firstname | lastname | phone        | birth      | postcode |
+|-----|-----------|----------|--------------|------------|----------|
+| 341 | Don       | Howell   | 34X-XXX-XX23 | 1926-06-01 | 04520    |
 
 💡 This is called **[Singling
 Out](https://www.pnas.org/content/117/15/8344) a person.**
@@ -301,9 +301,9 @@ FROM customer c
 JOIN best_client b ON (c.id = b.fk_customer_id);
 ```
 
-| id  | firstname | lastname | phone        | birth      | postcode |
-|-----|-----------|----------|--------------|------------|----------|
-| 107 | Stanton   | Raynor   | 06X-XXX-XX11 | 1965-01-01 | 90xxx    |
+| id  | firstname | lastname | phone | birth      | postcode |
+|-----|-----------|----------|-------|------------|----------|
+| 258 | Jordyn    | Simonis  | None  | 1951-01-01 | 90xxx    |
 
 ------------------------------------------------------------------------
 

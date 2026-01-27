@@ -66,7 +66,7 @@ In order to make this workshop, you will need:
 -   A role "pierre" and a role "jack", both allowed to connect to
     the database "boutique"
 
-Check out the [INSTALL] section to learn how to install 
+Check out the [INSTALL] section to learn how to install
 the [PostgreSQL Anonymizer] extension:
 
 [INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/stable/INSTALL/
@@ -93,6 +93,7 @@ docker exec -it anon_tuto psql -U postgres
 
 
 !!! tip
+
     Check out the [INSTALL section](https://postgresql-anonymizer.readthedocs.io/en/stable/INSTALL)
     in the [documentation](https://postgresql-anonymizer.readthedocs.io/en/stable/)
     to learn how to install the extension in your PostgreSQL instance.
@@ -117,7 +118,8 @@ GRANT pg_write_all_data TO jack;
 Unless stated otherwise, all commands must be executed with the role `paul`.
 
 
-!!! Tip
+!!! tip
+
     Setup a `.pgpass` file to simplify the connections !
 
 ```console
@@ -145,5 +147,3 @@ We need to activate the `anon` library inside that database:
 ALTER DATABASE boutique
   SET session_preload_libraries = 'anon';
 ```
-
-

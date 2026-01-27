@@ -258,11 +258,11 @@ Now connect as Pierre and read the table again:
 SELECT * FROM company;
 ```
 
-| id  | name                    | vat_id     |
-|-----|-------------------------|------------|
-| 952 | Ebert and Feil and Sons | kmlxY7gUzu |
-| 194 | Hudson Group            | FOpQmPtb79 |
-| 346 | Robel Inc               | iZz0EtXzwV |
+| id  | name                       | vat_id     |
+|-----|----------------------------|------------|
+| 952 | Quigley and Feest and Sons | IQz8nNJzNN |
+| 194 | McClure and Sons           | wxpIxYMWUw |
+| 346 | Maggio and Heaney and Sons | eDlESuTcWE |
 
 Pierre will see different "fake data" every time he reads the table:
 
@@ -270,11 +270,11 @@ Pierre will see different "fake data" every time he reads the table:
 SELECT * FROM company;
 ```
 
-| id  | name                           | vat_id     |
-|-----|--------------------------------|------------|
-| 952 | Terry and Kunde LLC            | hd17IskdzF |
-| 194 | Oberbrunner and White and Sons | e2syn1HgGP |
-| 346 | Prohaska Inc                   | h137n4bACp |
+| id  | name                       | vat_id     |
+|-----|----------------------------|------------|
+| 952 | Huel and Rath Group        | p3bxk1BLGZ |
+| 194 | Ankunding Inc              | cDp1XFJRtJ |
+| 346 | Thompson and Schultz Group | JcPoPogE6U |
 
 Jack still sees the real data
 

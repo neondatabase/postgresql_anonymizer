@@ -77,11 +77,11 @@ docker run --name anon_tuto --detach -e POSTGRES_PASSWORD=x $ANON_IMG
 docker exec -it anon_tuto psql -U postgres
 ```
 
-!!! tip Check out the [INSTALL
-section](https://postgresql-anonymizer.readthedocs.io/en/stable/INSTALL)
-in the
-[documentation](https://postgresql-anonymizer.readthedocs.io/en/stable/)
-to learn how to install the extension in your PostgreSQL instance.
+!!! tip
+
+    Check out the [INSTALL section](https://postgresql-anonymizer.readthedocs.io/en/stable/INSTALL)
+    in the [documentation](https://postgresql-anonymizer.readthedocs.io/en/stable/)
+    to learn how to install the extension in your PostgreSQL instance.
 
 ## The Roles
 
@@ -100,7 +100,9 @@ GRANT pg_write_all_data TO jack;
 Unless stated otherwise, all commands must be executed with the role
 `paul`.
 
-!!! Tip Setup a `.pgpass` file to simplify the connections !
+!!! tip
+
+    Setup a `.pgpass` file to simplify the connections !
 
 ``` console
 cat > ~/.pgpass << EOL
