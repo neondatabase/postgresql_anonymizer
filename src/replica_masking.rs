@@ -91,7 +91,7 @@ pub fn refresh_replica_trigger_for_table(relid: pg_sys::Oid, policy: String) -> 
         relint = relid,
         tablename = tablename,
         new_assignments = trigger_new_assignments(relid, policy.clone())?,
-        random = fastrand::u8(..),
+        random = fastrand::u128(..),
     )
     .to_string();
 
