@@ -23,6 +23,7 @@ CREATE OR REPLACE FUNCTION anon.refresh_replica_masking(
 )
 RETURNS BOOLEAN AS
 $$
+  SELECT anon.stop_replica_masking();
   SELECT bool_or(anon.refresh_replica_trigger_for_table(t.regclass,policy))
   FROM (
       SELECT distinct attrelid::REGCLASS as regclass

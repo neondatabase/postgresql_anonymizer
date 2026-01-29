@@ -64,6 +64,13 @@ CREATE TABLE "MyApp".person (
   company TEXT
 );
 
+CREATE TABLE "MyApp".phone (
+  id SERIAL PRIMARY KEY,
+  fk_person_id INT,
+  number TEXT
+);
+
+
 GRANT USAGE  ON SCHEMA "MyApp" TO contrib_repli;
 GRANT ALL    ON ALL TABLES IN SCHEMA "MyApp" TO contrib_repli;
 
@@ -105,6 +112,28 @@ SECURITY LABEL FOR anon ON COLUMN "MyApp".person.name
   IS 'MASKED WITH FUNCTION anon.dummy_name()';
 
 SELECT anon.refresh_replica_masking();
+
+-------------------------------------------------------------------------------
+-- Remove a new masking rule
+-------------------------------------------------------------------------------
+
+SECURITY LABEL FOR anon ON COLUMN "MyApp".phone.number
+  IS 'MASKED WITH VALUE NULL';
+
+SELECT anon.refresh_replica_masking();
+
+SELECT COUNT(*)=1
+FROM pg_trigger
+WHERE tgname = 'tg_anon_replica_masking_' || '"MyApp".phone'::REGCLASS::OID;
+
+SECURITY LABEL FOR anon ON COLUMN "MyApp".phone.number
+  IS NULL;
+
+SELECT anon.refresh_replica_masking();
+
+SELECT COUNT(*)=0
+FROM pg_trigger
+WHERE tgname = 'tg_anon_replica_masking_' || '"MyApp".phone'::REGCLASS::OID;
 
 -------------------------------------------------------------------------------
 -- Testing INSERT
