@@ -52,14 +52,15 @@ firmly believe that data masking rules should be written by the people who devel
 the application because they have the best knowledge of how the data model works.
 Therefore masking rules must be implemented directly inside the database schema.
 
-Once the masking rules are defined, you can apply them using 5 different
+Once the masking rules are defined, you can apply them using 6 different
 **masking methods** :
 
-* [Anonymous Dumps] : Simply export the masked data into an SQL file
-* [Static Masking] : Remove the PII according to the rules
-* [Dynamic Masking] : Hide PII only for the masked users
-* [Masking Views] : Build dedicated views for the masked users
-* [Masking Data Wrappers] : Apply masking rules on external data
+* [Anonymous Dumps]: Simply export the masked data into an SQL file
+* [Static Masking]: Remove the PII according to the rules
+* [Dynamic Masking]: Hide PII only for the masked users
+* [Replica Masking]: Create an anonymized clone of a database
+* [Masking Views]: Build dedicated views for the masked users
+* [Masking Data Wrappers]: Apply masking rules on external data
 
 Each method has its pros and cons. Different masking methods may be used in
 different contexts. In any case, masking the data directly inside the PostgreSQL
@@ -78,6 +79,7 @@ guess which columns need to be anonymized.
 [Anonymous Dumps]: https://postgresql-anonymizer.readthedocs.io/en/stable/anonymous_dumps/
 [Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/stable/static_masking/
 [Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/stable/dynamic_masking/
+[Replica Masking]: https://postgresql-anonymizer.readthedocs.io/en/stable/replica_masking/
 [Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_functions/
 [Masking Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
 [Masking Data Wrappers]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_data_wrappers/

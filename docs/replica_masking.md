@@ -1,22 +1,6 @@
 Anonymous Replica
 ===============================================================================
 
-WARNING! DO NOT USE IN PRODUCTION
--------------------------------------------------------------------------------
-
-This feature is currently under heavy development. This implementation of
-Replica Masking is provided for testing purpose only. Major breaking changes
-may be introduced at any time and we may even remove this feature entirely
-if we feel it does not reach our standard of quality and stability.
-
-We welcome any feedback, testing reports, comments and contributions. But at
-the moment, we do not guarantee any form of support for this feature.
-
-Our current plan is to stabilize this feature in version 3.0, which is
-scheduled for early 2026.
-
-Thanks for your understanding.
-
 Principle
 -------------------------------------------------------------------------------
 
