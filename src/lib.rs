@@ -9,6 +9,7 @@ mod error;
 mod fixture;
 mod guc;
 mod hooks;
+mod impexp;
 mod input;
 mod label_providers;
 mod log;
@@ -66,6 +67,7 @@ mod anon {
     // Dummy Functions
     //------------------------------------------------------------------------
     use crate::dummy;
+    use crate::impexp;
     use fake::locales::*;
     use fake::Fake;
 
@@ -449,6 +451,29 @@ mod anon {
     #[pg_extern]
     pub fn list_masking_policies() -> Vec<String> {
         masking::list_masking_policies()
+    }
+
+    #[pg_extern]
+    pub fn export_current_database_rules(provider: default!(String, "'anon'")) -> pgrx::JsonB {
+        impexp::export_current_database_rules(provider.as_ref())
+    }
+
+    #[pg_extern]
+    pub fn export_roles_rules(provider: default!(String, "'anon'")) -> pgrx::JsonB {
+        impexp::export_role_rules(provider.as_ref())
+    }
+
+    #[pg_extern(volatile, parallel_unsafe)]
+    pub fn import_roles_rules(role_rules: pgrx::JsonB, provider: default!(String, "'anon'")) {
+        impexp::import_role_rules(role_rules, provider.as_ref())
+    }
+
+    #[pg_extern(volatile, parallel_unsafe)]
+    pub fn import_database_rules(
+        database_rules: pgrx::JsonB,
+        provider: default!(String, "'anon'"),
+    ) {
+        impexp::import_database_rules(database_rules, provider.as_ref())
     }
 
     //------------------------------------------------------------------------

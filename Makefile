@@ -74,6 +74,7 @@ REGRESS_TESTS+= get_function_schema
 REGRESS_TESTS+= hashing
 REGRESS_TESTS+= identity
 REGRESS_TESTS+= image_blur
+REGRESS_TESTs+= impexp
 REGRESS_TESTS+= injection
 REGRESS_TESTS+= k_anonymity
 REGRESS_TESTS+= masking_cursors
@@ -172,7 +173,7 @@ installcheck: stop start
 	dropuser oscar_the_owner || echo 'ignored'
 	createuser $(PSQL_OPT) postgres --superuser || echo 'ignored'
 	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET session_preload_libraries = 'anon';"
-	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET anon.masking_policies = 'devtests, analytics';"
+	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET anon.masking_policies = 'devtests, analytics, impexp';"
 	psql $(PSQL_OPT) $(PGDATABASE) -c "ALTER DATABASE $(PGDATABASE) SET client_min_messages = notice;"
 	$(PG_REGRESS) \
 		$(PSQL_OPT) \
