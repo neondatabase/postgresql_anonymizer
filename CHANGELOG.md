@@ -3,8 +3,28 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-2026???? : 3.0.0 - WIP
+20260204 : 3.0.0 - Parallel Static Masking + JSON Import/Export
 -------------------------------------------------------------------------------
+
+* [core] Add functions to import and export to and from a nested json format
+* [docs] replica masking is GA
+* [replica] Remove triggers when a masking is removed
+* [replica] Make labels more random in replica masking trigger functions
+* [docs] available on...
+* [docs] tips are not displayed (Robin Portigliatti)
+* [docs] typo in the tutorial (Ludovic GILBON)
+* [docs] fixup ON UPDATE CASCADE (EFLUID)
+* [static] Parallel Static Masking (Pierre-Marie Petit)
+* [core] Adds 4 catalog views
+* [dynamic] Remove Legacy Dynamic Masking
+* [docs] Foreign Keys
+* [meta] Guidelines for AI content
+* [packaging] Build and Publish OCI image
+* [static] always defer all constraints
+* [static] Improve selective masking (EFLUID)
+* [docs] Links to Matrix and Discord
+* [core] Custom Values (EFLUID)
+* [core] Drop PostgreSQL 13
 
 20251118 : 2.5.1 - Minor bug fixes
 -------------------------------------------------------------------------------

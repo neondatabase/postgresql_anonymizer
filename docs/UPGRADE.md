@@ -7,6 +7,32 @@ The operation `ALTER EXTENSION ... UPDATE ...` is not supported.
 
 You need to drop and recreate the extension after every upgrade.
 
+Upgrade to version 3.0 and further versions
+-------------------------------------------------------------------------------
+
+### PostgreSQL 13 is not supported anymore
+
+PostgreSQL 13 is now EOL.
+If you're running PostgreSQL Anonymizer on an
+obsolete PostgreSQL version, please upgrade your instance first.
+
+### Legacy Dynamic Masking is fully removed
+
+The "Legacy Dynamic Masking" was the dynamic masking method used in version
+1.x. It is now completely removed and replaced by "Transparent Dynamic Masking".
+
+If you are still using Legacy Dynamic Masking in version 2.x, you must
+disable it **BEFORE** upgrading the extension with:
+
+``` sql
+SELECT anon.stop_legacy_dynamic_masking();
+```
+
+### Breaking changes in internal catalogs
+
+If you wrote SQL requests using the `anon.pg_masking_rules` view, you must
+replace them with `anon.user_rules` view and adapt accordingly.
+
 
 Upgrade to version 2.0 and further versions
 -------------------------------------------------------------------------------

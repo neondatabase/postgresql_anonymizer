@@ -16,15 +16,15 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
-
+* Ludovic Gilbon: Documentation
 * Alex Akeno: Bug fix
 * pkhartsk: Documentation and cleaning
 * MonsieurTain: Bug reports and analysis
 * Marcus Olsson: Documentation
 * mardub: Documentation
 * Pierre Giraud: Proofreading
-* Benoit Lobréau: Prototyping, Code Review
-* Robin Portigliatti: Tutorials
+* Benoit Lobréau: Prototyping, Code Review, Major Contributions
+* Robin Portigliatti: Tutorials and doc reviews
 * Suhas Thalanki: Build on Mac OS X
 * Daniel Solsona: Feature idea
 * Jukka Heiskanen: Bug reports and analysis

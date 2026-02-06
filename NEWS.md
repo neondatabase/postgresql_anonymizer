@@ -1,3 +1,140 @@
+PostgreSQL Anonymizer 3.0 : Parallel Static Masking + JSON import / export
+================================================================================
+
+Eymoutiers, France, Februrary 5th, 2026
+
+Dalibo publishes `PostgreSQL Anonymizer 3.0`, a new major version of
+our privacy by design extension.
+
+Enhanced Privacy Protection for Your Data
+--------------------------------------------------------------------------------
+
+`PostgreSQL Anonymizer` is an extension that hides or replaces personally
+identifiable information (PII) or commercially sensitive data from a PostgreSQL
+database.
+
+The extension offers 6 different masking strategies:
+
+* [Dynamic Masking] - Real-time data protection
+* [Static Masking] - Permanent data transformation
+* [Replica Masking] - Anonymized logical replication
+* [Backup Masking] - Privacy-protected database exports
+* [Masking Views] - Controlled data visibility
+* [Masking Data Wrappers] - Extended protection across systems
+
+Each strategy is complemented by an enhanced suite of Masking Functions, including
+advanced techniques such as: Substitution, Randomization, Faking, Pseudonymization,
+Partial Scrambling, Shuffling, Noise Addition and Generalization.
+
+The extension can be installed with Debian and RPM packages, an Ansible role, a Docker
+image, etc. You can use it on most major DBaaS providers including : Alibaba Cloud,
+Crunchy Bridge, Google Cloud SQL, IBM Cloud, Microsoft Azure Database, Neon, Yandex
+It is also available on some Postgres forks such as EDB Advanced Postgres, Greenplum
+and Yugabyte.
+
+See the [INSTALL] section of the documentation for more details!
+
+
+[Masking Functions]: https://postgresql-anonymizer.readthedocs.io/en/latest/masking_functions/
+[Backup Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/anonymous_dumps/
+[Static Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/static_masking/
+[Dynamic Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/dynamic_masking/
+[Replica Masking]: https://postgresql-anonymizer.readthedocs.io/en/latest/replica_masking/
+[Masking Views]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_views/
+[Masking Data Wrappers]: https://postgresql-anonymizer.readthedocs.io/en/stable/masking_data_wrappers/
+[INSTALL]: https://postgresql-anonymizer.readthedocs.io/en/latest/INSTALL/
+
+
+Parallel Static Masking
+--------------------------------------------------------------------------------
+
+For a large database, static masking can be a time-consuming operation. To improve
+performance, the extension supports parallel static masking using PostgreSQL
+background workers.
+
+Instead of using `anon.anonymize_database()`, you can use the parallel version:
+
+```sql
+SELECT anon.anonymize_database_parallel(4);
+```
+
+The parameter specifies the number of parallel workers to use. The function will:
+
+1. Analyze the foreign key relationships between tables
+2. Group tables to avoid constraint violations
+3. Distribute the work across multiple background workers
+4. Process tables in parallel where possible
+
+This feature was added by Pierre-Marie Petit.
+
+
+JSON Import / Export
+--------------------------------------------------------------------------------
+
+When a masking policy contains a lot of rules, it can be difficult to maintain
+them as a long list of Security Labels. To simplify thinks and help automating
+the management of masking rules, rules can now be imported and exported in
+JSON format via the functions :
+
+* `anon.export_current_database_rules(policy text DEFAULT 'anon')`
+* `anon.export_roles_rules(policy text DEFAULT 'anon')`
+* `anon.import_database_rules(database_rules jsonb, policy text DEFAULT 'anon')`
+* `anon.import_roles_rules(role_rules jsonb, policy text DEFAULT 'anon'`
+
+Since roles are instance wide objects they must be managed separately.
+
+This feature was contributed by Benoit Lobréau.
+
+
+Deprecations and Removed Features
+--------------------------------------------------------------------------------
+
+This major comes with a series of breaking changes, in particular:
+
+* PostgreSQL 13 is not supported anymore
+* Legacy Static Masking was deprecated since version 2.0 and it is now fully removed
+* The `anon.pg_masking_rules` view is replaced by `anon.{all|sys|user}_rules`
+* Support for RHEL 8 is now deprecated and we plan to fully remove it in
+  version 4.0 in 2027
+
+For upgrade instructions, please refer to the [UPGRADE] section in the
+documentation.
+
+
+Acknowledgments
+--------------------------------------------------------------------------------
+
+This release also includes code, bugfixes, documentation, code reviews and ideas
+from Pierre-Marie Petit, Benoit Lobréau, Robin Portigliatti, Ludovic Gilbon
+and other [contributors].
+
+We would like to thanks the people at [Efluid] who helped us with their ideas,
+comments and testing.
+
+[Efluid]: https://www.efluid.com/
+
+And also special thanks to the [PGRX] team for their amazing work!
+
+[contributors]: https://gitlab.com/dalibo/postgresql_anonymizer/-/blob/master/AUTHORS.md
+[PGRX]: https://github.com/pgcentralfoundation/pgrx
+
+
+Join our community to improve data privacy!
+--------------------------------------------------------------------------------
+
+PostgreSQL Anonymizer is part of the [Dalibo Labs] initiative. It is mainly
+developed by [Damien Clochard].
+
+This is an open project, contributions are welcome. We need your feedback and
+ideas! Let us know what you think of this tool, how it fits your needs and
+what features are missing.
+
+If you want to help, you can find a list of [Junior Jobs].
+
+[Junior Jobs]: https://gitlab.com/dalibo/postgresql_anonymizer/issues?label_name%5B%5D=Junior+Jobs
+
+
+--------------------------------------------------------------------------------
 
 PostgreSQL Anonymizer 2.5 : Maintenance Release
 ================================================================================

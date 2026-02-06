@@ -661,13 +661,14 @@ Compatibility Guide
 PostgreSQL Anonymizer is designed to work on the most current setups.
 As we are trying to find the right balance between innovation and backward
 compatibility, we define a comprehensive list of platforms and software that
-we officially support for each version.
+we officially support for each major version.
 
 
 | Version  | Released   | EOL       | Postgres |    OS                  |
 |----------|------------|-----------|----------|------------------------|
-| 3.x      | jan. 2026  | dec. 2026 | 14 to 18 | RHEL 8, 9 & 10, Debian 12 & 13, Ubuntu 24.04 |
-| 2.x      | dec. 2024  | dec. 2025 | 13 to 17 | RHEL 8 & 9, Debian 11 & 12, Ubuntu 24.04 |
+| 4.x (WIP)  | jan. 2027  | jan. 2028 | 15 to 19 | RHEL 9 & 10, Debian 13 & 14, Ubuntu 26.04 |
+| 3.x      | jan. 2026  | jan. 2027 | 14 to 18 | RHEL 8, 9 & 10, Debian 12 & 13, Ubuntu 24.04 |
+| 2.x      | dec. 2024  | jan. 2026 | 13 to 17 | RHEL 8 & 9, Debian 11 & 12, Ubuntu 24.04 |
 | 1.3      | mar. 2024  | dec. 2024 | 12 to 16 | RHEL 8 & 9 |
 | 1.2      | jan. 2024  | mar. 2024 | 12 to 16 | RHEL 8 & 9 |
 | 1.1      | sept. 2022 | jan. 2024 | 11 to 15 | RHEL 7 & 8 |
