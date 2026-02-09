@@ -37,6 +37,8 @@ SECURITY LABEL FOR anon ON SCHEMA anon IS 'TRUSTED';
 -- https://www.cybertec-postgresql.com/en/abusing-security-definer-functions/
 --
 
+SET search_path='';
+
 -------------------------------------------------------------------------------
 -- TRUSTED pg_catalog functions
 -------------------------------------------------------------------------------
@@ -1038,3 +1040,6 @@ CREATE OR REPLACE VIEW anon.user_rules AS
     FROM anon.seclabels
    WHERE objnamespaceoid != ALL (ARRAY['anon'::regnamespace, 'pg_catalog'::regnamespace]::oid[])
       OR objnamespaceoid IS NULL; -- roles have no schema
+
+
+RESET search_path;

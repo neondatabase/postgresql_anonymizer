@@ -2,6 +2,8 @@
 -- Fake Data
 -------------------------------------------------------------------------------
 
+SET search_path='';
+
 -- Address
 DROP TABLE IF EXISTS anon.address;
 CREATE TABLE anon.address (
@@ -146,3 +148,6 @@ GRANT SELECT ON SEQUENCE anon.lorem_ipsum_oid_seq TO PUBLIC;
 COMMENT ON TABLE anon.lorem_ipsum IS 'Fake text';
 
 -- ADD NEW TABLE HERE
+
+
+RESET search_path;

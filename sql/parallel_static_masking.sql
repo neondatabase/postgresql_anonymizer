@@ -1,3 +1,6 @@
+
+SET search_path='';
+
 CREATE OR REPLACE FUNCTION anon.get_related_tables(start_table_oid OID)
 RETURNS TABLE (
     table_oid OID
@@ -211,3 +214,5 @@ BEGIN
     ORDER BY f.group_id;
 END;
 $$ LANGUAGE plpgsql;
+
+RESET search_path;

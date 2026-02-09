@@ -2,6 +2,8 @@
 -- Pseudonymized data
 -------------------------------------------------------------------------------
 
+SET search_path='';
+
 --
 -- All pseudonymizing functions are declared as `RESTRICTED` which means they
 -- are `TRUSTED` but masked users can't call them directly.
@@ -314,3 +316,5 @@ $$
 
 -- Set a random value to the shift when the extension is loaded
 SELECT anon.set_shift();
+
+RESET search_path;

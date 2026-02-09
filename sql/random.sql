@@ -5,8 +5,9 @@
 -- accessing any dictionary.
 --
 
--- sequenced id
+SET search_path = '';
 
+-- sequenced id
 CREATE SEQUENCE anon.random_id_seq CYCLE;
 
 SELECT pg_catalog.setval('anon.random_id_seq', (9223372036854775807*pg_catalog.random())::BIGINT);
@@ -235,3 +236,5 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+RESET search_path;

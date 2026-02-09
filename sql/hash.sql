@@ -2,6 +2,8 @@
 --- Generic hashing
 -------------------------------------------------------------------------------
 
+SET search_path='';
+
 -- Return the hash of a value for a given algorithm and a salt
 -- Standard algorithms are md5, sha224, sha256, sha384 and sha512
 --
@@ -72,3 +74,4 @@ $$
   SET search_path = ''
 ;
 
+RESET search_path;

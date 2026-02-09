@@ -2,6 +2,8 @@
 -- FAKE data
 -------------------------------------------------------------------------------
 
+SET search_path='';
+
 -- We avoid using the floor() function in the function below because it is
 -- way too slow. Instead we're using the mod operator like this:
 --    (pg_catalog.random()*last_value)::INTEGER%last_value
@@ -251,3 +253,5 @@ $$
   SECURITY INVOKER
   SET search_path=''
 ;
+
+RESET search_path;

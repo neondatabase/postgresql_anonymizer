@@ -3,6 +3,8 @@
 -- Wait for PGRX 0.12 rc to remove this function
 --
 
+SET search_path='';
+
 -- Walk through all tables with a masked column and execute anonymize_table on them
 CREATE OR REPLACE FUNCTION anon.anonymize_database(policy TEXT DEFAULT 'anon')
 RETURNS BOOLEAN AS
@@ -22,3 +24,5 @@ $$
 ;
 
 SECURITY LABEL FOR anon ON FUNCTION anon.anonymize_database IS 'UNTRUSTED';
+
+RESET search_path;

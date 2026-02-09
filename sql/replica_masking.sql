@@ -1,4 +1,4 @@
-
+SET search_path='';
 
 CREATE OR REPLACE FUNCTION anon.start_replica_masking(
   policy TEXT DEFAULT 'anon'
@@ -140,3 +140,5 @@ $$
 ;
 
 SECURITY LABEL FOR anon ON FUNCTION anon.stop_replica_masking() IS 'UNTRUSTED';
+
+RESET search_path;

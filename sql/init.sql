@@ -2,6 +2,8 @@
 -- Functions : INIT / RESET
 -------------------------------------------------------------------------------
 
+SET search_path='';
+
 -- ADD unit tests in tests/sql/init.sql
 
 CREATE OR REPLACE FUNCTION anon.load_csv(
@@ -264,3 +266,5 @@ $$
 ;
 
 SECURITY LABEL FOR anon ON FUNCTION anon.unload IS 'UNTRUSTED';
+
+RESET search_path;

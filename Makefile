@@ -65,6 +65,7 @@ REGRESS_TESTS+= detection
 REGRESS_TESTS+= drop_objects
 REGRESS_TESTS+= dropped_columns
 REGRESS_TESTS+= dummy
+REGRESS_TESTS+= elevation_via_operator
 REGRESS_TESTS+= faking
 REGRESS_TESTS+= foreign_keys
 REGRESS_TESTS+= fdw
@@ -118,7 +119,7 @@ REGRESS_TESTS+= when
 # * the _PG13- suffix means PostgreSQL 13 and all the major versions below
 
 REGRESS_TESTS_PG14 = elevation_via_security_definer_function_PG14-
-REGRESS_TESTS_PG15 = 
+REGRESS_TESTS_PG15 =
 REGRESS_TESTS_PG16 =
 REGRESS_TESTS_PG17 =
 
@@ -351,7 +352,7 @@ lint:
 MKDOCS?=uvx mkdocs
 
 .PHONY: docs
-docs: 
+docs:
 	$(MKDOCS) build
 
 ##
