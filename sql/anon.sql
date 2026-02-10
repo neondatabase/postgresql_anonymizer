@@ -619,34 +619,6 @@ ORDER BY attrelid, attnum, priority DESC
 
 GRANT SELECT ON anon.pg_masking_rules TO PUBLIC;
 
--- get the TABLESAMPLE ratio declared for this table, if any
-CREATE OR REPLACE FUNCTION anon.get_tablesample_ratio(relid OID)
-RETURNS TEXT
-AS $$
-  SELECT COALESCE(
-    (
-    SELECT sl.label
-    FROM pg_catalog.pg_seclabel sl
-    WHERE sl.objoid = relid
-    AND sl.objsubid = 0
-    AND sl.provider = 'anon'
-    ),
-    (
-    SELECT sl.label
-    FROM pg_catalog.pg_seclabels sl
-    WHERE sl.provider = 'anon'
-    AND objtype='database'
-    AND objoid = (SELECT oid FROM pg_database WHERE datname=current_database())
-    )
-  )
-  ;
-$$
-  LANGUAGE SQL
-  PARALLEL SAFE
-  SECURITY DEFINER
-  SET search_path=''
-;
-
 --
 -- Unmask all the role at once
 --

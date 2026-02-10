@@ -2,12 +2,6 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 CREATE TABLE hundred AS
 SELECT generate_series(1,100) AS h;
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
 SAVEPOINT before_error_invalid_label;
   SECURITY LABEL FOR anon ON TABLE hundred IS 'INVALID LABEL';
 ERROR:  Anon: `INVALID LABEL` is not a valid label for a table
@@ -24,27 +18,9 @@ DETAIL:  TABLESAMPLE BERNOULLI (33); CREATE ROLE bob SUPERUSER; is not a valid e
 ROLLBACK TO before_sql_injection;
 SECURITY LABEL FOR anon ON TABLE hundred
 IS 'TABLESAMPLE SYSTEM(33)';
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NOT NULL;
- ?column? 
-----------
- t
-(1 row)
-
 SECURITY LABEL FOR anon ON TABLE hundred IS NULL;
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NULL;
- ?column? 
-----------
- t
-(1 row)
-
 SECURITY LABEL FOR anon ON DATABASE contrib_regression
 IS 'TABLESAMPLE BERNOULLI(50)';
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NOT NULL;
- ?column? 
-----------
- t
-(1 row)
-
 SECURITY LABEL FOR anon ON COLUMN hundred.h
 IS 'MASKED WITH VALUE 0';
 SELECT count(*) = 100 FROM hundred;

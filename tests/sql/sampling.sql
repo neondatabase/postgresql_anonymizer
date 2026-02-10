@@ -5,8 +5,6 @@ CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 CREATE TABLE hundred AS
 SELECT generate_series(1,100) AS h;
 
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NULL;
-
 SAVEPOINT before_error_invalid_label;
   SECURITY LABEL FOR anon ON TABLE hundred IS 'INVALID LABEL';
 ROLLBACK TO before_error_invalid_label;
@@ -23,16 +21,10 @@ ROLLBACK TO before_sql_injection;
 SECURITY LABEL FOR anon ON TABLE hundred
 IS 'TABLESAMPLE SYSTEM(33)';
 
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NOT NULL;
-
 SECURITY LABEL FOR anon ON TABLE hundred IS NULL;
-
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NULL;
 
 SECURITY LABEL FOR anon ON DATABASE contrib_regression
 IS 'TABLESAMPLE BERNOULLI(50)';
-
-SELECT anon.get_tablesample_ratio('hundred'::REGCLASS::OID) IS NOT NULL;
 
 
 SECURITY LABEL FOR anon ON COLUMN hundred.h
