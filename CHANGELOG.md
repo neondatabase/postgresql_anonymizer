@@ -3,7 +3,7 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
-20260204 : 3.0.0 - Parallel Static Masking + JSON Import/Export
+20260204 : 3.0.1 - Parallel Static Masking + JSON Import/Export
 -------------------------------------------------------------------------------
 
 * [core] Add functions to import and export to and from a nested json format
@@ -25,6 +25,10 @@ CHANGELOG
 * [docs] Links to Matrix and Discord
 * [core] Custom Values (EFLUID)
 * [core] Drop PostgreSQL 13
+* [sampling] remove unused function ( see CVE-2026-2361 )
+* [core] Protect operators against uncontrolled search_path elements
+  ( see CVE-2026-2360 )
+
 
 20251118 : 2.5.1 - Minor bug fixes
 -------------------------------------------------------------------------------

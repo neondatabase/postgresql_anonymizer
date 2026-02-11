@@ -16,6 +16,7 @@ help of many contributors.
 Contributors
 -------------------------------------------------------------------------------
 
+* Daniel Bakker: Security reports
 * Ludovic Gilbon: Documentation
 * Alex Akeno: Bug fix
 * pkhartsk: Documentation and cleaning

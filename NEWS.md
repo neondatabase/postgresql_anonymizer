@@ -1,7 +1,7 @@
 PostgreSQL Anonymizer 3.0 : Parallel Static Masking + JSON import / export
 ================================================================================
 
-Eymoutiers, France, Februrary 5th, 2026
+Eymoutiers, France, Februrary 11th, 2026
 
 Dalibo publishes `PostgreSQL Anonymizer 3.0`, a new major version of
 our privacy by design extension.
@@ -84,6 +84,26 @@ JSON format via the functions :
 Since roles are instance wide objects they must be managed separately.
 
 This feature was contributed by Benoit Lobréau.
+
+Important Security Updates
+--------------------------------------------------------------------------------
+
+Version 3.0 includes fixes for 2 critical vulnerabilities allowing users to
+gain superuser privileges under certains circumstances. The risk is very high
+on PostgreSQL 14 and on instances upgrades from PostgreSQL 14 and earlier.
+
+**All users should upgrade the extension to version 3.0 as soon as possible.**
+
+If a quick upgrade is not possible, the workaround below can mitigate the risk:
+
+    REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+    DROP FUNCTION anon.get_tablesample_ratio(OID);
+
+For more details see [issue 616] (CVE-2026-2360) and [issue 617] (CVE-2026-2361).
+
+[issue 616]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/616
+[issue 617]: https://gitlab.com/dalibo/postgresql_anonymizer/-/issues/617
+
 
 
 Deprecations and Removed Features
