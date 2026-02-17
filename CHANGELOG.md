@@ -3,6 +3,13 @@ CHANGELOG
 
 <!-- git log --oneline $(git describe --tags --abbrev=0 @^)..@ -->
 
+20260217 : 3.0.5 - Build on ARM64
+-------------------------------------------------------------------------------
+
+( tags 3.0.2, 3.0.3, 3.0.4 were used for CI testing and are skipped )
+
+* [CI] Build on ARM
+
 20260204 : 3.0.1 - Parallel Static Masking + JSON Import/Export
 -------------------------------------------------------------------------------
 
