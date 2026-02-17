@@ -28,7 +28,7 @@ spec:
 # `cargo pgrx test` will :
 #    - build the extension
 #    - launch a Postgres instance
-#    - run the unit tests against it.
+#    - run the unit tests against it
 #
 # The functional tests will be launched later with pg_regress
 #
@@ -55,6 +55,33 @@ spec:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
+  artifacts:
+    paths:
+      - target/release/anon-$[[ inputs.pgver ]]
+    expire_in: 1 day
+
+#
+# Build on ARM
+#
+"build-$[[ inputs.pgver ]]-arm":
+  stage: build
+  tags:
+    - arm
+  image: registry.gitlab.com/dalibo/postgresql_anonymizer:$[[ inputs.pgrx_image_tag ]]
+  variables:
+    PGVER: $[[ inputs.pgver ]]
+    ALWAYS: $[[ inputs.always ]]
+    ARCH: arm64
+  script:
+    - make test
+    - make deb rpm
+  rules:
+    - if: $ALWAYS
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+  when: manual
   artifacts:
     paths:
       - target/release/anon-$[[ inputs.pgver ]]
@@ -115,6 +142,8 @@ spec:
     - cd "target/release/anon-$[[ inputs.pgver ]]"
     - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.deb "$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.amd64.deb?select=package_file"'
     - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.rpm "$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.x86_64.rpm?select=package_file"'
+    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.deb "$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.arm64.deb?select=package_file"'
+    - 'curl --fail --header "JOB-TOKEN:$CI_JOB_TOKEN" --upload-file *.rpm "$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.aarch64.rpm?select=package_file"'
 
 ##
 ## R E L E A S E
@@ -140,3 +169,11 @@ spec:
           url: '$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.amd64.deb'
           link_type: 'package'
           filepath: 'postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.amd64.deb'
+        - name: 'RPM package for $[[ inputs.pgver ]] (arm64)'
+          url: '$RPM_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.aarch64.rpm'
+          link_type: 'package'
+          filepath: 'postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.aarch64.rpm'
+        - name: 'DEB package for $[[ inputs.pgver ]] (arm64)'
+          url: '$DEB_REGISTRY_URL/postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.arm64.deb'
+          link_type: 'package'
+          filepath: 'postgresql_anonymizer_$[[ inputs.pgver ]]-$CI_COMMIT_REF_NAME.arm64.deb'

@@ -1,6 +1,6 @@
 ---
 name: "postgresql_anonymizer_${PG_MAJOR_VERSION}"
-arch: "amd64"
+arch: "${ARCH}"
 platform: "linux"
 version: "v${ANON_MINOR_VERSION}"
 section: "default"

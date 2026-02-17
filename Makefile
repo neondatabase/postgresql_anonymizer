@@ -263,6 +263,9 @@ endif
 ## P A C K A G E S
 ##
 
+# See https://nfpm.goreleaser.com/docs/arch-mapping/
+ARCH?=amd64
+
 # The packages are built from the $(TARGET_DIR) folder.
 # So the $(PG_PKGLIBDIR) and $(PG_SHAREDIR) are relative to that folder
 rpm deb: package
